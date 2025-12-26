@@ -7,4 +7,11 @@ import App from "./App.jsx";
 // React
 import { createRoot } from "react-dom/client";
 
-createRoot(document.getElementById("root")).render(<App />);
+// Router
+import { BrowserRouter } from "react-router-dom";
+
+createRoot(document.getElementById("root")).render(
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
+);
