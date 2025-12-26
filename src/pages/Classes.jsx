@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { classesAPI, usersAPI } from "../api/client";
+import { classesAPI } from "../api/client";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Users as UsersIcon } from "lucide-react";
+import { Plus, Edit, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,6 @@ import {
 
 const Classes = () => {
   const [classes, setClasses] = useState([]);
-  const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClass, setEditingClass] = useState(null);
@@ -20,12 +19,10 @@ const Classes = () => {
     grade: 1,
     section: "",
     academicYear: "2024-2025",
-    teacher: "",
   });
 
   useEffect(() => {
     fetchClasses();
-    fetchTeachers();
   }, []);
 
   const fetchClasses = async () => {
@@ -39,15 +36,6 @@ const Classes = () => {
     }
   };
 
-  const fetchTeachers = async () => {
-    try {
-      const response = await usersAPI.getAll({ role: "teacher" });
-      setTeachers(response.data.data);
-    } catch (error) {
-      console.error("O'qituvchilarni yuklashda xatolik:", error);
-    }
-  };
-
   const handleOpenModal = (classItem = null) => {
     if (classItem) {
       setEditingClass(classItem);
@@ -56,7 +44,6 @@ const Classes = () => {
         grade: classItem.grade,
         section: classItem.section,
         academicYear: classItem.academicYear,
-        teacher: classItem.teacher?._id || "",
       });
     } else {
       setEditingClass(null);
@@ -65,7 +52,6 @@ const Classes = () => {
         grade: 1,
         section: "",
         academicYear: "2024-2025",
-        teacher: "",
       });
     }
     setIsModalOpen(true);
@@ -162,17 +148,7 @@ const Classes = () => {
             </div>
 
             <div className="space-y-3">
-              {classItem.teacher && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <UsersIcon className="w-4 h-4 mr-2" />
-                  <span>
-                    Sinf rahbari: {classItem.teacher.firstName}{" "}
-                    {classItem.teacher.lastName}
-                  </span>
-                </div>
-              )}
-
-              <div className="pt-3 border-t border-gray-200">
+              <div>
                 <span
                   className={`px-2 py-1 text-xs font-semibold rounded-full ${
                     classItem.isActive
@@ -263,26 +239,6 @@ const Classes = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="2024-2025"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sinf rahbari (ixtiyoriy)
-              </label>
-              <select
-                value={formData.teacher}
-                onChange={(e) =>
-                  setFormData({ ...formData, teacher: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                <option value="">Sinf rahbari tanlang</option>
-                {teachers.map((teacher) => (
-                  <option key={teacher._id} value={teacher._id}>
-                    {teacher.firstName} {teacher.lastName}
-                  </option>
-                ))}
-              </select>
             </div>
 
             <div className="bg-blue-50 p-3 rounded-lg">
