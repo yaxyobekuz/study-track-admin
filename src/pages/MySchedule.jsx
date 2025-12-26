@@ -1,0 +1,163 @@
+import { useState, useEffect } from 'react';
+import { schedulesAPI } from '../api/client';
+import { toast } from 'sonner';
+import { Calendar, BookOpen, Clock } from 'lucide-react';
+
+const DAYS = [
+  { value: 'dushanba', label: 'Dushanba' },
+  { value: 'seshanba', label: 'Seshanba' },
+  { value: 'chorshanba', label: 'Chorshanba' },
+  { value: 'payshanba', label: 'Payshanba' },
+  { value: 'juma', label: 'Juma' },
+  { value: 'shanba', label: 'Shanba' },
+];
+
+const MySchedule = () => {
+  const [schedules, setSchedules] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMySchedule();
+  }, []);
+
+  const fetchMySchedule = async () => {
+    try {
+      const response = await schedulesAPI.getTeacherSchedule();
+      setSchedules(response.data.data);
+    } catch (error) {
+      toast.error('Jadvalni yuklashda xatolik');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sinflar bo'yicha guruhlash
+  const schedulesByClass = schedules.reduce((acc, schedule) => {
+    const className = schedule.class.name;
+    if (!acc[className]) {
+      acc[className] = [];
+    }
+    acc[className].push(schedule);
+    return acc;
+  }, {});
+
+  if (loading) {
+    return <div className="text-center py-8">Yuklanmoqda...</div>;
+  }
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Mening dars jadvalim</h1>
+        <p className="text-gray-600 mt-1">Barcha sinflar bo'yicha haftalik jadval</p>
+      </div>
+
+      {Object.keys(schedulesByClass).length === 0 ? (
+        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+          <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500 text-lg">Sizga hali dars jadvali tayinlanmagan</p>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {Object.entries(schedulesByClass).map(([className, classSchedules]) => (
+            <div key={className} className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="bg-indigo-600 px-6 py-4">
+                <h2 className="text-xl font-semibold text-white">{className}-sinf</h2>
+              </div>
+
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {DAYS.map((day) => {
+                    const daySchedule = classSchedules.find((s) => s.day === day.value);
+                    const myLessons = daySchedule?.subjects.filter(
+                      (subj) => subj.teacher._id === daySchedule.subjects[0]?.teacher._id
+                    );
+
+                    return (
+                      <div key={day.value} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center mb-3">
+                          <Calendar className="w-5 h-5 text-indigo-600 mr-2" />
+                          <h3 className="font-semibold text-gray-900">{day.label}</h3>
+                        </div>
+
+                        {myLessons && myLessons.length > 0 ? (
+                          <div className="space-y-2">
+                            {myLessons.map((lesson, idx) => (
+                              <div
+                                key={idx}
+                                className="p-3 bg-indigo-50 rounded-lg border border-indigo-100"
+                              >
+                                <div className="flex items-start justify-between mb-1">
+                                  <div className="flex items-center">
+                                    <BookOpen className="w-4 h-4 text-indigo-600 mr-2" />
+                                    <span className="text-sm font-medium text-gray-900">
+                                      {lesson.subject.name}
+                                    </span>
+                                  </div>
+                                  <span className="text-xs bg-indigo-600 text-white px-2 py-1 rounded">
+                                    {lesson.order}-dars
+                                  </span>
+                                </div>
+                                {lesson.startTime && lesson.endTime && (
+                                  <div className="flex items-center text-xs text-gray-600 mt-1">
+                                    <Clock className="w-3 h-3 mr-1" />
+                                    {lesson.startTime} - {lesson.endTime}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 text-center py-4">
+                            Dars yo'q
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Summary */}
+      {Object.keys(schedulesByClass).length > 0 && (
+        <div className="mt-6 bg-blue-50 rounded-lg p-6">
+          <h3 className="font-semibold text-blue-900 mb-3">Xulosa</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-blue-700">Sinflar soni</p>
+              <p className="text-2xl font-bold text-blue-900">
+                {Object.keys(schedulesByClass).length}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-blue-700">Haftalik darslar</p>
+              <p className="text-2xl font-bold text-blue-900">
+                {schedules.reduce(
+                  (sum, s) => sum + s.subjects.filter((subj) => subj.teacher).length,
+                  0
+                )}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-blue-700">Kunlik o'rtacha</p>
+              <p className="text-2xl font-bold text-blue-900">
+                {(
+                  schedules.reduce(
+                    (sum, s) => sum + s.subjects.filter((subj) => subj.teacher).length,
+                    0
+                  ) / 6
+                ).toFixed(1)}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MySchedule;
