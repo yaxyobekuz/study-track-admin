@@ -14,6 +14,7 @@ const DAYS = [
 
 const MySchedule = () => {
   const [schedules, setSchedules] = useState([]);
+  const [teacherId, setTeacherId] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ const MySchedule = () => {
     try {
       const response = await schedulesAPI.getTeacherSchedule();
       setSchedules(response.data.data);
+      setTeacherId(response.data.teacherId);
     } catch (error) {
       toast.error("Jadvalni yuklashda xatolik");
     } finally {
@@ -73,7 +75,7 @@ const MySchedule = () => {
               >
                 <div className="bg-indigo-600 px-6 py-4">
                   <h2 className="text-xl font-semibold text-white">
-                    {className}-sinf
+                    {className} sinf
                   </h2>
                 </div>
 
@@ -83,11 +85,7 @@ const MySchedule = () => {
                       const daySchedule = classSchedules.find(
                         (s) => s.day === day.value
                       );
-                      const myLessons = daySchedule?.subjects.filter(
-                        (subj) =>
-                          subj.teacher._id ===
-                          daySchedule.subjects[0]?.teacher._id
-                      );
+                      const lessons = daySchedule?.subjects || [];
 
                       return (
                         <div
@@ -101,26 +99,56 @@ const MySchedule = () => {
                             </h3>
                           </div>
 
-                          {myLessons && myLessons.length > 0 ? (
+                          {lessons.length > 0 ? (
                             <div className="space-y-2">
-                              {myLessons.map((lesson, idx) => (
-                                <div
-                                  key={idx}
-                                  className="p-3 bg-indigo-50 rounded-lg border border-indigo-100"
-                                >
-                                  <div className="flex items-start justify-between mb-1">
-                                    <div className="flex items-center">
-                                      <BookOpen className="w-4 h-4 text-indigo-600 mr-2" />
-                                      <span className="text-sm font-medium text-gray-900">
-                                        {lesson.subject.name}
-                                      </span>
+                              {lessons
+                                .sort((a, b) => a.order - b.order)
+                                .map((lesson, idx) => {
+                                  const isMyLesson =
+                                    lesson.teacher._id === teacherId;
+                                  return (
+                                    <div
+                                      key={idx}
+                                      className={`flex items-start justify-between p-3 rounded-lg border transition-all ${
+                                        isMyLesson
+                                          ? "bg-indigo-50 border-indigo-100"
+                                          : "bg-gray-50 border-gray-200 opacity-50 select-none"
+                                      }`}
+                                    >
+                                      <div className="flex items-center flex-1 min-w-0 gap-3">
+                                        {/* Lesson order */}
+                                        <span
+                                          className={`flex items-center justify-center size-6 rounded-full text-xs flex-shrink-0 ${
+                                            isMyLesson
+                                              ? "bg-indigo-600 text-white"
+                                              : "bg-gray-400 text-white"
+                                          }`}
+                                        >
+                                          {lesson.order}
+                                        </span>
+
+                                        {/* Subject name */}
+                                        <span
+                                          className={`capitalize text-sm font-medium truncate ${
+                                            isMyLesson
+                                              ? "text-gray-900"
+                                              : "text-gray-500"
+                                          }`}
+                                        >
+                                          {lesson.subject.name}
+                                        </span>
+                                      </div>
+
+                                      <p className="capitalize text-xs text-gray-400 mt-1 ml-6">
+                                        {isMyLesson
+                                          ? "Siz"
+                                          : lesson.teacher.firstName +
+                                            " " +
+                                            lesson.teacher.lastName}
+                                      </p>
                                     </div>
-                                    <span className="text-xs bg-indigo-600 text-white px-2 py-1 rounded">
-                                      {lesson.order}-dars
-                                    </span>
-                                  </div>
-                                </div>
-                              ))}
+                                  );
+                                })}
                             </div>
                           ) : (
                             <p className="text-sm text-gray-500 text-center py-4">
@@ -150,11 +178,13 @@ const MySchedule = () => {
               </p>
             </div>
             <div>
-              <p className="text-sm text-blue-700">Haftalik darslar</p>
+              <p className="text-sm text-blue-700">Mening haftalik darslarim</p>
               <p className="text-2xl font-bold text-blue-900">
                 {schedules.reduce(
                   (sum, s) =>
-                    sum + s.subjects.filter((subj) => subj.teacher).length,
+                    sum +
+                    s.subjects.filter((subj) => subj.teacher._id === teacherId)
+                      .length,
                   0
                 )}
               </p>
@@ -165,7 +195,10 @@ const MySchedule = () => {
                 {(
                   schedules.reduce(
                     (sum, s) =>
-                      sum + s.subjects.filter((subj) => subj.teacher).length,
+                      sum +
+                      s.subjects.filter(
+                        (subj) => subj.teacher._id === teacherId
+                      ).length,
                     0
                   ) / 6
                 ).toFixed(1)}
