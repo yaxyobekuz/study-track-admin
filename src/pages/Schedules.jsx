@@ -1,29 +1,34 @@
-import { useState, useEffect } from 'react';
-import { schedulesAPI, classesAPI, subjectsAPI, usersAPI } from '../api/client';
-import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Calendar } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { useState, useEffect } from "react";
+import { schedulesAPI, classesAPI, subjectsAPI, usersAPI } from "../api/client";
+import { toast } from "sonner";
+import { Plus, Edit, Trash2, Calendar } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 
 const DAYS = [
-  { value: 'dushanba', label: 'Dushanba' },
-  { value: 'seshanba', label: 'Seshanba' },
-  { value: 'chorshanba', label: 'Chorshanba' },
-  { value: 'payshanba', label: 'Payshanba' },
-  { value: 'juma', label: 'Juma' },
-  { value: 'shanba', label: 'Shanba' },
+  { value: "dushanba", label: "Dushanba" },
+  { value: "seshanba", label: "Seshanba" },
+  { value: "chorshanba", label: "Chorshanba" },
+  { value: "payshanba", label: "Payshanba" },
+  { value: "juma", label: "Juma" },
+  { value: "shanba", label: "Shanba" },
 ];
 
 const Schedules = () => {
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [teachers, setTeachers] = useState([]);
-  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedClass, setSelectedClass] = useState("");
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDay, setSelectedDay] = useState('');
+  const [selectedDay, setSelectedDay] = useState("");
   const [daySubjects, setDaySubjects] = useState([
-    { subject: '', teacher: '', order: 1, startTime: '', endTime: '' },
+    { subject: "", teacher: "", order: 1 },
   ]);
 
   useEffect(() => {
@@ -46,7 +51,7 @@ const Schedules = () => {
         setSelectedClass(response.data.data[0]._id);
       }
     } catch (error) {
-      toast.error('Sinflarni yuklashda xatolik');
+      toast.error("Sinflarni yuklashda xatolik");
     } finally {
       setLoading(false);
     }
@@ -57,16 +62,16 @@ const Schedules = () => {
       const response = await subjectsAPI.getAll();
       setSubjects(response.data.data);
     } catch (error) {
-      console.error('Fanlarni yuklashda xatolik:', error);
+      console.error("Fanlarni yuklashda xatolik:", error);
     }
   };
 
   const fetchTeachers = async () => {
     try {
-      const response = await usersAPI.getAll({ role: 'teacher' });
+      const response = await usersAPI.getAll({ role: "teacher" });
       setTeachers(response.data.data);
     } catch (error) {
-      console.error('O\'qituvchilarni yuklashda xatolik:', error);
+      console.error("O'qituvchilarni yuklashda xatolik:", error);
     }
   };
 
@@ -75,7 +80,7 @@ const Schedules = () => {
       const response = await schedulesAPI.getByClass(selectedClass);
       setSchedules(response.data.data);
     } catch (error) {
-      console.error('Jadvallarni yuklashda xatolik:', error);
+      console.error("Jadvallarni yuklashda xatolik:", error);
     }
   };
 
@@ -85,7 +90,7 @@ const Schedules = () => {
     if (schedule) {
       setDaySubjects(schedule.subjects || []);
     } else {
-      setDaySubjects([{ subject: '', teacher: '', order: 1, startTime: '', endTime: '' }]);
+      setDaySubjects([{ subject: "", teacher: "", order: 1 }]);
     }
 
     setIsModalOpen(true);
@@ -93,19 +98,19 @@ const Schedules = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedDay('');
-    setDaySubjects([{ subject: '', teacher: '', order: 1, startTime: '', endTime: '' }]);
+    setSelectedDay("");
+    setDaySubjects([
+      { subject: "", teacher: "", order: 1, startTime: "", endTime: "" },
+    ]);
   };
 
   const addSubjectRow = () => {
     setDaySubjects([
       ...daySubjects,
       {
-        subject: '',
-        teacher: '',
+        subject: "",
+        teacher: "",
         order: daySubjects.length + 1,
-        startTime: '',
-        endTime: '',
       },
     ]);
   };
@@ -129,7 +134,7 @@ const Schedules = () => {
     const validSubjects = daySubjects.filter((s) => s.subject && s.teacher);
 
     if (validSubjects.length === 0) {
-      toast.error('Kamida bitta fan va o\'qituvchi tanlang');
+      toast.error("Kamida bitta fan va o'qituvchi tanlang");
       return;
     }
 
@@ -140,23 +145,23 @@ const Schedules = () => {
         subjects: validSubjects,
       });
 
-      toast.success('Dars jadvali muvaffaqiyatli saqlandi');
+      toast.success("Dars jadvali muvaffaqiyatli saqlandi");
       handleCloseModal();
       fetchSchedules();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Xatolik yuz berdi');
+      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
     }
   };
 
   const handleDeleteSchedule = async (scheduleId) => {
-    if (!confirm('Rostdan ham o\'chirmoqchimisiz?')) return;
+    if (!confirm("Rostdan ham o'chirmoqchimisiz?")) return;
 
     try {
       await schedulesAPI.delete(scheduleId);
-      toast.success('Jadval o\'chirildi');
+      toast.success("Jadval o'chirildi");
       fetchSchedules();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'O\'chirishda xatolik');
+      toast.error(error.response?.data?.message || "O'chirishda xatolik");
     }
   };
 
@@ -195,14 +200,20 @@ const Schedules = () => {
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center">
                   <Calendar className="w-5 h-5 text-indigo-600 mr-2" />
-                  <h3 className="text-lg font-semibold text-gray-900">{day.label}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {day.label}
+                  </h3>
                 </div>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleOpenModal(day.value, schedule)}
                     className="text-indigo-600 hover:text-indigo-900"
                   >
-                    {schedule ? <Edit className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                    {schedule ? (
+                      <Edit className="w-5 h-5" />
+                    ) : (
+                      <Plus className="w-5 h-5" />
+                    )}
                   </button>
                   {schedule && (
                     <button
@@ -227,11 +238,6 @@ const Schedules = () => {
                           <p className="text-xs text-gray-600 mt-1">
                             {subj.teacher?.firstName} {subj.teacher?.lastName}
                           </p>
-                          {subj.startTime && subj.endTime && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              {subj.startTime} - {subj.endTime}
-                            </p>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -259,9 +265,14 @@ const Schedules = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-4">
               {daySubjects.map((subj, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                <div
+                  key={index}
+                  className="p-4 border border-gray-200 rounded-lg"
+                >
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="font-medium text-gray-900">{index + 1}-dars</h4>
+                    <h4 className="font-medium text-gray-900">
+                      {index + 1}-dars
+                    </h4>
                     {daySubjects.length > 1 && (
                       <button
                         type="button"
@@ -273,14 +284,16 @@ const Schedules = () => {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Fan *
                       </label>
                       <select
                         value={subj.subject}
-                        onChange={(e) => updateSubjectRow(index, 'subject', e.target.value)}
+                        onChange={(e) =>
+                          updateSubjectRow(index, "subject", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         required
                       >
@@ -299,7 +312,9 @@ const Schedules = () => {
                       </label>
                       <select
                         value={subj.teacher}
-                        onChange={(e) => updateSubjectRow(index, 'teacher', e.target.value)}
+                        onChange={(e) =>
+                          updateSubjectRow(index, "teacher", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         required
                       >
@@ -310,30 +325,6 @@ const Schedules = () => {
                           </option>
                         ))}
                       </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Boshlanish vaqti (ixtiyoriy)
-                      </label>
-                      <input
-                        type="time"
-                        value={subj.startTime}
-                        onChange={(e) => updateSubjectRow(index, 'startTime', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tugash vaqti (ixtiyoriy)
-                      </label>
-                      <input
-                        type="time"
-                        value={subj.endTime}
-                        onChange={(e) => updateSubjectRow(index, 'endTime', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      />
                     </div>
                   </div>
                 </div>
