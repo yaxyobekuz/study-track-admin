@@ -88,7 +88,15 @@ const Schedules = () => {
     setSelectedDay(day);
 
     if (schedule) {
-      setDaySubjects(schedule.subjects || []);
+      // Object ID'larni olish (agar object bo'lsa, _id ni olish)
+      const formattedSubjects = schedule.subjects.map((subj) => ({
+        subject:
+          typeof subj.subject === "object" ? subj.subject._id : subj.subject,
+        teacher:
+          typeof subj.teacher === "object" ? subj.teacher._id : subj.teacher,
+        order: subj.order,
+      }));
+      setDaySubjects(formattedSubjects);
     } else {
       setDaySubjects([{ subject: "", teacher: "", order: 1 }]);
     }
@@ -267,9 +275,9 @@ const Schedules = () => {
               {daySubjects.map((subj, index) => (
                 <div
                   key={index}
-                  className="p-4 border border-gray-200 rounded-lg"
+                  className="border border-gray-200 rounded-lg"
                 >
-                  <div className="flex justify-between items-center mb-3">
+                  <div className="flex justify-between items-center mb-3 px-4 py-2 rounded-t-lg bg-gray-100">
                     <h4 className="font-medium text-gray-900">
                       {index + 1}-dars
                     </h4>
@@ -284,7 +292,7 @@ const Schedules = () => {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-2 gap-4 p-4 pt-0">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Fan *
