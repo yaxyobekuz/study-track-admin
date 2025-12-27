@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { schedulesAPI, classesAPI, subjectsAPI, usersAPI } from "../api/client";
+import { useAuth } from "../store/authStore";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Calendar } from "lucide-react";
 import {
@@ -19,6 +20,8 @@ const DAYS = [
 ];
 
 const Schedules = () => {
+  const { user } = useAuth();
+  const isOwner = user?.role === "owner";
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -212,26 +215,28 @@ const Schedules = () => {
                     {day.label}
                   </h3>
                 </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleOpenModal(day.value, schedule)}
-                    className="text-indigo-600 hover:text-indigo-900"
-                  >
-                    {schedule ? (
-                      <Edit className="w-5 h-5" />
-                    ) : (
-                      <Plus className="w-5 h-5" />
-                    )}
-                  </button>
-                  {schedule && (
+                {isOwner && (
+                  <div className="flex space-x-2">
                     <button
-                      onClick={() => handleDeleteSchedule(schedule._id)}
-                      className="text-red-600 hover:text-red-900"
+                      onClick={() => handleOpenModal(day.value, schedule)}
+                      className="text-indigo-600 hover:text-indigo-900"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      {schedule ? (
+                        <Edit className="w-5 h-5" />
+                      ) : (
+                        <Plus className="w-5 h-5" />
+                      )}
                     </button>
-                  )}
-                </div>
+                    {schedule && (
+                      <button
+                        onClick={() => handleDeleteSchedule(schedule._id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               {schedule ? (

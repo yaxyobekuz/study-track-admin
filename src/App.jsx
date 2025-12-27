@@ -11,7 +11,6 @@ import Subjects from "./pages/Subjects";
 import Schedules from "./pages/Schedules";
 import Grades from "./pages/Grades";
 import MyGrades from "./pages/MyGrades";
-import MySchedule from "./pages/MySchedule";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -70,7 +69,7 @@ const AppRoutes = () => {
           <Route
             path="schedules"
             element={
-              <ProtectedRoute allowedRoles={["owner"]}>
+              <ProtectedRoute allowedRoles={["owner", "teacher"]}>
                 <Schedules />
               </ProtectedRoute>
             }
@@ -94,15 +93,7 @@ const AppRoutes = () => {
             }
           />
 
-          {/* Teacher Schedule */}
-          <Route
-            path="/my-schedule"
-            element={
-              <ProtectedRoute allowedRoles={["teacher"]}>
-                <MySchedule />
-              </ProtectedRoute>
-            }
-          />
+
         </Route>
 
         {/* 404 */}

@@ -1,7 +1,6 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../store/authStore";
 import {
-  LayoutDashboard,
   Users,
   GraduationCap,
   BookOpen,
@@ -11,6 +10,7 @@ import {
   User,
   Menu,
   X,
+  Home,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -27,7 +27,7 @@ const DashboardLayout = () => {
 
   // Role-based navigation
   const getNavigation = () => {
-    const baseNav = [{ name: "Bosh sahifa", href: "/", icon: LayoutDashboard }];
+    const baseNav = [{ name: "Bosh sahifa", href: "/", icon: Home }];
 
     if (user?.role === "owner") {
       return [
@@ -43,7 +43,7 @@ const DashboardLayout = () => {
     if (user?.role === "teacher") {
       return [
         ...baseNav,
-        { name: "Dars jadvalim", href: "/my-schedule", icon: Calendar },
+        { name: "Dars jadvali", href: "/schedules", icon: Calendar },
         { name: "Baholar", href: "/grades", icon: ClipboardList },
       ];
     }
@@ -166,7 +166,7 @@ const DashboardLayout = () => {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="bg-white h-16 border-b border-gray-200">
+        <header className="sticky top-0 inset-x-0 bg-white h-16 border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             <button
               onClick={() => setSidebarOpen(true)}

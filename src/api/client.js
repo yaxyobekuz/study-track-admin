@@ -76,7 +76,6 @@ export const classesAPI = {
 export const schedulesAPI = {
   getByClass: (classId) => api.get(`/schedules/class/${classId}`),
   getByDay: (classId, day) => api.get(`/schedules/class/${classId}/day/${day}`),
-  getTeacherSchedule: () => api.get('/schedules/teacher/my-schedule'),
   createOrUpdate: (data) => api.post('/schedules', data),
   delete: (id) => api.delete(`/schedules/${id}`),
 };
