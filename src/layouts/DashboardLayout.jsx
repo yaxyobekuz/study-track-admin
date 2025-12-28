@@ -11,6 +11,8 @@ import {
   Menu,
   X,
   Home,
+  PlusCircle,
+  Eye,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -36,7 +38,7 @@ const DashboardLayout = () => {
         { name: "Sinflar", href: "/classes", icon: GraduationCap },
         { name: "Fanlar", href: "/subjects", icon: BookOpen },
         { name: "Dars jadvali", href: "/schedules", icon: Calendar },
-        { name: "Baholar", href: "/grades", icon: ClipboardList },
+        { name: "Baholar jurnali", href: "/grades", icon: Eye },
       ];
     }
 
@@ -44,7 +46,8 @@ const DashboardLayout = () => {
       return [
         ...baseNav,
         { name: "Dars jadvali", href: "/schedules", icon: Calendar },
-        { name: "Baholar", href: "/grades", icon: ClipboardList },
+        { name: "Baho qo'yish", href: "/add-grade", icon: PlusCircle },
+        { name: "Baholar jurnali", href: "/grades", icon: Eye },
       ];
     }
 
