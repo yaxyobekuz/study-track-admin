@@ -1,68 +1,59 @@
 import { useState, useEffect } from "react";
-import { gradesAPI, classesAPI, subjectsAPI, usersAPI } from "../api/client";
+import { gradesAPI, classesAPI, subjectsAPI } from "../api/client";
 import { useAuth } from "../store/authStore";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Calendar, Filter } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../components/ui/dialog";
+import { Filter, Eye, Calendar } from "lucide-react";
 
 const Grades = () => {
   const { user } = useAuth();
-  const [grades, setGrades] = useState([]);
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingGrade, setEditingGrade] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
-  const [filters, setFilters] = useState({
-    classId: "",
-    subjectId: "",
-    startDate: "",
-    endDate: "",
-  });
+  // Load saved filters from localStorage
+  const getSavedFilters = () => {
+    const savedClassId = localStorage.getItem("grades_classId");
+    const savedSubjectId = localStorage.getItem("grades_subjectId");
+    const savedDate = localStorage.getItem("grades_date");
+    
+    return {
+      classId: savedClassId || "",
+      subjectId: savedSubjectId || "",
+      date: savedDate || new Date().toISOString().split("T")[0],
+    };
+  };
 
-  const [formData, setFormData] = useState({
-    student: "",
-    subject: "",
-    class: "",
-    grade: 5,
-    date: new Date().toISOString().split("T")[0],
-    comment: "",
-  });
+  const [filters, setFilters] = useState(getSavedFilters());
+
+  // Save filters to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("grades_classId", filters.classId);
+    localStorage.setItem("grades_subjectId", filters.subjectId);
+    localStorage.setItem("grades_date", filters.date);
+  }, [filters]);
 
   useEffect(() => {
     fetchClasses();
     fetchSubjects();
-    fetchGrades();
   }, []);
 
   useEffect(() => {
-    if (filters.classId) {
-      fetchStudents(filters.classId);
+    if (filters.classId && filters.date) {
+      fetchGradesByClass();
     }
-  }, [filters.classId]);
+  }, [filters.classId, filters.date]);
 
   const fetchClasses = async () => {
     try {
       const response = await classesAPI.getAll();
-      const allClasses = response.data.data;
-
-      // Teacher uchun faqat biriktirilgan sinflar
-      if (user?.role === "teacher" && user?.assignedClasses) {
-        const assignedClassIds = user.assignedClasses.map((c) => c._id);
-        setClasses(allClasses.filter((c) => assignedClassIds.includes(c._id)));
-      } else {
-        setClasses(allClasses);
-      }
+      const allClasses = response.data.data || [];
+      setClasses(allClasses);
     } catch (error) {
+      console.error("Error fetching classes:", error);
       toast.error("Sinflarni yuklashda xatolik");
+      setClasses([]);
     } finally {
       setLoading(false);
     }
@@ -77,385 +68,93 @@ const Grades = () => {
     }
   };
 
-  const fetchStudents = async (classId) => {
+  const fetchGradesByClass = async () => {
+    setLoading(true);
     try {
-      const response = await usersAPI.getAll({
-        role: "student",
-        class: classId,
-      });
-      setStudents(response.data.data);
-    } catch (error) {
-      console.error("O'quvchilarni yuklashda xatolik:", error);
-    }
-  };
+      const response = await gradesAPI.getByClassAndDate(
+        filters.classId,
+        filters.date
+      );
 
-  const fetchGrades = async () => {
-    try {
-      const response = await gradesAPI.getAll(filters);
-      setGrades(response.data.data);
+      // Group grades by student
+      const gradesByStudent = {};
+      if (response.data.data && response.data.data.length > 0) {
+        response.data.data.forEach((grade) => {
+          const studentId = grade.student._id;
+          if (!gradesByStudent[studentId]) {
+            gradesByStudent[studentId] = {
+              student: grade.student,
+              grades: [],
+            };
+          }
+          gradesByStudent[studentId].grades.push(grade);
+        });
+      }
+
+      setStudents(Object.values(gradesByStudent));
     } catch (error) {
       toast.error("Baholarni yuklashda xatolik");
+      console.error(error);
+      setStudents([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleOpenModal = (grade = null) => {
-    if (grade) {
-      setEditingGrade(grade);
-      setFormData({
-        student: grade.student._id,
-        subject: grade.subject._id,
-        class: grade.class._id,
-        grade: grade.grade,
-        date: new Date(grade.date).toISOString().split("T")[0],
-        comment: grade.comment || "",
-      });
-      if (grade.class._id) {
-        fetchStudents(grade.class._id);
-      }
-    } else {
-      setEditingGrade(null);
-      setFormData({
-        student: "",
-        subject: "",
-        class: filters.classId || "",
-        grade: 5,
-        date: new Date().toISOString().split("T")[0],
-        comment: "",
-      });
-      if (filters.classId) {
-        fetchStudents(filters.classId);
-      }
-    }
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingGrade(null);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      const data = {
-        studentId: formData.student,
-        subjectId: formData.subject,
-        classId: formData.class,
-        grade: parseInt(formData.grade),
-        date: formData.date,
-        comment: formData.comment,
-      };
-
-      if (editingGrade) {
-        await gradesAPI.update(editingGrade._id, data);
-        toast.success("Baho muvaffaqiyatli yangilandi");
-      } else {
-        await gradesAPI.create(data);
-        toast.success("Baho muvaffaqiyatli qo'yildi");
-      }
-
-      handleCloseModal();
-      fetchGrades();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (user?.role !== "owner") {
-      toast.error("Faqat ega baho o'chira oladi");
-      return;
-    }
-
-    if (!confirm("Rostdan ham o'chirmoqchimisiz?")) return;
-
-    try {
-      await gradesAPI.delete(id);
-      toast.success("Baho o'chirildi");
-      fetchGrades();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "O'chirishda xatolik");
-    }
-  };
-
-  const canEdit = (grade) => {
-    const gradeDate = new Date(grade.date);
-    const currentDate = new Date();
-    const daysDiff = Math.floor(
-      (currentDate - gradeDate) / (1000 * 60 * 60 * 24)
-    );
-
-    if (user?.role === "owner") return true;
-    if (
-      user?.role === "teacher" &&
-      grade.teacher._id === user.id &&
-      daysDiff <= 2
-    )
-      return true;
-
-    return false;
+  const getGradeForSubject = (studentGrades, subjectId) => {
+    if (!subjectId) return null;
+    return studentGrades.find((g) => g.subject._id === subjectId);
   };
 
   const getGradeColor = (grade) => {
-    if (grade === 5) return "bg-green-100 text-green-800";
-    if (grade === 4) return "bg-blue-100 text-blue-800";
-    if (grade === 3) return "bg-yellow-100 text-yellow-800";
-    return "bg-red-100 text-red-800";
+    if (grade === 5) return "bg-green-100 text-green-800 border-green-300";
+    if (grade === 4) return "bg-blue-100 text-blue-800 border-blue-300";
+    if (grade === 3) return "bg-yellow-100 text-yellow-800 border-yellow-300";
+    return "bg-red-100 text-red-800 border-red-300";
   };
 
-  if (loading) {
+  const calculateAverage = (grades) => {
+    if (grades.length === 0) return 0;
+    const sum = grades.reduce((acc, g) => acc + g.grade, 0);
+    return (sum / grades.length).toFixed(2);
+  };
+
+  if (loading && !filters.classId) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
   }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Baholar</h1>
-        <div className="flex space-x-3">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            <Filter className="w-5 h-5 mr-2" />
-            Filter
-          </button>
-          <button
-            onClick={() => handleOpenModal()}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Baho qo'yish
-          </button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Baholar Jurnali</h1>
+          <p className="text-gray-600 mt-1">
+            Sinf bo'yicha baholarni ko'rish va monitoring qilish
+          </p>
         </div>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+        >
+          <Filter className="w-5 h-5 mr-2" />
+          {showFilters ? "Filterni yashirish" : "Filterni ko'rsatish"}
+        </button>
       </div>
 
       {/* Filters */}
       {showFilters && (
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sinf
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sinf *
               </label>
               <select
                 value={filters.classId}
                 onChange={(e) =>
                   setFilters({ ...filters, classId: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                <option value="">Barcha sinflar</option>
-                {classes.map((cls) => (
-                  <option key={cls._id} value={cls._id}>
-                    {cls.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Fan
-              </label>
-              <select
-                value={filters.subjectId}
-                onChange={(e) =>
-                  setFilters({ ...filters, subjectId: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                <option value="">Barcha fanlar</option>
-                {subjects.map((subject) => (
-                  <option key={subject._id} value={subject._id}>
-                    {subject.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dan
-              </label>
-              <input
-                type="date"
-                value={filters.startDate}
-                onChange={(e) =>
-                  setFilters({ ...filters, startDate: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Gacha
-              </label>
-              <input
-                type="date"
-                value={filters.endDate}
-                onChange={(e) =>
-                  setFilters({ ...filters, endDate: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end mt-4 space-x-3">
-            <button
-              onClick={() => {
-                setFilters({
-                  classId: "",
-                  subjectId: "",
-                  startDate: "",
-                  endDate: "",
-                });
-                fetchGrades();
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-            >
-              Tozalash
-            </button>
-            <button
-              onClick={fetchGrades}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-            >
-              Qidirish
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                O'quvchi
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Sinf
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Fan
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Baho
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Sana
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                O'qituvchi
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                Harakatlar
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {grades.map((grade) => (
-              <tr key={grade._id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {grade.student?.firstName} {grade.student?.lastName}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">
-                    {grade.class?.name}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {grade.subject?.name}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-3 py-1 text-sm font-semibold rounded-full ${getGradeColor(
-                      grade.grade
-                    )}`}
-                  >
-                    {grade.grade}
-                  </span>
-                  {grade.isEdited && (
-                    <span className="ml-2 text-xs text-gray-500">
-                      (tahrirlangan)
-                    </span>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">
-                    {new Date(grade.date).toLocaleDateString("uz-UZ")}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">
-                    {grade.teacher?.firstName} {grade.teacher?.lastName}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end space-x-2">
-                    {canEdit(grade) && (
-                      <button
-                        onClick={() => handleOpenModal(grade)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        <Edit className="w-5 h-5" />
-                      </button>
-                    )}
-                    {user?.role === "owner" && (
-                      <button
-                        onClick={() => handleDelete(grade._id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {grades.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Baholar topilmadi</p>
-          </div>
-        )}
-      </div>
-
-      {/* Create/Edit Modal */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingGrade ? "Bahoni tahrirlash" : "Baho qo'yish"}
-            </DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sinf *
-              </label>
-              <select
-                required
-                value={formData.class}
-                onChange={(e) => {
-                  setFormData({
-                    ...formData,
-                    class: e.target.value,
-                    student: "",
-                  });
-                  fetchStudents(e.target.value);
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
                 <option value="">Sinf tanlang</option>
                 {classes.map((cls) => (
@@ -467,40 +166,17 @@ const Grades = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                O'quvchi *
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Fan (Ixtiyoriy)
               </label>
               <select
-                required
-                value={formData.student}
+                value={filters.subjectId}
                 onChange={(e) =>
-                  setFormData({ ...formData, student: e.target.value })
+                  setFilters({ ...filters, subjectId: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                disabled={!formData.class}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                <option value="">O'quvchi tanlang</option>
-                {students.map((student) => (
-                  <option key={student._id} value={student._id}>
-                    {student.firstName} {student.lastName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Fan *
-              </label>
-              <select
-                required
-                value={formData.subject}
-                onChange={(e) =>
-                  setFormData({ ...formData, subject: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                <option value="">Fan tanlang</option>
+                <option value="">Barcha fanlar</option>
                 {subjects.map((subject) => (
                   <option key={subject._id} value={subject._id}>
                     {subject.name}
@@ -509,84 +185,211 @@ const Grades = () => {
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Baho *
-                </label>
-                <select
-                  required
-                  value={formData.grade}
-                  onChange={(e) =>
-                    setFormData({ ...formData, grade: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                >
-                  <option value="5">5 - A'lo</option>
-                  <option value="4">4 - Yaxshi</option>
-                  <option value="3">3 - Qoniqarli</option>
-                  <option value="2">2 - Qoniqarsiz</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sana *
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={formData.date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, date: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Izoh (ixtiyoriy)
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sana *
               </label>
-              <textarea
-                value={formData.comment}
+              <input
+                type="date"
+                value={filters.date}
                 onChange={(e) =>
-                  setFormData({ ...formData, comment: e.target.value })
+                  setFilters({ ...filters, date: e.target.value })
                 }
-                rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Baho haqida qo'shimcha ma'lumot"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
+          </div>
+        </div>
+      )}
 
-            {editingGrade && (
-              <div className="bg-yellow-50 p-3 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  ⚠️ Faqat bugungi yoki 2 kun oldingi baholarni tahrirlash
-                  mumkin
-                </p>
-              </div>
-            )}
+      {/* Grades View */}
+      {!filters.classId ? (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
+          <Calendar className="w-12 h-12 text-blue-600 mx-auto mb-3" />
+          <p className="text-blue-800 text-lg">
+            Baholarni ko'rish uchun sinf va sana tanlang
+          </p>
+        </div>
+      ) : loading ? (
+        <div className="bg-white rounded-lg shadow p-8 text-center">
+          <p className="text-gray-500">Yuklanmoqda...</p>
+        </div>
+      ) : students.length === 0 ? (
+        <div className="bg-white rounded-lg shadow p-8 text-center">
+          <Eye className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-500">Tanlangan kun uchun baholar topilmadi</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">
+              {classes.find((c) => c._id === filters.classId)?.name} - Baholar
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Sana: {new Date(filters.date).toLocaleDateString("uz-UZ")}
+              {filters.subjectId &&
+                ` • Fan: ${
+                  subjects.find((s) => s._id === filters.subjectId)?.name
+                }`}
+            </p>
+          </div>
 
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                Bekor qilish
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              >
-                {editingGrade ? "Saqlash" : "Qo'yish"}
-              </button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50">
+                    #
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-12 bg-gray-50">
+                    O'quvchi
+                  </th>
+                  {filters.subjectId ? (
+                    <>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Baho
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Izoh
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        O'qituvchi
+                      </th>
+                    </>
+                  ) : (
+                    <>
+                      {subjects.map((subject) => (
+                        <th
+                          key={subject._id}
+                          className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          {subject.name}
+                        </th>
+                      ))}
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50">
+                        O'rtacha
+                      </th>
+                    </>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {students.map((studentData, index) => {
+                  const relevantGrades = filters.subjectId
+                    ? studentData.grades.filter(
+                        (g) => g.subject._id === filters.subjectId
+                      )
+                    : studentData.grades;
+
+                  return (
+                    <tr
+                      key={studentData.student._id}
+                      className="hover:bg-gray-50"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 sticky left-0 bg-white">
+                        {index + 1}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap sticky left-12 bg-white">
+                        <div className="text-sm font-medium text-gray-900">
+                          {studentData.student.firstName}{" "}
+                          {studentData.student.lastName}
+                        </div>
+                      </td>
+
+                      {filters.subjectId ? (
+                        <>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            {relevantGrades.length > 0 ? (
+                              <span
+                                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${getGradeColor(
+                                  relevantGrades[0].grade
+                                )}`}
+                              >
+                                {relevantGrades[0].grade}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 text-sm">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            {relevantGrades.length > 0 &&
+                            relevantGrades[0].comment ? (
+                              <span className="text-sm text-gray-600">
+                                {relevantGrades[0].comment}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 text-sm">-</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {relevantGrades.length > 0 ? (
+                              <span className="text-sm text-gray-600">
+                                {relevantGrades[0].teacher.firstName}{" "}
+                                {relevantGrades[0].teacher.lastName}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 text-sm">-</span>
+                            )}
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          {subjects.map((subject) => {
+                            const grade = getGradeForSubject(
+                              studentData.grades,
+                              subject._id
+                            );
+                            return (
+                              <td
+                                key={subject._id}
+                                className="px-4 py-4 whitespace-nowrap text-center"
+                              >
+                                {grade ? (
+                                  <span
+                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-semibold border ${getGradeColor(
+                                      grade.grade
+                                    )}`}
+                                    title={
+                                      grade.comment
+                                        ? `Izoh: ${grade.comment}`
+                                        : ""
+                                    }
+                                  >
+                                    {grade.grade}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">
+                                    -
+                                  </span>
+                                )}
+                              </td>
+                            );
+                          })}
+                          <td className="px-6 py-4 whitespace-nowrap text-center bg-blue-50">
+                            {studentData.grades.length > 0 ? (
+                              <span className="text-sm font-semibold text-blue-900">
+                                {calculateAverage(studentData.grades)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 text-sm">-</span>
+                            )}
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <p className="text-sm text-gray-600">
+              Jami {students.length} ta o'quvchi
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
