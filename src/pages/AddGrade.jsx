@@ -59,9 +59,12 @@ const AddGrade = () => {
   const fetchTeacherSubjects = async () => {
     try {
       const response = await gradesAPI.getTeacherSubjects(selectedClass);
+      if (response.data.message && response.data.data.length === 0) {
+        toast.info(response.data.message);
+      }
       setSubjects(response.data.data);
     } catch (error) {
-      toast.error("Fanlarni yuklashda xatolik");
+      toast.error(error.response?.data?.message || "Fanlarni yuklashda xatolik");
       console.error(error);
     }
   };
@@ -147,6 +150,11 @@ const AddGrade = () => {
           Sinf va fan tanlab, o'quvchilarga baho qo'ying (faqat bugungi kun
           uchun)
         </p>
+        <div className="mt-2 flex items-center gap-2">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+            📅 {new Date().toLocaleDateString("uz-UZ", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </span>
+        </div>
       </div>
 
       {/* Filters */}
@@ -188,8 +196,8 @@ const AddGrade = () => {
               ))}
             </select>
             {selectedClass && subjects.length === 0 && (
-              <p className="mt-1 text-sm text-red-600">
-                Bu sinfda sizga biriktirilgan fan yo'q
+              <p className="mt-1 text-sm text-amber-600">
+                Bugun bu sinfda sizning darslaringiz yo'q
               </p>
             )}
           </div>

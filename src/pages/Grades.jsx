@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { gradesAPI, classesAPI, subjectsAPI } from "../api/client";
+import { gradesAPI, classesAPI, subjectsAPI, schedulesAPI } from "../api/client";
 import { useAuth } from "../store/authStore";
 import { toast } from "sonner";
 import { Filter, Eye, Calendar } from "lucide-react";
@@ -8,6 +8,7 @@ const Grades = () => {
   const { user } = useAuth();
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [todaySubjects, setTodaySubjects] = useState([]); // Bugungi kun fanlar
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(true);
@@ -42,6 +43,7 @@ const Grades = () => {
   useEffect(() => {
     if (filters.classId && filters.date) {
       fetchGradesByClass();
+      fetchTodaySubjects();
     }
   }, [filters.classId, filters.date]);
 
@@ -65,6 +67,33 @@ const Grades = () => {
       setSubjects(response.data.data);
     } catch (error) {
       console.error("Fanlarni yuklashda xatolik:", error);
+    }
+  };
+
+  const fetchTodaySubjects = async () => {
+    try {
+      const date = new Date(filters.date);
+      const daysUz = ["yakshanba", "dushanba", "seshanba", "chorshanba", "payshanba", "juma", "shanba"];
+      const dayName = daysUz[date.getDay()];
+
+      if (dayName === "yakshanba") {
+        setTodaySubjects([]);
+        return;
+      }
+
+      const response = await schedulesAPI.getByDay(filters.classId, dayName);
+      if (response.data.data && response.data.data.subjects) {
+        // Extract unique subjects from schedule
+        const scheduleSubjects = response.data.data.subjects
+          .filter(s => s.subject)
+          .map(s => s.subject);
+        setTodaySubjects(scheduleSubjects);
+      } else {
+        setTodaySubjects([]);
+      }
+    } catch (error) {
+      console.error("Bugungi fanlarni yuklashda xatolik:", error);
+      setTodaySubjects([]);
     }
   };
 
@@ -231,6 +260,9 @@ const Grades = () => {
                 ` • Fan: ${
                   subjects.find((s) => s._id === filters.subjectId)?.name
                 }`}
+              {!filters.subjectId && todaySubjects.length === 0 && (
+                <span className="text-amber-600 font-medium"> • Tanlangan kun uchun dars jadvali topilmadi</span>
+              )}
             </p>
           </div>
 
@@ -258,7 +290,7 @@ const Grades = () => {
                     </>
                   ) : (
                     <>
-                      {subjects.map((subject) => (
+                      {todaySubjects.map((subject) => (
                         <th
                           key={subject._id}
                           className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -334,7 +366,7 @@ const Grades = () => {
                         </>
                       ) : (
                         <>
-                          {subjects.map((subject) => {
+                          {todaySubjects.map((subject) => {
                             const grade = getGradeForSubject(
                               studentData.grades,
                               subject._id
