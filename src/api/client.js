@@ -86,6 +86,8 @@ export const gradesAPI = {
   getByClassAndDate: (classId, date) => api.get(`/grades/class/${classId}/date/${date}`),
   getStudentGrades: (studentId) => 
     studentId ? api.get(`/grades/student/${studentId}`) : api.get('/grades/student/my-grades'),
+  getTeacherSubjects: (classId) => api.get(`/grades/teacher/subjects/${classId}`),
+  getStudentsWithGrades: (params) => api.get('/grades/students-with-grades', { params }),
   create: (data) => api.post('/grades', data),
   update: (id, data) => api.put(`/grades/${id}`, data),
   delete: (id) => api.delete(`/grades/${id}`),
