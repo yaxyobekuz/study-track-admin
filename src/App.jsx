@@ -10,6 +10,7 @@ import Classes from "./pages/Classes";
 import Subjects from "./pages/Subjects";
 import Schedules from "./pages/Schedules";
 import Grades from "./pages/Grades";
+import AddGrade from "./pages/AddGrade";
 import MyGrades from "./pages/MyGrades";
 
 // Layouts
@@ -74,6 +75,18 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
+
+          {/* Teacher routes */}
+          <Route
+            path="add-grade"
+            element={
+              <ProtectedRoute allowedRoles={["teacher"]}>
+                <AddGrade />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Owner and Teacher routes */}
           <Route
             path="grades"
             element={
