@@ -97,7 +97,7 @@ const DashboardLayout = () => {
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <div className="flex items-center">
-              <GraduationCap className="w-8 h-8 text-indigo-600" />
+              <GraduationCap className="w-8 h-8 text-indigo-600" strokeWidth={1.5} />
               <span className="ml-2 text-xl font-bold text-gray-900">
                 Study Tracker
               </span>
@@ -106,7 +106,7 @@ const DashboardLayout = () => {
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-gray-500 hover:text-gray-700"
             >
-              <X className="w-6 h-6" />
+              <X className="size-6" strokeWidth={1.5} />
             </button>
           </div>
 
@@ -115,7 +115,7 @@ const DashboardLayout = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-indigo-600" />
+                  <User className="size-6 text-indigo-600" strokeWidth={1.5} />
                 </div>
               </div>
               <div className="ml-3">
@@ -146,7 +146,7 @@ const DashboardLayout = () => {
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  <Icon className="w-5 h-5 mr-3" />
+                  <Icon className="size-5 mr-3" strokeWidth={1.5} />
                   {item.name}
                 </Link>
               );
@@ -159,7 +159,7 @@ const DashboardLayout = () => {
               onClick={handleLogout}
               className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors"
             >
-              <LogOut className="w-5 h-5 mr-3" />
+              <LogOut className="size-5 mr-3" strokeWidth={1.5} />
               Chiqish
             </button>
           </div>
@@ -175,7 +175,7 @@ const DashboardLayout = () => {
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden text-gray-500 hover:text-gray-700"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="size-6" strokeWidth={1.5} />
             </button>
 
             <div className="flex-1 lg:flex-none">

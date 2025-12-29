@@ -121,7 +121,7 @@ const Dashboard = () => {
                     <div
                       className={`flex-shrink-0 p-3 rounded-lg ${stat.color}`}
                     >
-                      <Icon className="w-6 h-6 text-white" />
+                      <Icon className="size-6 text-white" strokeWidth={1.5} />
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">
@@ -151,7 +151,7 @@ const Dashboard = () => {
                 href="/users"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <Users className="w-6 h-6 text-indigo-600 mr-3" />
+                <Users className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
                 <div>
                   <p className="font-medium text-gray-900">Foydalanuvchilar</p>
                   <p className="text-sm text-gray-500">Boshqarish</p>
@@ -161,7 +161,7 @@ const Dashboard = () => {
                 href="/classes"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <GraduationCap className="w-6 h-6 text-indigo-600 mr-3" />
+                <GraduationCap className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
                 <div>
                   <p className="font-medium text-gray-900">Sinflar</p>
                   <p className="text-sm text-gray-500">Boshqarish</p>
@@ -171,7 +171,7 @@ const Dashboard = () => {
                 href="/schedules"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <BookOpen className="w-6 h-6 text-indigo-600 mr-3" />
+                <BookOpen className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
                 <div>
                   <p className="font-medium text-gray-900">Dars jadvali</p>
                   <p className="text-sm text-gray-500">Sozlash</p>
@@ -186,7 +186,7 @@ const Dashboard = () => {
                 href="/my-schedule"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <BookOpen className="w-6 h-6 text-indigo-600 mr-3" />
+                <BookOpen className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
                 <div>
                   <p className="font-medium text-gray-900">Dars jadvalim</p>
                   <p className="text-sm text-gray-500">Ko'rish</p>
@@ -196,7 +196,7 @@ const Dashboard = () => {
                 href="/grades"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <ClipboardList className="w-6 h-6 text-indigo-600 mr-3" />
+                <ClipboardList className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
                 <div>
                   <p className="font-medium text-gray-900">Baholar</p>
                   <p className="text-sm text-gray-500">Boshqarish</p>
@@ -210,7 +210,7 @@ const Dashboard = () => {
               href="/my-grades"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              <ClipboardList className="w-6 h-6 text-indigo-600 mr-3" />
+              <ClipboardList className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
               <div>
                 <p className="font-medium text-gray-900">Baholarim</p>
                 <p className="text-sm text-gray-500">Ko'rish</p>

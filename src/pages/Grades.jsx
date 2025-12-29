@@ -165,7 +165,7 @@ const Grades = () => {
           onClick={() => setShowFilters(!showFilters)}
           className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
         >
-          <Filter className="w-5 h-5 mr-2" />
+          <Filter className="size-5 mr-2" strokeWidth={1.5} />
           {showFilters ? "Filterni yashirish" : "Filterni ko'rsatish"}
         </button>
       </div>
@@ -234,7 +234,7 @@ const Grades = () => {
       {/* Grades View */}
       {!filters.classId ? (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
-          <Calendar className="w-12 h-12 text-blue-600 mx-auto mb-3" />
+          <Calendar className="w-12 h-12 text-blue-600 mx-auto mb-3" strokeWidth={1.5} />
           <p className="text-blue-800 text-lg">
             Baholarni ko'rish uchun sinf va sana tanlang
           </p>
@@ -245,7 +245,7 @@ const Grades = () => {
         </div>
       ) : students.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-8 text-center">
-          <Eye className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <Eye className="w-12 h-12 text-gray-400 mx-auto mb-3" strokeWidth={1.5} />
           <p className="text-gray-500">Tanlangan kun uchun baholar topilmadi</p>
         </div>
       ) : (

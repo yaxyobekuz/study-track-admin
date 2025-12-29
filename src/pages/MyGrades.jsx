@@ -69,7 +69,7 @@ const MyGrades = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0 p-3 rounded-lg bg-indigo-100">
-              <TrendingUp className="w-6 h-6 text-indigo-600" />
+              <TrendingUp className="size-6 text-indigo-600" strokeWidth={1.5} />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Umumiy o'rtacha</p>
@@ -83,7 +83,7 @@ const MyGrades = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0 p-3 rounded-lg bg-green-100">
-              <BookOpen className="w-6 h-6 text-green-600" />
+              <BookOpen className="size-6 text-green-600" strokeWidth={1.5} />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Fanlar soni</p>
@@ -95,7 +95,7 @@ const MyGrades = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0 p-3 rounded-lg bg-purple-100">
-              <Calendar className="w-6 h-6 text-purple-600" />
+              <Calendar className="size-6 text-purple-600" strokeWidth={1.5} />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Jami baholar</p>

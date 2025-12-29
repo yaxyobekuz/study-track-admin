@@ -322,14 +322,14 @@ const AddGrade = () => {
                               }
                               className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700"
                             >
-                              <Check className="w-4 h-4 mr-1" />
+                              <Check className="w-4 h-4 mr-1" strokeWidth={1.5} />
                               Saqlash
                             </button>
                             <button
                               onClick={cancelEditing}
                               className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
                             >
-                              <X className="w-4 h-4 mr-1" />
+                              <X className="w-4 h-4 mr-1" strokeWidth={1.5} />
                               Bekor
                             </button>
                           </div>
@@ -344,12 +344,12 @@ const AddGrade = () => {
                           >
                             {hasGrade ? (
                               <>
-                                <Edit2 className="w-4 h-4 mr-1" />
+                                <Edit2 className="w-4 h-4 mr-1" strokeWidth={1.5} />
                                 Tahrirlash
                               </>
                             ) : (
                               <>
-                                <Save className="w-4 h-4 mr-1" />
+                                <Save className="w-4 h-4 mr-1" strokeWidth={1.5} />
                                 Baho qo'yish
                               </>
                             )}

@@ -160,7 +160,7 @@ const Users = () => {
           onClick={() => handleOpenModal()}
           className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
         >
-          <Plus className="w-5 h-5 mr-2" />
+          <Plus className="size-5 mr-2" strokeWidth={1.5} />
           Yangi foydalanuvchi
         </button>
       </div>
@@ -235,7 +235,7 @@ const Users = () => {
                         onClick={() => handleOpenModal(user)}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        <Edit className="w-5 h-5" />
+                        <Edit className="size-5" strokeWidth={1.5} />
                       </button>
                       <button
                         onClick={() => {
@@ -244,13 +244,13 @@ const Users = () => {
                         }}
                         className="text-orange-600 hover:text-orange-900"
                       >
-                        <Key className="w-5 h-5" />
+                        <Key className="size-5" strokeWidth={1.5} />
                       </button>
                       <button
                         onClick={() => handleDelete(user._id)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="size-5" strokeWidth={1.5} />
                       </button>
                     </div>
                   )}

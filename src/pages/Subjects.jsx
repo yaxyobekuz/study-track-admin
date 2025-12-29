@@ -95,7 +95,7 @@ const Subjects = () => {
           onClick={() => handleOpenModal()}
           className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
         >
-          <Plus className="w-5 h-5 mr-2" />
+          <Plus className="size-5 mr-2" strokeWidth={1.5} />
           Yangi fan
         </button>
       </div>
@@ -114,13 +114,13 @@ const Subjects = () => {
                   onClick={() => handleOpenModal(subject)}
                   className="text-indigo-600 hover:text-indigo-900"
                 >
-                  <Edit className="w-5 h-5" />
+                  <Edit className="size-5" strokeWidth={1.5} />
                 </button>
                 <button
                   onClick={() => handleDelete(subject._id)}
                   className="text-red-600 hover:text-red-900"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="size-5" strokeWidth={1.5} />
                 </button>
               </div>
             </div>

@@ -60,7 +60,7 @@ const MySchedule = () => {
 
       {Object.keys(schedulesByClass).length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-          <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" strokeWidth={1.5} />
           <p className="text-gray-500 text-lg">
             Sizga hali dars jadvali tayinlanmagan
           </p>
@@ -93,7 +93,7 @@ const MySchedule = () => {
                           className="border border-gray-200 rounded-lg p-4"
                         >
                           <div className="flex items-center mb-3">
-                            <Calendar className="w-5 h-5 text-indigo-600 mr-2" />
+                            <Calendar className="size-5 text-indigo-600 mr-2" strokeWidth={1.5} />
                             <h3 className="font-semibold text-gray-900">
                               {day.label}
                             </h3>
