@@ -63,4 +63,9 @@
   body {
     @apply bg-white;
   }
+
+  input,
+  select {
+    @apply h-11;
+  }
 }
