@@ -147,25 +147,6 @@ const AddGrade = () => {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Baho qo'yish</h1>
-        <p className="text-gray-600">
-          Sinf va fan tanlab, o'quvchilarga baho qo'ying (faqat bugungi kun
-          uchun)
-        </p>
-        <div className="mt-2 flex items-center gap-2">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
-            📅{" "}
-            {new Date().toLocaleDateString("uz-UZ", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </span>
-        </div>
-      </div>
-
       {/* Filters */}
       <Card className="mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
