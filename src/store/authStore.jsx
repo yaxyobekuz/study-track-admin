@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { authAPI } from '../api/client';
 
 const AuthContext = createContext(null);
 
@@ -9,21 +10,33 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // LocalStorage dan ma'lumotlarni yuklash
+    // Faqat token yuklash va serverdan user ma'lumotlarini olish
     const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
 
-    if (storedToken && storedUser) {
+    if (storedToken) {
       setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
+      fetchUserProfile();
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await authAPI.getMe();
+      setUser(response.data.data);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Profil yuklanmadi:', error);
+      // Token noto'g'ri bo'lsa - logout
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const login = (userData, userToken) => {
     localStorage.setItem('token', userToken);
-    localStorage.setItem('user', JSON.stringify(userData));
     setToken(userToken);
     setUser(userData);
     setIsAuthenticated(true);
@@ -31,14 +44,12 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
     setIsAuthenticated(false);
   };
 
   const updateUser = (userData) => {
-    localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
 
