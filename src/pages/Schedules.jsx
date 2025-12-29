@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
+import Card from "@/components/Card";
 
 const DAYS = [
   { value: "dushanba", label: "Dushanba" },
@@ -186,20 +187,17 @@ const Schedules = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Dars jadvali</h1>
-        <select
-          value={selectedClass}
-          onChange={(e) => setSelectedClass(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        >
-          {classes.map((cls) => (
-            <option key={cls._id} value={cls._id}>
-              {cls.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      <select
+        value={selectedClass}
+        onChange={(e) => setSelectedClass(e.target.value)}
+        className="mb-6 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+      >
+        {classes.map((cls) => (
+          <option key={cls._id} value={cls._id}>
+            {cls.name + " sinf"}
+          </option>
+        ))}
+      </select>
 
       {/* Schedule Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -207,24 +205,30 @@ const Schedules = () => {
           const schedule = getScheduleForDay(day.value);
 
           return (
-            <div key={day.value} className="bg-white rounded-lg shadow-sm p-6">
+            <Card key={day.value}>
               <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center">
-                  <Calendar className="w-5 h-5 text-indigo-600 mr-2" />
+                {/*  */}
+                <div className="flex items-center gap-3.5">
+                  <Calendar
+                    strokeWidth={1.5}
+                    className="size-5 text-indigo-600"
+                  />
                   <h3 className="text-lg font-semibold text-gray-900">
                     {day.label}
                   </h3>
                 </div>
+
+                {/* Owner Controls */}
                 {isOwner && (
-                  <div className="flex space-x-2">
+                  <div className="flex items-center gap-3.5">
                     <button
                       onClick={() => handleOpenModal(day.value, schedule)}
                       className="text-indigo-600 hover:text-indigo-900"
                     >
                       {schedule ? (
-                        <Edit className="w-5 h-5" />
+                        <Edit className="size-5" strokeWidth={1.5} />
                       ) : (
-                        <Plus className="w-5 h-5" />
+                        <Plus className="size-5" strokeWidth={1.5} />
                       )}
                     </button>
                     {schedule && (
@@ -232,7 +236,7 @@ const Schedules = () => {
                         onClick={() => handleDeleteSchedule(schedule._id)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="size-5" strokeWidth={1.5} />
                       </button>
                     )}
                   </div>
@@ -261,7 +265,7 @@ const Schedules = () => {
                   Jadval yo'q
                 </p>
               )}
-            </div>
+            </Card>
           );
         })}
       </div>
@@ -278,10 +282,7 @@ const Schedules = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-4">
               {daySubjects.map((subj, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-lg"
-                >
+                <div key={index} className="border border-gray-200 rounded-lg">
                   <div className="flex justify-between items-center mb-3 px-4 py-2 rounded-t-lg bg-gray-100">
                     <h4 className="font-medium text-gray-900">
                       {index + 1}-dars
@@ -292,7 +293,7 @@ const Schedules = () => {
                         onClick={() => removeSubjectRow(index)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" strokeWidth={1.5} />
                       </button>
                     )}
                   </div>
