@@ -1,8 +1,14 @@
-import { useState, useEffect } from 'react';
-import { subjectsAPI } from '../api/client';
-import { toast } from 'sonner';
-import { Plus, Edit, Trash2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { useState, useEffect } from "react";
+import { subjectsAPI } from "../api/client";
+import { toast } from "sonner";
+import { Plus, Edit, Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
+import Card from "@/components/Card";
 
 const Subjects = () => {
   const [subjects, setSubjects] = useState([]);
@@ -10,8 +16,8 @@ const Subjects = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
   });
 
   useEffect(() => {
@@ -23,7 +29,7 @@ const Subjects = () => {
       const response = await subjectsAPI.getAll();
       setSubjects(response.data.data);
     } catch (error) {
-      toast.error('Fanlarni yuklashda xatolik');
+      toast.error("Fanlarni yuklashda xatolik");
     } finally {
       setLoading(false);
     }
@@ -34,13 +40,13 @@ const Subjects = () => {
       setEditingSubject(subject);
       setFormData({
         name: subject.name,
-        description: subject.description || '',
+        description: subject.description || "",
       });
     } else {
       setEditingSubject(null);
       setFormData({
-        name: '',
-        description: '',
+        name: "",
+        description: "",
       });
     }
     setIsModalOpen(true);
@@ -49,7 +55,7 @@ const Subjects = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingSubject(null);
-    setFormData({ name: '', description: '' });
+    setFormData({ name: "", description: "" });
   };
 
   const handleSubmit = async (e) => {
@@ -58,28 +64,28 @@ const Subjects = () => {
     try {
       if (editingSubject) {
         await subjectsAPI.update(editingSubject._id, formData);
-        toast.success('Fan muvaffaqiyatli yangilandi');
+        toast.success("Fan muvaffaqiyatli yangilandi");
       } else {
         await subjectsAPI.create(formData);
-        toast.success('Fan muvaffaqiyatli yaratildi');
+        toast.success("Fan muvaffaqiyatli yaratildi");
       }
 
       handleCloseModal();
       fetchSubjects();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Xatolik yuz berdi');
+      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Rostdan ham o\'chirmoqchimisiz?')) return;
+    if (!confirm("Rostdan ham o'chirmoqchimisiz?")) return;
 
     try {
       await subjectsAPI.delete(id);
-      toast.success('Fan muvaffaqiyatli o\'chirildi');
+      toast.success("Fan muvaffaqiyatli o'chirildi");
       fetchSubjects();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'O\'chirishda xatolik');
+      toast.error(error.response?.data?.message || "O'chirishda xatolik");
     }
   };
 
@@ -89,27 +95,24 @@ const Subjects = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Fanlar</h1>
-        <button
-          onClick={() => handleOpenModal()}
-          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-        >
-          <Plus className="size-5 mr-2" strokeWidth={1.5} />
-          Yangi fan
-        </button>
-      </div>
+      <button
+        onClick={handleOpenModal}
+        className="flex items-center px-4 py-2 mb-6 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+      >
+        <Plus className="size-5 mr-2" strokeWidth={1.5} />
+        Yangi fan
+      </button>
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {subjects.map((subject) => (
-          <div
-            key={subject._id}
-            className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
-          >
+          <Card key={subject._id}>
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">{subject.name}</h3>
-              <div className="flex space-x-2">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {subject.name}
+              </h3>
+
+              <div className="flex gap-3.5">
                 <button
                   onClick={() => handleOpenModal(subject)}
                   className="text-indigo-600 hover:text-indigo-900"
@@ -124,21 +127,23 @@ const Subjects = () => {
                 </button>
               </div>
             </div>
+
             {subject.description && (
               <p className="text-sm text-gray-600">{subject.description}</p>
             )}
+
             <div className="mt-4 pt-4 border-t border-gray-200">
               <span
                 className={`px-2 py-1 text-xs font-semibold rounded-full ${
                   subject.isActive
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
                 }`}
               >
-                {subject.isActive ? 'Faol' : 'Faol emas'}
+                {subject.isActive ? "Faol" : "Faol emas"}
               </span>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 
@@ -153,7 +158,7 @@ const Subjects = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingSubject ? 'Fanni tahrirlash' : 'Yangi fan'}
+              {editingSubject ? "Fanni tahrirlash" : "Yangi fan"}
             </DialogTitle>
           </DialogHeader>
 
@@ -166,7 +171,9 @@ const Subjects = () => {
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Masalan: Matematika"
               />
@@ -178,7 +185,9 @@ const Subjects = () => {
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 rows="3"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Fan haqida qisqacha ma'lumot"
@@ -197,7 +206,7 @@ const Subjects = () => {
                 type="submit"
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
-                {editingSubject ? 'Saqlash' : 'Yaratish'}
+                {editingSubject ? "Saqlash" : "Yaratish"}
               </button>
             </div>
           </form>

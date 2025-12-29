@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
+import Card from "@/components/Card";
 
 const Classes = () => {
   const [classes, setClasses] = useState([]);
@@ -104,34 +105,24 @@ const Classes = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Sinflar</h1>
-        <button
-          onClick={() => handleOpenModal()}
-          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-        >
-          <Plus className="size-5 mr-2" strokeWidth={1.5} />
-          Yangi sinf
-        </button>
-      </div>
+      <button
+        onClick={() => handleOpenModal()}
+        className="flex items-center px-4 py-2 mb-6 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+      >
+        <Plus className="size-5 mr-2" strokeWidth={1.5} />
+        Yangi sinf
+      </button>
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {classes.map((classItem) => (
-          <div
-            key={classItem._id}
-            className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
-          >
+          <Card key={classItem._id}>
             <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900">
-                  {classItem.name}
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  {classItem.academicYear} o'quv yili
-                </p>
-              </div>
-              <div className="flex space-x-2">
+              <h3 className="text-2xl font-bold text-gray-900">
+                {classItem.name}
+              </h3>
+
+              <div className="flex gap-3.5">
                 <button
                   onClick={() => handleOpenModal(classItem)}
                   className="text-indigo-600 hover:text-indigo-900"
@@ -147,7 +138,7 @@ const Classes = () => {
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="flex items-center justify-between pt-4 border-t space-y-3">
               <div>
                 <span
                   className={`px-2 py-1 text-xs font-semibold rounded-full ${
@@ -159,8 +150,12 @@ const Classes = () => {
                   {classItem.isActive ? "Faol" : "Faol emas"}
                 </span>
               </div>
+
+              <p className="text-sm text-gray-500">
+                O'quv yili {classItem.academicYear}
+              </p>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 

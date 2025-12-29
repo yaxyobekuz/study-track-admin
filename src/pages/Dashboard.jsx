@@ -2,6 +2,7 @@ import { useAuth } from "../store/authStore";
 import { Users, GraduationCap, BookOpen, ClipboardList } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usersAPI, classesAPI, subjectsAPI, gradesAPI } from "../api/client";
+import Card from "@/components/Card";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -85,18 +86,19 @@ const Dashboard = () => {
   return (
     <div>
       {/* Welcome Section */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h2 className="text-3xl font-bold text-gray-900">
           Xush kelibsiz, {user?.firstName}!
         </h2>
         <p className="mt-2 text-gray-600">
-          Rol: <span className="font-medium">{getRoleLabel(user?.role)}</span>
+          Rolingiz:{" "}
+          <span className="font-medium">{getRoleLabel(user?.role)}</span>
         </p>
       </div>
 
       {/* Stats Cards - Faqat Owner uchun */}
       {user?.role === "owner" && (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
           {loading ? (
             <>
               {[1, 2, 3, 4].map((i) => (
@@ -113,10 +115,7 @@ const Dashboard = () => {
             statsCards.map((stat) => {
               const Icon = stat.icon;
               return (
-                <div
-                  key={stat.name}
-                  className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
-                >
+                <Card key={stat.name}>
                   <div className="flex items-center">
                     <div
                       className={`flex-shrink-0 p-3 rounded-lg ${stat.color}`}
@@ -132,7 +131,7 @@ const Dashboard = () => {
                       </p>
                     </div>
                   </div>
-                </div>
+                </Card>
               );
             })
           )}
@@ -140,18 +139,22 @@ const Dashboard = () => {
       )}
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <Card>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Tezkor harakatlar
         </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {user?.role === "owner" && (
             <>
               <a
                 href="/users"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <Users className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
+                <Users
+                  className="size-6 text-indigo-600 mr-3"
+                  strokeWidth={1.5}
+                />
                 <div>
                   <p className="font-medium text-gray-900">Foydalanuvchilar</p>
                   <p className="text-sm text-gray-500">Boshqarish</p>
@@ -161,7 +164,10 @@ const Dashboard = () => {
                 href="/classes"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <GraduationCap className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
+                <GraduationCap
+                  className="size-6 text-indigo-600 mr-3"
+                  strokeWidth={1.5}
+                />
                 <div>
                   <p className="font-medium text-gray-900">Sinflar</p>
                   <p className="text-sm text-gray-500">Boshqarish</p>
@@ -171,7 +177,10 @@ const Dashboard = () => {
                 href="/schedules"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <BookOpen className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
+                <BookOpen
+                  className="size-6 text-indigo-600 mr-3"
+                  strokeWidth={1.5}
+                />
                 <div>
                   <p className="font-medium text-gray-900">Dars jadvali</p>
                   <p className="text-sm text-gray-500">Sozlash</p>
@@ -186,7 +195,10 @@ const Dashboard = () => {
                 href="/my-schedule"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <BookOpen className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
+                <BookOpen
+                  className="size-6 text-indigo-600 mr-3"
+                  strokeWidth={1.5}
+                />
                 <div>
                   <p className="font-medium text-gray-900">Dars jadvalim</p>
                   <p className="text-sm text-gray-500">Ko'rish</p>
@@ -196,7 +208,10 @@ const Dashboard = () => {
                 href="/grades"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <ClipboardList className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
+                <ClipboardList
+                  className="size-6 text-indigo-600 mr-3"
+                  strokeWidth={1.5}
+                />
                 <div>
                   <p className="font-medium text-gray-900">Baholar</p>
                   <p className="text-sm text-gray-500">Boshqarish</p>
@@ -210,7 +225,10 @@ const Dashboard = () => {
               href="/my-grades"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              <ClipboardList className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
+              <ClipboardList
+                className="size-6 text-indigo-600 mr-3"
+                strokeWidth={1.5}
+              />
               <div>
                 <p className="font-medium text-gray-900">Baholarim</p>
                 <p className="text-sm text-gray-500">Ko'rish</p>
@@ -218,7 +236,7 @@ const Dashboard = () => {
             </a>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

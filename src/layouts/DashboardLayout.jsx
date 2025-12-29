@@ -97,7 +97,10 @@ const DashboardLayout = () => {
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <div className="flex items-center">
-              <GraduationCap className="w-8 h-8 text-indigo-600" strokeWidth={1.5} />
+              <GraduationCap
+                className="w-8 h-8 text-indigo-600"
+                strokeWidth={1.5}
+              />
               <span className="ml-2 text-xl font-bold text-gray-900">
                 Study Tracker
               </span>
@@ -118,8 +121,9 @@ const DashboardLayout = () => {
                   <User className="size-6 text-indigo-600" strokeWidth={1.5} />
                 </div>
               </div>
+
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="max-w-[155px] text-sm font-medium text-gray-900 truncate">
                   {user?.fullName}
                 </p>
                 <p className="text-xs text-gray-500">

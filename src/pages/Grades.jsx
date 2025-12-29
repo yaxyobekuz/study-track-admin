@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
-import { gradesAPI, classesAPI, subjectsAPI, schedulesAPI } from "../api/client";
+import {
+  gradesAPI,
+  classesAPI,
+  subjectsAPI,
+  schedulesAPI,
+} from "../api/client";
 import { useAuth } from "../store/authStore";
 import { toast } from "sonner";
-import { Filter, Eye, Calendar } from "lucide-react";
+import { Eye, Calendar } from "lucide-react";
+import Card from "@/components/Card";
 
 const Grades = () => {
   const { user } = useAuth();
@@ -18,7 +24,7 @@ const Grades = () => {
     const savedClassId = localStorage.getItem("grades_classId");
     const savedSubjectId = localStorage.getItem("grades_subjectId");
     const savedDate = localStorage.getItem("grades_date");
-    
+
     return {
       classId: savedClassId || "",
       subjectId: savedSubjectId || "",
@@ -73,7 +79,15 @@ const Grades = () => {
   const fetchTodaySubjects = async () => {
     try {
       const date = new Date(filters.date);
-      const daysUz = ["yakshanba", "dushanba", "seshanba", "chorshanba", "payshanba", "juma", "shanba"];
+      const daysUz = [
+        "yakshanba",
+        "dushanba",
+        "seshanba",
+        "chorshanba",
+        "payshanba",
+        "juma",
+        "shanba",
+      ];
       const dayName = daysUz[date.getDay()];
 
       if (dayName === "yakshanba") {
@@ -85,8 +99,8 @@ const Grades = () => {
       if (response.data.data && response.data.data.subjects) {
         // Extract unique subjects from schedule
         const scheduleSubjects = response.data.data.subjects
-          .filter(s => s.subject)
-          .map(s => s.subject);
+          .filter((s) => s.subject)
+          .map((s) => s.subject);
         setTodaySubjects(scheduleSubjects);
       } else {
         setTodaySubjects([]);
@@ -154,26 +168,10 @@ const Grades = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Baholar Jurnali</h1>
-          <p className="text-gray-600 mt-1">
-            Sinf bo'yicha baholarni ko'rish va monitoring qilish
-          </p>
-        </div>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-        >
-          <Filter className="size-5 mr-2" strokeWidth={1.5} />
-          {showFilters ? "Filterni yashirish" : "Filterni ko'rsatish"}
-        </button>
-      </div>
-
       {/* Filters */}
       {showFilters && (
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Sinf *
@@ -228,45 +226,36 @@ const Grades = () => {
               />
             </div>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Grades View */}
       {!filters.classId ? (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
-          <Calendar className="w-12 h-12 text-blue-600 mx-auto mb-3" strokeWidth={1.5} />
+        <Card className="text-center">
+          <Calendar
+            className="w-12 h-12 text-blue-600 mx-auto mb-3"
+            strokeWidth={1.5}
+          />
           <p className="text-blue-800 text-lg">
             Baholarni ko'rish uchun sinf va sana tanlang
           </p>
-        </div>
+        </Card>
       ) : loading ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
+        <Card className="text-center">
           <p className="text-gray-500">Yuklanmoqda...</p>
-        </div>
+        </Card>
       ) : students.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <Eye className="w-12 h-12 text-gray-400 mx-auto mb-3" strokeWidth={1.5} />
+        <Card className="text-center">
+          <Eye
+            className="w-12 h-12 text-gray-400 mx-auto mb-3"
+            strokeWidth={1.5}
+          />
           <p className="text-gray-500">Tanlangan kun uchun baholar topilmadi</p>
-        </div>
+        </Card>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
-              {classes.find((c) => c._id === filters.classId)?.name} - Baholar
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Sana: {new Date(filters.date).toLocaleDateString("uz-UZ")}
-              {filters.subjectId &&
-                ` • Fan: ${
-                  subjects.find((s) => s._id === filters.subjectId)?.name
-                }`}
-              {!filters.subjectId && todaySubjects.length === 0 && (
-                <span className="text-amber-600 font-medium"> • Tanlangan kun uchun dars jadvali topilmadi</span>
-              )}
-            </p>
-          </div>
-
-          <div className="overflow-x-auto">
+        <Card className="overflow-hidden">
+          {/* Table */}
+          <div className="overflow-x-auto rounded-t-lg">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -318,10 +307,10 @@ const Grades = () => {
                       key={studentData.student._id}
                       className="hover:bg-gray-50"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 sticky left-0 bg-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 sticky left-0">
                         {index + 1}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap sticky left-12 bg-white">
+                      <td className="px-6 py-4 whitespace-nowrap sticky left-12">
                         <div className="text-sm font-medium text-gray-900">
                           {studentData.student.firstName}{" "}
                           {studentData.student.lastName}
@@ -415,12 +404,13 @@ const Grades = () => {
             </table>
           </div>
 
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+          {/* Total */}
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
             <p className="text-sm text-gray-600">
               Jami {students.length} ta o'quvchi
             </p>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

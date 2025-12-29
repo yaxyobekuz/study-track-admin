@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
+import Card from "@/components/Card";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -154,112 +155,111 @@ const Users = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Foydalanuvchilar</h1>
-        <button
-          onClick={() => handleOpenModal()}
-          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-        >
-          <Plus className="size-5 mr-2" strokeWidth={1.5} />
-          Yangi foydalanuvchi
-        </button>
-      </div>
+      <button
+        onClick={() => handleOpenModal()}
+        className="flex items-center px-4 py-2 mb-6 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+      >
+        <Plus className="size-5 mr-2" strokeWidth={1.5} />
+        Yangi foydalanuvchi
+      </button>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                F.I.O
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Username
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Rol
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Sinf
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Holat
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                Harakatlar
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {users.map((user) => (
-              <tr key={user._id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {user.fullName}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{user.username}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`${
-                      user.role === "teacher"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-blue-100 text-blue-800"
-                    } px-2 inline-flex text-xs leading-5 font-semibold rounded-full`}
-                  >
-                    {getRoleLabel(user.role)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">
-                  {user.role === "student" && user.class
-                    ? user.class.name
-                    : "-"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.isActive
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {user.isActive ? "Faol" : "Faol emas"}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  {user.role !== "owner" && (
-                    <div className="flex justify-end space-x-2">
-                      <button
-                        onClick={() => handleOpenModal(user)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        <Edit className="size-5" strokeWidth={1.5} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setResetPasswordUser(user);
-                          setIsResetPasswordOpen(true);
-                        }}
-                        className="text-orange-600 hover:text-orange-900"
-                      >
-                        <Key className="size-5" strokeWidth={1.5} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user._id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 className="size-5" strokeWidth={1.5} />
-                      </button>
-                    </div>
-                  )}
-                </td>
+      <Card>
+        <div className="bg-white rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  F.I.O
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Username
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Rol
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Sinf
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Holat
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  Harakatlar
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {users.map((user) => (
+                <tr key={user._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {user.fullName}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">{user.username}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`${
+                        user.role === "teacher"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-blue-100 text-blue-800"
+                      } px-2 inline-flex text-xs leading-5 font-semibold rounded-full`}
+                    >
+                      {getRoleLabel(user.role)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {user.role === "student" && user.class
+                      ? user.class.name
+                      : "-"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.isActive
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {user.isActive ? "Faol" : "Faol emas"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    {user.role !== "owner" && (
+                      <div className="flex justify-end space-x-2">
+                        <button
+                          onClick={() => handleOpenModal(user)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          <Edit className="size-5" strokeWidth={1.5} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setResetPasswordUser(user);
+                            setIsResetPasswordOpen(true);
+                          }}
+                          className="text-orange-600 hover:text-orange-900"
+                        >
+                          <Key className="size-5" strokeWidth={1.5} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user._id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          <Trash2 className="size-5" strokeWidth={1.5} />
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
       {/* Create/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
