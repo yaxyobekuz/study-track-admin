@@ -3,6 +3,7 @@ import { gradesAPI } from "../api/client";
 import { toast } from "sonner";
 import { TrendingUp, Calendar, BookOpen } from "lucide-react";
 import Card from "@/components/Card";
+import { formatDateUZ } from "../utils/date.utils";
 
 const MyGrades = () => {
   const [data, setData] = useState(null);
@@ -239,11 +240,7 @@ const MyGrades = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">
-                      {new Date(grade.date).toLocaleDateString("uz-UZ", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {formatDateUZ(grade.date)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

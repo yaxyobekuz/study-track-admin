@@ -15,6 +15,7 @@ import {
   Eye,
 } from "lucide-react";
 import { useState } from "react";
+import { formatDateUZ } from "@/utils/date.utils";
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
@@ -191,11 +192,7 @@ const DashboardLayout = () => {
 
             <div className="hidden lg:flex items-center space-x-4">
               <span className="text-sm text-gray-500">
-                {new Date().toLocaleDateString("uz-UZ", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                {formatDateUZ(new Date())}
               </span>
             </div>
           </div>
