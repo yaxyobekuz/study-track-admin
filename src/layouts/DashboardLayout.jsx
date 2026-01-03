@@ -1,21 +1,30 @@
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../store/authStore";
+// Icons
 import {
-  Users,
-  GraduationCap,
-  BookOpen,
-  Calendar,
-  ClipboardList,
-  LogOut,
-  User,
-  Menu,
   X,
-  Home,
-  PlusCircle,
   Eye,
+  Home,
+  Menu,
+  User,
+  Users,
+  LogOut,
+  Calendar,
+  BookOpen,
+  PlusCircle,
+  GraduationCap,
+  ClipboardList,
 } from "lucide-react";
+
+// React
 import { useState } from "react";
+
+// Store
+import { useAuth } from "../store/authStore";
+
+// Utils
 import { formatDateUZ } from "@/utils/date.utils";
+
+// Router
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();

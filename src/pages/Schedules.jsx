@@ -1,15 +1,26 @@
-import { useState, useEffect } from "react";
-import { schedulesAPI, classesAPI, subjectsAPI, usersAPI } from "../api/client";
-import { useAuth } from "../store/authStore";
+// UI
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Calendar } from "lucide-react";
+
+// Components
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
   DialogTitle,
+  DialogHeader,
+  DialogContent,
 } from "../components/ui/dialog";
 import Card from "@/components/Card";
+
+// React
+import { useState, useEffect } from "react";
+
+// Store
+import { useAuth } from "../store/authStore";
+
+// Icons
+import { Plus, Edit, Trash2, Calendar } from "lucide-react";
+
+// API
+import { schedulesAPI, classesAPI, subjectsAPI, usersAPI } from "../api/client";
 
 const DAYS = [
   { value: "dushanba", label: "Dushanba" },

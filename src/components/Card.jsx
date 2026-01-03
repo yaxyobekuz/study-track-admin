@@ -1,4 +1,4 @@
-// Utilities
+// Utils
 import { cn } from "@/utils/tailwind.utils";
 
 const Card = ({ className = "", children }) => {

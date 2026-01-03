@@ -1,4 +1,7 @@
+// Router
 import { Navigate } from "react-router-dom";
+
+// Store
 import { useAuth } from "../store/authStore";
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {

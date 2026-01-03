@@ -1,14 +1,25 @@
+// React
 import { useState, useEffect } from "react";
+
+// UI
+import { toast } from "sonner";
+
+// Icons
+import { Eye, Calendar } from "lucide-react";
+
+// Store
+import { useAuth } from "../store/authStore";
+
+// Components
+import Card from "@/components/Card";
+
+// API
 import {
   gradesAPI,
   classesAPI,
   subjectsAPI,
   schedulesAPI,
 } from "../api/client";
-import { useAuth } from "../store/authStore";
-import { toast } from "sonner";
-import { Eye, Calendar } from "lucide-react";
-import Card from "@/components/Card";
 
 const Grades = () => {
   const { user } = useAuth();

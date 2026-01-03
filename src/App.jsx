@@ -1,23 +1,28 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+// UI
 import { Toaster } from "sonner";
-import { AuthProvider, useAuth } from "./store/authStore";
 
 // Pages
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
+import Grades from "./pages/Grades";
 import Classes from "./pages/Classes";
 import Subjects from "./pages/Subjects";
-import Schedules from "./pages/Schedules";
-import Grades from "./pages/Grades";
 import AddGrade from "./pages/AddGrade";
 import MyGrades from "./pages/MyGrades";
+import Schedules from "./pages/Schedules";
+import Dashboard from "./pages/Dashboard";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
 
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
+
+// Store
+import { AuthProvider, useAuth } from "./store/authStore";
+
+// Router
+import { Routes, Route, Navigate } from "react-router-dom";
 
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
@@ -85,7 +90,7 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-          
+
           {/* Owner and Teacher routes */}
           <Route
             path="grades"
@@ -105,8 +110,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-
-
         </Route>
 
         {/* 404 */}

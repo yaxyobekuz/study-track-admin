@@ -1,9 +1,20 @@
+// React
 import { useState, useEffect } from "react";
-import { gradesAPI } from "../api/client";
+
+// UI
 import { toast } from "sonner";
+
+// Icons
 import { TrendingUp, Calendar, BookOpen } from "lucide-react";
+
+// Components
 import Card from "@/components/Card";
+
+// Utils
 import { formatDateUZ } from "../utils/date.utils";
+
+// API
+import { gradesAPI } from "../api/client";
 
 const MyGrades = () => {
   const [data, setData] = useState(null);

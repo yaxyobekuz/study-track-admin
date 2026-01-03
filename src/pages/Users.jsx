@@ -1,14 +1,23 @@
-import { useState, useEffect } from "react";
-import { usersAPI, classesAPI } from "../api/client";
+// UI
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, Key, X } from "lucide-react";
+
+// Components
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
   DialogTitle,
+  DialogHeader,
+  DialogContent,
 } from "../components/ui/dialog";
 import Card from "@/components/Card";
+
+// React
+import { useState, useEffect } from "react";
+
+// API
+import { usersAPI, classesAPI } from "../api/client";
+
+// Icons
+import { Plus, Edit, Trash2, Key, X } from "lucide-react";
 
 const Users = () => {
   const [users, setUsers] = useState([]);

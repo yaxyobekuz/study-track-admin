@@ -1,10 +1,13 @@
+// Icons
 import {
-  CircleCheck,
   Info,
-  LoaderCircle,
   OctagonX,
+  CircleCheck,
+  LoaderCircle,
   TriangleAlert,
 } from "lucide-react";
+
+// UI
 import { useTheme } from "next-themes";
 import { Toaster as Sonner } from "sonner";
 
@@ -20,7 +23,9 @@ const Toaster = ({ ...props }) => {
         info: <Info className="size-4" strokeWidth={1.5} />,
         warning: <TriangleAlert className="size-4" strokeWidth={1.5} />,
         error: <OctagonX className="size-4" strokeWidth={1.5} />,
-        loading: <LoaderCircle className="size-4 animate-spin" strokeWidth={1.5} />,
+        loading: (
+          <LoaderCircle className="size-4 animate-spin" strokeWidth={1.5} />
+        ),
       }}
       toastOptions={{
         classNames: {

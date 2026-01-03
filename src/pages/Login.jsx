@@ -1,8 +1,17 @@
+// React
 import { useState } from 'react';
+
+// Router
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../store/authStore';
-import { authAPI } from '../api/client';
+
+// UI
 import { toast } from 'sonner';
+
+// Store
+import { useAuth } from '../store/authStore';
+
+// API
+import { authAPI } from '../api/client';
 
 const Login = () => {
   const navigate = useNavigate();

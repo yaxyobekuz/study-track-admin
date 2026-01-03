@@ -1,14 +1,23 @@
-import { useState, useEffect } from "react";
-import { subjectsAPI } from "../api/client";
+// UI
 import { toast } from "sonner";
-import { Plus, Edit, Trash2 } from "lucide-react";
+
+// Components
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
   DialogTitle,
+  DialogHeader,
+  DialogContent,
 } from "../components/ui/dialog";
 import Card from "@/components/Card";
+
+// API
+import { subjectsAPI } from "../api/client";
+
+// React
+import { useState, useEffect } from "react";
+
+// Icons
+import { Plus, Edit, Trash2 } from "lucide-react";
 
 const Subjects = () => {
   const [subjects, setSubjects] = useState([]);

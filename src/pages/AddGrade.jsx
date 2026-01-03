@@ -1,9 +1,20 @@
+// React
 import { useState, useEffect } from "react";
-import { gradesAPI, classesAPI, usersAPI } from "../api/client";
-import { useAuth } from "../store/authStore";
+
+// UI
 import { toast } from "sonner";
-import { Save, Edit2, Check, X } from "lucide-react";
+
+// Icons
+import { Check, Edit2, Save, X } from "lucide-react";
+
+// Store
+import { useAuth } from "../store/authStore";
+
+// Components
 import Card from "@/components/Card";
+
+// API
+import { gradesAPI, classesAPI } from "../api/client";
 
 const AddGrade = () => {
   const { user } = useAuth();

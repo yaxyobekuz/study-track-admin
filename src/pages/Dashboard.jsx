@@ -1,8 +1,17 @@
-import { useAuth } from "../store/authStore";
-import { Users, GraduationCap, BookOpen, ClipboardList } from "lucide-react";
+// React
 import { useEffect, useState } from "react";
-import { usersAPI, classesAPI, subjectsAPI, gradesAPI } from "../api/client";
+
+// Icons
+import { Users, GraduationCap, BookOpen, ClipboardList } from "lucide-react";
+
+// Store
+import { useAuth } from "../store/authStore";
+
+// Components
 import Card from "@/components/Card";
+
+// API
+import { usersAPI, classesAPI, subjectsAPI, gradesAPI } from "../api/client";
 
 const Dashboard = () => {
   const { user } = useAuth();

@@ -1,5 +1,8 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from '../api/client';
+// API
+import { authAPI } from "../api/client";
+
+// React
+import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
 
@@ -11,7 +14,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Faqat token yuklash va serverdan user ma'lumotlarini olish
-    const storedToken = localStorage.getItem('token');
+    const storedToken = localStorage.getItem("token");
 
     if (storedToken) {
       setToken(storedToken);
@@ -27,7 +30,7 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data.data);
       setIsAuthenticated(true);
     } catch (error) {
-      console.error('Profil yuklanmadi:', error);
+      console.error("Profil yuklanmadi:", error);
       // Token noto'g'ri bo'lsa - logout
       logout();
     } finally {
@@ -36,14 +39,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = (userData, userToken) => {
-    localStorage.setItem('token', userToken);
+    localStorage.setItem("token", userToken);
     setToken(userToken);
     setUser(userData);
     setIsAuthenticated(true);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setToken(null);
     setUser(null);
     setIsAuthenticated(false);
@@ -73,8 +76,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth hook AuthProvider ichida ishlatilishi kerak');
+    throw new Error("useAuth hook AuthProvider ichida ishlatilishi kerak");
   }
   return context;
 };
-

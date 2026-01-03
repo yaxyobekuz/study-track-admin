@@ -1,7 +1,13 @@
+// React
 import * as React from "react";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
+
+// Icons
 import { X } from "lucide-react";
 
+// UI
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+
+// Utils
 import { cn } from "@/utils/tailwind.utils";
 
 const Dialog = DialogPrimitive.Root;
