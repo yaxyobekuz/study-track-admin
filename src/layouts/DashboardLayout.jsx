@@ -33,7 +33,7 @@ import { getRoleLabel } from "@/helpers/role.helpers";
 import useArrayStore from "@/hooks/useArrayStore.hook";
 
 // API
-import { classesAPI, subjectsAPI } from "@/api/client";
+import { classesAPI, subjectsAPI, usersAPI } from "@/api/client";
 
 // Router
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
@@ -46,8 +46,11 @@ import DeleteUserModal from "../components/modal/deleteUser.modal";
 import CreateClassModal from "@/components/modal/createClass.modal";
 import DeleteClassModal from "../components/modal/deleteClass.modal";
 import EditSubjectModal from "../components/modal/editSubject.modal";
+import EditScheduleModal from "../components/modal/editSchedule.modal";
 import CreateSubjectModal from "../components/modal/createSubject.modal";
 import DeleteSubjectModal from "../components/modal/deleteSubject.modal";
+import CreateScheduleModal from "../components/modal/createSchedule.modal";
+import DeleteScheduleModal from "../components/modal/deleteSchedule.modal";
 import ResetUserPasswordModal from "../components/modal/resetUserPassword.modal";
 
 const DashboardLayout = () => {
@@ -253,6 +256,11 @@ const DashboardLayout = () => {
       <EditSubjectModal />
       <CreateSubjectModal />
       <DeleteSubjectModal />
+
+      {/* Schedule Modals */}
+      <EditScheduleModal />
+      <CreateScheduleModal />
+      <DeleteScheduleModal />
     </>
   );
 };
@@ -268,11 +276,13 @@ const actions = () => {
   } = useArrayStore();
   const classes = getCollectionData("classes");
   const subjects = getCollectionData("subjects");
+  const teachers = getCollectionData("teachers");
 
   // Initialize collection (pagination = false)
   useEffect(() => {
     if (!hasCollection("classes")) initialize(false, "classes");
     if (!hasCollection("subjects")) initialize(false, "subjects");
+    if (!hasCollection("teachers")) initialize(false, "teachers");
   }, [initialize, hasCollection]);
 
   const fetchClasses = () => {
@@ -301,10 +311,24 @@ const actions = () => {
       });
   };
 
+  const fetchTeachers = () => {
+    setCollectionLoadingState(true, "teachers");
+
+    usersAPI
+      .getAll({ role: "teacher" })
+      .then((res) => {
+        setCollection(res.data.data, null, "teachers");
+      })
+      .catch(() => {
+        setCollectionErrorState(true, "teachers");
+      });
+  };
+
   useEffect(() => {
     !classes?.length && fetchClasses();
     !subjects?.length && fetchSubjects();
-  }, [classes?.length, subjects?.length]);
+    !teachers?.length && fetchTeachers();
+  }, [classes?.length, subjects?.length, teachers?.length]);
 };
 
 export default DashboardLayout;
