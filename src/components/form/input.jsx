@@ -50,7 +50,12 @@ const Input = ({
           disabled={disabled}
           onChange={handleChange}
           placeholder={placeholder}
-          className={cn(variantClasses[variant], defaultClasses)}
+          className={cn(
+            variantClasses[variant],
+            defaultClasses,
+            sizeClasses[size],
+            "h-auto py-1.5 min-h-24 max-h-48"
+          )}
         />
       );
     }
