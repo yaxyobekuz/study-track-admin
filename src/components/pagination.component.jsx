@@ -1,5 +1,5 @@
 // Components
-import Button from "./form/Button";
+import Button from "./form/button";
 
 // React
 import { memo, useEffect, useMemo, useState } from "react";
