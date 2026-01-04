@@ -8,6 +8,9 @@ import { usersAPI } from "@/api/client";
 import Button from "../form/button";
 import ResponsiveModal from "../ResponsiveModal";
 
+// Hooks
+import useArrayStore from "@/hooks/useArrayStore.hook";
+
 const DeleteUserModal = () => (
   <ResponsiveModal
     name="deleteUser"
@@ -19,6 +22,8 @@ const DeleteUserModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...user }) => {
+  const { invalidateCache } = useArrayStore("users");
+
   const handleDeleteUser = (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -27,7 +32,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
       .delete(user._id)
       .then(() => {
         close();
-        invalidateCache("users");
+        invalidateCache();
         toast.success("Foydalanuvchi o'chirildi");
       })
       .catch((err) => {

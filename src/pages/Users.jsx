@@ -1,25 +1,29 @@
 // UI
 import { toast } from "sonner";
 
-// Components
-import Card from "@/components/Card";
+// API
+import { usersAPI } from "../api/client";
 
 // React
 import { useEffect, useCallback } from "react";
 
-// API
-import { usersAPI } from "../api/client";
+// Router
+import { useSearchParams } from "react-router-dom";
 
 // Helpers
 import { getRoleLabel } from "@/helpers/role.helpers";
 
-// Icons
-import { Plus, Edit, Trash2, Key } from "lucide-react";
+// Hooks
 import useModal from "@/hooks/useModal.hook";
 import useArrayStore from "@/hooks/useArrayStore.hook";
-import { useSearchParams } from "react-router-dom";
-import Pagination from "@/components/pagination.component";
+
+// Icons
+import { Plus, Edit, Trash2, Key } from "lucide-react";
+
+// Components
+import Card from "@/components/Card";
 import Button from "@/components/form/button";
+import Pagination from "@/components/pagination.component";
 
 const Users = () => {
   const { openModal } = useModal();
