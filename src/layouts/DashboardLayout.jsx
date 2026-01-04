@@ -14,6 +14,9 @@ import {
   ClipboardList,
 } from "lucide-react";
 
+// Images
+import { logoImg } from "@/assets/images";
+
 // React
 import { useEffect, useState } from "react";
 
@@ -37,10 +40,12 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 
 // Components
 import EditUserModal from "../components/modal/editUser.modal";
+import EditClassModal from "../components/modal/editClass.modal";
 import CreateUserModal from "../components/modal/createUser.modal";
 import DeleteUserModal from "../components/modal/deleteUser.modal";
+import CreateClassModal from "@/components/modal/createClass.modal";
+import DeleteClassModal from "../components/modal/deleteClass.modal";
 import ResetUserPasswordModal from "../components/modal/resetUserPassword.modal";
-import { logoImg } from "@/assets/images";
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
@@ -230,11 +235,16 @@ const DashboardLayout = () => {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* User Modals */}
       <EditUserModal />
       <DeleteUserModal />
       <CreateUserModal />
       <ResetUserPasswordModal />
+
+      {/* Class Modals */}
+      <EditClassModal />
+      <CreateClassModal />
+      <DeleteClassModal />
     </>
   );
 };
@@ -244,9 +254,12 @@ const actions = () => {
     initialize,
     hasCollection,
     setCollection,
+    getCollectionData,
     setCollectionErrorState,
     setCollectionLoadingState,
   } = useArrayStore();
+  const classes = getCollectionData("classes");
+  const subjects = getCollectionData("subjects");
 
   // Initialize collection (pagination = false)
   useEffect(() => {
@@ -281,9 +294,9 @@ const actions = () => {
   };
 
   useEffect(() => {
-    fetchClasses();
-    fetchSubjects();
-  }, []);
+    !classes?.length && fetchClasses();
+    !subjects?.length && fetchSubjects();
+  }, [classes?.length, subjects?.length]);
 };
 
 export default DashboardLayout;
