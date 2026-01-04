@@ -68,4 +68,18 @@
   select {
     @apply h-11;
   }
+
+  table {
+    @apply min-w-[934px] lg:min-w-full;
+  }
+
+  table {
+    thead {
+      @apply bg-indigo-500;
+    }
+
+    thead th {
+      @apply text-white uppercase text-xs font-medium;
+    }
+  }
 }
