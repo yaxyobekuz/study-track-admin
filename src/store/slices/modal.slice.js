@@ -26,6 +26,11 @@ const initialState = {
   editGrade: initialModalData,
   deleteGrade: initialModalData,
   createGrade: initialModalData,
+
+  // Schedule
+  createSchedule: initialModalData,
+  editSchedule: initialModalData,
+  deleteSchedule: initialModalData,
 };
 
 export const modalSlice = createSlice({
