@@ -1,24 +1,26 @@
+// UI
+import { toast } from "sonner";
+
+// API
+import { gradesAPI } from "../api/client";
+
 // React
 import { useState, useEffect } from "react";
 
-// UI
-import { toast } from "sonner";
+// Components
+import Card from "@/components/Card";
+import Select from "@/components/form/select";
 
 // Icons
 import { Check, Edit2, Save, X } from "lucide-react";
 
-// Store
-import { useAuth } from "../store/authStore";
+// Hooks
+import useArrayStore from "@/hooks/useArrayStore.hook";
 
-// Components
-import Card from "@/components/Card";
-
-// API
-import { gradesAPI, classesAPI } from "../api/client";
+// Helpers
+import { getGradeColor } from "@/helpers/grade.helpers";
 
 const AddGrade = () => {
-  const { user } = useAuth();
-  const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,6 +29,8 @@ const AddGrade = () => {
   const [editingStudentId, setEditingStudentId] = useState(null);
   const [tempGrade, setTempGrade] = useState({ grade: 5, comment: "" });
 
+  const { data: classes } = useArrayStore("classes");
+
   // Load saved selections from localStorage
   useEffect(() => {
     const savedClass = localStorage.getItem("addGrade_selectedClass");
@@ -34,10 +38,6 @@ const AddGrade = () => {
 
     if (savedClass) setSelectedClass(savedClass);
     if (savedSubject) setSelectedSubject(savedSubject);
-  }, []);
-
-  useEffect(() => {
-    fetchClasses();
   }, []);
 
   useEffect(() => {
@@ -55,18 +55,6 @@ const AddGrade = () => {
       localStorage.setItem("addGrade_selectedSubject", selectedSubject);
     }
   }, [selectedClass, selectedSubject]);
-
-  const fetchClasses = async () => {
-    try {
-      const response = await classesAPI.getAll();
-      const allClasses = response.data.data || [];
-      setClasses(allClasses);
-    } catch (error) {
-      console.error("Error fetching classes:", error);
-      toast.error("Sinflarni yuklashda xatolik");
-      setClasses([]);
-    }
-  };
 
   const fetchTeacherSubjects = async () => {
     try {
@@ -149,220 +137,180 @@ const AddGrade = () => {
     setTempGrade({ grade: 5, comment: "" });
   };
 
-  const getGradeColor = (grade) => {
-    if (grade === 5) return "bg-green-100 text-green-800 border-green-300";
-    if (grade === 4) return "bg-blue-100 text-blue-800 border-blue-300";
-    if (grade === 3) return "bg-yellow-100 text-yellow-800 border-yellow-300";
-    return "bg-red-100 text-red-800 border-red-300";
-  };
-
   return (
     <div>
       {/* Filters */}
-      <Card className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sinf *
-            </label>
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            >
-              <option value="">Sinf tanlang</option>
-              {classes.map((cls) => (
-                <option key={cls._id} value={cls._id}>
-                  {cls.name}
-                </option>
-              ))}
-            </select>
-          </div>
+      <Card className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" responsive>
+        <Select
+          required
+          label="Sinf"
+          value={selectedClass}
+          onChange={(value) => setSelectedClass(value)}
+          options={classes.map((cls) => ({
+            label: cls.name,
+            value: cls._id,
+          }))}
+        />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Fan *
-            </label>
-            <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              disabled={!selectedClass || subjects.length === 0}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-            >
-              <option value="">Fan tanlang</option>
-              {subjects.map((subject) => (
-                <option key={subject._id} value={subject._id}>
-                  {subject.name}
-                </option>
-              ))}
-            </select>
-            {selectedClass && subjects.length === 0 && (
-              <p className="mt-1 text-sm text-amber-600">
-                Bugun bu sinfda sizning darslaringiz yo'q
-              </p>
-            )}
-          </div>
-        </div>
+        <Select
+          required
+          label="Fan"
+          value={selectedSubject}
+          onChange={(value) => setSelectedSubject(value)}
+          options={subjects.map((subject) => ({
+            label: subject.name,
+            value: subject._id,
+          }))}
+        />
       </Card>
 
       {/* Students Table */}
       {selectedClass && selectedSubject && (
-        <Card>
+        <Card responsive>
           <div className="bg-white rounded-lg overflow-hidden">
-            {loading ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500">Yuklanmoqda...</p>
-              </div>
-            ) : students.length === 0 ? (
+            {/* No data */}
+            {students.length === 0 && !loading && (
               <div className="text-center py-12">
                 <p className="text-gray-500">Bu sinfda o'quvchilar yo'q</p>
               </div>
-            ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      #
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      O'quvchi
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Baho
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Izoh
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Harakatlar
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {students.map((student, index) => {
-                    const isEditing = editingStudentId === student._id;
-                    const hasGrade = student.grade !== null;
+            )}
 
-                    return (
-                      <tr key={student._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {index + 1}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {student.firstName} {student.lastName}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {isEditing ? (
-                            <select
-                              value={tempGrade.grade}
-                              onChange={(e) =>
-                                setTempGrade({
-                                  ...tempGrade,
-                                  grade: e.target.value,
-                                })
-                              }
-                              className="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            >
-                              <option value="5">5 - A'lo</option>
-                              <option value="4">4 - Yaxshi</option>
-                              <option value="3">3 - Qoniqarli</option>
-                              <option value="2">2 - Qoniqarsiz</option>
-                            </select>
-                          ) : hasGrade ? (
-                            <span
-                              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${getGradeColor(
-                                student.grade.grade
-                              )}`}
-                            >
-                              {student.grade.grade}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">
-                              Baho yo'q
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={tempGrade.comment}
-                              onChange={(e) =>
-                                setTempGrade({
-                                  ...tempGrade,
-                                  comment: e.target.value,
-                                })
-                              }
-                              placeholder="Izoh (ixtiyoriy)"
-                              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
-                          ) : hasGrade && student.grade.comment ? (
-                            <div className="text-sm text-gray-600">
-                              {student.grade.comment}
+            {/* Loading state */}
+            {loading && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">Yuklanmoqda...</p>
+              </div>
+            )}
+
+            {/* Students Table */}
+            {students.length > 0 && !loading && (
+              <div className="rounded-lg overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  {/* Thead */}
+                  <thead>
+                    <tr>
+                      <th className="px-6 py-3 text-left">#</th>
+                      <th className="px-6 py-3 text-left">O'quvchi</th>
+                      <th className="px-6 py-3 text-left">Baho</th>
+                      <th className="px-6 py-3 text-right">Harakatlar</th>
+                    </tr>
+                  </thead>
+
+                  {/* Tbody */}
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {students.map((student, index) => {
+                      const isEditing = editingStudentId === student._id;
+                      const hasGrade = student.grade !== null;
+
+                      return (
+                        <tr key={student._id} className="hover:bg-gray-50">
+                          {/* Index */}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {index + 1}
+                          </td>
+
+                          {/* Student */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {student.firstName} {student.lastName}
                             </div>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          {isEditing ? (
-                            <div className="flex justify-end space-x-2">
-                              <button
-                                onClick={() =>
-                                  handleAddOrEditGrade(student._id, hasGrade)
+                          </td>
+
+                          {/* Grade */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {isEditing ? (
+                              <select
+                                value={tempGrade.grade}
+                                onChange={(e) =>
+                                  setTempGrade({
+                                    ...tempGrade,
+                                    grade: e.target.value,
+                                  })
                                 }
-                                className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                className="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                               >
-                                <Check
-                                  className="w-4 h-4 mr-1"
-                                  strokeWidth={1.5}
-                                />
-                                Saqlash
-                              </button>
+                                <option value="5">5 - A'lo</option>
+                                <option value="4">4 - Yaxshi</option>
+                                <option value="3">3 - Qoniqarli</option>
+                                <option value="2">2 - Qoniqarsiz</option>
+                              </select>
+                            ) : hasGrade ? (
+                              <span
+                                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${getGradeColor(
+                                  student.grade.grade
+                                )}`}
+                              >
+                                {student.grade.grade}
+                              </span>
+                            ) : (
+                              <span className="text-sm text-gray-400">
+                                Baho yo'q
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Actions */}
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            {isEditing ? (
+                              <div className="flex justify-end space-x-2">
+                                <button
+                                  onClick={() =>
+                                    handleAddOrEditGrade(student._id, hasGrade)
+                                  }
+                                  className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                >
+                                  <Check
+                                    className="w-4 h-4 mr-1"
+                                    strokeWidth={1.5}
+                                  />
+                                  Saqlash
+                                </button>
+                                <button
+                                  onClick={cancelEditing}
+                                  className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                                >
+                                  <X
+                                    className="w-4 h-4 mr-1"
+                                    strokeWidth={1.5}
+                                  />
+                                  Bekor
+                                </button>
+                              </div>
+                            ) : (
                               <button
-                                onClick={cancelEditing}
-                                className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                                onClick={() => startEditing(student)}
+                                className={`inline-flex items-center px-3 py-1.5 ${
+                                  hasGrade
+                                    ? "bg-yellow-600 hover:bg-yellow-700"
+                                    : "bg-indigo-600 hover:bg-indigo-700"
+                                } text-white rounded-lg`}
                               >
-                                <X className="w-4 h-4 mr-1" strokeWidth={1.5} />
-                                Bekor
+                                {hasGrade ? (
+                                  <>
+                                    <Edit2
+                                      className="w-4 h-4 mr-1"
+                                      strokeWidth={1.5}
+                                    />
+                                    Tahrirlash
+                                  </>
+                                ) : (
+                                  <>
+                                    <Save
+                                      className="w-4 h-4 mr-1"
+                                      strokeWidth={1.5}
+                                    />
+                                    Baho qo'yish
+                                  </>
+                                )}
                               </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => startEditing(student)}
-                              className={`inline-flex items-center px-3 py-1.5 ${
-                                hasGrade
-                                  ? "bg-yellow-600 hover:bg-yellow-700"
-                                  : "bg-indigo-600 hover:bg-indigo-700"
-                              } text-white rounded-lg`}
-                            >
-                              {hasGrade ? (
-                                <>
-                                  <Edit2
-                                    className="w-4 h-4 mr-1"
-                                    strokeWidth={1.5}
-                                  />
-                                  Tahrirlash
-                                </>
-                              ) : (
-                                <>
-                                  <Save
-                                    className="w-4 h-4 mr-1"
-                                    strokeWidth={1.5}
-                                  />
-                                  Baho qo'yish
-                                </>
-                              )}
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </Card>
