@@ -1,35 +1,34 @@
+// Toast
+import { toast } from "sonner";
+
+// Helpers
+import {
+  getGradeColor,
+  getGradeForSubject,
+  calculateAverageGrade,
+} from "@/helpers/grade.helpers";
+
 // React
 import { useState, useEffect } from "react";
-
-// UI
-import { toast } from "sonner";
 
 // Icons
 import { Eye, Calendar } from "lucide-react";
 
-// Store
-import { useAuth } from "../store/authStore";
-
 // Components
 import Card from "@/components/Card";
+import Input from "@/components/form/input";
+import Select from "@/components/form/select";
+
+// Utils
+import { getDayOfWeekUZ } from "@/utils/date.utils";
+
+// Hooks
+import useArrayStore from "@/hooks/useArrayStore.hook";
 
 // API
-import {
-  gradesAPI,
-  classesAPI,
-  subjectsAPI,
-  schedulesAPI,
-} from "../api/client";
+import { gradesAPI, schedulesAPI } from "../api/client";
 
 const Grades = () => {
-  const { user } = useAuth();
-  const [classes, setClasses] = useState([]);
-  const [subjects, setSubjects] = useState([]);
-  const [todaySubjects, setTodaySubjects] = useState([]); // Bugungi kun fanlar
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(true);
-
   // Load saved filters from localStorage
   const getSavedFilters = () => {
     const savedClassId = localStorage.getItem("grades_classId");
@@ -38,12 +37,31 @@ const Grades = () => {
 
     return {
       classId: savedClassId || "",
-      subjectId: savedSubjectId || "",
+      subjectId: savedSubjectId || "all",
       date: savedDate || new Date().toISOString().split("T")[0],
     };
   };
 
+  const {
+    initialize,
+    hasCollection,
+    setCollection,
+    getCollectionData,
+    isCollectionLoading,
+    setCollectionLoadingState,
+  } = useArrayStore();
   const [filters, setFilters] = useState(getSavedFilters());
+
+  // Classes and subjects data
+  const classes = getCollectionData("classes");
+  const subjects = getCollectionData("subjects");
+  // Students data
+  const studentsCollectionName = `students-${filters.classId}-${filters.date}`;
+  const students = getCollectionData(studentsCollectionName);
+  const isLoading = isCollectionLoading(studentsCollectionName);
+  // Today's subjects data
+  const todaySubjectsCollectionName = `subjects-${filters.classId}-${filters.date}`;
+  const todaySubjects = getCollectionData(todaySubjectsCollectionName);
 
   // Save filters to localStorage whenever they change
   useEffect(() => {
@@ -53,209 +71,141 @@ const Grades = () => {
   }, [filters]);
 
   useEffect(() => {
-    fetchClasses();
-    fetchSubjects();
-  }, []);
+    // Initialize collections (pagination = false)
+    if (!hasCollection(studentsCollectionName))
+      initialize(false, studentsCollectionName);
+    if (!hasCollection(todaySubjectsCollectionName))
+      initialize(false, todaySubjectsCollectionName);
 
-  useEffect(() => {
-    if (filters.classId && filters.date) {
+    // Fetch grades and today's subjects
+    if (
+      filters.classId &&
+      filters.date &&
+      !students?.length &&
+      !todaySubjects?.length
+    ) {
       fetchGradesByClass();
       fetchTodaySubjects();
     }
   }, [filters.classId, filters.date]);
 
-  const fetchClasses = async () => {
-    try {
-      const response = await classesAPI.getAll();
-      const allClasses = response.data.data || [];
-      setClasses(allClasses);
-    } catch (error) {
-      console.error("Error fetching classes:", error);
-      toast.error("Sinflarni yuklashda xatolik");
-      setClasses([]);
-    } finally {
-      setLoading(false);
+  const fetchTodaySubjects = () => {
+    const dayName = getDayOfWeekUZ(filters.date);
+    if (dayName === "yakshanba") {
+      return setCollection([], null, todaySubjectsCollectionName);
     }
+
+    schedulesAPI
+      .getByDay(filters.classId, dayName)
+      .then((response) => {
+        if (response.data.data && response.data.data.subjects) {
+          const scheduleSubjects = response.data.data.subjects
+            .filter((s) => s.subject)
+            .map((s) => s.subject);
+
+          setCollection(scheduleSubjects, null, todaySubjectsCollectionName);
+        } else {
+          setCollection([], null, todaySubjectsCollectionName);
+        }
+      })
+      .catch(() => setCollection([], true, todaySubjectsCollectionName));
   };
 
-  const fetchSubjects = async () => {
-    try {
-      const response = await subjectsAPI.getAll();
-      setSubjects(response.data.data);
-    } catch (error) {
-      console.error("Fanlarni yuklashda xatolik:", error);
-    }
+  const fetchGradesByClass = () => {
+    setCollectionLoadingState(true, studentsCollectionName);
+
+    gradesAPI
+      .getByClassAndDate(filters.classId, filters.date)
+      .then((response) => {
+        const gradesByStudent = {};
+        if (response.data.data && response.data.data.length > 0) {
+          response.data.data.forEach((grade) => {
+            const studentId = grade.student._id;
+            if (gradesByStudent[studentId]) return;
+
+            gradesByStudent[studentId] = { student: grade.student, grades: [] };
+            gradesByStudent[studentId].grades.push(grade);
+          });
+        }
+
+        setCollection(
+          Object.values(gradesByStudent),
+          null,
+          studentsCollectionName
+        );
+      })
+      .catch(() => {
+        toast.error("Baholarni yuklashda xatolik");
+        setCollection([], true, studentsCollectionName);
+      });
   };
 
-  const fetchTodaySubjects = async () => {
-    try {
-      const date = new Date(filters.date);
-      const daysUz = [
-        "yakshanba",
-        "dushanba",
-        "seshanba",
-        "chorshanba",
-        "payshanba",
-        "juma",
-        "shanba",
-      ];
-      const dayName = daysUz[date.getDay()];
-
-      if (dayName === "yakshanba") {
-        setTodaySubjects([]);
-        return;
-      }
-
-      const response = await schedulesAPI.getByDay(filters.classId, dayName);
-      if (response.data.data && response.data.data.subjects) {
-        // Extract unique subjects from schedule
-        const scheduleSubjects = response.data.data.subjects
-          .filter((s) => s.subject)
-          .map((s) => s.subject);
-        setTodaySubjects(scheduleSubjects);
-      } else {
-        setTodaySubjects([]);
-      }
-    } catch (error) {
-      console.error("Bugungi fanlarni yuklashda xatolik:", error);
-      setTodaySubjects([]);
-    }
-  };
-
-  const fetchGradesByClass = async () => {
-    setLoading(true);
-    try {
-      const response = await gradesAPI.getByClassAndDate(
-        filters.classId,
-        filters.date
-      );
-
-      // Group grades by student
-      const gradesByStudent = {};
-      if (response.data.data && response.data.data.length > 0) {
-        response.data.data.forEach((grade) => {
-          const studentId = grade.student._id;
-          if (!gradesByStudent[studentId]) {
-            gradesByStudent[studentId] = {
-              student: grade.student,
-              grades: [],
-            };
-          }
-          gradesByStudent[studentId].grades.push(grade);
-        });
-      }
-
-      setStudents(Object.values(gradesByStudent));
-    } catch (error) {
-      toast.error("Baholarni yuklashda xatolik");
-      console.error(error);
-      setStudents([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getGradeForSubject = (studentGrades, subjectId) => {
-    if (!subjectId) return null;
-    return studentGrades.find((g) => g.subject._id === subjectId);
-  };
-
-  const getGradeColor = (grade) => {
-    if (grade === 5) return "bg-green-100 text-green-800 border-green-300";
-    if (grade === 4) return "bg-blue-100 text-blue-800 border-blue-300";
-    if (grade === 3) return "bg-yellow-100 text-yellow-800 border-yellow-300";
-    return "bg-red-100 text-red-800 border-red-300";
-  };
-
-  const calculateAverage = (grades) => {
-    if (grades.length === 0) return 0;
-    const sum = grades.reduce((acc, g) => acc + g.grade, 0);
-    return (sum / grades.length).toFixed(2);
-  };
-
-  if (loading && !filters.classId) {
+  if (isLoading && !filters.classId) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
   }
 
   return (
     <div>
       {/* Filters */}
-      {showFilters && (
-        <Card className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sinf *
-              </label>
-              <select
-                value={filters.classId}
-                onChange={(e) =>
-                  setFilters({ ...filters, classId: e.target.value })
-                }
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                <option value="">Sinf tanlang</option>
-                {classes.map((cls) => (
-                  <option key={cls._id} value={cls._id}>
-                    {cls.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+      <Card className="grid grid-cols-1 gap-5 mb-6 md:grid-cols-3">
+        <Select
+          required
+          label="Sinf"
+          value={filters.classId}
+          onChange={(value) => setFilters({ ...filters, classId: value })}
+          options={[
+            ...classes.map((cls) => ({
+              label: cls.name,
+              value: cls._id,
+            })),
+          ]}
+        />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fan (Ixtiyoriy)
-              </label>
-              <select
-                value={filters.subjectId}
-                onChange={(e) =>
-                  setFilters({ ...filters, subjectId: e.target.value })
-                }
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                <option value="">Barcha fanlar</option>
-                {subjects.map((subject) => (
-                  <option key={subject._id} value={subject._id}>
-                    {subject.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <Select
+          required
+          label="Fan"
+          value={filters.subjectId}
+          onChange={(v) => setFilters({ ...filters, subjectId: v })}
+          options={[
+            { label: "Barchasi", value: "all" },
+            ...subjects.map((subject) => ({
+              label: subject.name,
+              value: subject._id,
+            })),
+          ]}
+        />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sana *
-              </label>
-              <input
-                type="date"
-                value={filters.date}
-                onChange={(e) =>
-                  setFilters({ ...filters, date: e.target.value })
-                }
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-        </Card>
-      )}
+        <Input
+          required
+          label="Sana"
+          type="date"
+          value={filters.date}
+          onChange={(v) => setFilters({ ...filters, date: v })}
+        />
+      </Card>
 
       {/* Grades View */}
-      {!filters.classId ? (
+      {!filters.classId && !isLoading && (
         <Card className="text-center">
           <Calendar
             className="w-12 h-12 text-blue-600 mx-auto mb-3"
             strokeWidth={1.5}
           />
           <p className="text-blue-800 text-lg">
-            Baholarni ko'rish uchun sinf va sana tanlang
+            Baholarni ko'rish uchun kerakli maydonlarni tanlang
           </p>
         </Card>
-      ) : loading ? (
+      )}
+
+      {/* Loading */}
+      {isLoading && filters.classId && (
         <Card className="text-center">
           <p className="text-gray-500">Yuklanmoqda...</p>
         </Card>
-      ) : students.length === 0 ? (
+      )}
+
+      {/* No data */}
+      {students.length === 0 && !isLoading && filters.classId && (
         <Card className="text-center">
           <Eye
             className="w-12 h-12 text-gray-400 mx-auto mb-3"
@@ -263,72 +213,72 @@ const Grades = () => {
           />
           <p className="text-gray-500">Tanlangan kun uchun baholar topilmadi</p>
         </Card>
-      ) : (
-        <Card className="overflow-hidden">
-          {/* Table */}
-          <div className="overflow-x-auto rounded-t-lg">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+      )}
+
+      {/* Grades */}
+      {students.length > 0 && (
+        <Card>
+          <div className="rounded-lg overflow-x-auto">
+            <table className="divide-y divide-gray-200">
+              {/* Thead */}
+              <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50">
-                    #
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-12 bg-gray-50">
-                    O'quvchi
-                  </th>
-                  {filters.subjectId ? (
+                  <th className="px-6 py-3 text-left">#</th>
+                  <th className="px-6 py-3 text-left">O'quvchi</th>
+
+                  {/* Subject */}
+                  {filters.subjectId !== "all" && (
                     <>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Baho
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Izoh
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        O'qituvchi
-                      </th>
+                      <th className="px-6 py-3 text-center">Baho</th>
+                      <th className="px-6 py-3 text-left">O'qituvchi</th>
                     </>
-                  ) : (
+                  )}
+
+                  {/* All subjects */}
+                  {filters.subjectId === "all" && (
                     <>
                       {todaySubjects.map((subject) => (
-                        <th
-                          key={subject._id}
-                          className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
+                        <th key={subject._id} className="px-4 py-3 text-center">
                           {subject.name}
                         </th>
                       ))}
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50">
-                        O'rtacha
-                      </th>
+
+                      <th className="px-6 py-3 text-center">O'rtacha</th>
                     </>
                   )}
                 </tr>
               </thead>
+
+              {/* Tbody */}
               <tbody className="bg-white divide-y divide-gray-200">
                 {students.map((studentData, index) => {
-                  const relevantGrades = filters.subjectId
-                    ? studentData.grades.filter(
-                        (g) => g.subject._id === filters.subjectId
-                      )
-                    : studentData.grades;
+                  const relevantGrades =
+                    filters.subjectId !== "all"
+                      ? studentData.grades.filter(
+                          (g) => g.subject._id === filters.subjectId
+                        )
+                      : studentData.grades;
 
                   return (
                     <tr
                       key={studentData.student._id}
                       className="hover:bg-gray-50"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 sticky left-0">
+                      {/* Index */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {index + 1}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap sticky left-12">
+
+                      {/* Student */}
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {studentData.student.firstName}{" "}
                           {studentData.student.lastName}
                         </div>
                       </td>
 
-                      {filters.subjectId ? (
+                      {/* Single subject */}
+                      {filters.subjectId !== "all" && (
                         <>
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             {relevantGrades.length > 0 ? (
@@ -343,16 +293,7 @@ const Grades = () => {
                               <span className="text-gray-400 text-sm">-</span>
                             )}
                           </td>
-                          <td className="px-6 py-4">
-                            {relevantGrades.length > 0 &&
-                            relevantGrades[0].comment ? (
-                              <span className="text-sm text-gray-600">
-                                {relevantGrades[0].comment}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 text-sm">-</span>
-                            )}
-                          </td>
+
                           <td className="px-6 py-4 whitespace-nowrap">
                             {relevantGrades.length > 0 ? (
                               <span className="text-sm text-gray-600">
@@ -364,13 +305,17 @@ const Grades = () => {
                             )}
                           </td>
                         </>
-                      ) : (
+                      )}
+
+                      {/* All subjects */}
+                      {filters.subjectId == "all" && (
                         <>
                           {todaySubjects.map((subject) => {
                             const grade = getGradeForSubject(
                               studentData.grades,
                               subject._id
                             );
+
                             return (
                               <td
                                 key={subject._id}
@@ -397,10 +342,11 @@ const Grades = () => {
                               </td>
                             );
                           })}
-                          <td className="px-6 py-4 whitespace-nowrap text-center bg-blue-50">
+
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
                             {studentData.grades.length > 0 ? (
                               <span className="text-sm font-semibold text-blue-900">
-                                {calculateAverage(studentData.grades)}
+                                {calculateAverageGrade(studentData.grades)}
                               </span>
                             ) : (
                               <span className="text-gray-400 text-sm">-</span>
@@ -413,13 +359,6 @@ const Grades = () => {
                 })}
               </tbody>
             </table>
-          </div>
-
-          {/* Total */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
-            <p className="text-sm text-gray-600">
-              Jami {students.length} ta o'quvchi
-            </p>
           </div>
         </Card>
       )}
