@@ -4,7 +4,6 @@ import {
   Eye,
   Home,
   Menu,
-  User,
   Users,
   LogOut,
   Calendar,
@@ -23,9 +22,6 @@ import { useEffect, useState } from "react";
 // Store
 import { useAuth } from "../store/authStore";
 
-// Utils
-import { formatDateUZ, getDayOfWeekUZ } from "@/utils/date.utils";
-
 // Helpers
 import { getRoleLabel } from "@/helpers/role.helpers";
 
@@ -34,6 +30,9 @@ import useArrayStore from "@/hooks/useArrayStore.hook";
 
 // API
 import { classesAPI, subjectsAPI, usersAPI } from "@/api/client";
+
+// Utils
+import { formatDateUZ, getDayOfWeekUZ } from "@/utils/date.utils";
 
 // Router
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
@@ -105,7 +104,7 @@ const DashboardLayout = () => {
     return location.pathname.startsWith(path);
   };
 
-  actions();
+  actions(user);
 
   return (
     <>
@@ -259,7 +258,7 @@ const DashboardLayout = () => {
   );
 };
 
-const actions = () => {
+const actions = (user) => {
   const {
     initialize,
     hasCollection,
@@ -268,6 +267,8 @@ const actions = () => {
     setCollectionErrorState,
     setCollectionLoadingState,
   } = useArrayStore();
+
+  const isOwner = user?.role === "owner";
   const classes = getCollectionData("classes");
   const subjects = getCollectionData("subjects");
   const teachers = getCollectionData("teachers");
@@ -321,7 +322,7 @@ const actions = () => {
   useEffect(() => {
     !classes?.length && fetchClasses();
     !subjects?.length && fetchSubjects();
-    !teachers?.length && fetchTeachers();
+    !teachers?.length && isOwner && fetchTeachers();
   }, [classes?.length, subjects?.length, teachers?.length]);
 };
 
