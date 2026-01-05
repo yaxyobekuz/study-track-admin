@@ -27,7 +27,7 @@ const ResponsiveModal = ({
 }) => {
   const { closeModal, isOpen, data } = useModal(name);
   const [isLoading, setIsLoading] = useState(false);
-  const isDesktop = useMediaQuery("(min-width: 640px)");
+  const isDesktop = useMediaQuery("(min-width: 480px)");
   const hanldeCloseModal = (data) => !isLoading && closeModal(name, data);
 
   const body = cloneElement(children, {
@@ -60,13 +60,15 @@ const ResponsiveModal = ({
     <Drawer open={isOpen} onOpenChange={hanldeCloseModal}>
       <DrawerContent className={cn("px-5 pb-5", className)}>
         {/* Header */}
-        <DialogHeader>
+        <DialogHeader className="bg-white pb-3.5">
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
 
         {/* Body */}
-        {body}
+        <div className="w-full max-h-[calc(100vh-154px)] overflow-y-auto hidden-scroll">
+          {body}
+        </div>
       </DrawerContent>
     </Drawer>
   );
