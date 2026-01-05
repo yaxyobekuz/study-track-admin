@@ -153,12 +153,7 @@ const Grades = () => {
           label="Sinf"
           value={filters.classId}
           onChange={(value) => setFilters({ ...filters, classId: value })}
-          options={[
-            ...classes.map((cls) => ({
-              label: cls.name,
-              value: cls._id,
-            })),
-          ]}
+          options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
         />
 
         <Select
