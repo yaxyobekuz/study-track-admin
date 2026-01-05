@@ -1,11 +1,17 @@
+// Icons
+import {
+  Users,
+  BookOpen,
+  PlusCircle,
+  ClipboardList,
+  GraduationCap,
+} from "lucide-react";
+
 // Components
 import Card from "@/components/Card";
 
 // Router
 import { Link } from "react-router-dom";
-
-// React
-import { useEffect, useState } from "react";
 
 // Store
 import { useAuth } from "../store/authStore";
@@ -13,75 +19,8 @@ import { useAuth } from "../store/authStore";
 // Helpers
 import { getRoleLabel } from "@/helpers/role.helpers";
 
-// Icons
-import { Users, GraduationCap, BookOpen, ClipboardList } from "lucide-react";
-
-// API
-import { usersAPI, classesAPI, subjectsAPI, gradesAPI } from "../api/client";
-
 const Dashboard = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState({
-    users: 0,
-    grades: 0,
-    classes: 0,
-    subjects: 0,
-  });
-  const [loading, setLoading] = useState(true);
-
-  const fetchStats = async () => {
-    try {
-      const [usersRes, classesRes, subjectsRes, gradesRes] = await Promise.all([
-        usersAPI.getAll(),
-        classesAPI.getAll(),
-        subjectsAPI.getAll(),
-        gradesAPI.getAll(),
-      ]);
-
-      setStats({
-        users: usersRes.data.count || 0,
-        classes: classesRes.data.count || 0,
-        subjects: subjectsRes.data.count || 0,
-        grades: gradesRes.data.count || 0,
-      });
-    } catch (error) {
-      console.error("Statistikani yuklashda xatolik:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const statsCards = [
-    {
-      name: "Foydalanuvchilar",
-      value: stats.users,
-      icon: Users,
-      color: "bg-blue-500",
-    },
-    {
-      name: "Sinflar",
-      value: stats.classes,
-      icon: GraduationCap,
-      color: "bg-green-500",
-    },
-    {
-      name: "Fanlar",
-      value: stats.subjects,
-      icon: BookOpen,
-      color: "bg-purple-500",
-    },
-    {
-      name: "Baholar",
-      value: stats.grades,
-      icon: ClipboardList,
-      color: "bg-orange-500",
-    },
-  ];
-
   return (
     <div>
       {/* Welcome Section */}
@@ -94,42 +33,6 @@ const Dashboard = () => {
           <span className="font-medium">{getRoleLabel(user?.role)}</span>
         </p>
       </div>
-
-      {/* Stats Cards - Only for Owner */}
-      {user?.role === "owner" && (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-          {/* Loading */}
-          {loading &&
-            [1, 2, 3, 4].map((i) => (
-              <Card key={i} className="h-24 border-white animate-pulse" />
-            ))}
-
-          {/* Stats */}
-          {!loading &&
-            statsCards.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <Card key={stat.name}>
-                  <div className="flex items-center">
-                    <div
-                      className={`flex-shrink-0 p-3 rounded-lg ${stat.color}`}
-                    >
-                      <Icon className="size-6 text-white" strokeWidth={1.5} />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">
-                        {stat.name}
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {stat.value}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-        </div>
-      )}
 
       {/* Quick Actions */}
       <Card>
@@ -191,7 +94,7 @@ const Dashboard = () => {
             <>
               {/* My Schedule */}
               <Link
-                to="/my-schedule"
+                to="/schedules"
                 className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <BookOpen
@@ -199,7 +102,7 @@ const Dashboard = () => {
                   strokeWidth={1.5}
                 />
                 <div>
-                  <p className="font-medium text-gray-900">Dars jadvalim</p>
+                  <p className="font-medium text-gray-900">Dars jadvali</p>
                   <p className="text-sm text-gray-500">Ko'rish</p>
                 </div>
               </Link>
@@ -214,7 +117,22 @@ const Dashboard = () => {
                   strokeWidth={1.5}
                 />
                 <div>
-                  <p className="font-medium text-gray-900">Baholar</p>
+                  <p className="font-medium text-gray-900">Baholar jurnali</p>
+                  <p className="text-sm text-gray-500">Ko'rish</p>
+                </div>
+              </Link>
+
+              {/* Add Grades */}
+              <Link
+                to="/add-grade"
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <PlusCircle
+                  className="size-6 text-indigo-600 mr-3"
+                  strokeWidth={1.5}
+                />
+                <div>
+                  <p className="font-medium text-gray-900">Baho qo'yish</p>
                   <p className="text-sm text-gray-500">Boshqarish</p>
                 </div>
               </Link>
