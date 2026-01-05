@@ -24,7 +24,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../store/authStore";
 
 // Utils
-import { formatDateUZ } from "@/utils/date.utils";
+import { formatDateUZ, getDayOfWeekUZ } from "@/utils/date.utils";
 
 // Helpers
 import { getRoleLabel } from "@/helpers/role.helpers";
@@ -217,11 +217,14 @@ const DashboardLayout = () => {
                 </h1>
               </div>
 
-              <div className="hidden lg:flex items-center space-x-4">
-                <span className="text-sm text-gray-500">
+              <p className="">
+                <span className="hidden text-sm text-gray-500 sm:inline">
                   {formatDateUZ(new Date())}
+                </span>{" "}
+                <span className="capitalize text-sm text-gray-500">
+                  {getDayOfWeekUZ(new Date())}
                 </span>
-              </div>
+              </p>
             </div>
           </header>
 

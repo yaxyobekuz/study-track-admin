@@ -120,8 +120,8 @@ const Grades = () => {
         const gradesByStudent = {};
         if (response.data.data && response.data.data.length > 0) {
           response.data.data.forEach((grade) => {
-            const studentId = grade.student._id;
-            if (gradesByStudent[studentId]) return;
+            const studentId = grade.student?._id;
+            if (gradesByStudent[studentId] || !studentId) return;
 
             gradesByStudent[studentId] = { student: grade.student, grades: [] };
             gradesByStudent[studentId].grades.push(grade);
