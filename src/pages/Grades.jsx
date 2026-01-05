@@ -217,7 +217,7 @@ const Grades = () => {
 
       {/* Grades */}
       {students.length > 0 && (
-        <Card>
+        <Card responsive>
           <div className="rounded-lg overflow-x-auto">
             <table className="divide-y divide-gray-200">
               {/* Thead */}

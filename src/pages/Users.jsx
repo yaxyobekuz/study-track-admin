@@ -102,7 +102,7 @@ const Users = () => {
       </Button>
 
       {/* Table */}
-      <Card>
+      <Card responsive>
         <div className="rounded-lg overflow-x-auto">
           <table className="divide-y divide-gray-200">
             {/* Thead */}
@@ -186,20 +186,36 @@ const Users = () => {
           </table>
         </div>
 
-        {/* Pagination Controls */}
+        {/* Desktop Pagination Controls */}
         {!isLoading && !hasError && users.length > 0 && (
           <Pagination
-            className="pt-6"
             maxPageButtons={5}
             showPageNumbers={true}
             onPageChange={goToPage}
             currentPage={currentPage}
             hasNextPage={hasNextPage}
             hasPrevPage={hasPrevPage}
+            className="pt-6 max-md:hidden"
             totalPages={metadata?.totalPages || 1}
           />
         )}
       </Card>
+
+      {/* Mobile Pagination Controls */}
+      {!isLoading && !hasError && users.length > 0 && (
+        <div className="overflow-x-auto pb-1.5">
+          <Pagination
+            maxPageButtons={5}
+            showPageNumbers={true}
+            onPageChange={goToPage}
+            currentPage={currentPage}
+            hasNextPage={hasNextPage}
+            hasPrevPage={hasPrevPage}
+            className="pt-6 min-w-max md:hidden"
+            totalPages={metadata?.totalPages || 1}
+          />
+        </div>
+      )}
     </div>
   );
 };
