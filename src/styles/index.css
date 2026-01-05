@@ -81,5 +81,9 @@
     thead th {
       @apply text-white uppercase text-xs font-medium;
     }
+
+    tbody tr {
+      @apply last:bg-gray-100;
+    }
   }
 }

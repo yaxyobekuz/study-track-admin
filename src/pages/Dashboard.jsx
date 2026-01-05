@@ -86,7 +86,7 @@ const Dashboard = () => {
     <div>
       {/* Welcome Section */}
       <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-900">
+        <h2 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl">
           Xush kelibsiz, {user?.firstName}!
         </h2>
         <p className="mt-2 text-gray-600">

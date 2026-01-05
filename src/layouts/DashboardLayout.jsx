@@ -113,9 +113,9 @@ const DashboardLayout = () => {
         {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-gray-600 bg-opacity-75 z-20 lg:hidden"
             onClick={() => setSidebarOpen(false)}
-          ></div>
+            className="fixed inset-0 bg-black/70 z-20 lg:hidden"
+          />
         )}
 
         {/* Sidebar */}
@@ -135,7 +135,7 @@ const DashboardLayout = () => {
                   src={logoImg}
                   className="size-10"
                 />
-                <span className="text-xl font-bold text-gray-900">
+                <span className="lg:text-xl font-bold text-gray-900">
                   Study Tracker
                 </span>
               </div>
@@ -211,10 +211,10 @@ const DashboardLayout = () => {
         <div className="lg:pl-64">
           {/* Top bar */}
           <header className="sticky top-0 inset-x-0 bg-white h-16 border-b border-gray-200">
-            <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between gap-3.5 h-16 px-4 sm:px-6 lg:px-8">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden text-gray-500 hover:text-gray-700"
+                className="flex items-center justify-center size-11 lg:hidden text-gray-500 hover:text-gray-700"
               >
                 <Menu className="size-6" strokeWidth={1.5} />
               </button>
