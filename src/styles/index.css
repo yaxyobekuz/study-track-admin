@@ -61,12 +61,16 @@
 
 @layer base {
   body {
-    @apply bg-white;
+    @apply bg-white font-sans;
   }
 
   input,
   select {
     @apply h-11;
+  }
+
+  ol li * {
+    @apply font-sans;
   }
 
   table {
