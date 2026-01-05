@@ -26,6 +26,7 @@ const Schedules = () => {
   const { openModal } = useModal();
   const isOwner = user?.role === "owner";
   const [selectedClass, setSelectedClass] = useState("");
+  const collectionName = "schedules-" + selectedClass;
 
   const {
     isLoading,
@@ -35,12 +36,12 @@ const Schedules = () => {
     getCollectionData,
     setCollectionErrorState,
     setCollectionLoadingState,
-  } = useArrayStore("schedules");
+  } = useArrayStore(collectionName);
   const classes = getCollectionData("classes");
-  const schedules = getCollectionData("schedules");
+  const schedules = getCollectionData(collectionName);
 
   useEffect(() => {
-    if (!hasCollection()) initialize(false, "schedules");
+    if (!hasCollection()) initialize(false, collectionName);
   }, [initialize, hasCollection]);
 
   useEffect(() => {

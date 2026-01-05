@@ -25,7 +25,8 @@ const CreateScheduleModal = () => (
 );
 
 const Content = ({ day, close, classId, isLoading, setIsLoading }) => {
-  const { invalidateCache, getCollectionData } = useArrayStore("schedules");
+  const { invalidateCacheByStartsName, getCollectionData } =
+    useArrayStore("schedules");
   const subjects = getCollectionData("subjects");
   const teachers = getCollectionData("teachers");
 
@@ -74,7 +75,7 @@ const Content = ({ day, close, classId, isLoading, setIsLoading }) => {
       })
       .then(() => {
         close();
-        invalidateCache();
+        invalidateCacheByStartsName();
         toast.success("Dars jadvali yaratildi");
       })
       .catch((err) => {

@@ -22,7 +22,7 @@ const DeleteScheduleModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...scheduleData }) => {
-  const { invalidateCache } = useArrayStore("schedules");
+  const { invalidateCacheByStartsName } = useArrayStore("schedules");
 
   const handleDeleteSchedule = (e) => {
     e.preventDefault();
@@ -32,7 +32,7 @@ const Content = ({ close, isLoading, setIsLoading, ...scheduleData }) => {
       .delete(scheduleData._id)
       .then(() => {
         close();
-        invalidateCache();
+        invalidateCacheByStartsName();
         toast.success("Dars jadvali o'chirildi");
       })
       .catch((err) => {

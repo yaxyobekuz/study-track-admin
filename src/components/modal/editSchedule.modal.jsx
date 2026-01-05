@@ -32,7 +32,8 @@ const Content = ({
   setIsLoading,
   ...scheduleData
 }) => {
-  const { invalidateCache, getCollectionData } = useArrayStore("schedules");
+  const { invalidateCacheByStartsName, getCollectionData } =
+    useArrayStore("schedules");
   const subjects = getCollectionData("subjects");
   const teachers = getCollectionData("teachers");
 
@@ -90,7 +91,7 @@ const Content = ({
       })
       .then(() => {
         close();
-        invalidateCache();
+        invalidateCacheByStartsName();
         toast.success("Dars jadvali yangilandi");
       })
       .catch((err) => {
