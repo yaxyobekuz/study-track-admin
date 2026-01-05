@@ -140,7 +140,7 @@ const AddGrade = () => {
   return (
     <div>
       {/* Filters */}
-      <Card className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" responsive>
+      <Card className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Select
           required
           label="Sinf"

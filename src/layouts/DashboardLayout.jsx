@@ -135,10 +135,13 @@ const DashboardLayout = () => {
                   src={logoImg}
                   className="size-10"
                 />
+
                 <span className="lg:text-xl font-bold text-gray-900">
                   Study Tracker
                 </span>
               </div>
+
+              {/* Close sidebar */}
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="lg:hidden text-gray-500 hover:text-gray-700"
@@ -148,26 +151,14 @@ const DashboardLayout = () => {
             </div>
 
             {/* User Info */}
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                    <User
-                      className="size-6 text-indigo-600"
-                      strokeWidth={1.5}
-                    />
-                  </div>
-                </div>
+            <div className="space-y-1 px-6 py-3 border-b border-gray-200">
+              <b className="max-w-[195px] text-sm font-medium text-gray-900 truncate">
+                {user?.fullName}
+              </b>
 
-                <div className="ml-3">
-                  <p className="max-w-[155px] text-sm font-medium text-gray-900 truncate">
-                    {user?.fullName}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {getRoleLabel(user?.role)}
-                  </p>
-                </div>
-              </div>
+              <p className="text-xs text-gray-500">
+                {getRoleLabel(user?.role)}
+              </p>
             </div>
 
             {/* Navigation */}
