@@ -111,7 +111,7 @@ const Pagination = ({
         onClick={goToPrevPage}
         disabled={!hasPrevPage}
         aria-label="Oldingi sahifa"
-        className="gap-2 pr-5 pl-4"
+        className="h-9 gap-2 pr-2.5 pl-2 md:h-11 md:pr-5 md:pl-4"
       >
         <ChevronLeft size={20} className="-translate-x-0.5" />
         <span>Oldingi</span>
@@ -125,9 +125,9 @@ const Pagination = ({
             <>
               <Button
                 variant="neutral"
-                className="w-11 !px-0"
-                aria-label={`1-sahifa`}
+                aria-label="1-sahifa"
                 onClick={() => goToPage(1)}
+                className="size-9 px-0 md:size-11"
               >
                 1
               </Button>
@@ -142,9 +142,9 @@ const Pagination = ({
           {pageNumbers.map((pageNum) => (
             <Button
               key={pageNum}
-              className="w-11 !px-0"
               aria-label={`${pageNum}-sahifa`}
               onClick={() => goToPage(pageNum)}
+              className="size-9 px-0 md:size-11"
               variant={pageNum === currentPage ? "primary" : "neutral"}
               aria-current={pageNum === currentPage ? "page" : undefined}
             >
@@ -161,7 +161,7 @@ const Pagination = ({
 
               <Button
                 variant="neutral"
-                className="w-11 !px-0"
+                className="size-9 px-0 md:size-11"
                 aria-label={`${totalPages}-sahifa`}
                 onClick={() => goToPage(totalPages)}
               >
@@ -185,7 +185,7 @@ const Pagination = ({
         onClick={goToNextPage}
         disabled={!hasNextPage}
         aria-label="Keyingi sahifa"
-        className="gap-2 pl-5 pr-4"
+        className="h-9 gap-2 pl-2.5 pr-2 md:h-11 md:pl-5 md:pr-4"
       >
         <span>Keyingi</span>
         <ChevronRight size={20} className="translate-x-0.5" />
