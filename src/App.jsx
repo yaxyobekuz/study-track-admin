@@ -116,7 +116,12 @@ const AppRoutes = () => {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      <Toaster position="top-right" richColors />
+      <Toaster
+        richColors
+        position="top-right"
+        offset={{ top: 72 }}
+        mobileOffset={{ top: 72 }}
+      />
     </>
   );
 };
