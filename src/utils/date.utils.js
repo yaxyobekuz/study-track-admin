@@ -57,3 +57,17 @@ export const formatDateUZAlt = (date) => {
 
   return `${day} ${month}, ${year}`;
 };
+
+export const getDayOfWeekUZ = (date) => {
+  const dateObj = new Date(date);
+  const daysUz = [
+    "dushanba",
+    "seshanba",
+    "chorshanba",
+    "payshanba",
+    "juma",
+    "shanba",
+    "yakshanba",
+  ];
+  return daysUz[dateObj.getDay()];
+};
