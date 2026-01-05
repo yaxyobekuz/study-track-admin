@@ -101,7 +101,7 @@ const Content = ({
   };
 
   return (
-    <form onSubmit={handleEditSchedule} className="space-y-5">
+    <form onSubmit={handleEditSchedule} className="space-y-3.5">
       <div className="space-y-4">
         {daySubjects.map((subj, index) => (
           <div key={index} className="border border-gray-200 rounded-xl">
@@ -152,10 +152,10 @@ const Content = ({
       </button>
 
       {/* Action buttons */}
-      <div className="flex justify-end gap-5 w-full">
+      <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
         <Button
           type="button"
-          className="w-32"
+          className="w-full xs:w-32"
           variant="neutral"
           onClick={close}
         >
@@ -164,7 +164,7 @@ const Content = ({
 
         <Button
           autoFocus
-          className="w-32"
+          className="w-full xs:w-32"
           variant="primary"
           disabled={isLoading}
         >

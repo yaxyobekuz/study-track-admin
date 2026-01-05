@@ -44,13 +44,13 @@ const Content = ({ close, isLoading, setIsLoading, ...subject }) => {
   return (
     <form
       onSubmit={handleDeleteSubject}
-      className="flex justify-end gap-5 w-full"
+      className="flex flex-col-reverse gap-3.5 w-full xs:m-0 xs:flex-row xs:justify-end"
     >
-      <Button type="button" className="w-32" variant="neutral" onClick={close}>
+      <Button type="button" className="w-full xs:w-32" variant="neutral" onClick={close}>
         Bekor qilish
       </Button>
 
-      <Button autoFocus className="w-32" variant="danger" disabled={isLoading}>
+      <Button autoFocus className="w-full xs:w-32" variant="danger" disabled={isLoading}>
         O'chirish
         {isLoading && "..."}
       </Button>

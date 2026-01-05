@@ -48,7 +48,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
   };
 
   return (
-    <form onSubmit={handleCreateClass} className="space-y-5">
+    <form onSubmit={handleCreateClass} className="space-y-3.5">
       <div className="grid grid-cols-2 gap-5">
         <Select
           required
@@ -73,10 +73,10 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         />
       </div>
 
-      <div className="flex justify-end gap-5 w-full">
+      <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
         <Button
           type="button"
-          className="w-32"
+          className="w-full xs:w-32"
           variant="neutral"
           onClick={close}
         >
@@ -85,7 +85,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
         <Button
           autoFocus
-          className="w-32"
+          className="w-full xs:w-32"
           variant="primary"
           disabled={isLoading}
         >
