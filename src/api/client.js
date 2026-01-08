@@ -95,4 +95,14 @@ export const gradesAPI = {
   delete: (id) => api.delete(`/grades/${id}`),
 };
 
+// Holidays API
+export const holidaysAPI = {
+  getAll: () => api.get("/holidays"),
+  create: (data) => api.post("/holidays", data),
+  update: (id, data) => api.put(`/holidays/${id}`, data),
+  delete: (id) => api.delete(`/holidays/${id}`),
+  checkToday: () => api.get("/holidays/check/today"),
+  checkDate: (date) => api.get(`/holidays/check/${date}`),
+};
+
 export default api;
