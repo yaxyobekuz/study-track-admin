@@ -64,11 +64,8 @@ const Dashboard = () => {
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-orange-800">
-                🎉 Bugun bayram kuni!
+                Bugun "{holidayInfo.holiday?.name}" bayram kuni!
               </h3>
-              <p className="text-orange-700 font-medium mt-1">
-                {holidayInfo.holiday?.name}
-              </p>
               {holidayInfo.holiday?.description && (
                 <p className="text-orange-600 text-sm mt-1">
                   {holidayInfo.holiday.description}
