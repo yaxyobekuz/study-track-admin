@@ -1,15 +1,16 @@
 // Toast
 import { toast } from "sonner";
 
+// React
+import { useEffect } from "react";
+
 // API
 import { holidaysAPI } from "@/api/client";
-
-// React
-import { useState, useEffect } from "react";
 
 // Hooks
 import useModal from "@/hooks/useModal.hook";
 import useArrayStore from "@/hooks/useArrayStore.hook";
+import useObjectState from "@/hooks/useObjectState.hook";
 
 // Components
 import Card from "@/components/Card";
@@ -18,66 +19,14 @@ import Button from "@/components/form/button";
 import Select from "@/components/form/select";
 import ResponsiveModal from "@/components/ResponsiveModal";
 
+// Utils
+import { formatHolidayDate, months } from "@/utils/date.utils";
+
 // Icons
 import { Plus, Trash2, Edit, CalendarDays } from "lucide-react";
 
-// Oylar
-const MONTHS = [
-  { label: "Yanvar", value: 0 },
-  { label: "Fevral", value: 1 },
-  { label: "Mart", value: 2 },
-  { label: "Aprel", value: 3 },
-  { label: "May", value: 4 },
-  { label: "Iyun", value: 5 },
-  { label: "Iyul", value: 6 },
-  { label: "Avgust", value: 7 },
-  { label: "Sentabr", value: 8 },
-  { label: "Oktabr", value: 9 },
-  { label: "Noyabr", value: 10 },
-  { label: "Dekabr", value: 11 },
-];
-
-// Dam olish turi
-const HOLIDAY_TYPES = [
-  { label: "Bir kunlik", value: "single" },
-  { label: "Vaqt oralig'i", value: "range" },
-  { label: "Har yili takrorlanuvchi", value: "recurring" },
-];
-
-// Tur labelini olish
-const getTypeLabel = (type) => {
-  return HOLIDAY_TYPES.find((t) => t.value === type)?.label || type;
-};
-
-// Sanani formatlash
-const formatHolidayDate = (holiday) => {
-  if (holiday.type === "single" && holiday.date) {
-    return new Date(holiday.date).toLocaleDateString("uz-UZ");
-  }
-  if (holiday.type === "range" && holiday.startDate && holiday.endDate) {
-    return `${new Date(holiday.startDate).toLocaleDateString(
-      "uz-UZ"
-    )} - ${new Date(holiday.endDate).toLocaleDateString("uz-UZ")}`;
-  }
-  if (holiday.type === "recurring") {
-    if (holiday.recurringDate?.month !== undefined) {
-      return `Har yili ${holiday.recurringDate.day}-${
-        MONTHS[holiday.recurringDate.month].label
-      }`;
-    }
-    if (
-      holiday.recurringStartDate?.month !== undefined &&
-      holiday.recurringEndDate?.month !== undefined
-    ) {
-      return `Har yili ${holiday.recurringStartDate.day}-${
-        MONTHS[holiday.recurringStartDate.month].label
-      } — ${holiday.recurringEndDate.day}-${
-        MONTHS[holiday.recurringEndDate.month].label
-      }`;
-    }
-  }
-  return "-";
-};
+// Data
+import { getHolidayTypeLabel, holidayTypes } from "@/data/holidayTypes.data";
 
 const Holidays = () => {
   const {
@@ -89,7 +38,6 @@ const Holidays = () => {
   } = useArrayStore();
 
   const { openModal } = useModal();
-
   const holidays = getCollectionData("holidays");
   const isLoading = isCollectionLoading("holidays");
 
@@ -98,9 +46,7 @@ const Holidays = () => {
       initialize(false, "holidays"); // pagination = false
     }
 
-    if (!holidays?.length) {
-      fetchHolidays();
-    }
+    if (!holidays?.length) fetchHolidays();
   }, []);
 
   const fetchHolidays = async () => {
@@ -111,22 +57,6 @@ const Holidays = () => {
       toast.error("Dam olish kunlarini yuklashda xatolik");
       setCollection([], true, "holidays");
     }
-  };
-
-  // Modal success actions
-  const handleCreate = () => {
-    fetchHolidays();
-    toast.success("Dam olish kuni qo'shildi");
-  };
-
-  const handleUpdate = () => {
-    fetchHolidays();
-    toast.success("Dam olish kuni yangilandi");
-  };
-
-  const handleDelete = () => {
-    fetchHolidays();
-    toast.success("Dam olish kuni o'chirildi");
   };
 
   if (isLoading) {
@@ -190,7 +120,7 @@ const Holidays = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {getTypeLabel(holiday.type)}
+                      {getHolidayTypeLabel(holiday.type)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {formatHolidayDate(holiday)}
@@ -232,17 +162,17 @@ const Holidays = () => {
 
       {/* Create Modal */}
       <ResponsiveModal name="createHoliday" title="Yangi dam olish kuni">
-        <HolidayForm onSuccess={handleCreate} />
+        <HolidayForm onSuccess={fetchHolidays} />
       </ResponsiveModal>
 
       {/* Edit Modal */}
       <ResponsiveModal name="editHoliday" title="Dam olish kunini tahrirlash">
-        <HolidayForm isEdit onSuccess={handleUpdate} />
+        <HolidayForm isEdit onSuccess={fetchHolidays} />
       </ResponsiveModal>
 
       {/* Delete Modal */}
       <ResponsiveModal name="deleteHoliday" title="Dam olish kunini o'chirish">
-        <DeleteHolidayForm onSuccess={handleDelete} />
+        <DeleteHolidayForm onSuccess={fetchHolidays} />
       </ResponsiveModal>
     </div>
   );
@@ -250,28 +180,45 @@ const Holidays = () => {
 
 // Holiday Form Component
 const HolidayForm = ({
-  isEdit = false,
-  onSuccess,
   close,
   isLoading,
+  onSuccess,
   setIsLoading,
+  isEdit = false,
   ...holiday
 }) => {
-  const [formData, setFormData] = useState({
+  const {
+    name,
+    type,
+    date,
+    endDate,
+    isActive,
+    setField,
+    setFields,
+    startDate,
+    description,
+    recurringDay,
+    recurringType,
+    recurringMonth,
+    recurringEndDay,
+    recurringStartDay,
+    recurringEndMonth,
+    recurringStartMonth,
+  } = useObjectState({
     name: "",
-    description: "",
-    type: "single",
     date: "",
-    startDate: "",
     endDate: "",
-    recurringType: "single", // 'single' yoki 'range'
-    recurringMonth: 0,
+    startDate: "",
+    type: "single",
+    isActive: true,
+    description: "",
     recurringDay: 1,
-    recurringStartMonth: 0,
+    recurringMonth: 0,
+    recurringEndDay: 1,
     recurringStartDay: 1,
     recurringEndMonth: 0,
-    recurringEndDay: 1,
-    isActive: true,
+    recurringStartMonth: 0,
+    recurringType: "single",
   });
 
   useEffect(() => {
@@ -280,21 +227,21 @@ const HolidayForm = ({
         holiday.recurringStartDate?.month !== undefined &&
         holiday.recurringEndDate?.month !== undefined;
 
-      setFormData({
+      setFields({
         name: holiday.name || "",
-        description: holiday.description || "",
         type: holiday.type || "single",
-        date: holiday.date ? holiday.date.split("T")[0] : "",
-        startDate: holiday.startDate ? holiday.startDate.split("T")[0] : "",
-        endDate: holiday.endDate ? holiday.endDate.split("T")[0] : "",
-        recurringType: hasRecurringRange ? "range" : "single",
-        recurringMonth: holiday.recurringDate?.month ?? 0,
-        recurringDay: holiday.recurringDate?.day ?? 1,
-        recurringStartMonth: holiday.recurringStartDate?.month ?? 0,
-        recurringStartDay: holiday.recurringStartDate?.day ?? 1,
-        recurringEndMonth: holiday.recurringEndDate?.month ?? 0,
-        recurringEndDay: holiday.recurringEndDate?.day ?? 1,
         isActive: holiday.isActive ?? true,
+        description: holiday.description || "",
+        recurringDay: holiday.recurringDate?.day ?? 1,
+        recurringMonth: holiday.recurringDate?.month ?? 0,
+        recurringEndDay: holiday.recurringEndDate?.day ?? 1,
+        date: holiday.date ? holiday.date.split("T")[0] : "",
+        recurringType: hasRecurringRange ? "range" : "single",
+        recurringEndMonth: holiday.recurringEndDate?.month ?? 0,
+        recurringStartDay: holiday.recurringStartDate?.day ?? 1,
+        recurringStartMonth: holiday.recurringStartDate?.month ?? 0,
+        endDate: holiday.endDate ? holiday.endDate.split("T")[0] : "",
+        startDate: holiday.startDate ? holiday.startDate.split("T")[0] : "",
       });
     }
   }, [isEdit, holiday._id]);
@@ -304,32 +251,27 @@ const HolidayForm = ({
     setIsLoading(true);
 
     try {
-      const payload = {
-        name: formData.name,
-        description: formData.description,
-        type: formData.type,
-        isActive: formData.isActive,
-      };
+      const payload = { name, description, type, isActive };
 
-      if (formData.type === "single") {
-        payload.date = formData.date;
-      } else if (formData.type === "range") {
-        payload.startDate = formData.startDate;
-        payload.endDate = formData.endDate;
-      } else if (formData.type === "recurring") {
-        if (formData.recurringType === "single") {
+      if (type === "single") {
+        payload.date = date;
+      } else if (type === "range") {
+        payload.startDate = startDate;
+        payload.endDate = endDate;
+      } else if (type === "recurring") {
+        if (recurringType === "single") {
           payload.recurringDate = {
-            month: parseInt(formData.recurringMonth),
-            day: parseInt(formData.recurringDay),
+            month: parseInt(recurringMonth),
+            day: parseInt(recurringDay),
           };
         } else {
           payload.recurringStartDate = {
-            month: parseInt(formData.recurringStartMonth),
-            day: parseInt(formData.recurringStartDay),
+            month: parseInt(recurringStartMonth),
+            day: parseInt(recurringStartDay),
           };
           payload.recurringEndDate = {
-            month: parseInt(formData.recurringEndMonth),
-            day: parseInt(formData.recurringEndDay),
+            month: parseInt(recurringEndMonth),
+            day: parseInt(recurringEndDay),
           };
         }
       }
@@ -337,8 +279,10 @@ const HolidayForm = ({
       let response;
       if (isEdit) {
         response = await holidaysAPI.update(holiday._id, payload);
+        toast.success("Dam olish kuni yangilandi");
       } else {
         response = await holidaysAPI.create(payload);
+        toast.success("Dam olish kuni yaratildi");
       }
 
       onSuccess(response.data.data);
@@ -355,94 +299,90 @@ const HolidayForm = ({
       <Input
         required
         label="Nomi"
-        value={formData.name}
-        onChange={(v) => setFormData({ ...formData, name: v })}
+        value={name}
+        onChange={(v) => setField("name", v)}
         placeholder="Masalan: Yangi yil bayrami"
       />
 
       <Input
         label="Tavsif"
-        value={formData.description}
-        onChange={(v) => setFormData({ ...formData, description: v })}
+        value={description}
+        onChange={(v) => setField("description", v)}
         placeholder="Qo'shimcha ma'lumot"
       />
 
       <Select
         required
         label="Turi"
-        value={formData.type}
-        onChange={(v) => setFormData({ ...formData, type: v })}
-        options={HOLIDAY_TYPES}
+        value={type}
+        onChange={(v) => setField("type", v)}
+        options={holidayTypes}
       />
 
       {/* Bir kunlik */}
-      {formData.type === "single" && (
+      {type === "single" && (
         <Input
           required
           type="date"
           label="Sana"
-          value={formData.date}
-          onChange={(v) => setFormData({ ...formData, date: v })}
+          value={date}
+          onChange={(v) => setField("date", v)}
         />
       )}
 
       {/* Vaqt oralig'i */}
-      {formData.type === "range" && (
+      {type === "range" && (
         <div className="grid grid-cols-2 gap-4">
           <Input
             required
             type="date"
             label="Boshlanish"
-            value={formData.startDate}
-            onChange={(v) => setFormData({ ...formData, startDate: v })}
+            value={startDate}
+            onChange={(v) => setField("startDate", v)}
           />
           <Input
             required
             type="date"
             label="Tugash"
-            value={formData.endDate}
-            onChange={(v) => setFormData({ ...formData, endDate: v })}
+            value={endDate}
+            onChange={(v) => setField("endDate", v)}
           />
         </div>
       )}
 
       {/* Har yili takrorlanuvchi */}
-      {formData.type === "recurring" && (
+      {type === "recurring" && (
         <div className="space-y-4">
           <Select
             label="Takrorlanish turi"
-            value={formData.recurringType}
-            onChange={(v) => setFormData({ ...formData, recurringType: v })}
+            value={recurringType}
+            onChange={(v) => setField("recurringType", v)}
             options={[
               { label: "Bir kun", value: "single" },
               { label: "Vaqt oralig'i", value: "range" },
             ]}
           />
 
-          {formData.recurringType === "single" && (
+          {recurringType === "single" && (
             <div className="grid grid-cols-2 gap-4">
               <Select
                 label="Oy"
-                value={formData.recurringMonth}
-                onChange={(v) =>
-                  setFormData({ ...formData, recurringMonth: parseInt(v) })
-                }
-                options={MONTHS}
+                value={recurringMonth}
+                onChange={(v) => setField("recurringMonth", parseInt(v))}
+                options={months}
               />
               <Input
                 type="number"
                 label="Kun"
                 min={1}
                 max={31}
-                value={formData.recurringDay}
-                onChange={(v) =>
-                  setFormData({ ...formData, recurringDay: parseInt(v) })
-                }
+                value={recurringDay}
+                onChange={(v) => setField("recurringDay", parseInt(v))}
               />
             </div>
           )}
 
-          {formData.recurringType === "range" && (
+          {recurringType === "range" && (
             <>
               <p className="text-sm text-gray-600 font-medium">
                 Boshlanish sanasi:
@@ -450,27 +390,17 @@ const HolidayForm = ({
               <div className="grid grid-cols-2 gap-4">
                 <Select
                   label="Oy"
-                  value={formData.recurringStartMonth}
-                  onChange={(v) =>
-                    setFormData({
-                      ...formData,
-                      recurringStartMonth: parseInt(v),
-                    })
-                  }
-                  options={MONTHS}
+                  value={recurringStartMonth}
+                  onChange={(v) => setField("recurringStartMonth", parseInt(v))}
+                  options={months}
                 />
                 <Input
                   type="number"
                   label="Kun"
                   min={1}
                   max={31}
-                  value={formData.recurringStartDay}
-                  onChange={(v) =>
-                    setFormData({
-                      ...formData,
-                      recurringStartDay: parseInt(v),
-                    })
-                  }
+                  value={recurringStartDay}
+                  onChange={(v) => setField("recurringStartDay", parseInt(v))}
                 />
               </div>
 
@@ -480,21 +410,17 @@ const HolidayForm = ({
               <div className="grid grid-cols-2 gap-4">
                 <Select
                   label="Oy"
-                  value={formData.recurringEndMonth}
-                  onChange={(v) =>
-                    setFormData({ ...formData, recurringEndMonth: parseInt(v) })
-                  }
-                  options={MONTHS}
+                  value={recurringEndMonth}
+                  onChange={(v) => setField("recurringEndMonth", parseInt(v))}
+                  options={months}
                 />
                 <Input
                   type="number"
                   label="Kun"
                   min={1}
                   max={31}
-                  value={formData.recurringEndDay}
-                  onChange={(v) =>
-                    setFormData({ ...formData, recurringEndDay: parseInt(v) })
-                  }
+                  value={recurringEndDay}
+                  onChange={(v) => setField("recurringEndDay", parseInt(v))}
                 />
               </div>
             </>
@@ -507,10 +433,8 @@ const HolidayForm = ({
         <input
           type="checkbox"
           id="isActive"
-          checked={formData.isActive}
-          onChange={(e) =>
-            setFormData({ ...formData, isActive: e.target.checked })
-          }
+          checked={isActive}
+          onChange={(e) => setField("isActive", e.target.checked)}
           className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
         />
         <label htmlFor="isActive" className="text-sm text-gray-700">
@@ -548,8 +472,9 @@ const DeleteHolidayForm = ({
     setIsLoading(true);
 
     try {
+      onSuccess();
       await holidaysAPI.delete(holiday._id);
-      onSuccess(holiday._id);
+      toast.success("Dam olish kuni o'chirildi");
       close();
     } catch (error) {
       toast.error("O'chirishda xatolik");
