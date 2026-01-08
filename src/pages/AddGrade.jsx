@@ -79,36 +79,6 @@ const AddGrade = () => {
     }
   }, [selectedClass, selectedSubject]);
 
-  // Agar dam olish kuni bo'lsa
-  if (checkingHoliday) {
-    return <div className="text-center py-8">Tekshirilmoqda...</div>;
-  }
-
-  if (holidayInfo.isHoliday) {
-    return (
-      <Card className="text-center py-12">
-        <CalendarOff
-          className="w-16 h-16 text-orange-500 mx-auto mb-4"
-          strokeWidth={1.5}
-        />
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          Bugun dam olish kuni
-        </h2>
-        <p className="text-gray-600 mb-2 font-medium">
-          {holidayInfo.holiday?.name}
-        </p>
-        {holidayInfo.holiday?.description && (
-          <p className="text-gray-500 text-sm">
-            {holidayInfo.holiday.description}
-          </p>
-        )}
-        <p className="text-orange-600 mt-4">
-          Dam olish kunlarida baho qo'yish mumkin emas
-        </p>
-      </Card>
-    );
-  }
-
   const fetchTeacherSubjects = async () => {
     try {
       const response = await gradesAPI.getTeacherSubjects(selectedClass);
@@ -189,6 +159,36 @@ const AddGrade = () => {
     setEditingStudentId(null);
     setTempGrade({ grade: 5, comment: "" });
   };
+
+  // Agar dam olish kuni bo'lsa
+  if (checkingHoliday) {
+    return <div className="text-center py-8">Tekshirilmoqda...</div>;
+  }
+
+  if (holidayInfo.isHoliday) {
+    return (
+      <Card className="text-center py-12">
+        <CalendarOff
+          className="w-16 h-16 text-orange-500 mx-auto mb-4"
+          strokeWidth={1.5}
+        />
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          Bugun dam olish kuni
+        </h2>
+        <p className="text-gray-600 mb-2 font-medium">
+          {holidayInfo.holiday?.name}
+        </p>
+        {holidayInfo.holiday?.description && (
+          <p className="text-gray-500 text-sm">
+            {holidayInfo.holiday.description}
+          </p>
+        )}
+        <p className="text-orange-600 mt-4">
+          Dam olish kunlarida baho qo'yish mumkin emas
+        </p>
+      </Card>
+    );
+  }
 
   return (
     <div>

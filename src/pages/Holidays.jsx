@@ -35,6 +35,7 @@ const Holidays = () => {
     setCollection,
     getCollectionData,
     isCollectionLoading,
+    setCollectionLoadingState,
   } = useArrayStore();
 
   const { openModal } = useModal();
@@ -51,6 +52,7 @@ const Holidays = () => {
 
   const fetchHolidays = async () => {
     try {
+      setCollectionLoadingState(true, "holidays");
       const response = await holidaysAPI.getAll();
       setCollection(response.data.data, null, "holidays");
     } catch (error) {
@@ -66,16 +68,13 @@ const Holidays = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Dam olish kunlari</h1>
-        <Button
-          className="px-4"
-          onClick={() => openModal("createHoliday", null)}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Qo'shish
-        </Button>
-      </div>
+      <Button
+        className="px-4 mb-6"
+        onClick={() => openModal("createHoliday", null)}
+      >
+        <Plus className="w-4 h-4 mr-2" />
+        Qo'shish
+      </Button>
 
       {/* List */}
       {holidays.length === 0 ? (
@@ -244,7 +243,7 @@ const HolidayForm = ({
         startDate: holiday.startDate ? holiday.startDate.split("T")[0] : "",
       });
     }
-  }, [isEdit, holiday._id]);
+  }, [isEdit, holiday]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -307,16 +306,16 @@ const HolidayForm = ({
       <Input
         label="Tavsif"
         value={description}
-        onChange={(v) => setField("description", v)}
         placeholder="Qo'shimcha ma'lumot"
+        onChange={(v) => setField("description", v)}
       />
 
       <Select
         required
         label="Turi"
         value={type}
-        onChange={(v) => setField("type", v)}
         options={holidayTypes}
+        onChange={(v) => setField("type", v)}
       />
 
       {/* Bir kunlik */}
