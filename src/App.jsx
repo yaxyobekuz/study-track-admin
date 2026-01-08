@@ -11,6 +11,7 @@ import AddGrade from "./pages/AddGrade";
 import MyGrades from "./pages/MyGrades";
 import Schedules from "./pages/Schedules";
 import Dashboard from "./pages/Dashboard";
+import ClassStudents from "./pages/ClassStudents";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -69,6 +70,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={["owner"]}>
                 <Subjects />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="class-students"
+            element={
+              <ProtectedRoute allowedRoles={["owner", "teacher"]}>
+                <ClassStudents />
               </ProtectedRoute>
             }
           />
