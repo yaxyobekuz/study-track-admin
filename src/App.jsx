@@ -9,6 +9,7 @@ import Classes from "./pages/Classes";
 import Subjects from "./pages/Subjects";
 import AddGrade from "./pages/AddGrade";
 import MyGrades from "./pages/MyGrades";
+import Holidays from "./pages/Holidays";
 import Schedules from "./pages/Schedules";
 import Dashboard from "./pages/Dashboard";
 import ClassStudents from "./pages/ClassStudents";
@@ -70,6 +71,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={["owner"]}>
                 <Subjects />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="holidays"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <Holidays />
               </ProtectedRoute>
             }
           />
