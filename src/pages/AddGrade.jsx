@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // API
-import { gradesAPI } from "../api/client";
+import { gradesAPI, holidaysAPI } from "../api/client";
 
 // React
 import { useState, useEffect } from "react";
@@ -12,7 +12,7 @@ import Card from "@/components/Card";
 import Select from "@/components/form/select";
 
 // Icons
-import { Check, Edit2, Save, X } from "lucide-react";
+import { Check, Edit2, Save, X, CalendarOff } from "lucide-react";
 
 // Hooks
 import useArrayStore from "@/hooks/useArrayStore.hook";
@@ -29,7 +29,30 @@ const AddGrade = () => {
   const [editingStudentId, setEditingStudentId] = useState(null);
   const [tempGrade, setTempGrade] = useState({ grade: 5, comment: "" });
 
+  // Dam olish kuni holati
+  const [holidayInfo, setHolidayInfo] = useState({
+    isHoliday: false,
+    holiday: null,
+  });
+  const [checkingHoliday, setCheckingHoliday] = useState(true);
+
   const { data: classes } = useArrayStore("classes");
+
+  // Sahifa yuklanganda dam olish kunini tekshirish
+  useEffect(() => {
+    checkTodayHoliday();
+  }, []);
+
+  const checkTodayHoliday = async () => {
+    try {
+      const response = await holidaysAPI.checkToday();
+      setHolidayInfo(response.data.data);
+    } catch (error) {
+      console.error("Holiday check error:", error);
+    } finally {
+      setCheckingHoliday(false);
+    }
+  };
 
   // Load saved selections from localStorage
   useEffect(() => {
@@ -55,6 +78,36 @@ const AddGrade = () => {
       localStorage.setItem("addGrade_selectedSubject", selectedSubject);
     }
   }, [selectedClass, selectedSubject]);
+
+  // Agar dam olish kuni bo'lsa
+  if (checkingHoliday) {
+    return <div className="text-center py-8">Tekshirilmoqda...</div>;
+  }
+
+  if (holidayInfo.isHoliday) {
+    return (
+      <Card className="text-center py-12">
+        <CalendarOff
+          className="w-16 h-16 text-orange-500 mx-auto mb-4"
+          strokeWidth={1.5}
+        />
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          Bugun dam olish kuni
+        </h2>
+        <p className="text-gray-600 mb-2 font-medium">
+          {holidayInfo.holiday?.name}
+        </p>
+        {holidayInfo.holiday?.description && (
+          <p className="text-gray-500 text-sm">
+            {holidayInfo.holiday.description}
+          </p>
+        )}
+        <p className="text-orange-600 mt-4">
+          Dam olish kunlarida baho qo'yish mumkin emas
+        </p>
+      </Card>
+    );
+  }
 
   const fetchTeacherSubjects = async () => {
     try {

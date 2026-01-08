@@ -9,6 +9,7 @@ import {
   Calendar,
   BookOpen,
   PlusCircle,
+  CalendarDays,
   GraduationCap,
   ClipboardList,
 } from "lucide-react";
@@ -73,6 +74,7 @@ const DashboardLayout = () => {
         { name: "Foydalanuvchilar", href: "/users", icon: Users },
         { name: "Sinflar", href: "/classes", icon: GraduationCap },
         { name: "Fanlar", href: "/subjects", icon: BookOpen },
+        { name: "Dam olish kunlari", href: "/holidays", icon: CalendarDays },
         { name: "Dars jadvali", href: "/schedules", icon: Calendar },
         { name: "Sinf o'quvchilari", href: "/class-students", icon: Users },
         { name: "Baholar jurnali", href: "/grades", icon: Eye },

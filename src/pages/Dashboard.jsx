@@ -1,7 +1,11 @@
+// React
+import { useState, useEffect } from "react";
+
 // Icons
 import {
   Users,
   BookOpen,
+  PartyPopper,
   PlusCircle,
   ClipboardList,
   GraduationCap,
@@ -19,10 +23,65 @@ import { useAuth } from "../store/authStore";
 // Helpers
 import { getRoleLabel } from "@/helpers/role.helpers";
 
+// API
+import { holidaysAPI } from "@/api/client";
+
 const Dashboard = () => {
   const { user } = useAuth();
+  const [holidayInfo, setHolidayInfo] = useState({
+    isHoliday: false,
+    holiday: null,
+  });
+  const [checkingHoliday, setCheckingHoliday] = useState(true);
+
+  // Sahifa yuklanganda dam olish kunini tekshirish
+  useEffect(() => {
+    checkTodayHoliday();
+  }, []);
+
+  const checkTodayHoliday = async () => {
+    try {
+      const response = await holidaysAPI.checkToday();
+      setHolidayInfo(response.data.data);
+    } catch (error) {
+      console.error("Holiday check error:", error);
+    } finally {
+      setCheckingHoliday(false);
+    }
+  };
+
   return (
     <div>
+      {/* Holiday Banner */}
+      {!checkingHoliday && holidayInfo.isHoliday && (
+        <Card className="mb-6 bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-orange-100 rounded-full">
+              <PartyPopper
+                className="size-8 text-orange-600"
+                strokeWidth={1.5}
+              />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-orange-800">
+                🎉 Bugun bayram kuni!
+              </h3>
+              <p className="text-orange-700 font-medium mt-1">
+                {holidayInfo.holiday?.name}
+              </p>
+              {holidayInfo.holiday?.description && (
+                <p className="text-orange-600 text-sm mt-1">
+                  {holidayInfo.holiday.description}
+                </p>
+              )}
+              <p className="text-orange-500 text-sm mt-2">
+                Dam olish kunlarida darslar o'tkazilmaydi va baholar qo'yilmaydi
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Welcome Section */}
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl">
