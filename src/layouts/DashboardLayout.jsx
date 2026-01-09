@@ -86,7 +86,6 @@ const DashboardLayout = () => {
         ...baseNav,
         { name: "Dars jadvali", href: "/schedules", icon: Calendar },
         { name: "Baho qo'yish", href: "/add-grade", icon: PlusCircle },
-        { name: "Sinf o'quvchilari", href: "/class-students", icon: Users },
         { name: "Baholar jurnali", href: "/grades", icon: Eye },
       ];
     }
