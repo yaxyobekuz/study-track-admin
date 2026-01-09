@@ -1,12 +1,9 @@
-// React
-import { useState, useEffect } from "react";
-
 // Icons
 import {
   Users,
   BookOpen,
-  PartyPopper,
   PlusCircle,
+  PartyPopper,
   ClipboardList,
   GraduationCap,
 } from "lucide-react";
@@ -17,14 +14,23 @@ import Card from "@/components/Card";
 // Router
 import { Link } from "react-router-dom";
 
+// React
+import { useState, useEffect } from "react";
+
 // Store
 import { useAuth } from "../store/authStore";
+
+// Utils
+import { getDayOfWeekUZ } from "@/utils/date.utils";
 
 // Helpers
 import { getRoleLabel } from "@/helpers/role.helpers";
 
+// Hooks
+import useArrayStore from "@/hooks/useArrayStore.hook";
+
 // API
-import { holidaysAPI } from "@/api/client";
+import { holidaysAPI, schedulesAPI } from "@/api/client";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -91,7 +97,7 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <Card>
+      <Card className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Tezkor harakatlar
         </h3>
@@ -213,7 +219,125 @@ const Dashboard = () => {
           )}
         </div>
       </Card>
+
+      <MySchedules />
     </div>
+  );
+};
+
+const MySchedules = () => {
+  const today = new Date();
+  const { user } = useAuth();
+  const dayName = getDayOfWeekUZ(today);
+
+  const {
+    initialize,
+    hasCollection,
+    setCollection,
+    getCollectionData,
+    isCollectionLoading,
+    setCollectionErrorState,
+    setCollectionLoadingState,
+  } = useArrayStore("todaySchedules");
+
+  const schedules = getCollectionData() || [];
+  const loading = isCollectionLoading();
+
+  // Initialize collection (non-paginated)
+  useEffect(() => {
+    if (!hasCollection()) initialize(false);
+  }, [initialize, hasCollection]);
+
+  useEffect(() => {
+    if (user?.role === "teacher" && !schedules.length) {
+      fetchTodaySchedule();
+    }
+  }, [user, schedules.length]);
+
+  const fetchTodaySchedule = () => {
+    setCollectionLoadingState(true);
+
+    schedulesAPI
+      .getMyToday()
+      .then((res) => setCollection(res.data.data, null))
+      .catch(() => setCollectionErrorState(true));
+  };
+
+  // Barcha darslarni bitta ro'yxatga jamlab, order bo'yicha saralash
+  const allLessons = schedules
+    .flatMap((schedule) =>
+      schedule.subjects.map((subject) => ({
+        order: subject.order,
+        subjectName: subject.subject.name,
+        className: schedule.class.name,
+      }))
+    )
+    .sort((a, b) => a.order - b.order);
+
+  // Agar o'qituvchi emas yoki yakshanba bo'lsa ko'rsatmaymiz
+  if (user?.role !== "teacher" || dayName === "yakshanba") {
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <Card>
+        <div className="flex items-center justify-center p-8">
+          <div className="animate-pulse text-gray-500">Yuklanmoqda...</div>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      {/* Title */}
+      <h3 className="mb-4 text-lg font-semibold text-gray-900">
+        Bugungi dars jadvali
+      </h3>
+
+      {/* No data */}
+      {allLessons.length === 0 && (
+        <div className="text-center py-8">
+          <BookOpen
+            className="size-12 text-gray-300 mx-auto mb-3"
+            strokeWidth={1.5}
+          />
+          <p className="text-gray-500">Bugun darslar yo'q</p>
+        </div>
+      )}
+
+      {/* Lessons */}
+      {!!allLessons.length && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {allLessons.map((lesson, idx) => (
+            <div
+              key={idx}
+              className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              {/* Order */}
+              <span className="flex items-center justify-center w-8 h-8 bg-indigo-100 text-indigo-700 font-semibold rounded">
+                {lesson.order}
+              </span>
+
+              {/* Subject */}
+              <p className="text-sm grow font-medium text-gray-900 sm:text-base">
+                {lesson.subjectName}
+              </p>
+
+              {/* Class */}
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <GraduationCap
+                  strokeWidth={1.5}
+                  className="hidden size-4 sm:inline-block"
+                />
+                <span>{lesson.className}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 };
 

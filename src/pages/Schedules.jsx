@@ -52,7 +52,7 @@ const Schedules = () => {
 
   useEffect(() => {
     if (selectedClass && !schedules?.length) fetchSchedules();
-  }, [selectedClass, schedules?.length]);
+  }, [selectedClass, schedules]);
 
   const fetchSchedules = () => {
     setCollectionLoadingState(true);
