@@ -140,7 +140,7 @@ const DashboardLayout = () => {
                 />
 
                 <span className="lg:text-xl font-bold text-gray-900">
-                  Study Tracker
+                  MBSI School
                 </span>
               </div>
 
@@ -216,7 +216,7 @@ const DashboardLayout = () => {
               <div className="flex-1 lg:flex-none">
                 <h1 className="text-xl font-semibold text-gray-900">
                   {navigation.find((item) => isActive(item.href))?.name ||
-                    "Study Tracker"}
+                    "MBSI School"}
                 </h1>
               </div>
 

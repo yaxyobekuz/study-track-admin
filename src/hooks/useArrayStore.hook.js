@@ -440,14 +440,14 @@ const useArrayStore = (defaultCollectionName = "") => {
 
   // Invalidate collection cache (clear all pages/data)
   const invalidateCache = useCallback(
-    (collectionName = defaultCollectionName, isLoading = false) => {
+    (collectionName = defaultCollectionName, isLoading = true) => {
       dispatch(invalidateCollection({ isLoading, collectionName }));
     },
     [dispatch, defaultCollectionName]
   );
 
   const invalidateCacheByStartsName = useCallback(
-    (startsName = defaultCollectionName, isLoading = false) => {
+    (startsName = defaultCollectionName, isLoading = true) => {
       Object.keys(arrayStore).forEach((name) => {
         if (!name?.startsWith(startsName)) return;
         dispatch(invalidateCollection({ isLoading, collectionName: name }));

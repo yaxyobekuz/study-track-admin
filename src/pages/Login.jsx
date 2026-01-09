@@ -67,7 +67,7 @@ const Login = () => {
               src={logoImg}
               className="size-16 mx-auto mb-4"
             />
-            <h2 className="text-3xl font-bold text-gray-900">Study Tracker</h2>
+            <h2 className="text-3xl font-bold text-gray-900">MBSI School</h2>
             <p className="text-gray-600 mt-2">Tizimga kirish</p>
           </div>
 

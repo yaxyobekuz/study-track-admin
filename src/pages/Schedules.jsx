@@ -34,11 +34,13 @@ const Schedules = () => {
     hasCollection,
     setCollection,
     getCollectionData,
+    isCollectionLoading,
     setCollectionErrorState,
     setCollectionLoadingState,
   } = useArrayStore(collectionName);
   const classes = getCollectionData("classes");
   const schedules = getCollectionData(collectionName);
+  const classesLoading = isCollectionLoading("classes");
 
   useEffect(() => {
     if (!hasCollection()) initialize(false, collectionName);
@@ -52,7 +54,7 @@ const Schedules = () => {
 
   useEffect(() => {
     if (selectedClass && !schedules?.length) fetchSchedules();
-  }, [selectedClass, schedules]);
+  }, [selectedClass, schedules?.length, classesLoading]);
 
   const fetchSchedules = () => {
     setCollectionLoadingState(true);

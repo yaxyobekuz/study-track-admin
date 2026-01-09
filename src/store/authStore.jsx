@@ -31,8 +31,6 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(true);
     } catch (error) {
       console.error("Profil yuklanmadi:", error);
-      // Token noto'g'ri bo'lsa - logout
-      logout();
     } finally {
       setLoading(false);
     }
