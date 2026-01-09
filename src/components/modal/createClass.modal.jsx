@@ -63,12 +63,11 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
         <Input
           required
-          maxLength={1}
-          label="Bo'lim"
+          label="Nom"
           name="section"
+          maxLength={32}
           value={section}
           placeholder="A, B, C..."
-          className="[&>input]:uppercase"
           onChange={(v) => setField("section", v)}
         />
       </div>

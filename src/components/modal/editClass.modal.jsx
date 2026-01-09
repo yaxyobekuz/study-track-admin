@@ -15,7 +15,7 @@ import useArrayStore from "@/hooks/useArrayStore.hook";
 import useObjectState from "@/hooks/useObjectState.hook";
 
 const EditClassModal = () => (
-  <ResponsiveModal name="editClass" title="Foydalanuvchini tahrirlash">
+  <ResponsiveModal name="editClass" title="Sinfni tahrirlash">
     <Content />
   </ResponsiveModal>
 );
@@ -64,12 +64,11 @@ const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
 
         <Input
           required
-          maxLength={1}
-          label="Bo'lim"
+          label="Nom"
           name="section"
+          maxLength={32}
           value={section}
           placeholder="A, B, C..."
-          className="[&>input]:uppercase"
           onChange={(v) => setField("section", v)}
         />
       </div>
