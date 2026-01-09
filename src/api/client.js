@@ -84,10 +84,18 @@ export const gradesAPI = {
   getAll: (params) => api.get("/grades", { params }),
   getByClassAndDate: (classId, date) =>
     api.get(`/grades/class/${classId}/date/${date}`),
-  getStudentGrades: (studentId) =>
-    studentId
-      ? api.get(`/grades/student/${studentId}`)
-      : api.get("/grades/student/my-grades"),
+  getStudentGrades: (dateOrStudentId) => {
+    // If it's a date format (YYYY-MM-DD), it's for current student with date filter
+    if (typeof dateOrStudentId === 'string' && dateOrStudentId.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return api.get("/grades/student/my-grades", { params: { date: dateOrStudentId } });
+    }
+    // If it's undefined, get current student's all grades
+    if (!dateOrStudentId) {
+      return api.get("/grades/student/my-grades");
+    }
+    // Otherwise it's a student ID (for owner viewing specific student)
+    return api.get(`/grades/student/${dateOrStudentId}`);
+  },
   getTeacherSubjects: (classId) =>
     api.get(`/grades/teacher/subjects/${classId}`),
   getStudentsWithGrades: (params) =>
