@@ -25,7 +25,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
   const classes = getCollectionData();
 
   const { firstName, lastName, state, setField } = useObjectState({
-    class: user.class._id,
+    class: user.class?._id,
     lastName: user.lastName,
     firstName: user.firstName,
   });

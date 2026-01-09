@@ -50,6 +50,7 @@ export const usersAPI = {
   update: (id, data) => api.put(`/users/${id}`, data),
   delete: (id) => api.delete(`/users/${id}`),
   resetPassword: (id, data) => api.put(`/users/${id}/reset-password`, data),
+  getPassword: (id) => api.get(`/users/${id}/password`),
 };
 
 // Subjects API

@@ -11,6 +11,7 @@ const initialState = {
   deleteUser: initialModalData,
   createUser: initialModalData,
   resetUserPassword: initialModalData,
+  viewUserPassword: initialModalData,
 
   // Class
   createClass: initialModalData,

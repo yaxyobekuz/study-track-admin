@@ -52,6 +52,7 @@ import CreateSubjectModal from "../components/modal/createSubject.modal";
 import DeleteSubjectModal from "../components/modal/deleteSubject.modal";
 import CreateScheduleModal from "../components/modal/createSchedule.modal";
 import DeleteScheduleModal from "../components/modal/deleteSchedule.modal";
+import ViewUserPasswordModal from "../components/modal/viewUserPassword.modal";
 import ResetUserPasswordModal from "../components/modal/resetUserPassword.modal";
 
 const DashboardLayout = () => {
@@ -243,6 +244,7 @@ const DashboardLayout = () => {
       <DeleteUserModal />
       <CreateUserModal />
       <ResetUserPasswordModal />
+      <ViewUserPasswordModal />
 
       {/* Class Modals */}
       <EditClassModal />

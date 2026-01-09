@@ -1,8 +1,11 @@
-// UI
+// Toast
 import { toast } from "sonner";
 
 // API
 import { usersAPI } from "../api/client";
+
+// Store
+import { useAuth } from "@/store/authStore";
 
 // React
 import { useEffect, useCallback } from "react";
@@ -17,15 +20,16 @@ import { getRoleLabel } from "@/helpers/role.helpers";
 import useModal from "@/hooks/useModal.hook";
 import useArrayStore from "@/hooks/useArrayStore.hook";
 
-// Icons
-import { Plus, Edit, Trash2, Key } from "lucide-react";
-
 // Components
 import Card from "@/components/Card";
 import Button from "@/components/form/button";
 import Pagination from "@/components/pagination.component";
 
+// Icons
+import { Plus, Edit, Trash2, Key, Eye } from "lucide-react";
+
 const Users = () => {
+  const { user: currentUser } = useAuth();
   const { openModal } = useModal();
 
   // Search params
@@ -163,6 +167,18 @@ const Users = () => {
                         <Edit className="size-5" strokeWidth={1.5} />
                       </button>
 
+                      {/*View Password (Owner only) */}
+                      {currentUser?.role === "owner" && (
+                        <button
+                          onClick={() => openModal("viewUserPassword", user)}
+                          className="text-purple-600 hover:text-purple-900"
+                          title="Parolni ko'rish"
+                        >
+                          <Eye className="size-5" strokeWidth={1.5} />
+                        </button>
+                      )}
+
+                      {/* 
                       {/* Reset Password */}
                       <button
                         onClick={() => openModal("resetUserPassword", user)}
