@@ -14,6 +14,9 @@ import Card from "@/components/Card";
 // Router
 import { Link } from "react-router-dom";
 
+// API
+import { schedulesAPI } from "@/api/client";
+
 // React
 import { useState, useEffect } from "react";
 
@@ -28,38 +31,19 @@ import { getRoleLabel } from "@/helpers/role.helpers";
 
 // Hooks
 import useArrayStore from "@/hooks/useArrayStore.hook";
-
-// API
-import { holidaysAPI, schedulesAPI } from "@/api/client";
+import useObjectStore from "@/hooks/useObjectStore.hook";
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [holidayInfo, setHolidayInfo] = useState({
-    isHoliday: false,
-    holiday: null,
-  });
-  const [checkingHoliday, setCheckingHoliday] = useState(true);
 
-  // Sahifa yuklanganda dam olish kunini tekshirish
-  useEffect(() => {
-    checkTodayHoliday();
-  }, []);
-
-  const checkTodayHoliday = async () => {
-    try {
-      const response = await holidaysAPI.checkToday();
-      setHolidayInfo(response.data.data);
-    } catch (error) {
-      console.error("Holiday check error:", error);
-    } finally {
-      setCheckingHoliday(false);
-    }
-  };
+  // Holiday Info
+  const { getEntity } = useObjectStore("holidayCheck");
+  const holidayInfo = getEntity("today") || { isHoliday: false, holiday: null };
 
   return (
     <div>
       {/* Holiday Banner */}
-      {!checkingHoliday && holidayInfo.isHoliday && (
+      {holidayInfo.isHoliday && (
         <Card className="mb-6 bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-orange-100 rounded-full">

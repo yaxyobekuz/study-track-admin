@@ -28,15 +28,16 @@ import { getRoleLabel } from "@/helpers/role.helpers";
 
 // Hooks
 import useArrayStore from "@/hooks/useArrayStore.hook";
-
-// API
-import { classesAPI, subjectsAPI, usersAPI } from "@/api/client";
+import useObjectStore from "@/hooks/useObjectStore.hook";
 
 // Utils
 import { formatDateUZ, getDayOfWeekUZ } from "@/utils/date.utils";
 
 // Router
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+
+// API
+import { classesAPI, holidaysAPI, subjectsAPI, usersAPI } from "@/api/client";
 
 // Components
 import EditUserModal from "../components/modal/editUser.modal";
@@ -276,6 +277,8 @@ const actions = (user) => {
   const subjects = getCollectionData("subjects");
   const teachers = getCollectionData("teachers");
 
+  const { addEntity, hasEntity } = useObjectStore("holidayCheck");
+
   // Initialize collection (pagination = false)
   useEffect(() => {
     if (!hasCollection("classes")) initialize(false, "classes");
@@ -322,10 +325,20 @@ const actions = (user) => {
       });
   };
 
+  const checkTodayHoliday = () => {
+    holidaysAPI
+      .checkToday()
+      .then((res) => addEntity("today", res.data.data))
+      .catch(() => {
+        addEntity("today", { isHoliday: false, holiday: null });
+      });
+  };
+
   useEffect(() => {
     !classes?.length && fetchClasses();
     !subjects?.length && fetchSubjects();
     !teachers?.length && isOwner && fetchTeachers();
+    if (!hasEntity("today")) checkTodayHoliday();
   }, [classes?.length, subjects?.length, teachers?.length]);
 };
 

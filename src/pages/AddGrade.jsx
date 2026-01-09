@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // API
-import { gradesAPI, holidaysAPI } from "../api/client";
+import { gradesAPI } from "../api/client";
 
 // React
 import { useState, useEffect } from "react";
@@ -11,14 +11,15 @@ import { useState, useEffect } from "react";
 import Card from "@/components/Card";
 import Select from "@/components/form/select";
 
-// Icons
-import { Check, Edit2, Save, X, CalendarOff } from "lucide-react";
+// Helpers
+import { getGradeColor } from "@/helpers/grade.helpers";
 
 // Hooks
 import useArrayStore from "@/hooks/useArrayStore.hook";
+import useObjectStore from "@/hooks/useObjectStore.hook";
 
-// Helpers
-import { getGradeColor } from "@/helpers/grade.helpers";
+// Icons
+import { Check, Edit2, Save, X, CalendarOff } from "lucide-react";
 
 const AddGrade = () => {
   const [subjects, setSubjects] = useState([]);
@@ -29,30 +30,11 @@ const AddGrade = () => {
   const [editingStudentId, setEditingStudentId] = useState(null);
   const [tempGrade, setTempGrade] = useState({ grade: 5, comment: "" });
 
-  // Dam olish kuni holati
-  const [holidayInfo, setHolidayInfo] = useState({
-    isHoliday: false,
-    holiday: null,
-  });
-  const [checkingHoliday, setCheckingHoliday] = useState(true);
+  // Holiday Info
+  const { getEntity } = useObjectStore("holidayCheck");
+  const holidayInfo = getEntity("today") || { isHoliday: false, holiday: null };
 
   const { data: classes } = useArrayStore("classes");
-
-  // Sahifa yuklanganda dam olish kunini tekshirish
-  useEffect(() => {
-    checkTodayHoliday();
-  }, []);
-
-  const checkTodayHoliday = async () => {
-    try {
-      const response = await holidaysAPI.checkToday();
-      setHolidayInfo(response.data.data);
-    } catch (error) {
-      console.error("Holiday check error:", error);
-    } finally {
-      setCheckingHoliday(false);
-    }
-  };
 
   // Load saved selections from localStorage
   useEffect(() => {
@@ -159,11 +141,6 @@ const AddGrade = () => {
     setEditingStudentId(null);
     setTempGrade({ grade: 5, comment: "" });
   };
-
-  // Agar dam olish kuni bo'lsa
-  if (checkingHoliday) {
-    return <div className="text-center py-8">Tekshirilmoqda...</div>;
-  }
 
   if (holidayInfo.isHoliday) {
     return (
