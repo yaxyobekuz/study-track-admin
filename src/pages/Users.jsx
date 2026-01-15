@@ -7,9 +7,6 @@ import { usersAPI } from "../api/client";
 // Store
 import { useAuth } from "@/store/authStore";
 
-// React
-import { useEffect, useCallback } from "react";
-
 // Router
 import { useSearchParams } from "react-router-dom";
 
@@ -25,8 +22,11 @@ import Card from "@/components/Card";
 import Button from "@/components/form/button";
 import Pagination from "@/components/pagination.component";
 
+// React
+import { useEffect, useCallback, useState, useRef } from "react";
+
 // Icons
-import { Plus, Edit, Trash2, Key, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, Key, Eye, Search, X } from "lucide-react";
 
 const Users = () => {
   const { user: currentUser } = useAuth();
@@ -35,6 +35,51 @@ const Users = () => {
   // Search params
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const searchQuery = searchParams.get("search") || "";
+
+  // Search state
+  const [searchInput, setSearchInput] = useState(searchQuery);
+  const debounceRef = useRef(null);
+
+  // Debounced search handler
+  const handleSearchChange = useCallback(
+    (value) => {
+      setSearchInput(value);
+
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+
+      debounceRef.current = setTimeout(() => {
+        const params = new URLSearchParams(searchParams);
+        if (value.trim()) {
+          params.set("search", value.trim());
+          params.set("page", "1");
+        } else {
+          params.delete("search");
+          params.set("page", "1");
+        }
+        setSearchParams(params);
+      }, 1500);
+    },
+    [searchParams, setSearchParams]
+  );
+
+  // Clear search
+  const clearSearch = useCallback(() => {
+    setSearchInput("");
+    const params = new URLSearchParams(searchParams);
+    params.delete("search");
+    params.set("page", "1");
+    setSearchParams(params);
+  }, [searchParams, setSearchParams]);
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   const {
     setPage,
@@ -62,10 +107,13 @@ const Users = () => {
 
   // Load templates for current page & type
   const fetchUsers = useCallback(
-    (page) => {
+    (page, search) => {
       setPageLoadingState(page, true);
+      const params = { page, limit: 32 };
+      if (search) params.search = search;
+
       usersAPI
-        .getAll({ page, limit: 32 })
+        .getAll(params)
         .then((res) => {
           const { data, pagination } = res.data;
           setPage(page, data, null, pagination);
@@ -87,11 +135,10 @@ const Users = () => {
     [setSearchParams]
   );
 
-  // Load users when page changes
+  // Load users when page or search changes
   useEffect(() => {
-    const pageDataExists = getPageData(currentPage);
-    if (!pageDataExists) fetchUsers(currentPage);
-  }, [currentPage, fetchUsers, getPageData]);
+    fetchUsers(currentPage, searchQuery);
+  }, [currentPage, searchQuery, fetchUsers]);
 
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
@@ -99,11 +146,38 @@ const Users = () => {
 
   return (
     <div>
-      {/* Create New Btn */}
-      <Button onClick={() => openModal("createUser")} className="px-3.5 mb-6">
-        <Plus className="size-5 mr-2" strokeWidth={1.5} />
-        Yangi foydalanuvchi
-      </Button>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        {/* Create New Btn */}
+        <Button onClick={() => openModal("createUser")} className="px-3.5">
+          <Plus className="size-5 mr-2" strokeWidth={1.5} />
+          Yangi foydalanuvchi
+        </Button>
+
+        {/* Search Input */}
+        <div className="relative flex-1">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-gray-400"
+            strokeWidth={1.5}
+          />
+          <input
+            autoFocus
+            type="text"
+            value={searchInput}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Foydalanuvchi qidirish..."
+            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+          />
+          {searchInput && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="size-5" strokeWidth={1.5} />
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Table */}
       <Card responsive>
