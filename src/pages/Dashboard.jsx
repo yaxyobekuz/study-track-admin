@@ -6,6 +6,8 @@ import {
   PartyPopper,
   ClipboardList,
   GraduationCap,
+  UserCheck,
+  User as UserIcon,
 } from "lucide-react";
 
 // Components
@@ -15,7 +17,7 @@ import Card from "@/components/Card";
 import { Link } from "react-router-dom";
 
 // API
-import { schedulesAPI } from "@/api/client";
+import { schedulesAPI, usersAPI } from "@/api/client";
 
 // React
 import { useState, useEffect } from "react";
@@ -79,6 +81,9 @@ const Dashboard = () => {
           <span className="font-medium">{getRoleLabel(user?.role)}</span>
         </p>
       </div>
+
+      {/* User Statistics - Owner only */}
+      {user?.role === "owner" && <UserStats />}
 
       {/* Quick Actions */}
       <Card className="mb-6">
@@ -206,6 +211,70 @@ const Dashboard = () => {
 
       <MySchedules />
       <AllSchedulesToday />
+    </div>
+  );
+};
+
+const UserStats = () => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    usersAPI
+      .getStats()
+      .then((res) => setStats(res.data.data))
+      .catch(() => setStats(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="animate-pulse">
+            <div className="h-16 bg-gray-200 rounded" />
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (!stats) return null;
+
+  const statItems = [
+    {
+      label: "Jami foydalanuvchilar",
+      value: stats.total,
+      icon: Users,
+      color: "bg-blue-100 text-blue-600",
+    },
+    {
+      label: "O'qituvchilar",
+      value: stats.teachers,
+      icon: UserCheck,
+      color: "bg-green-100 text-green-600",
+    },
+    {
+      label: "O'quvchilar",
+      value: stats.students,
+      icon: UserIcon,
+      color: "bg-purple-100 text-purple-600",
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      {statItems.map((item, idx) => (
+        <Card key={idx} className="flex items-center gap-4">
+          <div className={`p-3 rounded-full ${item.color}`}>
+            <item.icon className="size-6" strokeWidth={1.5} />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-gray-900">{item.value}</p>
+            <p className="text-sm text-gray-500">{item.label}</p>
+          </div>
+        </Card>
+      ))}
     </div>
   );
 };
