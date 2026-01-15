@@ -65,6 +65,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         label="Ism"
         name="firstName"
         value={firstName}
+        autoComplete="off"
         onChange={(v) => setField("firstName", v)}
       />
 
@@ -73,6 +74,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         name="lastName"
         label="Familiya"
         value={lastName}
+        autoComplete="off"
         onChange={(v) => setField("lastName", v)}
       />
 
@@ -81,6 +83,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         name="username"
         label="Username"
         value={username}
+        autoComplete="off"
         className="[&>input]:lowercase"
         onChange={(v) => setField("username", v?.trim())}
       />
@@ -92,6 +95,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         type="password"
         name="password"
         value={password}
+        autoComplete="off"
         onChange={(v) => setField("password", v)}
       />
 
