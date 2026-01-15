@@ -8,6 +8,7 @@ import { usersAPI } from "@/api/client";
 import Input from "../form/input";
 import Select from "../form/select";
 import Button from "../form/button";
+import MultiSelect from "../form/multi-select";
 import ResponsiveModal from "../ResponsiveModal";
 
 // Hooks
@@ -26,7 +27,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
   const { username, password, firstName, lastName, role, state, setField } =
     useObjectState({
-      class: "",
+      classes: [],
       username: "",
       password: "",
       lastName: "",
@@ -37,8 +38,8 @@ const Content = ({ close, isLoading, setIsLoading }) => {
   const handleCreateUser = (e) => {
     e.preventDefault();
 
-    if (role === "student" && !state.class) {
-      return toast.warning("Sinf tanlanmagan");
+    if (role === "student" && (!state.classes || state.classes.length === 0)) {
+      return toast.warning("Kamida bitta sinf tanlanishi kerak");
     }
 
     setIsLoading(true);
@@ -105,11 +106,12 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         ]}
       />
       {role === "student" && (
-        <Select
+        <MultiSelect
           required
-          label="Sinf"
-          value={state.class}
-          onChange={(v) => setField("class", v)}
+          label="Sinflar"
+          value={state.classes}
+          placeholder="Sinflarni tanlang..."
+          onChange={(v) => setField("classes", v)}
           options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
         />
       )}

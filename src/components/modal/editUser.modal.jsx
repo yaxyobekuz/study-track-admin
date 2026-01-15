@@ -6,8 +6,8 @@ import { usersAPI } from "@/api/client";
 
 // Components
 import Input from "../form/input";
-import Select from "../form/select";
 import Button from "../form/button";
+import MultiSelect from "../form/multi-select";
 import ResponsiveModal from "../ResponsiveModal";
 
 // Hooks
@@ -25,7 +25,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
   const classes = getCollectionData();
 
   const { firstName, lastName, state, setField } = useObjectState({
-    class: user.class?._id,
+    classes: user.classes?.map((c) => c._id) || [],
     lastName: user.lastName,
     firstName: user.firstName,
   });
@@ -33,8 +33,8 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
   const handleEditUser = (e) => {
     e.preventDefault();
 
-    if (user.role === "student" && !state.class) {
-      return toast.warning("Sinf tanlanmagan");
+    if (user.role === "student" && (!state.classes || state.classes.length === 0)) {
+      return toast.warning("Kamida bitta sinf tanlanishi kerak");
     }
 
     setIsLoading(true);
@@ -71,11 +71,12 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
       />
 
       {user.role === "student" && (
-        <Select
+        <MultiSelect
           required
-          label="Sinf"
-          value={state.class}
-          onChange={(v) => setField("class", v)}
+          label="Sinflar"
+          value={state.classes}
+          placeholder="Sinflarni tanlang..."
+          onChange={(v) => setField("classes", v)}
           options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
         />
       )}

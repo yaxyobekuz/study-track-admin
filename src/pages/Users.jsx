@@ -165,7 +165,7 @@ const Users = () => {
   // Load users when page or search changes
   useEffect(() => {
     fetchUsers(currentPage, searchQuery, roleFilter);
-  }, [currentPage, searchQuery, roleFilter, fetchUsers]);
+  }, [currentPage, searchQuery, roleFilter, users?.length]);
 
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
@@ -226,7 +226,7 @@ const Users = () => {
                 <th className="px-6 py-3 text-left">F.I.O</th>
                 <th className="px-6 py-3 text-left">Username</th>
                 <th className="px-6 py-3 text-left">Rol</th>
-                <th className="px-6 py-3 text-left">Sinf</th>
+                <th className="px-6 py-3 text-left">Sinflar</th>
                 <th className="px-6 py-3 text-right">Harakatlar</th>
               </tr>
             </thead>
@@ -262,8 +262,8 @@ const Users = () => {
 
                   {/* Class */}
                   <td className="px-6 py-4 text-sm text-gray-500">
-                    {user.role === "student" && user.class
-                      ? user.class.name
+                    {user.role === "student" && user.classes?.length > 0
+                      ? user.classes.map((c) => c.name).join(", ")
                       : "-"}
                   </td>
 

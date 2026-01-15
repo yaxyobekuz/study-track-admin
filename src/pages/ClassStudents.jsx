@@ -138,7 +138,7 @@ const ClassStudents = () => {
                   <th className="px-6 py-3 text-left">Ism</th>
                   <th className="px-6 py-3 text-left">Familiya</th>
                   <th className="px-6 py-3 text-left">Username</th>
-                  <th className="px-6 py-3 text-left">Sinf</th>
+                  <th className="px-6 py-3 text-left">Sinflar</th>
                 </tr>
               </thead>
 
@@ -175,7 +175,7 @@ const ClassStudents = () => {
                     {/* Class */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-600">
-                        {student.class?.name || "-"}
+                        {student.classes?.map(c => c.name).join(", ") || "-"}
                       </div>
                     </td>
                   </tr>
