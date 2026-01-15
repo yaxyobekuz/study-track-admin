@@ -6,7 +6,6 @@ import { classesAPI } from "@/api/client";
 
 // Components
 import Input from "../form/input";
-import Select from "../form/select";
 import Button from "../form/button";
 import ResponsiveModal from "../ResponsiveModal";
 
@@ -23,19 +22,17 @@ const CreateClassModal = () => (
 const Content = ({ close, isLoading, setIsLoading }) => {
   const { invalidateCache } = useArrayStore("classes");
 
-  const { grade, section, state, setField } = useObjectState({
-    grade: "1",
-    section: "",
+  const { name, setField } = useObjectState({
+    name: "",
   });
 
   const handleCreateClass = (e) => {
     e.preventDefault();
 
     setIsLoading(true);
-    const data = { ...state, name: `${grade}-${section.toUpperCase()}` };
 
     classesAPI
-      .create(data)
+      .create({ name })
       .then(() => {
         close();
         invalidateCache();
@@ -49,28 +46,15 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
   return (
     <form onSubmit={handleCreateClass} className="space-y-3.5">
-      <div className="grid grid-cols-2 gap-5">
-        <Select
-          required
-          value={grade}
-          label="Daraja"
-          onChange={(v) => setField("grade", v)}
-          options={Array.from({ length: 11 }, (_, i) => ({
-            label: `${i + 1}-sinf`,
-            value: String(i + 1),
-          }))}
-        />
-
-        <Input
-          required
-          label="Nom"
-          name="section"
-          maxLength={32}
-          value={section}
-          placeholder="A, B, C..."
-          onChange={(v) => setField("section", v)}
-        />
-      </div>
+      <Input
+        required
+        label="Sinf nomi"
+        name="name"
+        maxLength={32}
+        value={name}
+        placeholder="Masalan: 5-A, 9-B..."
+        onChange={(v) => setField("name", v)}
+      />
 
       <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
         <Button
