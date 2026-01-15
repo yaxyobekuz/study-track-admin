@@ -19,6 +19,7 @@ import useArrayStore from "@/hooks/useArrayStore.hook";
 
 // Components
 import Card from "@/components/Card";
+import Select from "@/components/form/select";
 import Button from "@/components/form/button";
 import Pagination from "@/components/pagination.component";
 
@@ -28,6 +29,13 @@ import { useEffect, useCallback, useState, useRef } from "react";
 // Icons
 import { Plus, Edit, Trash2, Key, Eye, Search, X } from "lucide-react";
 
+// Role options
+const roleOptions = [
+  { value: "all", label: "Barcha rollar" },
+  { value: "teacher", label: "O'qituvchi" },
+  { value: "student", label: "O'quvchi" },
+];
+
 const Users = () => {
   const { user: currentUser } = useAuth();
   const { openModal } = useModal();
@@ -36,6 +44,22 @@ const Users = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const searchQuery = searchParams.get("search") || "";
+  const roleFilter = searchParams.get("role") || "";
+
+  // Handle role filter change
+  const handleRoleChange = useCallback(
+    (value) => {
+      const params = new URLSearchParams(searchParams);
+      if (value && value !== "all") {
+        params.set("role", value);
+      } else {
+        params.delete("role");
+      }
+      params.set("page", "1");
+      setSearchParams(params);
+    },
+    [searchParams, setSearchParams]
+  );
 
   // Search state
   const [searchInput, setSearchInput] = useState(searchQuery);
@@ -107,10 +131,11 @@ const Users = () => {
 
   // Load templates for current page & type
   const fetchUsers = useCallback(
-    (page, search) => {
+    (page, search, role) => {
       setPageLoadingState(page, true);
       const params = { page, limit: 32 };
       if (search) params.search = search;
+      if (role) params.role = role;
 
       usersAPI
         .getAll(params)
@@ -130,15 +155,17 @@ const Users = () => {
   const goToPage = useCallback(
     (page) => {
       if (page < 1) return;
-      setSearchParams({ page: page.toString() });
+      const params = new URLSearchParams(searchParams);
+      params.set("page", page.toString());
+      setSearchParams(params);
     },
-    [setSearchParams]
+    [searchParams, setSearchParams]
   );
 
   // Load users when page or search changes
   useEffect(() => {
-    fetchUsers(currentPage, searchQuery);
-  }, [currentPage, searchQuery, fetchUsers]);
+    fetchUsers(currentPage, searchQuery, roleFilter);
+  }, [currentPage, searchQuery, roleFilter, fetchUsers]);
 
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
@@ -177,6 +204,16 @@ const Users = () => {
             </button>
           )}
         </div>
+
+        {/* Role Filter */}
+        <Select
+          size="lg"
+          options={roleOptions}
+          placeholder="Rol tanlang"
+          onChange={handleRoleChange}
+          value={roleFilter || "all"}
+          className="w-full sm:w-44"
+        />
       </div>
 
       {/* Table */}
