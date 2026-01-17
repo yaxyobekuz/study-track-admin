@@ -318,7 +318,7 @@ const actions = (user) => {
     setCollectionLoadingState(true, "teachers");
 
     usersAPI
-      .getAll({ role: "teacher" })
+      .getAll({ role: "teacher", limit: 200 })
       .then((res) => {
         setCollection(res.data.data, null, "teachers");
       })
