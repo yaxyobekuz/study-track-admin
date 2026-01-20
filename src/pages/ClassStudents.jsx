@@ -62,7 +62,7 @@ const ClassStudents = () => {
     setCollectionLoadingState(true, studentsCollectionName);
 
     usersAPI
-      .getAll({ role: "student", class: filters.classId })
+      .getAll({ role: "student", class: filters.classId, limit: 200 })
       .then((response) => {
         if (response.data.data && response.data.data.length > 0) {
           setCollection(response.data.data, null, studentsCollectionName);
@@ -175,7 +175,7 @@ const ClassStudents = () => {
                     {/* Class */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-600">
-                        {student.classes?.map(c => c.name).join(", ") || "-"}
+                        {student.classes?.map((c) => c.name).join(", ") || "-"}
                       </div>
                     </td>
                   </tr>
