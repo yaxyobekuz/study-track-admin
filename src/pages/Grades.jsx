@@ -99,9 +99,11 @@ const Grades = () => {
       .getByDay(filters.classId, dayName)
       .then((response) => {
         if (response.data.data && response.data.data.subjects) {
+          // Include all subjects with their order (even if fan bir necha marta bo'lsa)
           const scheduleSubjects = response.data.data.subjects
             .filter((s) => s.subject)
-            .map((s) => s.subject);
+            .map((s) => ({ ...s.subject, lessonOrder: s.order }))
+            .sort((a, b) => a.lessonOrder - b.lessonOrder);
 
           setCollection(scheduleSubjects, null, todaySubjectsCollectionName);
         } else {
@@ -121,9 +123,16 @@ const Grades = () => {
         if (response.data.data && response.data.data.length > 0) {
           response.data.data.forEach((grade) => {
             const studentId = grade.student?._id;
-            if (gradesByStudent[studentId] || !studentId) return;
+            if (!studentId) return;
 
-            gradesByStudent[studentId] = { student: grade.student, grades: [] };
+            // Agar student mavjud bo'lmasa - yangi obyekt yaratish
+            if (!gradesByStudent[studentId]) {
+              gradesByStudent[studentId] = {
+                student: grade.student,
+                grades: [],
+              };
+            }
+            // Har doim bahoni qo'shish (barcha fanlar bahosi)
             gradesByStudent[studentId].grades.push(grade);
           });
         }
@@ -131,7 +140,7 @@ const Grades = () => {
         setCollection(
           Object.values(gradesByStudent),
           null,
-          studentsCollectionName
+          studentsCollectionName,
         );
       })
       .catch(() => {
@@ -232,9 +241,12 @@ const Grades = () => {
                   {/* All subjects */}
                   {filters.subjectId === "all" && (
                     <>
-                      {todaySubjects.map((subject) => (
-                        <th key={subject._id} className="px-4 py-3 text-center">
-                          {subject.name}
+                      {todaySubjects.map((subject, index) => (
+                        <th
+                          className="px-4 py-3 text-center"
+                          key={`${subject.lessonOrder}-${subject._id}`}
+                        >
+                          {index + 1}. {subject.name}
                         </th>
                       ))}
 
@@ -250,7 +262,7 @@ const Grades = () => {
                   const relevantGrades =
                     filters.subjectId !== "all"
                       ? studentData.grades.filter(
-                          (g) => g.subject._id === filters.subjectId
+                          (g) => g.subject._id === filters.subjectId,
                         )
                       : studentData.grades;
 
@@ -279,7 +291,7 @@ const Grades = () => {
                             {relevantGrades.length > 0 ? (
                               <span
                                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${getGradeColor(
-                                  relevantGrades[0].grade
+                                  relevantGrades[0].grade,
                                 )}`}
                               >
                                 {relevantGrades[0].grade}
@@ -308,18 +320,19 @@ const Grades = () => {
                           {todaySubjects.map((subject) => {
                             const grade = getGradeForSubject(
                               studentData.grades,
-                              subject._id
+                              subject._id,
+                              subject.lessonOrder,
                             );
 
                             return (
                               <td
-                                key={subject._id}
+                                key={`${subject.lessonOrder}-${subject._id}`}
                                 className="px-4 py-4 whitespace-nowrap text-center"
                               >
                                 {grade ? (
                                   <span
                                     className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-semibold border ${getGradeColor(
-                                      grade.grade
+                                      grade.grade,
                                     )}`}
                                     title={
                                       grade.comment

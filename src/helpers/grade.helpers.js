@@ -11,7 +11,20 @@ export const calculateAverageGrade = (grades) => {
   return (sum / grades.length).toFixed(2);
 };
 
-export const getGradeForSubject = (studentGrades, subjectId) => {
+export const getGradeForSubject = (studentGrades, subjectId, lessonOrder = null) => {
   if (!subjectId || subjectId === "all") return null;
-  return studentGrades.find((g) => g.subject._id === subjectId);
+  
+  const subjectGrades = studentGrades.filter((g) => g.subject._id === subjectId);
+  
+  if (subjectGrades.length === 0) return null;
+  
+  // Agar lesson order berilgan bo'lsa (bir fan bir necha marta bo'lsa), 
+  // shu order bo'yicha bahoni qaytarish
+  if (lessonOrder !== null && subjectGrades.length > 1) {
+    const gradeAtOrder = subjectGrades[lessonOrder - 1];
+    return gradeAtOrder || null;
+  }
+  
+  // Aks holda birinchi bahoni qaytarish
+  return subjectGrades[0];
 };
