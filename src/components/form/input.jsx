@@ -1,4 +1,13 @@
+// React
+import { useState } from "react";
+
+// Icons
+import { Eye, EyeOff } from "lucide-react";
+
+// Utils
 import { cn } from "@/utils/tailwind.utils";
+
+// Input Mask
 import { InputMask } from "@react-input/mask";
 
 const Input = ({
@@ -16,6 +25,8 @@ const Input = ({
   variant = "white",
   ...props
 }) => {
+  const [showPassword, setShowPassword] = useState(false);
+
   const variantClasses = {
     white: "bg-white",
     gray: "bg-gray-50",
@@ -31,11 +42,15 @@ const Input = ({
 
   const defaultClasses = cn(
     border ? "border border-gray-300" : "-outline-offset-1",
-    "w-full focus:outline-indigo-500"
+    "w-full focus:outline-indigo-500",
   );
 
   const handleChange = (e) => {
     onChange?.(type === "file" ? e.target.files : e.target.value);
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const RenderInput = (() => {
@@ -54,7 +69,7 @@ const Input = ({
             variantClasses[variant],
             defaultClasses,
             sizeClasses[size],
-            "h-auto py-1.5 min-h-24 max-h-48"
+            "h-auto py-1.5 min-h-24 max-h-48",
           )}
         />
       );
@@ -77,9 +92,44 @@ const Input = ({
           className={cn(
             variantClasses[variant],
             defaultClasses,
-            sizeClasses[size]
+            sizeClasses[size],
           )}
         />
+      );
+    }
+
+    if (type === "password") {
+      return (
+        <div className="relative">
+          <input
+            id={name}
+            {...props}
+            type={showPassword ? "text" : "password"}
+            name={name}
+            value={value}
+            required={required}
+            disabled={disabled}
+            onChange={handleChange}
+            placeholder={placeholder}
+            className={cn(
+              variantClasses[variant],
+              defaultClasses,
+              sizeClasses[size],
+              "pr-10",
+            )}
+          />
+          <button
+            type="button"
+            onClick={togglePasswordVisibility}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+          >
+            {showPassword ? (
+              <EyeOff className="size-5" />
+            ) : (
+              <Eye className="size-5" />
+            )}
+          </button>
+        </div>
       );
     }
 
@@ -97,7 +147,7 @@ const Input = ({
         className={cn(
           variantClasses[variant],
           defaultClasses,
-          sizeClasses[size]
+          sizeClasses[size],
         )}
       />
     );
