@@ -31,7 +31,7 @@ const Classes = () => {
           <Card key={classItem._id}>
             {/* Top */}
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900">
                 {classItem.name}
               </h3>
 
