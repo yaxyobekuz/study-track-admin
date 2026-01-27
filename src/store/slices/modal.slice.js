@@ -37,6 +37,10 @@ const initialState = {
   createHoliday: initialModalData,
   editHoliday: initialModalData,
   deleteHoliday: initialModalData,
+
+  // Messages
+  sendMessage: initialModalData,
+  messageDetails: initialModalData,
 };
 
 export const modalSlice = createSlice({
