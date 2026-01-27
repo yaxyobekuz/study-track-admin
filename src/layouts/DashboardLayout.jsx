@@ -12,6 +12,7 @@ import {
   CalendarDays,
   GraduationCap,
   ClipboardList,
+  MessageSquare,
 } from "lucide-react";
 
 // Images
@@ -54,6 +55,8 @@ import CreateScheduleModal from "../components/modal/createSchedule.modal";
 import DeleteScheduleModal from "../components/modal/deleteSchedule.modal";
 import ViewUserPasswordModal from "../components/modal/viewUserPassword.modal";
 import ResetUserPasswordModal from "../components/modal/resetUserPassword.modal";
+import SendMessageModal from "../components/modal/sendMessage.modal";
+import MessageDetailsModal from "../components/modal/messageDetails.modal";
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
@@ -80,6 +83,7 @@ const DashboardLayout = () => {
         { name: "Dars jadvali", href: "/schedules", icon: Calendar },
         { name: "Sinf o'quvchilari", href: "/class-students", icon: Users },
         { name: "Baholar jurnali", href: "/grades", icon: Eye },
+        { name: "Xabarlar", href: "/messages", icon: MessageSquare },
       ];
     }
 
@@ -89,6 +93,7 @@ const DashboardLayout = () => {
         { name: "Dars jadvali", href: "/schedules", icon: Calendar },
         { name: "Baho qo'yish", href: "/add-grade", icon: PlusCircle },
         { name: "Baholar jurnali", href: "/grades", icon: Eye },
+        { name: "Xabarlarim", href: "/my-messages", icon: MessageSquare },
       ];
     }
 
@@ -260,6 +265,10 @@ const DashboardLayout = () => {
       <EditScheduleModal />
       <CreateScheduleModal />
       <DeleteScheduleModal />
+
+      {/* Message Modals */}
+      <SendMessageModal />
+      <MessageDetailsModal />
     </>
   );
 };
