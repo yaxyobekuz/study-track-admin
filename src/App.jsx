@@ -13,6 +13,8 @@ import Holidays from "./pages/Holidays";
 import Schedules from "./pages/Schedules";
 import Dashboard from "./pages/Dashboard";
 import ClassStudents from "./pages/ClassStudents";
+import Messages from "./pages/Messages";
+import TeacherMessages from "./pages/TeacherMessages";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -115,6 +117,22 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={["owner", "teacher"]}>
                 <Grades />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="messages"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="my-messages"
+            element={
+              <ProtectedRoute allowedRoles={["teacher"]}>
+                <TeacherMessages />
               </ProtectedRoute>
             }
           />
