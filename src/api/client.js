@@ -122,4 +122,25 @@ export const holidaysAPI = {
   checkDate: (date) => api.get(`/holidays/check/${date}`),
 };
 
+// Messages API
+export const messagesAPI = {
+  getAll: (params) => api.get("/messages", { params }),
+  getOne: (id) => api.get(`/messages/${id}`),
+  send: (data) => {
+    const formData = new FormData();
+    formData.append("messageText", data.messageText);
+    formData.append("recipientType", data.recipientType);
+
+    if (data.classId) formData.append("classId", data.classId);
+    if (data.studentId) formData.append("studentId", data.studentId);
+    if (data.file) formData.append("file", data.file);
+
+    return api.post("/messages", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+};
+
 export default api;
