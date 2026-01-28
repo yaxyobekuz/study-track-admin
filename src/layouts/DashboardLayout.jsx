@@ -8,6 +8,7 @@ import {
   LogOut,
   Calendar,
   BookOpen,
+  BarChart2,
   PlusCircle,
   CalendarDays,
   GraduationCap,
@@ -48,15 +49,16 @@ import DeleteUserModal from "../components/modal/deleteUser.modal";
 import CreateClassModal from "@/components/modal/createClass.modal";
 import DeleteClassModal from "../components/modal/deleteClass.modal";
 import EditSubjectModal from "../components/modal/editSubject.modal";
+import SendMessageModal from "../components/modal/sendMessage.modal";
 import EditScheduleModal from "../components/modal/editSchedule.modal";
 import CreateSubjectModal from "../components/modal/createSubject.modal";
 import DeleteSubjectModal from "../components/modal/deleteSubject.modal";
+import MessageDetailsModal from "../components/modal/messageDetails.modal";
 import CreateScheduleModal from "../components/modal/createSchedule.modal";
 import DeleteScheduleModal from "../components/modal/deleteSchedule.modal";
 import ViewUserPasswordModal from "../components/modal/viewUserPassword.modal";
+import StudentStatisticsModal from "@/components/modal/studentStatistics.modal";
 import ResetUserPasswordModal from "../components/modal/resetUserPassword.modal";
-import SendMessageModal from "../components/modal/sendMessage.modal";
-import MessageDetailsModal from "../components/modal/messageDetails.modal";
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
@@ -83,6 +85,7 @@ const DashboardLayout = () => {
         { name: "Dars jadvali", href: "/schedules", icon: Calendar },
         { name: "Sinf o'quvchilari", href: "/class-students", icon: Users },
         { name: "Baholar jurnali", href: "/grades", icon: Eye },
+        { name: "Statistika", href: "/statistics", icon: BarChart2 },
         { name: "Xabarlar", href: "/messages", icon: MessageSquare },
       ];
     }
@@ -269,6 +272,9 @@ const DashboardLayout = () => {
       {/* Message Modals */}
       <SendMessageModal />
       <MessageDetailsModal />
+
+      {/* Stats */}
+      <StudentStatisticsModal />
     </>
   );
 };
