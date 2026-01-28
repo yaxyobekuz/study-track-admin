@@ -7,22 +7,31 @@ import { cn } from "@/utils/tailwind.utils";
 // Hooks
 import useModal from "@/hooks/useModal.hook";
 
+// Router
+import { useSearchParams } from "react-router-dom";
+
+// API
+import { statisticsAPI, classesAPI } from "@/api/client";
+
 // Components
 import Card from "@/components/Card";
 import Select from "@/components/form/select";
 import Button from "@/components/form/button";
+import Pagination from "@/components/pagination.component";
 
 // React
-import { useState, useEffect, useCallback } from "react";
-
-// API
-import { statisticsAPI, classesAPI } from "@/api/client";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 // Icons
 import { Users, GraduationCap, Eye, School } from "lucide-react";
 
 const Statistics = () => {
   const { openModal } = useModal();
+  const contentRef = useRef(null);
+
+  // Search params
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
   // States
   const [classes, setClasses] = useState([]);
@@ -30,6 +39,11 @@ const Statistics = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState("school");
   const [selectedClass, setSelectedClass] = useState(null);
+
+  // Pagination states
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Sinflarni yuklash
   useEffect(() => {
@@ -52,15 +66,24 @@ const Statistics = () => {
   const fetchRankings = useCallback(() => {
     setIsLoading(true);
 
+    const params = { page: currentPage, limit: 50 };
+
     const apiCall =
       viewMode === "school"
-        ? statisticsAPI.getSchoolRankings({ limit: 100 })
-        : statisticsAPI.getClassRankings(selectedClass, { limit: 50 });
+        ? statisticsAPI.getSchoolRankings(params)
+        : statisticsAPI.getClassRankings(selectedClass, params);
 
     apiCall
       .then((res) => {
         if (!res.data.success) return;
         setRankings(res.data.data.rankings || []);
+
+        // Set pagination data
+        if (res.data.pagination) {
+          setHasNextPage(res.data.pagination.hasNextPage);
+          setHasPrevPage(res.data.pagination.hasPrevPage);
+          setTotalPages(res.data.pagination.totalPages);
+        }
       })
       .catch((err) => {
         toast.error(
@@ -70,6 +93,24 @@ const Statistics = () => {
       .finally(() => {
         setIsLoading(false);
       });
+  }, [viewMode, selectedClass, currentPage]);
+
+  // Navigate to page
+  const goToPage = useCallback(
+    (page) => {
+      if (page < 1) return;
+      const params = new URLSearchParams(searchParams);
+      params.set("page", page.toString());
+      setSearchParams(params);
+    },
+    [searchParams, setSearchParams],
+  );
+
+  // View mode yoki sinf o'zgarganda page'ni 1 ga reset qilish
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", "1");
+    setSearchParams(params);
   }, [viewMode, selectedClass]);
 
   // View mode o'zgarganda reytinglarni yangilash
@@ -103,9 +144,9 @@ const Statistics = () => {
     <div>
       {/* Controls */}
       <Card className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-4 md:flex-row">
           {/* View Mode Toggle */}
-          <div>
+          <div className="w-full">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Ko'rinish
             </label>
@@ -133,7 +174,7 @@ const Statistics = () => {
 
           {/* Class Select (faqat sinf ko'rinishida) */}
           {viewMode === "class" && (
-            <div>
+            <div className="w-full">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Sinf tanlang
               </label>
@@ -149,7 +190,7 @@ const Statistics = () => {
       </Card>
 
       {/* Rankings Table */}
-      <Card>
+      <Card ref={contentRef}>
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -245,6 +286,21 @@ const Statistics = () => {
               </tbody>
             </table>
           </div>
+        )}
+
+        {/* Pagination Controls */}
+        {!isLoading && rankings.length > 0 && (
+          <Pagination
+            contentRef={contentRef}
+            maxPageButtons={5}
+            showPageNumbers={true}
+            onPageChange={goToPage}
+            currentPage={currentPage}
+            hasNextPage={hasNextPage}
+            hasPrevPage={hasPrevPage}
+            className="pt-6"
+            totalPages={totalPages}
+          />
         )}
       </Card>
 
