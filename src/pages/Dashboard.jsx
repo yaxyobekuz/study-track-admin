@@ -1,23 +1,26 @@
 // Icons
 import {
   Users,
+  Award,
+  School,
   BookOpen,
+  BarChart3,
+  UserCheck,
   PlusCircle,
   PartyPopper,
   ClipboardList,
   GraduationCap,
-  UserCheck,
   User as UserIcon,
 } from "lucide-react";
+
+// Toast
+import { toast } from "sonner";
 
 // Components
 import Card from "@/components/Card";
 
 // Router
 import { Link } from "react-router-dom";
-
-// API
-import { schedulesAPI, usersAPI } from "@/api/client";
 
 // React
 import { useState, useEffect } from "react";
@@ -34,6 +37,9 @@ import { getRoleLabel } from "@/helpers/role.helpers";
 // Hooks
 import useArrayStore from "@/hooks/useArrayStore.hook";
 import useObjectStore from "@/hooks/useObjectStore.hook";
+
+// API
+import { schedulesAPI, usersAPI, statisticsAPI } from "@/api/client";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -209,6 +215,9 @@ const Dashboard = () => {
         </div>
       </Card>
 
+      {/* Student Weekly Statistics */}
+      {user?.role === "student" && <StudentWeeklyStats />}
+
       <MySchedules />
       <AllSchedulesToday />
     </div>
@@ -324,7 +333,7 @@ const MySchedules = () => {
         order: subject.order,
         subjectName: subject.subject.name,
         className: schedule.class.name,
-      }))
+      })),
     )
     .sort((a, b) => a.order - b.order);
 
@@ -508,6 +517,188 @@ const AllSchedulesToday = () => {
         </div>
       )}
     </div>
+  );
+};
+
+const StudentWeeklyStats = () => {
+  const { user } = useAuth();
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?._id) {
+      statisticsAPI
+        .getStudentWeekly(user._id)
+        .then((res) => {
+          if (res.data.success) {
+            setData(res.data.data);
+          }
+        })
+        .catch((err) => {
+          toast.error(
+            err.response?.data?.message || "Statistikalarni yuklashda xatolik",
+          );
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [user]);
+
+  if (isLoading) {
+    return (
+      <Card className="mb-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!data) return null;
+
+  const { simpleStats, rankings } = data;
+
+  return (
+    <>
+      <Card className="mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Haftalik reyting
+        </h2>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* Total score */}
+          <div className="flex items-center justify-between bg-green-50 p-4 rounded-lg border border-green-200">
+            <div className="flex items-center gap-2">
+              <Award className="size-5 text-green-600" />
+              <h4 className="text-sm font-medium text-gray-700 sm:text-base">
+                Umumiy Ball
+              </h4>
+            </div>
+
+            <p className="font-semibold text-green-600 xs:text-lg sm:font-bold sm:text-xl md:text-2xl lg:text-3xl">
+              {simpleStats.totalSum}
+            </p>
+          </div>
+
+          {/* Total grades */}
+          <div className="flex items-center justify-between bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="size-5 text-blue-600" />
+              <h4 className="text-sm font-medium text-gray-700 sm:text-base">
+                Jami Baholar
+              </h4>
+            </div>
+
+            <p className="font-semibold text-blue-600 xs:text-lg sm:font-bold sm:text-xl md:text-2xl lg:text-3xl">
+              {simpleStats.totalGrades}
+            </p>
+          </div>
+
+          {/* Rankings */}
+          {rankings && (
+            <>
+              {/* School Ranking */}
+              {rankings.schoolRank && (
+                <div className="flex items-center justify-between p-4 rounded-lg border">
+                  <div className="flex items-center gap-2">
+                    <School className="size-5 text-purple-600" />
+                    <h4 className="text-sm font-medium text-gray-700 sm:text-base">
+                      Maktabdagi reyting
+                    </h4>
+                  </div>
+
+                  <p className="font-semibold text-purple-600 xs:text-lg sm:font-bold sm:text-xl md:text-2xl lg:text-3xl">
+                    {rankings.schoolRank} /{" "}
+                    <span className="">{rankings.schoolTotalStudents}</span>
+                  </p>
+                </div>
+              )}
+
+              {/* Class Rankings */}
+              {rankings.classRanks.map((classRank) => (
+                <div
+                  key={classRank.class._id}
+                  className="flex items-center justify-between p-4 rounded-lg border"
+                >
+                  <div className="flex items-center gap-2">
+                    <Users className="size-5 text-purple-600" />
+                    <h4 className="text-sm font-medium text-gray-700 sm:text-base">
+                      {classRank.class.name}dagi reyting
+                    </h4>
+                  </div>
+
+                  <p className="font-semibold text-purple-600 xs:text-lg sm:font-bold sm:text-xl md:text-2xl lg:text-3xl">
+                    {classRank.rank} / {classRank.totalStudents}
+                  </p>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      </Card>
+
+      {/* Subjects - Stats */}
+      <Card>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+          Fanlar bo'yicha baholar
+        </h2>
+
+        <div className="space-y-3">
+          {simpleStats.subjects.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-4">
+              Fanlar bo'yicha baholar topilmadi
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {simpleStats.subjects.map((subject, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-4 rounded-lg border border-gray-200"
+                >
+                  {/* Top */}
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium text-gray-900">
+                      {subject.subject.name}
+                    </h3>
+
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-blue-600">
+                        {subject.sum}
+                      </p>
+
+                      <p className="text-xs text-gray-500">
+                        {subject.count} ta baho
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Grades */}
+                  <div className="flex gap-1 flex-wrap">
+                    {subject.grades.map((grade, idx) => (
+                      <span
+                        key={idx}
+                        className={`inline-flex items-center justify-center w-8 h-8 rounded text-sm font-semibold ${
+                          grade === 5
+                            ? "bg-green-100 text-green-800"
+                            : grade === 4
+                              ? "bg-blue-100 text-blue-800"
+                              : grade === 3
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {grade}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </Card>
+    </>
   );
 };
 
