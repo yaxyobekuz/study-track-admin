@@ -143,4 +143,14 @@ export const messagesAPI = {
   },
 };
 
+// Statistics API
+export const statisticsAPI = {
+  getStudentWeekly: (studentId) =>
+    api.get(`/statistics/weekly/current/${studentId}`),
+  getClassRankings: (classId, params) =>
+    api.get(`/statistics/weekly/class/${classId}/rankings`, { params }),
+  getSchoolRankings: (params) =>
+    api.get("/statistics/weekly/school/rankings", { params }),
+};
+
 export default api;
