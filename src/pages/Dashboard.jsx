@@ -1,16 +1,16 @@
 // Icons
 import {
+  Bot,
   Users,
   Award,
   School,
   BookOpen,
   BarChart3,
-  UserCheck,
+  Briefcase,
   PlusCircle,
   PartyPopper,
   ClipboardList,
   GraduationCap,
-  User as UserIcon,
 } from "lucide-react";
 
 // Toast
@@ -252,22 +252,22 @@ const UserStats = () => {
 
   const statItems = [
     {
-      label: "Jami foydalanuvchilar",
-      value: stats.total,
-      icon: Users,
-      color: "bg-blue-100 text-blue-600",
+      label: "O'quvchilar",
+      value: stats.students,
+      icon: GraduationCap,
+      color: "bg-purple-100 text-purple-600",
     },
     {
       label: "O'qituvchilar",
       value: stats.teachers,
-      icon: UserCheck,
+      icon: Briefcase,
       color: "bg-green-100 text-green-600",
     },
     {
-      label: "O'quvchilar",
-      value: stats.students,
-      icon: UserIcon,
-      color: "bg-purple-100 text-purple-600",
+      label: "Bot foydalanuvchilar",
+      value: stats.telegramUsers,
+      icon: Bot,
+      color: "bg-blue-100 text-blue-600",
     },
   ];
 
