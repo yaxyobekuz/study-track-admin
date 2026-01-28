@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import ClassStudents from "./pages/ClassStudents";
 import Messages from "./pages/Messages";
 import TeacherMessages from "./pages/TeacherMessages";
+import Statistics from "./pages/Statistics";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -81,6 +82,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={["owner"]}>
                 <Holidays />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="statistics"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <Statistics />
               </ProtectedRoute>
             }
           />
