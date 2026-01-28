@@ -41,6 +41,9 @@ const initialState = {
   // Messages
   sendMessage: initialModalData,
   messageDetails: initialModalData,
+
+  // Stats
+  studentStats: initialModalData,
 };
 
 export const modalSlice = createSlice({
