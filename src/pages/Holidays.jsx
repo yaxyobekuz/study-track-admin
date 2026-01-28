@@ -72,7 +72,7 @@ const Holidays = () => {
         className="px-4 mb-6"
         onClick={() => openModal("createHoliday", null)}
       >
-        <Plus className="w-4 h-4 mr-2" />
+        <Plus className="size-4 mr-2" />
         Qo'shish
       </Button>
 
@@ -141,13 +141,13 @@ const Holidays = () => {
                           onClick={() => openModal("editHoliday", holiday)}
                           className="text-blue-600 hover:text-blue-800 p-1"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="size-4" />
                         </button>
                         <button
                           onClick={() => openModal("deleteHoliday", holiday)}
                           className="text-red-600 hover:text-red-800 p-1"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="size-4" />
                         </button>
                       </div>
                     </td>
@@ -434,7 +434,7 @@ const HolidayForm = ({
           id="isActive"
           checked={isActive}
           onChange={(e) => setField("isActive", e.target.checked)}
-          className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+          className="size-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
         />
         <label htmlFor="isActive" className="text-sm text-gray-700">
           Aktiv

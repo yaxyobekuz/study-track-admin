@@ -290,7 +290,7 @@ const AddGrade = () => {
                                   className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700"
                                 >
                                   <Check
-                                    className="w-4 h-4 mr-1"
+                                    className="size-4 mr-1"
                                     strokeWidth={1.5}
                                   />
                                   Saqlash
@@ -300,7 +300,7 @@ const AddGrade = () => {
                                   className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
                                 >
                                   <X
-                                    className="w-4 h-4 mr-1"
+                                    className="size-4 mr-1"
                                     strokeWidth={1.5}
                                   />
                                   Bekor
@@ -318,7 +318,7 @@ const AddGrade = () => {
                                 {hasGrade ? (
                                   <>
                                     <Edit2
-                                      className="w-4 h-4 mr-1"
+                                      className="size-4 mr-1"
                                       strokeWidth={1.5}
                                     />
                                     Tahrirlash
@@ -326,7 +326,7 @@ const AddGrade = () => {
                                 ) : (
                                   <>
                                     <Save
-                                      className="w-4 h-4 mr-1"
+                                      className="size-4 mr-1"
                                       strokeWidth={1.5}
                                     />
                                     Baho qo'yish

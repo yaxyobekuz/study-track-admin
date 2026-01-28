@@ -97,7 +97,7 @@ const Content = ({ day, close, classId, isLoading, setIsLoading }) => {
                   onClick={() => removeSubjectRow(index)}
                   className="text-red-600 hover:text-red-900"
                 >
-                  <Trash2 className="w-4 h-4" strokeWidth={1.5} />
+                  <Trash2 className="size-4" strokeWidth={1.5} />
                 </button>
               )}
             </div>
