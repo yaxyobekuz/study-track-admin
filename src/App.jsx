@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 // Pages
 import Login from "./pages/Login";
 import Users from "./pages/Users";
+import Topics from "./pages/Topics";
 import Grades from "./pages/Grades";
 import Classes from "./pages/Classes";
 import Subjects from "./pages/Subjects";
@@ -74,6 +75,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={["owner"]}>
                 <Subjects />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="topics"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <Topics />
               </ProtectedRoute>
             }
           />
