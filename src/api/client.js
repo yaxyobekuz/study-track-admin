@@ -78,6 +78,10 @@ export const schedulesAPI = {
   getMyToday: () => api.get("/schedules/my-today"),
   getAllToday: () => api.get("/schedules/all-today"),
   createOrUpdate: (data) => api.post("/schedules", data),
+  updateCurrentTopic: (scheduleId, subjectId, topicNumber) =>
+    api.patch(`/schedules/${scheduleId}/subject/${subjectId}/topic`, {
+      topicNumber,
+    }),
   delete: (id) => api.delete(`/schedules/${id}`),
 };
 
@@ -151,6 +155,23 @@ export const statisticsAPI = {
     api.get(`/statistics/weekly/class/${classId}/rankings`, { params }),
   getSchoolRankings: (params) =>
     api.get("/statistics/weekly/school/rankings", { params }),
+};
+
+// Topics API
+export const topicsAPI = {
+  upload: (file, subjectId = null) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (subjectId) formData.append("subjectId", subjectId);
+
+    return api.post("/topics/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+  getBySubject: (subjectId) => api.get(`/topics/subject/${subjectId}`),
+  deleteBySubject: (subjectId) => api.delete(`/topics/subject/${subjectId}`),
 };
 
 export default api;
