@@ -44,6 +44,9 @@ const initialState = {
 
   // Stats
   studentStats: initialModalData,
+
+  // Topics
+  uploadTopics: initialModalData,
 };
 
 export const modalSlice = createSlice({

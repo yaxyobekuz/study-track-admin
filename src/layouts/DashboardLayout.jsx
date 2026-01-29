@@ -51,6 +51,7 @@ import DeleteClassModal from "../components/modal/deleteClass.modal";
 import EditSubjectModal from "../components/modal/editSubject.modal";
 import SendMessageModal from "../components/modal/sendMessage.modal";
 import EditScheduleModal from "../components/modal/editSchedule.modal";
+import UploadTopicsModal from "../components/modal/uploadTopics.modal";
 import CreateSubjectModal from "../components/modal/createSubject.modal";
 import DeleteSubjectModal from "../components/modal/deleteSubject.modal";
 import MessageDetailsModal from "../components/modal/messageDetails.modal";
@@ -80,13 +81,14 @@ const DashboardLayout = () => {
         ...baseNav,
         { name: "Foydalanuvchilar", href: "/users", icon: Users },
         { name: "Sinflar", href: "/classes", icon: GraduationCap },
-        { name: "Fanlar", href: "/subjects", icon: BookOpen },
-        { name: "Dam olish kunlari", href: "/holidays", icon: CalendarDays },
-        { name: "Dars jadvali", href: "/schedules", icon: Calendar },
-        { name: "Sinf o'quvchilari", href: "/class-students", icon: Users },
-        { name: "Baholar jurnali", href: "/grades", icon: Eye },
         { name: "Statistika", href: "/statistics", icon: BarChart2 },
+        { name: "Baholar jurnali", href: "/grades", icon: Eye },
+        { name: "Sinf o'quvchilari", href: "/class-students", icon: Users },
         { name: "Xabarlar", href: "/messages", icon: MessageSquare },
+        { name: "Fanlar", href: "/subjects", icon: BookOpen },
+        { name: "Dars jadvali", href: "/schedules", icon: Calendar },
+        { name: "Dars mavzulari", href: "/topics", icon: ClipboardList },
+        { name: "Dam olish kunlari", href: "/holidays", icon: CalendarDays },
       ];
     }
 
@@ -272,6 +274,9 @@ const DashboardLayout = () => {
       {/* Message Modals */}
       <SendMessageModal />
       <MessageDetailsModal />
+
+      {/* Topic Modals */}
+      <UploadTopicsModal />
 
       {/* Stats */}
       <StudentStatisticsModal />
