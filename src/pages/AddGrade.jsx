@@ -25,6 +25,7 @@ const AddGrade = () => {
   const [subjects, setSubjects] = useState([]);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [currentTopic, setCurrentTopic] = useState(null);
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [editingStudentId, setEditingStudentId] = useState(null);
@@ -70,7 +71,7 @@ const AddGrade = () => {
       setSubjects(response.data.data);
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Fanlarni yuklashda xatolik"
+        error.response?.data?.message || "Fanlarni yuklashda xatolik",
       );
       console.error(error);
     }
@@ -86,6 +87,7 @@ const AddGrade = () => {
         date: today,
       });
       setStudents(response.data.data);
+      setCurrentTopic(response.data.currentTopic || null);
     } catch (error) {
       toast.error("O'quvchilarni yuklashda xatolik");
       console.error(error);
@@ -194,6 +196,19 @@ const AddGrade = () => {
         />
       </Card>
 
+      {/* Current Topic Display */}
+      {selectedClass && selectedSubject && currentTopic && (
+        <Card className="mb-4 space-y-1.5">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {currentTopic.name}
+          </h3>
+
+          {currentTopic.description && (
+            <p className="text-gray-600">{currentTopic.description}</p>
+          )}
+        </Card>
+      )}
+
       {/* Students Table */}
       {selectedClass && selectedSubject && (
         <Card responsive>
@@ -267,7 +282,7 @@ const AddGrade = () => {
                             ) : hasGrade ? (
                               <span
                                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${getGradeColor(
-                                  student.grade.grade
+                                  student.grade.grade,
                                 )}`}
                               >
                                 {student.grade.grade}
