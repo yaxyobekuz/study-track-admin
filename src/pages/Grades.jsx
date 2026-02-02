@@ -119,26 +119,12 @@ const Grades = () => {
     gradesAPI
       .getByClassAndDate(filters.classId, filters.date)
       .then((response) => {
-        const gradesByStudent = {};
-        if (response.data.data && response.data.data.length > 0) {
-          response.data.data.forEach((grade) => {
-            const studentId = grade.student?._id;
-            if (!studentId) return;
-
-            // Agar student mavjud bo'lmasa - yangi obyekt yaratish
-            if (!gradesByStudent[studentId]) {
-              gradesByStudent[studentId] = {
-                student: grade.student,
-                grades: [],
-              };
-            }
-            // Har doim bahoni qo'shish (barcha fanlar bahosi)
-            gradesByStudent[studentId].grades.push(grade);
-          });
-        }
+        // Backend now returns students with grades array
+        // No need to group manually
+        const studentsWithGrades = response.data.data || [];
 
         setCollection(
-          Object.values(gradesByStudent),
+          studentsWithGrades,
           null,
           studentsCollectionName,
         );
