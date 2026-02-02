@@ -52,6 +52,8 @@ export const usersAPI = {
   delete: (id) => api.delete(`/users/${id}`),
   resetPassword: (id, data) => api.put(`/users/${id}/reset-password`, data),
   getPassword: (id) => api.get(`/users/${id}/password`),
+  exportUsers: (role) =>
+    api.get("/users/export", { params: { role }, responseType: "blob" }),
 };
 
 // Subjects API
