@@ -15,7 +15,9 @@ export const calculateAverageGrade = (grades) => {
 export const getGradeForSubject = (studentGrades, subjectId, lessonOrder = null) => {
   if (!subjectId || subjectId === "all") return null;
 
-  const subjectGrades = studentGrades.filter((g) => g.subject._id === subjectId);
+  const subjectGrades = studentGrades.filter(
+    (g) => g.subject && g.subject._id && g.subject._id.toString() === subjectId.toString()
+  );
 
   if (subjectGrades.length === 0) return null;
 
@@ -23,7 +25,8 @@ export const getGradeForSubject = (studentGrades, subjectId, lessonOrder = null)
   // shu order bo'yicha bahoni topish
   if (lessonOrder !== null) {
     const gradeAtOrder = subjectGrades.find((g) => g.lessonOrder === lessonOrder);
-    return gradeAtOrder || null;
+    // Agar shu order bo'yicha baho topilmasa, birinchi bahoni qaytarish
+    return gradeAtOrder || subjectGrades[0];
   }
 
   // Aks holda birinchi bahoni qaytarish
