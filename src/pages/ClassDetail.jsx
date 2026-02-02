@@ -15,7 +15,7 @@ import Card from "@/components/Card";
 import Button from "@/components/form/button";
 
 // Icons
-import { Users, ArrowLeft } from "lucide-react";
+import { Users, ArrowLeft, Download } from "lucide-react";
 
 // Hooks
 import useModal from "@/hooks/useModal.hook";
@@ -90,6 +90,30 @@ const ClassDetail = () => {
     openModal("editClass", classInfo);
   };
 
+  const handleExport = async () => {
+    try {
+      const response = await classesAPI.exportStudents(classId);
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      const today = new Date().toISOString().split("T")[0];
+      link.download = `${classInfo.name}_oquvchilar_${today}.xlsx`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Fayl muvaffaqiyatli yuklandi");
+    } catch (error) {
+      toast.error(error.message || "Eksport qilishda xatolik yuz berdi");
+    }
+  };
+
   if (loadingClass) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
   }
@@ -106,16 +130,25 @@ const ClassDetail = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-1.5">
-        <Button
-          variant="outline"
-          onClick={() => navigate("/classes")}
-          className="px-3"
-        >
-          <ArrowLeft className="size-5" strokeWidth={1.5} />
-        </Button>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/classes")}
+            className="px-3"
+          >
+            <ArrowLeft className="size-5" strokeWidth={1.5} />
+          </Button>
 
-        <h1 className="text-2xl font-bold text-gray-900">{classInfo.name}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{classInfo.name}</h1>
+        </div>
+
+        {students?.length > 0 && (
+          <Button variant="primary" onClick={handleExport} className="px-3.5">
+            <Download className="size-4 mr-2" strokeWidth={1.5} />
+            Yuklash
+          </Button>
+        )}
       </div>
 
       {/* Students Section */}

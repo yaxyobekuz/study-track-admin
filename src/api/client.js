@@ -71,6 +71,8 @@ export const classesAPI = {
   create: (data) => api.post("/classes", data),
   update: (id, data) => api.put(`/classes/${id}`, data),
   delete: (id) => api.delete(`/classes/${id}`),
+  exportStudents: (id) =>
+    api.get(`/classes/${id}/export`, { responseType: "blob" }),
 };
 
 // Schedules API
