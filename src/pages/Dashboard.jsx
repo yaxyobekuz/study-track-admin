@@ -327,11 +327,15 @@ const MySchedules = () => {
   };
 
   // Barcha darslarni bitta ro'yxatga jamlab, order bo'yicha saralash
+
+  console.log(schedules);
+
   const allLessons = schedules
     .flatMap((schedule) =>
       schedule.subjects.map((subject, index) => ({
         order: subject.order,
-        displayOrder: (schedule.startingOrder || 1) + index,
+        displayOrder:
+          (schedule.startingOrder || 1) + (subject.order || index + 1) - 1,
         subjectName: subject.subject.name,
         className: schedule.class.name,
         startTime: subject.startTime,
@@ -492,52 +496,57 @@ const AllSchedulesToday = () => {
       {/* Schedule Grid */}
       {schedules.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {schedules.map((schedule, idx) => (
-            <Card key={idx}>
-              <div className="flex items-center gap-3.5 mb-4">
-                <GraduationCap
-                  strokeWidth={1.5}
-                  className="size-5 text-indigo-600"
-                />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {schedule.class?.name}
-                </h3>
-              </div>
+          {schedules.map(
+            (schedule, idx) => (
+              console.log(schedule),
+              (
+                <Card key={idx}>
+                  <div className="flex items-center gap-3.5 mb-4">
+                    <GraduationCap
+                      strokeWidth={1.5}
+                      className="size-5 text-indigo-600"
+                    />
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {schedule.class?.name}
+                    </h3>
+                  </div>
 
-              {/* Schedule Subjects */}
-              <div className="space-y-3">
-                {schedule.subjects?.map((subj, index) => {
-                  const displayOrder = (schedule.startingOrder || 1) + index;
-                  return (
-                    <div
-                      key={index}
-                      className="p-3 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex items-start justify-between mb-1">
-                        {/* Title */}
-                        <b className="text-sm font-medium text-gray-900">
-                          {displayOrder}. {subj.subject?.name}
-                        </b>
+                  {/* Schedule Subjects */}
+                  <div className="space-y-3">
+                    {schedule.subjects?.map((subj, index) => {
+                      const displayOrder =
+                        (schedule.startingOrder || 1) +
+                        (subj.order || index + 1) -
+                        1;
+                      return (
+                        <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-start justify-between mb-1">
+                            {/* Title */}
+                            <b className="text-sm font-medium text-gray-900">
+                              {displayOrder}. {subj.subject?.name}
+                            </b>
 
-                      {/* Teacher */}
-                      <p className="text-xs text-gray-600">
-                        {subj.teacher?.firstName}{" "}
-                        {subj.teacher?.lastName?.slice(0, 1) + "."}
-                      </p>
-                    </div>
+                            {/* Teacher */}
+                            <p className="text-xs text-gray-600">
+                              {subj.teacher?.firstName}{" "}
+                              {subj.teacher?.lastName?.slice(0, 1) + "."}
+                            </p>
+                          </div>
 
-                      {/* Time */}
-                      {subj.startTime && subj.endTime && (
-                        <p className="text-xs text-gray-500">
-                          {subj.startTime} - {subj.endTime}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-          ))}
+                          {/* Time */}
+                          {subj.startTime && subj.endTime && (
+                            <p className="text-xs text-gray-500">
+                              {subj.startTime} - {subj.endTime}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              )
+            ),
+          )}
         </div>
       )}
     </div>

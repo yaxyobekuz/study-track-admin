@@ -220,10 +220,13 @@ const AddGrade = () => {
           label="Fan"
           value={selectedSubjectWithOrder}
           onChange={(value) => setSelectedSubjectWithOrder(value)}
-          options={subjects.map((subject) => ({
-            label: `${subject.order}. ${subject.name}`,
-            value: `${subject._id}_${subject.order}`,
-          }))}
+          options={subjects.map((subject) => {
+            const displayOrder = (subject.startingOrder || 1) + (subject.order || 1) - 1;
+            return {
+              label: `${displayOrder}. ${subject.name}`,
+              value: `${subject._id}_${subject.order}`,
+            };
+          })}
         />
       </Card>
 

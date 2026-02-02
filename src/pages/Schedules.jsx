@@ -158,7 +158,7 @@ const Schedules = () => {
               {schedule && (
                 <div className="space-y-3">
                   {schedule.subjects.map((subj, index) => {
-                    const displayOrder = (schedule.startingOrder || 1) + index;
+                    const displayOrder = (schedule.startingOrder || 1) + (subj.order || index + 1) - 1;
                     return (
                       <div
                         key={index}
