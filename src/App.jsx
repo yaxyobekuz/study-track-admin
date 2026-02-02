@@ -13,7 +13,7 @@ import MyGrades from "./pages/MyGrades";
 import Holidays from "./pages/Holidays";
 import Schedules from "./pages/Schedules";
 import Dashboard from "./pages/Dashboard";
-import ClassStudents from "./pages/ClassStudents";
+import ClassDetail from "./pages/ClassDetail";
 import Messages from "./pages/Messages";
 import TeacherMessages from "./pages/TeacherMessages";
 import Statistics from "./pages/Statistics";
@@ -71,6 +71,14 @@ const AppRoutes = () => {
             }
           />
           <Route
+            path="classes/:classId"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <ClassDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="subjects"
             element={
               <ProtectedRoute allowedRoles={["owner"]}>
@@ -102,14 +110,7 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="class-students"
-            element={
-              <ProtectedRoute allowedRoles={["owner", "teacher"]}>
-                <ClassStudents />
-              </ProtectedRoute>
-            }
-          />
+
           <Route
             path="schedules"
             element={

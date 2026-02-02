@@ -3,11 +3,12 @@ import Card from "@/components/Card";
 import Button from "@/components/form/button";
 
 // Icons
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, ChevronRight } from "lucide-react";
 
 // Hooks
 import useModal from "@/hooks/useModal.hook";
 import useArrayStore from "@/hooks/useArrayStore.hook";
+import { Link } from "react-router-dom";
 
 const Classes = () => {
   const { openModal } = useModal();
@@ -31,8 +32,14 @@ const Classes = () => {
           <Card key={classItem._id}>
             {/* Top */}
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {classItem.name}
+              <h3>
+                <Link
+                  to={`/classes/${classItem._id}`}
+                  className="flex items-center gap-1.5 text-lg font-semibold text-gray-900 transition-colors duration-200 hover:text-indigo-600"
+                >
+                  {classItem.name}
+                  <ChevronRight className="size-5" strokeWidth={1.5} />
+                </Link>
               </h3>
 
               {/* Action buttons */}

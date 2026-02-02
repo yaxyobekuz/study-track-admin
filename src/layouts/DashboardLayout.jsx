@@ -83,7 +83,6 @@ const DashboardLayout = () => {
         { name: "Sinflar", href: "/classes", icon: GraduationCap },
         { name: "Statistika", href: "/statistics", icon: BarChart2 },
         { name: "Baholar jurnali", href: "/grades", icon: Eye },
-        { name: "Sinf o'quvchilari", href: "/class-students", icon: Users },
         { name: "Xabarlar", href: "/messages", icon: MessageSquare },
         { name: "Fanlar", href: "/subjects", icon: BookOpen },
         { name: "Dars jadvali", href: "/schedules", icon: Calendar },
