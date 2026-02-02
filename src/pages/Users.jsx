@@ -27,7 +27,16 @@ import Pagination from "@/components/pagination.component";
 import { useEffect, useCallback, useState, useRef } from "react";
 
 // Icons
-import { Plus, Edit, Trash2, Key, Eye, Search, X } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Key,
+  Eye,
+  Search,
+  X,
+  Download,
+} from "lucide-react";
 
 // Role options
 const roleOptions = [
@@ -58,7 +67,7 @@ const Users = () => {
       params.set("page", "1");
       setSearchParams(params);
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   // Search state
@@ -86,7 +95,7 @@ const Users = () => {
         setSearchParams(params);
       }, 1500);
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   // Clear search
@@ -148,7 +157,7 @@ const Users = () => {
           setPageErrorState(page, message || "Nimadir xato ketdi");
         });
     },
-    [setPageLoadingState, setPage, setPageErrorState]
+    [setPageLoadingState, setPage, setPageErrorState],
   );
 
   // Navigate to page
@@ -159,7 +168,7 @@ const Users = () => {
       params.set("page", page.toString());
       setSearchParams(params);
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   // Load users when page or search changes
@@ -214,10 +223,21 @@ const Users = () => {
           value={roleFilter || "all"}
           className="w-full sm:w-44"
         />
+
+        {/* Download Data */}
+        <Button
+          variant="primary"
+          onClick={() => openModal("exportUsers")}
+          className="flex items-center gap-3.5 px-3.5"
+        >
+          <Download className="size-4" strokeWidth={1.5} />
+          <span className="sm:hidden">Foydalanuvchilarni yuklash</span>
+        </Button>
       </div>
 
       {/* Table */}
       <Card responsive>
+        {/* Table */}
         <div className="rounded-lg overflow-x-auto">
           <table className="divide-y divide-gray-200">
             {/* Thead */}
