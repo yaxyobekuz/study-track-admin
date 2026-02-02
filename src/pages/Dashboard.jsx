@@ -329,8 +329,9 @@ const MySchedules = () => {
   // Barcha darslarni bitta ro'yxatga jamlab, order bo'yicha saralash
   const allLessons = schedules
     .flatMap((schedule) =>
-      schedule.subjects.map((subject) => ({
+      schedule.subjects.map((subject, index) => ({
         order: subject.order,
+        displayOrder: (schedule.startingOrder || 1) + index,
         subjectName: subject.subject.name,
         className: schedule.class.name,
         startTime: subject.startTime,
@@ -382,7 +383,7 @@ const MySchedules = () => {
             >
               {/* Order */}
               <span className="flex items-center justify-center w-8 h-8 bg-indigo-100 text-indigo-700 font-semibold rounded">
-                {lesson.order}
+                {lesson.displayOrder}
               </span>
 
               {/* Subject and Time */}
@@ -505,16 +506,18 @@ const AllSchedulesToday = () => {
 
               {/* Schedule Subjects */}
               <div className="space-y-3">
-                {schedule.subjects?.map((subj, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex items-start justify-between mb-1">
-                      {/* Title */}
-                      <b className="text-sm font-medium text-gray-900">
-                        {subj.order}. {subj.subject?.name}
-                      </b>
+                {schedule.subjects?.map((subj, index) => {
+                  const displayOrder = (schedule.startingOrder || 1) + index;
+                  return (
+                    <div
+                      key={index}
+                      className="p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        {/* Title */}
+                        <b className="text-sm font-medium text-gray-900">
+                          {displayOrder}. {subj.subject?.name}
+                        </b>
 
                       {/* Teacher */}
                       <p className="text-xs text-gray-600">
@@ -523,14 +526,15 @@ const AllSchedulesToday = () => {
                       </p>
                     </div>
 
-                    {/* Time */}
-                    {subj.startTime && subj.endTime && (
-                      <p className="text-xs text-gray-500">
-                        {subj.startTime} - {subj.endTime}
-                      </p>
-                    )}
-                  </div>
-                ))}
+                      {/* Time */}
+                      {subj.startTime && subj.endTime && (
+                        <p className="text-xs text-gray-500">
+                          {subj.startTime} - {subj.endTime}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </Card>
           ))}

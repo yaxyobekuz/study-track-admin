@@ -38,6 +38,7 @@ const Content = ({
   const subjects = getCollectionData("subjects");
   const teachers = getCollectionData("teachers");
 
+  const [startingOrder, setStartingOrder] = useState(scheduleData.startingOrder || 1);
   const [daySubjects, setDaySubjects] = useState(() => {
     if (scheduleData.subjects && scheduleData.subjects.length > 0) {
       return scheduleData.subjects.map((subj) => ({
@@ -93,6 +94,7 @@ const Content = ({
         day,
         classId,
         subjects: validSubjects,
+        startingOrder: parseInt(startingOrder) || 1,
       })
       .then(() => {
         close();
@@ -107,6 +109,16 @@ const Content = ({
 
   return (
     <form onSubmit={handleEditSchedule} className="space-y-3.5">
+      {/* Starting Order Input */}
+      <Input
+        type="number"
+        label="Boshlanish tartibi (default: 1)"
+        value={startingOrder}
+        onChange={(v) => setStartingOrder(v)}
+        min="1"
+        placeholder="1"
+      />
+
       <div className="space-y-4">
         {daySubjects.map((subj, index) => (
           <div key={index} className="border border-gray-200 rounded-xl">
