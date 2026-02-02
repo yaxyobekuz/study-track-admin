@@ -12,6 +12,7 @@ import { schedulesAPI } from "@/api/client";
 
 // Components
 import Select from "../form/select";
+import Input from "../form/input";
 import Button from "../form/button";
 import ResponsiveModal from "../ResponsiveModal";
 
@@ -31,7 +32,7 @@ const Content = ({ day, close, classId, isLoading, setIsLoading }) => {
   const teachers = getCollectionData("teachers");
 
   const [daySubjects, setDaySubjects] = useState([
-    { subject: "", teacher: "", order: 1 },
+    { subject: "", teacher: "", order: 1, startTime: "", endTime: "" },
   ]);
 
   const addSubjectRow = () => {
@@ -41,6 +42,8 @@ const Content = ({ day, close, classId, isLoading, setIsLoading }) => {
         subject: "",
         teacher: "",
         order: daySubjects.length + 1,
+        startTime: "",
+        endTime: "",
       },
     ]);
   };
@@ -120,6 +123,20 @@ const Content = ({ day, close, classId, isLoading, setIsLoading }) => {
                   label: `${t.firstName} ${t.lastName}`,
                   value: t._id,
                 }))}
+              />
+
+              <Input
+                type="time"
+                label="Boshlanish vaqti"
+                value={subj.startTime}
+                onChange={(v) => updateSubjectRow(index, "startTime", v)}
+              />
+
+              <Input
+                type="time"
+                label="Tugash vaqti"
+                value={subj.endTime}
+                onChange={(v) => updateSubjectRow(index, "endTime", v)}
               />
             </div>
           </div>

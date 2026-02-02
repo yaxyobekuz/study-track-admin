@@ -13,6 +13,7 @@ import { schedulesAPI } from "@/api/client";
 // Components
 import Button from "../form/button";
 import Select from "../form/select";
+import Input from "../form/input";
 import ResponsiveModal from "../ResponsiveModal";
 
 // Hooks
@@ -45,9 +46,11 @@ const Content = ({
         teacher:
           typeof subj.teacher === "object" ? subj.teacher._id : subj.teacher,
         order: subj.order,
+        startTime: subj.startTime || "",
+        endTime: subj.endTime || "",
       }));
     }
-    return [{ subject: "", teacher: "", order: 1 }];
+    return [{ subject: "", teacher: "", order: 1, startTime: "", endTime: "" }];
   });
 
   const addSubjectRow = () => {
@@ -57,6 +60,8 @@ const Content = ({
         subject: "",
         teacher: "",
         order: daySubjects.length + 1,
+        startTime: "",
+        endTime: "",
       },
     ]);
   };
@@ -136,6 +141,20 @@ const Content = ({
                   label: `${t.firstName} ${t.lastName}`,
                   value: t._id,
                 }))}
+              />
+
+              <Input
+                type="time"
+                label="Boshlanish vaqti"
+                value={subj.startTime}
+                onChange={(v) => updateSubjectRow(index, "startTime", v)}
+              />
+
+              <Input
+                type="time"
+                label="Tugash vaqti"
+                value={subj.endTime}
+                onChange={(v) => updateSubjectRow(index, "endTime", v)}
               />
             </div>
           </div>

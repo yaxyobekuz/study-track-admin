@@ -333,6 +333,8 @@ const MySchedules = () => {
         order: subject.order,
         subjectName: subject.subject.name,
         className: schedule.class.name,
+        startTime: subject.startTime,
+        endTime: subject.endTime,
       })),
     )
     .sort((a, b) => a.order - b.order);
@@ -383,10 +385,17 @@ const MySchedules = () => {
                 {lesson.order}
               </span>
 
-              {/* Subject */}
-              <p className="text-sm grow font-medium text-gray-900 sm:text-base">
-                {lesson.subjectName}
-              </p>
+              {/* Subject and Time */}
+              <div className="grow">
+                <p className="text-sm font-medium text-gray-900 sm:text-base">
+                  {lesson.subjectName}
+                </p>
+                {lesson.startTime && lesson.endTime && (
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {lesson.startTime} - {lesson.endTime}
+                  </p>
+                )}
+              </div>
 
               {/* Class */}
               <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -499,18 +508,27 @@ const AllSchedulesToday = () => {
                 {schedule.subjects?.map((subj, index) => (
                   <div
                     key={index}
-                    className="flex items-start justify-between p-3 bg-gray-50 rounded-lg"
+                    className="p-3 bg-gray-50 rounded-lg"
                   >
-                    {/* Title */}
-                    <b className="text-sm font-medium text-gray-900">
-                      {subj.order}. {subj.subject?.name}
-                    </b>
+                    <div className="flex items-start justify-between mb-1">
+                      {/* Title */}
+                      <b className="text-sm font-medium text-gray-900">
+                        {subj.order}. {subj.subject?.name}
+                      </b>
 
-                    {/* Teacher */}
-                    <p className="text-xs text-gray-600">
-                      {subj.teacher?.firstName}{" "}
-                      {subj.teacher?.lastName?.slice(0, 1) + "."}
-                    </p>
+                      {/* Teacher */}
+                      <p className="text-xs text-gray-600">
+                        {subj.teacher?.firstName}{" "}
+                        {subj.teacher?.lastName?.slice(0, 1) + "."}
+                      </p>
+                    </div>
+
+                    {/* Time */}
+                    {subj.startTime && subj.endTime && (
+                      <p className="text-xs text-gray-500">
+                        {subj.startTime} - {subj.endTime}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>

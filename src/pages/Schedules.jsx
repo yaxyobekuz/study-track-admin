@@ -160,18 +160,27 @@ const Schedules = () => {
                   {schedule.subjects.map((subj, index) => (
                     <div
                       key={index}
-                      className="flex items-start justify-between p-3 bg-gray-50 rounded-lg"
+                      className="p-3 bg-gray-50 rounded-lg"
                     >
-                      {/* Title */}
-                      <b className="text-sm font-medium text-gray-900">
-                        {index + 1}. {subj.subject?.name}
-                      </b>
+                      <div className="flex items-start justify-between mb-1">
+                        {/* Title */}
+                        <b className="text-sm font-medium text-gray-900">
+                          {index + 1}. {subj.subject?.name}
+                        </b>
 
-                      {/* Teacher */}
-                      <p className="text-xs text-gray-600">
-                        {subj.teacher?.firstName}{" "}
-                        {subj.teacher?.lastName?.slice(0, 1) + "."}
-                      </p>
+                        {/* Teacher */}
+                        <p className="text-xs text-gray-600">
+                          {subj.teacher?.firstName}{" "}
+                          {subj.teacher?.lastName?.slice(0, 1) + "."}
+                        </p>
+                      </div>
+
+                      {/* Time */}
+                      {subj.startTime && subj.endTime && (
+                        <p className="text-xs text-gray-500">
+                          {subj.startTime} - {subj.endTime}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
