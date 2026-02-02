@@ -27,7 +27,7 @@ const AddGrade = () => {
   const [loading, setLoading] = useState(false);
   const [currentTopic, setCurrentTopic] = useState(null);
   const [selectedClass, setSelectedClass] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedSubjectWithOrder, setSelectedSubjectWithOrder] = useState(""); // Format: "subjectId_order"
   const [editingStudentId, setEditingStudentId] = useState(null);
   const [tempGrade, setTempGrade] = useState({ grade: 5, comment: "" });
 
@@ -40,27 +40,33 @@ const AddGrade = () => {
   // Load saved selections from localStorage
   useEffect(() => {
     const savedClass = localStorage.getItem("addGrade_selectedClass");
-    const savedSubject = localStorage.getItem("addGrade_selectedSubject");
+    const savedSubjectWithOrder = localStorage.getItem(
+      "addGrade_selectedSubjectWithOrder",
+    );
 
     if (savedClass) setSelectedClass(savedClass);
-    if (savedSubject) setSelectedSubject(savedSubject);
+    if (savedSubjectWithOrder)
+      setSelectedSubjectWithOrder(savedSubjectWithOrder);
   }, []);
 
   useEffect(() => {
     if (selectedClass) {
       fetchTeacherSubjects();
-      setSelectedSubject("");
+      setSelectedSubjectWithOrder("");
       setStudents([]);
       localStorage.setItem("addGrade_selectedClass", selectedClass);
     }
   }, [selectedClass]);
 
   useEffect(() => {
-    if (selectedClass && selectedSubject) {
+    if (selectedClass && selectedSubjectWithOrder) {
       fetchStudentsWithGrades();
-      localStorage.setItem("addGrade_selectedSubject", selectedSubject);
+      localStorage.setItem(
+        "addGrade_selectedSubjectWithOrder",
+        selectedSubjectWithOrder,
+      );
     }
-  }, [selectedClass, selectedSubject]);
+  }, [selectedClass, selectedSubjectWithOrder]);
 
   const fetchTeacherSubjects = async () => {
     try {
@@ -78,12 +84,18 @@ const AddGrade = () => {
   };
 
   const fetchStudentsWithGrades = async () => {
+    if (!selectedSubjectWithOrder) return;
+
+    // Parse subjectId and lessonOrder from "subjectId_order" format
+    const [subjectId, lessonOrder] = selectedSubjectWithOrder.split("_");
+
     setLoading(true);
     try {
       const today = new Date().toISOString().split("T")[0];
       const response = await gradesAPI.getStudentsWithGrades({
         classId: selectedClass,
-        subjectId: selectedSubject,
+        subjectId: subjectId,
+        lessonOrder: lessonOrder,
         date: today,
       });
       setStudents(response.data.data);
@@ -98,10 +110,14 @@ const AddGrade = () => {
 
   const handleAddOrEditGrade = async (studentId, isEdit = false) => {
     try {
+      // Parse subjectId and lessonOrder from "subjectId_order" format
+      const [subjectId, lessonOrder] = selectedSubjectWithOrder.split("_");
+
       const data = {
         studentId,
-        subjectId: selectedSubject,
+        subjectId: subjectId,
         classId: selectedClass,
+        lessonOrder: parseInt(lessonOrder),
         grade: parseInt(tempGrade.grade),
         comment: tempGrade.comment,
       };
@@ -187,17 +203,17 @@ const AddGrade = () => {
         <Select
           required
           label="Fan"
-          value={selectedSubject}
-          onChange={(value) => setSelectedSubject(value)}
+          value={selectedSubjectWithOrder}
+          onChange={(value) => setSelectedSubjectWithOrder(value)}
           options={subjects.map((subject) => ({
-            label: subject.name,
-            value: subject._id,
+            label: `${subject.order}. ${subject.name}`,
+            value: `${subject._id}_${subject.order}`,
           }))}
         />
       </Card>
 
       {/* Current Topic Display */}
-      {selectedClass && selectedSubject && currentTopic && (
+      {selectedClass && selectedSubjectWithOrder && currentTopic && (
         <Card className="mb-4 space-y-1.5">
           <h3 className="text-lg font-semibold text-gray-900">
             {currentTopic.name}
@@ -210,7 +226,7 @@ const AddGrade = () => {
       )}
 
       {/* Students Table */}
-      {selectedClass && selectedSubject && (
+      {selectedClass && selectedSubjectWithOrder && (
         <Card responsive>
           <div className="bg-white rounded-lg overflow-hidden">
             {/* No data */}
