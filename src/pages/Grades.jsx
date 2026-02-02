@@ -12,7 +12,7 @@ import {
 import { useState, useEffect } from "react";
 
 // Icons
-import { Eye, Calendar } from "lucide-react";
+import { Eye, Calendar, Download } from "lucide-react";
 
 // Components
 import Card from "@/components/Card";
@@ -27,6 +27,7 @@ import useArrayStore from "@/hooks/useArrayStore.hook";
 
 // API
 import { gradesAPI, schedulesAPI } from "../api/client";
+import Button from "@/components/form/button";
 
 const Grades = () => {
   // Load saved filters from localStorage
@@ -123,16 +124,41 @@ const Grades = () => {
         // No need to group manually
         const studentsWithGrades = response.data.data || [];
 
-        setCollection(
-          studentsWithGrades,
-          null,
-          studentsCollectionName,
-        );
+        setCollection(studentsWithGrades, null, studentsCollectionName);
       })
       .catch(() => {
         toast.error("Baholarni yuklashda xatolik");
         setCollection([], true, studentsCollectionName);
       });
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await gradesAPI.exportGrades(
+        filters.classId,
+        filters.date,
+        filters.subjectId,
+      );
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      const className =
+        classes.find((c) => c._id === filters.classId)?.name || "Sinf";
+      link.download = `${className}_baholar_${filters.date}.xlsx`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Fayl muvaffaqiyatli yuklandi");
+    } catch (error) {
+      toast.error(error.message || "Eksport qilishda xatolik yuz berdi");
+    }
   };
 
   if (isLoading && !filters.classId) {
@@ -355,6 +381,21 @@ const Grades = () => {
             </table>
           </div>
         </Card>
+      )}
+
+      {/* Export Button */}
+      {students.length > 0 && (
+        <div className="flex justify-end mt-6">
+          <Button
+            disabled={!filters.classId || !filters.date}
+            variant="primary"
+            onClick={handleExport}
+            className="gap-3.5 px-3.5"
+          >
+            <Download className="size-4" strokeWidth={1.5} />
+            Baholarni yuklash
+          </Button>
+        </div>
       )}
     </div>
   );

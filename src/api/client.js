@@ -94,6 +94,11 @@ export const gradesAPI = {
   getAll: (params) => api.get("/grades", { params }),
   getByClassAndDate: (classId, date) =>
     api.get(`/grades/class/${classId}/date/${date}`),
+  exportGrades: (classId, date, subjectId) =>
+    api.get("/grades/export", {
+      params: { classId, date, subjectId },
+      responseType: "blob",
+    }),
   getStudentGrades: (dateOrStudentId) => {
     // If it's a date format (YYYY-MM-DD), it's for current student with date filter
     if (
