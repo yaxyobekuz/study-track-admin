@@ -458,11 +458,13 @@ const AllSchedulesToday = () => {
   }
 
   return (
-    <div className="mt-6">
+    <div className="relative mt-4">
       {/* Title */}
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">
-        Bugungi barcha sinf dars jadvallari
-      </h2>
+      <div className="sticky top-16 bg-gray-50 py-2 mb-4">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Bugungi barcha sinf dars jadvallari
+        </h2>
+      </div>
 
       {/* No data */}
       {schedules.length === 0 && (

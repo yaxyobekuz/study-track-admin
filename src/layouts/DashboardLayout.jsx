@@ -214,7 +214,7 @@ const DashboardLayout = () => {
         {/* Main content */}
         <div className="lg:pl-64">
           {/* Top bar */}
-          <header className="sticky top-0 inset-x-0 bg-white h-16 border-b border-gray-200">
+          <header className="z-10 sticky top-0 inset-x-0 bg-white h-16 border-b border-gray-200">
             <div className="flex items-center justify-between gap-3.5 h-16 px-4 sm:px-6 lg:px-8">
               <button
                 onClick={() => setSidebarOpen(true)}
