@@ -47,6 +47,8 @@ const initialState = {
 
   // Topics
   uploadTopics: initialModalData,
+
+  exportUsers: initialModalData,
 };
 
 export const modalSlice = createSlice({
