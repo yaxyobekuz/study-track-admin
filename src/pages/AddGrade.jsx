@@ -19,7 +19,7 @@ import useArrayStore from "@/hooks/useArrayStore.hook";
 import useObjectStore from "@/hooks/useObjectStore.hook";
 
 // Icons
-import { Check, Edit2, Save, X, CalendarOff } from "lucide-react";
+import { Check, Edit2, Save, X, CalendarOff, Trash2 } from "lucide-react";
 
 const AddGrade = () => {
   const [subjects, setSubjects] = useState([]);
@@ -160,6 +160,21 @@ const AddGrade = () => {
     setTempGrade({ grade: 5, comment: "" });
   };
 
+  const handleDeleteGrade = async (gradeId) => {
+    if (!window.confirm("Bahoni o'chirishni tasdiqlaysizmi?")) {
+      return;
+    }
+
+    try {
+      await gradesAPI.delete(gradeId);
+      toast.success("Baho muvaffaqiyatli o'chirildi");
+      fetchStudentsWithGrades();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
+      console.error(error);
+    }
+  };
+
   if (holidayInfo.isHoliday) {
     return (
       <Card className="text-center py-12">
@@ -294,6 +309,7 @@ const AddGrade = () => {
                                 <option value="4">4 - Yaxshi</option>
                                 <option value="3">3 - Qoniqarli</option>
                                 <option value="2">2 - Qoniqarsiz</option>
+                                <option value="1">1 - Yomon</option>
                               </select>
                             ) : hasGrade ? (
                               <span
@@ -338,32 +354,47 @@ const AddGrade = () => {
                                 </button>
                               </div>
                             ) : (
-                              <button
-                                onClick={() => startEditing(student)}
-                                className={`inline-flex items-center px-3 py-1.5 ${
-                                  hasGrade
-                                    ? "bg-yellow-600 hover:bg-yellow-700"
-                                    : "bg-indigo-600 hover:bg-indigo-700"
-                                } text-white rounded-lg`}
-                              >
-                                {hasGrade ? (
-                                  <>
-                                    <Edit2
+                              <div className="flex justify-end space-x-2">
+                                <button
+                                  onClick={() => startEditing(student)}
+                                  className={`inline-flex items-center px-3 py-1.5 ${
+                                    hasGrade
+                                      ? "bg-yellow-600 hover:bg-yellow-700"
+                                      : "bg-indigo-600 hover:bg-indigo-700"
+                                  } text-white rounded-lg`}
+                                >
+                                  {hasGrade ? (
+                                    <>
+                                      <Edit2
+                                        className="size-4 mr-1"
+                                        strokeWidth={1.5}
+                                      />
+                                      Tahrirlash
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Save
+                                        className="size-4 mr-1"
+                                        strokeWidth={1.5}
+                                      />
+                                      Baho qo'yish
+                                    </>
+                                  )}
+                                </button>
+
+                                {hasGrade && (
+                                  <button
+                                    onClick={() => handleDeleteGrade(student.grade._id)}
+                                    className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                  >
+                                    <Trash2
                                       className="size-4 mr-1"
                                       strokeWidth={1.5}
                                     />
-                                    Tahrirlash
-                                  </>
-                                ) : (
-                                  <>
-                                    <Save
-                                      className="size-4 mr-1"
-                                      strokeWidth={1.5}
-                                    />
-                                    Baho qo'yish
-                                  </>
+                                    O'chirish
+                                  </button>
                                 )}
-                              </button>
+                              </div>
                             )}
                           </td>
                         </tr>
