@@ -62,6 +62,7 @@ export const subjectsAPI = {
   create: (data) => api.post("/subjects", data),
   update: (id, data) => api.put(`/subjects/${id}`, data),
   delete: (id) => api.delete(`/subjects/${id}`),
+  export: () => api.get("/subjects/export", { responseType: "blob" }),
 };
 
 // Classes API

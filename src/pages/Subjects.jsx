@@ -2,8 +2,11 @@
 import Card from "@/components/Card";
 import Button from "@/components/form/button";
 
+// API
+import { subjectsAPI } from "@/api/client";
+
 // Icons
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Download } from "lucide-react";
 
 // Hooks
 import useModal from "@/hooks/useModal.hook";
@@ -13,17 +16,43 @@ const Subjects = () => {
   const { openModal } = useModal();
   const { data: subjects, isLoading } = useArrayStore("subjects");
 
+  // Excel yuklab olish
+  const handleExport = async () => {
+    try {
+      const response = await subjectsAPI.export();
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `fanlar_${new Date().toISOString().split("T")[0]}.xlsx`,
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export xatosi:", error);
+    }
+  };
+
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
   }
 
   return (
     <div>
-      {/* Create New Btn */}
-      <Button onClick={() => openModal("createSubject")} className="px-3.5 mb-6">
-        <Plus className="size-5 mr-2" strokeWidth={1.5} />
-        Yangi fan
-      </Button>
+      {/* Action Buttons */}
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <Button onClick={() => openModal("createSubject")} className="px-3.5">
+          <Plus className="size-5 mr-2" strokeWidth={1.5} />
+          Yangi fan
+        </Button>
+
+        <Button onClick={handleExport} variant="primary" className="px-3.5">
+          <Download className="size-5" strokeWidth={1.5} />
+        </Button>
+      </div>
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -57,7 +86,9 @@ const Subjects = () => {
 
             {/* Description */}
             {subject.description && (
-              <p className="text-sm text-gray-600 mb-4">{subject.description}</p>
+              <p className="text-sm text-gray-600 mb-4">
+                {subject.description}
+              </p>
             )}
 
             {/* Bottom */}
