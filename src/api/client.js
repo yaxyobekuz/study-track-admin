@@ -83,6 +83,8 @@ export const schedulesAPI = {
   getByDay: (classId, day) => api.get(`/schedules/class/${classId}/day/${day}`),
   getMyToday: () => api.get("/schedules/my-today"),
   getAllToday: () => api.get("/schedules/all-today"),
+  exportByClass: (classId) =>
+    api.get(`/schedules/class/${classId}/export`, { responseType: "blob" }),
   createOrUpdate: (data) => api.post("/schedules", data),
   updateCurrentTopic: (scheduleId, subjectId, topicNumber) =>
     api.patch(`/schedules/${scheduleId}/subject/${subjectId}/topic`, {

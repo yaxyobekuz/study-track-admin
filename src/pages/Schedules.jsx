@@ -13,13 +13,14 @@ import { schedulesAPI } from "../api/client";
 // Components
 import Card from "@/components/Card";
 import Select from "@/components/form/select";
+import Button from "@/components/form/button";
 
 // Hooks
 import useModal from "@/hooks/useModal.hook";
 import useArrayStore from "@/hooks/useArrayStore.hook";
 
 // Icons
-import { Plus, Edit, Trash2, Calendar } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Download } from "lucide-react";
 
 const Schedules = () => {
   const { user } = useAuth();
@@ -73,6 +74,32 @@ const Schedules = () => {
     return schedules.find((s) => s.day === day);
   };
 
+  // Excel yuklab olish
+  const handleExport = async () => {
+    try {
+      if (!selectedClass) return;
+
+      const response = await schedulesAPI.exportByClass(selectedClass);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+
+      const className =
+        classes.find((cls) => cls._id === selectedClass)?.name || "sinf";
+      link.setAttribute(
+        "download",
+        `dars_jadvali_${className}_${new Date().toISOString().split("T")[0]}.xlsx`,
+      );
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export xatosi:", error);
+    }
+  };
+
   const handleOpenScheduleModal = (day, schedule = null) => {
     const dayData = days.find((d) => d.value === day);
 
@@ -98,12 +125,23 @@ const Schedules = () => {
 
   return (
     <div>
-      <Select
-        className="w-32 mb-6"
-        value={selectedClass}
-        onChange={(v) => setSelectedClass(v)}
-        options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
-      />
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <Select
+          className="w-32"
+          value={selectedClass}
+          onChange={(v) => setSelectedClass(v)}
+          options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
+        />
+
+        <Button
+          onClick={handleExport}
+          variant="primary"
+          className="px-3.5"
+          disabled={!selectedClass}
+        >
+          <Download className="size-5" strokeWidth={1.5} />
+        </Button>
+      </div>
 
       {/* Schedule Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
