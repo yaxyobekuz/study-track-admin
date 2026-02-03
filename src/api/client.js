@@ -127,6 +127,7 @@ export const gradesAPI = {
   create: (data) => api.post("/grades", data),
   update: (id, data) => api.put(`/grades/${id}`, data),
   delete: (id) => api.delete(`/grades/${id}`),
+  getMissingToday: () => api.get("/grades/missing-today"),
 };
 
 // Holidays API

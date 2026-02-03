@@ -11,12 +11,13 @@ import Subjects from "./pages/Subjects";
 import AddGrade from "./pages/AddGrade";
 import MyGrades from "./pages/MyGrades";
 import Holidays from "./pages/Holidays";
+import Messages from "./pages/Messages";
 import Schedules from "./pages/Schedules";
 import Dashboard from "./pages/Dashboard";
-import ClassDetail from "./pages/ClassDetail";
-import Messages from "./pages/Messages";
-import TeacherMessages from "./pages/TeacherMessages";
 import Statistics from "./pages/Statistics";
+import ClassDetail from "./pages/ClassDetail";
+import MissingGrades from "./pages/MissingGrades";
+import TeacherMessages from "./pages/TeacherMessages";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -107,6 +108,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={["owner"]}>
                 <Statistics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/grades/missing"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <MissingGrades />
               </ProtectedRoute>
             }
           />
