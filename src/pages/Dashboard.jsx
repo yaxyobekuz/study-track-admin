@@ -422,6 +422,14 @@ const AllSchedulesToday = () => {
   const today = new Date();
   const { user } = useAuth();
   const dayName = getDayOfWeekUZ(today);
+  const currentMinutes = today.getHours() * 60 + today.getMinutes();
+
+  const toMinutes = (time) => {
+    if (!time) return null;
+    const [hours, minutes] = time.split(":").map(Number);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+    return hours * 60 + minutes;
+  };
 
   const {
     initialize,
@@ -518,8 +526,20 @@ const AllSchedulesToday = () => {
                         (schedule.startingOrder || 1) +
                         (subj.order || index + 1) -
                         1;
+                      const startMinutes = toMinutes(subj.startTime);
+                      const endMinutes = toMinutes(subj.endTime);
+                      const isActive =
+                        startMinutes !== null &&
+                        endMinutes !== null &&
+                        currentMinutes >= startMinutes &&
+                        currentMinutes <= endMinutes;
                       return (
-                        <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                        <div
+                          key={index}
+                          className={`p-3 rounded-lg ${
+                            isActive ? "bg-indigo-50" : "bg-gray-50"
+                          }`}
+                        >
                           <div className="flex items-start justify-between mb-1">
                             {/* Title */}
                             <b className="text-sm font-medium text-gray-900">
@@ -527,10 +547,17 @@ const AllSchedulesToday = () => {
                             </b>
 
                             {/* Teacher */}
-                            <p className="text-xs text-gray-600">
-                              {subj.teacher?.firstName}{" "}
-                              {subj.teacher?.lastName?.slice(0, 1) + "."}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              {isActive && (
+                                <span className="text-[10px] font-semibold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
+                                  Aktiv
+                                </span>
+                              )}
+                              <p className="text-xs text-gray-600">
+                                {subj.teacher?.firstName}{" "}
+                                {subj.teacher?.lastName?.slice(0, 1) + "."}
+                              </p>
+                            </div>
                           </div>
 
                           {/* Time */}
