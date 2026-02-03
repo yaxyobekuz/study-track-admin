@@ -28,6 +28,7 @@ import useArrayStore from "@/hooks/useArrayStore.hook";
 // API
 import { gradesAPI, schedulesAPI } from "../api/client";
 import Button from "@/components/form/button";
+import { useNavigate } from "react-router-dom";
 
 const Grades = () => {
   // Load saved filters from localStorage
@@ -70,6 +71,8 @@ const Grades = () => {
     localStorage.setItem("grades_subjectId", filters.subjectId);
     localStorage.setItem("grades_date", filters.date);
   }, [filters]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Initialize collections (pagination = false)
@@ -332,17 +335,18 @@ const Grades = () => {
                           {(() => {
                             // Fan takrorlanish indekslarini hisoblash
                             const subjectOccurrences = {};
-                            
+
                             return todaySubjects.map((subject) => {
                               const subjectIdStr = subject._id.toString();
-                              
+
                               // Bu fanning nechanchi marta takrorlanishini hisoblash
                               if (!subjectOccurrences[subjectIdStr]) {
                                 subjectOccurrences[subjectIdStr] = 0;
                               }
-                              const occurrenceIndex = subjectOccurrences[subjectIdStr];
+                              const occurrenceIndex =
+                                subjectOccurrences[subjectIdStr];
                               subjectOccurrences[subjectIdStr]++;
-                              
+
                               const grade = getGradeForSubject(
                                 studentData.grades,
                                 subject._id,
@@ -397,9 +401,9 @@ const Grades = () => {
         </Card>
       )}
 
-      {/* Export Button */}
       {students.length > 0 && (
-        <div className="flex justify-end mt-6">
+        <div className="flex justify-end gap-5 mt-6">
+          {/* Export Button */}
           <Button
             disabled={!filters.classId || !filters.date}
             variant="primary"
@@ -408,6 +412,15 @@ const Grades = () => {
           >
             <Download className="size-4" strokeWidth={1.5} />
             Baholarni yuklash
+          </Button>
+
+          <Button
+            variant="danger"
+            className="gap-3.5 px-3.5"
+            onClick={() => navigate("/grades/missing")}
+          >
+            <Eye className="size-4" strokeWidth={1.5} />
+            Qo'yilmagan baholar
           </Button>
         </div>
       )}

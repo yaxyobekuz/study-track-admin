@@ -50,6 +50,7 @@ import CreateClassModal from "@/components/modal/createClass.modal";
 import DeleteClassModal from "../components/modal/deleteClass.modal";
 import EditSubjectModal from "../components/modal/editSubject.modal";
 import SendMessageModal from "../components/modal/sendMessage.modal";
+import ExportUsersModal from "../components/modal/exportUsers.modal";
 import EditScheduleModal from "../components/modal/editSchedule.modal";
 import UploadTopicsModal from "../components/modal/uploadTopics.modal";
 import CreateSubjectModal from "../components/modal/createSubject.modal";
@@ -60,7 +61,6 @@ import DeleteScheduleModal from "../components/modal/deleteSchedule.modal";
 import ViewUserPasswordModal from "../components/modal/viewUserPassword.modal";
 import StudentStatisticsModal from "@/components/modal/studentStatistics.modal";
 import ResetUserPasswordModal from "../components/modal/resetUserPassword.modal";
-import ExportUsersModal from "../components/modal/exportUsers.modal";
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
