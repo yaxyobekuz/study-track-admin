@@ -12,23 +12,26 @@ export const calculateAverageGrade = (grades) => {
   return (sum / grades.length).toFixed(2);
 };
 
-export const getGradeForSubject = (studentGrades, subjectId, lessonOrder = null) => {
+export const getGradeForSubject = (
+  studentGrades,
+  subjectId,
+  occurrenceIndex = 0,
+) => {
   if (!subjectId || subjectId === "all") return null;
 
-  const subjectGrades = studentGrades.filter(
-    (g) => g.subject && g.subject._id && g.subject._id.toString() === subjectId.toString()
-  );
+  // Shu fan uchun barcha baholarni lessonOrder bo'yicha tartiblash
+  const subjectGrades = studentGrades
+    .filter(
+      (g) =>
+        g.subject &&
+        g.subject._id &&
+        g.subject._id.toString() === subjectId.toString(),
+    )
+    .sort((a, b) => (a.lessonOrder || 0) - (b.lessonOrder || 0));
 
   if (subjectGrades.length === 0) return null;
 
-  // Agar lesson order berilgan bo'lsa (bir fan bir necha marta bo'lsa),
-  // shu order bo'yicha bahoni topish
-  if (lessonOrder !== null) {
-    const gradeAtOrder = subjectGrades.find((g) => g.lessonOrder === lessonOrder);
-    // Agar shu order bo'yicha baho topilmasa, birinchi bahoni qaytarish
-    return gradeAtOrder || subjectGrades[0];
-  }
-
-  // Aks holda birinchi bahoni qaytarish
-  return subjectGrades[0];
+  // Fan takrorlanish indeksi bo'yicha bahoni olish
+  // Masalan: 1-O'qish uchun occurrenceIndex=0, 2-O'qish uchun occurrenceIndex=1
+  return subjectGrades[occurrenceIndex] || null;
 };

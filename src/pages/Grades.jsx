@@ -329,39 +329,53 @@ const Grades = () => {
                       {/* All subjects */}
                       {filters.subjectId == "all" && (
                         <>
-                          {todaySubjects.map((subject) => {
-                            const grade = getGradeForSubject(
-                              studentData.grades,
-                              subject._id,
-                              subject.lessonOrder,
-                            );
+                          {(() => {
+                            // Fan takrorlanish indekslarini hisoblash
+                            const subjectOccurrences = {};
+                            
+                            return todaySubjects.map((subject) => {
+                              const subjectIdStr = subject._id.toString();
+                              
+                              // Bu fanning nechanchi marta takrorlanishini hisoblash
+                              if (!subjectOccurrences[subjectIdStr]) {
+                                subjectOccurrences[subjectIdStr] = 0;
+                              }
+                              const occurrenceIndex = subjectOccurrences[subjectIdStr];
+                              subjectOccurrences[subjectIdStr]++;
+                              
+                              const grade = getGradeForSubject(
+                                studentData.grades,
+                                subject._id,
+                                occurrenceIndex,
+                              );
 
-                            return (
-                              <td
-                                key={`${subject.lessonOrder}-${subject._id}`}
-                                className="px-4 py-4 whitespace-nowrap text-center"
-                              >
-                                {grade ? (
-                                  <span
-                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-semibold border ${getGradeColor(
-                                      grade.grade,
-                                    )}`}
-                                    title={
-                                      grade.comment
-                                        ? `Izoh: ${grade.comment}`
-                                        : ""
-                                    }
-                                  >
-                                    {grade.grade}
-                                  </span>
-                                ) : (
-                                  <span className="text-gray-400 text-sm">
-                                    -
-                                  </span>
-                                )}
-                              </td>
-                            );
-                          })}
+                              return (
+                                <td
+                                  key={`${subject.lessonOrder}-${subject._id}`}
+                                  className="px-4 py-4 whitespace-nowrap text-center"
+                                >
+                                  {grade ? (
+                                    <span
+                                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-sm font-semibold border ${getGradeColor(
+                                        grade.grade,
+                                      )}`}
+                                      title={
+                                        grade.comment
+                                          ? `Izoh: ${grade.comment}`
+                                          : ""
+                                      }
+                                    >
+                                      {grade.grade}
+                                    </span>
+                                  ) : (
+                                    <span className="text-gray-400 text-sm">
+                                      -
+                                    </span>
+                                  )}
+                                </td>
+                              );
+                            });
+                          })()}
 
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             {studentData.grades.length > 0 ? (
