@@ -165,6 +165,8 @@ export const statisticsAPI = {
     api.get(`/statistics/weekly/class/${classId}/rankings`, { params }),
   getSchoolRankings: (params) =>
     api.get("/statistics/weekly/school/rankings", { params }),
+  export: (params) =>
+    api.get("/statistics/weekly/export", { params, responseType: "blob" }),
 };
 
 // Topics API

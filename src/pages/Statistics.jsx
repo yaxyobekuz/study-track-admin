@@ -23,7 +23,7 @@ import Pagination from "@/components/pagination.component";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 // Icons
-import { Users, GraduationCap, Eye, School } from "lucide-react";
+import { Users, GraduationCap, Eye, School, Download } from "lucide-react";
 
 const Statistics = () => {
   const { openModal } = useModal();
@@ -131,6 +131,35 @@ const Statistics = () => {
     value: c._id,
     label: c.name,
   }));
+
+  // Excel yuklab olish
+  const handleExport = async () => {
+    try {
+      const params =
+        viewMode === "class"
+          ? { type: "class", classId: selectedClass }
+          : { type: "school" };
+
+      const response = await statisticsAPI.export(params);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+
+      const fileName =
+        viewMode === "class"
+          ? `haftalik_reyting_sinf_${new Date().toISOString().split("T")[0]}.xlsx`
+          : `haftalik_reyting_maktab_${new Date().toISOString().split("T")[0]}.xlsx`;
+
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error("Excel yuklab olishda xatolik");
+      console.error("Export xatosi:", error);
+    }
+  };
 
   // Badge color (rank bo'yicha)
   const getRankBadgeColor = (rank) => {
@@ -326,6 +355,17 @@ const Statistics = () => {
             <strong>35 dan past</strong> - Qoniqarli natija
           </span>
         </div>
+
+        {/* Export Button */}
+        <Button
+          variant="primary"
+          onClick={handleExport}
+          className="gap-3.5 px-3.5 ml-auto"
+          disabled={isLoading || (viewMode === "class" && !selectedClass)}
+        >
+          <Download className="size-4" />
+          Yuklab olish
+        </Button>
       </Card>
     </div>
   );
