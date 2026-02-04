@@ -6,6 +6,7 @@ import { topicsAPI } from "@/api/client";
 
 // React
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Components
 import Card from "@/components/Card";
@@ -17,9 +18,10 @@ import useModal from "@/hooks/useModal.hook";
 import useArrayStore from "@/hooks/useArrayStore.hook";
 
 // Icons
-import { Upload, Trash2, BookOpen } from "lucide-react";
+import { Upload, Trash2, BookOpen, Users } from "lucide-react";
 
 const Topics = () => {
+  const navigate = useNavigate();
   const { openModal } = useModal();
   const { data: subjects } = useArrayStore("subjects");
 
@@ -106,13 +108,25 @@ const Topics = () => {
                 variant="danger"
                 onClick={handleDeleteAllTopics}
               >
-                <Trash2 className="size-4 mr-2" strokeWidth={1.5} />
-                Mavzularni o'chirish
+                <Trash2 className="size-4" strokeWidth={1.5} />
               </Button>
             )}
           </div>
         </div>
       </Card>
+
+      {selectedSubject && (
+        <Card className="flex justify-end mb-6">
+          <Button
+            className="px-5"
+            variant="primary"
+            onClick={() => navigate(`/subjects/${selectedSubject}/topics`)}
+          >
+            <Users className="size-4 mr-2" strokeWidth={1.5} />
+            Sinflar
+          </Button>
+        </Card>
+      )}
 
       {/* Topics List */}
       {selectedSubject && (
