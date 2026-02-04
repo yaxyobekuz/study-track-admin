@@ -196,28 +196,26 @@ const Schedules = () => {
               {schedule && (
                 <div className="space-y-3">
                   {schedule.subjects.map((subj, index) => {
-                    const displayOrder = (schedule.startingOrder || 1) + (subj.order || index + 1) - 1;
+                    const displayOrder =
+                      (schedule.startingOrder || 1) + (subj.order || index + 1) - 1;
                     return (
-                      <div
-                        key={index}
-                        className="p-3 bg-gray-50 rounded-lg"
-                      >
+                      <div key={index} className="p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-start justify-between mb-1">
                           {/* Title */}
                           <b className="text-sm font-medium text-gray-900">
                             {displayOrder}. {subj.subject?.name}
                           </b>
 
-                        {/* Teacher */}
-                        <p className="text-xs text-gray-600">
-                          {subj.teacher?.firstName}{" "}
-                          {subj.teacher?.lastName?.slice(0, 1) + "."}
-                        </p>
-                      </div>
+                          {/* Teacher */}
+                          <p className="text-xs text-gray-600">
+                            {subj.teacher?.firstName}{" "}
+                            {subj.teacher?.lastName?.slice(0, 1) + "."}
+                          </p>
+                        </div>
 
                         {/* Time */}
                         {subj.startTime && subj.endTime && (
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 mt-1">
                             {subj.startTime} - {subj.endTime}
                           </p>
                         )}
