@@ -17,6 +17,7 @@ import Dashboard from "./pages/Dashboard";
 import Statistics from "./pages/Statistics";
 import ClassDetail from "./pages/ClassDetail";
 import MissingGrades from "./pages/MissingGrades";
+import SubjectTopics from "./pages/SubjectTopics";
 import TeacherMessages from "./pages/TeacherMessages";
 
 // Layouts
@@ -92,6 +93,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={["owner"]}>
                 <Topics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="subjects/:subjectId/topics"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <SubjectTopics />
               </ProtectedRoute>
             }
           />
