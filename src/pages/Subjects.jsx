@@ -6,11 +6,12 @@ import Button from "@/components/form/button";
 import { subjectsAPI } from "@/api/client";
 
 // Icons
-import { Plus, Edit, Trash2, Download } from "lucide-react";
+import { Plus, Edit, Trash2, Download, ChevronRight } from "lucide-react";
 
 // Hooks
 import useModal from "@/hooks/useModal.hook";
 import useArrayStore from "@/hooks/useArrayStore.hook";
+import { Link } from "react-router-dom";
 
 const Subjects = () => {
   const { openModal } = useModal();
@@ -60,8 +61,14 @@ const Subjects = () => {
           <Card key={subject._id}>
             {/* Top */}
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {subject.name}
+              <h3>
+                <Link
+                  to={`/subjects/${subject._id}/topics`}
+                  className="flex items-center gap-1.5 text-lg font-semibold text-gray-900 transition-colors duration-200 hover:text-indigo-600"
+                >
+                  {subject.name}
+                  <ChevronRight className="size-5" strokeWidth={1.5} />
+                </Link>
               </h3>
 
               {/* Action buttons */}
