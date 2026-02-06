@@ -23,6 +23,7 @@ const Select = ({
   disabled = false,
   isLoading = false,
   variant = "white",
+  triggerClassName = "",
   onOpenChange = () => {},
   ...props
 }) => {
@@ -73,7 +74,8 @@ const Select = ({
           className={cn(
             sizeClasses[size],
             variantClasses[variant],
-            defaultClasses
+            defaultClasses,
+            triggerClassName
           )}
         >
           <SelectValue placeholder={placeholder} />
