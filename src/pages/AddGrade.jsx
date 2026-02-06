@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // API
-import { gradesAPI } from "../api/client";
+import { gradesAPI, schedulesAPI } from "../api/client";
 
 // React
 import { useState, useEffect } from "react";
@@ -15,7 +15,6 @@ import Select from "@/components/form/select";
 import { getGradeColor } from "@/helpers/grade.helpers";
 
 // Hooks
-import useArrayStore from "@/hooks/useArrayStore.hook";
 import useObjectStore from "@/hooks/useObjectStore.hook";
 
 // Icons
@@ -23,6 +22,7 @@ import { CalendarOff, Trash2, Loader2 } from "lucide-react";
 import Button from "@/components/form/button";
 
 const AddGrade = () => {
+  const [todayClasses, setTodayClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -35,7 +35,19 @@ const AddGrade = () => {
   const { getEntity } = useObjectStore("holidayCheck");
   const holidayInfo = getEntity("today") || { isHoliday: false, holiday: null };
 
-  const { data: classes } = useArrayStore("classes");
+  // Fetch today's classes from schedule
+  useEffect(() => {
+    schedulesAPI
+      .getMyToday()
+      .then((res) => {
+        const classes = res.data.data.map((schedule) => schedule.class);
+        setTodayClasses(classes);
+      })
+      .catch((error) => {
+        toast.error("Bugungi dars jadvalini yuklashda xatolik");
+        console.error(error);
+      });
+  }, []);
 
   // Load saved selections from localStorage
   useEffect(() => {
@@ -74,7 +86,13 @@ const AddGrade = () => {
       if (response.data.message && response.data.data.length === 0) {
         toast.info(response.data.message);
       }
-      setSubjects(response.data.data);
+      const data = response.data.data;
+      setSubjects(data);
+
+      // Auto-select first subject
+      if (data.length > 0) {
+        setSelectedSubjectWithOrder(`${data[0]._id}_${data[0].order}`);
+      }
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Fanlarni yuklashda xatolik",
@@ -191,7 +209,7 @@ const AddGrade = () => {
           label="Sinf"
           value={selectedClass}
           onChange={(value) => setSelectedClass(value)}
-          options={classes.map((cls) => ({
+          options={todayClasses.map((cls) => ({
             label: cls.name,
             value: cls._id,
           }))}
