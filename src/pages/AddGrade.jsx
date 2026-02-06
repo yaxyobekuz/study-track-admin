@@ -19,17 +19,17 @@ import useArrayStore from "@/hooks/useArrayStore.hook";
 import useObjectStore from "@/hooks/useObjectStore.hook";
 
 // Icons
-import { Check, Edit2, Save, X, CalendarOff, Trash2 } from "lucide-react";
+import { CalendarOff, Trash2, Loader2 } from "lucide-react";
+import Button from "@/components/form/button";
 
 const AddGrade = () => {
   const [subjects, setSubjects] = useState([]);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingStudentId, setLoadingStudentId] = useState(null);
   const [currentTopic, setCurrentTopic] = useState(null);
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSubjectWithOrder, setSelectedSubjectWithOrder] = useState(""); // Format: "subjectId_order"
-  const [editingStudentId, setEditingStudentId] = useState(null);
-  const [tempGrade, setTempGrade] = useState({ grade: 5, comment: "" });
 
   // Holiday Info
   const { getEntity } = useObjectStore("holidayCheck");
@@ -83,13 +83,13 @@ const AddGrade = () => {
     }
   };
 
-  const fetchStudentsWithGrades = async () => {
+  const fetchStudentsWithGrades = async (showLoader = true) => {
     if (!selectedSubjectWithOrder) return;
 
     // Parse subjectId and lessonOrder from "subjectId_order" format
     const [subjectId, lessonOrder] = selectedSubjectWithOrder.split("_");
 
-    setLoading(true);
+    if (showLoader) setLoading(true);
     try {
       const today = new Date().toISOString().split("T")[0];
       const response = await gradesAPI.getStudentsWithGrades({
@@ -108,70 +108,52 @@ const AddGrade = () => {
     }
   };
 
-  const handleAddOrEditGrade = async (studentId, isEdit = false) => {
+  const handleGradeChange = async (student, gradeValue) => {
+    if (gradeValue === "") return;
+
+    const hasGrade = student.grade !== null;
+    const [subjectId, lessonOrder] = selectedSubjectWithOrder.split("_");
+
+    setLoadingStudentId(student._id);
     try {
-      // Parse subjectId and lessonOrder from "subjectId_order" format
-      const [subjectId, lessonOrder] = selectedSubjectWithOrder.split("_");
-
-      const data = {
-        studentId,
-        subjectId: subjectId,
-        classId: selectedClass,
-        lessonOrder: parseInt(lessonOrder),
-        grade: parseInt(tempGrade.grade),
-        comment: tempGrade.comment,
-      };
-
-      if (isEdit) {
-        const student = students.find((s) => s._id === studentId);
+      if (hasGrade) {
         await gradesAPI.update(student.grade._id, {
-          grade: parseInt(tempGrade.grade),
-          comment: tempGrade.comment,
+          grade: parseInt(gradeValue),
+          comment: student.grade.comment || "",
         });
         toast.success("Baho muvaffaqiyatli yangilandi");
       } else {
-        await gradesAPI.create(data);
+        await gradesAPI.create({
+          studentId: student._id,
+          subjectId,
+          classId: selectedClass,
+          lessonOrder: parseInt(lessonOrder),
+          grade: parseInt(gradeValue),
+          comment: "",
+        });
         toast.success("Baho muvaffaqiyatli qo'yildi");
       }
 
-      setEditingStudentId(null);
-      setTempGrade({ grade: 5, comment: "" });
-      fetchStudentsWithGrades();
+      await fetchStudentsWithGrades(false);
     } catch (error) {
       toast.error(error.response?.data?.message || "Xatolik yuz berdi");
       console.error(error);
+    } finally {
+      setLoadingStudentId(null);
     }
   };
 
-  const startEditing = (student) => {
-    setEditingStudentId(student._id);
-    if (student.grade) {
-      setTempGrade({
-        grade: student.grade.grade,
-        comment: student.grade.comment || "",
-      });
-    } else {
-      setTempGrade({ grade: 5, comment: "" });
-    }
-  };
-
-  const cancelEditing = () => {
-    setEditingStudentId(null);
-    setTempGrade({ grade: 5, comment: "" });
-  };
-
-  const handleDeleteGrade = async (gradeId) => {
-    if (!window.confirm("Bahoni o'chirishni tasdiqlaysizmi?")) {
-      return;
-    }
-
+  const handleDeleteGrade = async (student) => {
+    setLoadingStudentId(student._id);
     try {
-      await gradesAPI.delete(gradeId);
+      await gradesAPI.delete(student.grade._id);
       toast.success("Baho muvaffaqiyatli o'chirildi");
-      fetchStudentsWithGrades();
+      await fetchStudentsWithGrades(false);
     } catch (error) {
       toast.error(error.response?.data?.message || "Xatolik yuz berdi");
       console.error(error);
+    } finally {
+      setLoadingStudentId(null);
     }
   };
 
@@ -221,7 +203,8 @@ const AddGrade = () => {
           value={selectedSubjectWithOrder}
           onChange={(value) => setSelectedSubjectWithOrder(value)}
           options={subjects.map((subject) => {
-            const displayOrder = (subject.startingOrder || 1) + (subject.order || 1) - 1;
+            const displayOrder =
+              (subject.startingOrder || 1) + (subject.order || 1) - 1;
             return {
               label: `${displayOrder}. ${subject.name}`,
               value: `${subject._id}_${subject.order}`,
@@ -268,137 +251,88 @@ const AddGrade = () => {
                   {/* Thead */}
                   <thead>
                     <tr>
-                      <th className="px-6 py-3 text-left">#</th>
+                      <th className="px-6 py-3 text-left max-sm:hidden">#</th>
                       <th className="px-6 py-3 text-left">O'quvchi</th>
                       <th className="px-6 py-3 text-left">Baho</th>
-                      <th className="px-6 py-3 text-right">Harakatlar</th>
                     </tr>
                   </thead>
 
                   {/* Tbody */}
                   <tbody className="bg-white divide-y divide-gray-200">
                     {students.map((student, index) => {
-                      const isEditing = editingStudentId === student._id;
                       const hasGrade = student.grade !== null;
+                      const isRowLoading = loadingStudentId === student._id;
 
                       return (
                         <tr key={student._id} className="hover:bg-gray-50">
                           {/* Index */}
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-sm:hidden">
                             {index + 1}
                           </td>
 
                           {/* Student */}
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 py-4 whitespace-nowrap xs:px-6">
                             <div className="text-sm font-medium text-gray-900">
-                              {student.firstName} {student.lastName}
+                              {student.firstName} <br className="xs:hidden" />{" "}
+                              {student.lastName}
                             </div>
                           </td>
 
                           {/* Grade */}
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {isEditing ? (
-                              <select
-                                value={tempGrade.grade}
-                                onChange={(e) =>
-                                  setTempGrade({
-                                    ...tempGrade,
-                                    grade: e.target.value,
-                                  })
-                                }
-                                className="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                              >
-                                <option value="5">5 - A'lo</option>
-                                <option value="4">4 - Yaxshi</option>
-                                <option value="3">3 - Qoniqarli</option>
-                                <option value="2">2 - Qoniqarsiz</option>
-                                <option value="1">1 - Yomon</option>
-                              </select>
-                            ) : hasGrade ? (
-                              <span
-                                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${getGradeColor(
-                                  student.grade.grade,
-                                )}`}
-                              >
-                                {student.grade.grade}
-                              </span>
-                            ) : (
-                              <span className="text-sm text-gray-400">
-                                Baho yo'q
-                              </span>
-                            )}
-                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap max-sm:pl-0">
+                            <div className="flex items-center gap-2">
+                              {isRowLoading ? (
+                                <div className="flex items-center justify-center w-40 h-10">
+                                  <Loader2
+                                    className="size-6 text-indigo-600 animate-spin"
+                                    strokeWidth={2}
+                                  />
+                                </div>
+                              ) : (
+                                <>
+                                  <Select
+                                    size="md"
+                                    value={
+                                      hasGrade
+                                        ? String(student.grade.grade)
+                                        : ""
+                                    }
+                                    onChange={(value) =>
+                                      handleGradeChange(student, value)
+                                    }
+                                    className="w-40"
+                                    disabled={isRowLoading}
+                                    placeholder="Bahoni tanlang"
+                                    triggerClassName={
+                                      hasGrade
+                                        ? getGradeColor(student.grade.grade)
+                                        : ""
+                                    }
+                                    options={[
+                                      { label: "5 - A'lo", value: "5" },
+                                      { label: "4 - Yaxshi", value: "4" },
+                                      { label: "3 - Qoniqarli", value: "3" },
+                                      { label: "2 - Qoniqarsiz", value: "2" },
+                                      { label: "1 - Yomon", value: "1" },
+                                    ]}
+                                  />
 
-                          {/* Actions */}
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            {isEditing ? (
-                              <div className="flex justify-end space-x-2">
-                                <button
-                                  onClick={() =>
-                                    handleAddOrEditGrade(student._id, hasGrade)
-                                  }
-                                  className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                                >
-                                  <Check
-                                    className="size-4 mr-1"
-                                    strokeWidth={1.5}
-                                  />
-                                  Saqlash
-                                </button>
-                                <button
-                                  onClick={cancelEditing}
-                                  className="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                                >
-                                  <X
-                                    className="size-4 mr-1"
-                                    strokeWidth={1.5}
-                                  />
-                                  Bekor
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex justify-end space-x-2">
-                                <button
-                                  onClick={() => startEditing(student)}
-                                  className={`inline-flex items-center px-3 py-1.5 ${
-                                    hasGrade
-                                      ? "bg-yellow-600 hover:bg-yellow-700"
-                                      : "bg-indigo-600 hover:bg-indigo-700"
-                                  } text-white rounded-lg`}
-                                >
-                                  {hasGrade ? (
-                                    <>
-                                      <Edit2
-                                        className="size-4 mr-1"
+                                  {hasGrade && (
+                                    <Button
+                                      variant="danger"
+                                      className="size-10"
+                                      disabled={isRowLoading}
+                                      onClick={() => handleDeleteGrade(student)}
+                                    >
+                                      <Trash2
+                                        className="size-4"
                                         strokeWidth={1.5}
                                       />
-                                      Tahrirlash
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Save
-                                        className="size-4 mr-1"
-                                        strokeWidth={1.5}
-                                      />
-                                      Baho qo'yish
-                                    </>
+                                    </Button>
                                   )}
-                                </button>
-
-                                {hasGrade && (
-                                  <button
-                                    onClick={() => handleDeleteGrade(student.grade._id)}
-                                    className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                                  >
-                                    <Trash2
-                                      className="size-4 mr-1"
-                                      strokeWidth={1.5}
-                                    />
-                                    O'chirish
-                                  </button>
-                                )}
-                              </div>
-                            )}
+                                </>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
