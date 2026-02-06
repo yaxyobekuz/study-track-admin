@@ -120,7 +120,20 @@ const Schedules = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center py-8">Yuklanmoqda...</div>;
+    return (
+      <div className="">
+        <div className="flex items-center justify-between gap-3 mb-6 animate-pulse">
+          <Card className="w-40 h-10" />
+          <Card className="size-10" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index} className="h-96" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -197,7 +210,9 @@ const Schedules = () => {
                 <div className="space-y-3">
                   {schedule.subjects.map((subj, index) => {
                     const displayOrder =
-                      (schedule.startingOrder || 1) + (subj.order || index + 1) - 1;
+                      (schedule.startingOrder || 1) +
+                      (subj.order || index + 1) -
+                      1;
                     return (
                       <div key={index} className="p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-start justify-between mb-1">
