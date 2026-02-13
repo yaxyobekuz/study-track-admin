@@ -143,8 +143,12 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       // Invalidate cache
       invalidateCache();
 
-      // Close modal
-      close();
+      // Close modal and notify listeners
+      close({
+        uploadedAt: Date.now(),
+        uploadMode: state.uploadMode,
+        subjectId: subjectIdParam,
+      });
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Mavzularni yuklashda xatolik";

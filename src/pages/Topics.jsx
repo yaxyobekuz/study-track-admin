@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { topicsAPI } from "@/api/client";
 
 // React
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Components
@@ -23,11 +23,28 @@ import { Upload, Trash2, BookOpen, Users } from "lucide-react";
 const Topics = () => {
   const navigate = useNavigate();
   const { openModal } = useModal();
+  const { data: uploadTopicsData } = useModal("uploadTopics");
   const { data: subjects } = useArrayStore("subjects");
 
   const [selectedSubject, setSelectedSubject] = useState("");
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(false);
+  const lastUploadHandledAt = useRef(null);
+
+  useEffect(() => {
+    const savedSubjectId = localStorage.getItem("topics_selectedSubject");
+    if (savedSubjectId) {
+      setSelectedSubject(savedSubjectId);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedSubject) {
+      localStorage.setItem("topics_selectedSubject", selectedSubject);
+    } else {
+      localStorage.removeItem("topics_selectedSubject");
+    }
+  }, [selectedSubject]);
 
   // Load topics when subject changes
   useEffect(() => {
@@ -37,6 +54,21 @@ const Topics = () => {
       setTopics([]);
     }
   }, [selectedSubject]);
+
+  useEffect(() => {
+    const uploadedAt = uploadTopicsData?.uploadedAt;
+    if (!uploadedAt || uploadedAt === lastUploadHandledAt.current) return;
+    lastUploadHandledAt.current = uploadedAt;
+
+    if (!selectedSubject) return;
+
+    const uploadMode = uploadTopicsData?.uploadMode;
+    const uploadSubjectId = uploadTopicsData?.subjectId;
+
+    if (uploadMode === "all" || uploadSubjectId === selectedSubject) {
+      fetchTopics();
+    }
+  }, [uploadTopicsData, selectedSubject]);
 
   const fetchTopics = async () => {
     setLoading(true);
