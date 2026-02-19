@@ -102,13 +102,6 @@ const DashboardLayout = () => {
       ];
     }
 
-    if (user?.role === "student") {
-      return [
-        ...baseNav,
-        { name: "Baholarim", href: "/my-grades", icon: ClipboardList },
-      ];
-    }
-
     return baseNav;
   };
 

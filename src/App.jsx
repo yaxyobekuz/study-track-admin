@@ -9,7 +9,6 @@ import Grades from "./pages/Grades";
 import Classes from "./pages/Classes";
 import Subjects from "./pages/Subjects";
 import AddGrade from "./pages/AddGrade";
-import MyGrades from "./pages/MyGrades";
 import Holidays from "./pages/Holidays";
 import Messages from "./pages/Messages";
 import Schedules from "./pages/Schedules";
@@ -48,7 +47,7 @@ const AppRoutes = () => {
         <Route
           path="/"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["owner", "teacher"]}>
               <DashboardLayout />
             </ProtectedRoute>
           }
@@ -174,15 +173,6 @@ const AppRoutes = () => {
             }
           />
 
-          {/* Student routes */}
-          <Route
-            path="my-grades"
-            element={
-              <ProtectedRoute allowedRoles={["student"]}>
-                <MyGrades />
-              </ProtectedRoute>
-            }
-          />
         </Route>
 
         {/* 404 */}
