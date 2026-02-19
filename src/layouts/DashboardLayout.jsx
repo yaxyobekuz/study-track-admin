@@ -5,6 +5,7 @@ import {
   Home,
   Menu,
   Users,
+  Coins,
   LogOut,
   Calendar,
   BookOpen,
@@ -89,6 +90,7 @@ const DashboardLayout = () => {
         { name: "Dars jadvali", href: "/schedules", icon: Calendar },
         { name: "Dars mavzulari", href: "/topics", icon: ClipboardList },
         { name: "Dam olish kunlari", href: "/holidays", icon: CalendarDays },
+        { name: "Coin sozlamalari", href: "/coin-settings", icon: Coins },
       ];
     }
 
