@@ -18,6 +18,7 @@ import ClassDetail from "./pages/ClassDetail";
 import MissingGrades from "./pages/MissingGrades";
 import SubjectTopics from "./pages/SubjectTopics";
 import TeacherMessages from "./pages/TeacherMessages";
+import CoinSettings from "./pages/CoinSettings";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -116,6 +117,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={["owner"]}>
                 <Statistics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="coin-settings"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <CoinSettings />
               </ProtectedRoute>
             }
           />
