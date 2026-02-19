@@ -191,4 +191,13 @@ export const topicsAPI = {
   deleteBySubject: (subjectId) => api.delete(`/topics/subject/${subjectId}`),
 };
 
+// Coins API
+export const coinsAPI = {
+  getSettings: () => api.get("/coins/settings"),
+  updateSettings: (data) => api.put("/coins/settings", data),
+  getStats: () => api.get("/coins/stats"),
+  getStudentTransactions: (studentId, params) =>
+    api.get(`/coins/transactions/${studentId}`, { params }),
+};
+
 export default api;
