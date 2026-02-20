@@ -1,0 +1,366 @@
+// Icons
+import {
+  X,
+  Eye,
+  Home,
+  Menu,
+  Users,
+  Coins,
+  LogOut,
+  Calendar,
+  BookOpen,
+  BarChart2,
+  PlusCircle,
+  CalendarDays,
+  GraduationCap,
+  ClipboardList,
+  MessageSquare,
+} from "lucide-react";
+
+// Images
+import { logo } from "@/shared/assets/images";
+
+// React
+import { useEffect, useState } from "react";
+
+// Auth
+import useAuth from "@/shared/hooks/useAuth";
+
+// Helpers
+import { getRoleLabel } from "@/shared/helpers/role.helpers";
+
+// Hooks
+import useArrayStore from "@/shared/hooks/useArrayStore";
+import useObjectStore from "@/shared/hooks/useObjectStore";
+
+// Utils
+import { formatDateUZ, getDayOfWeekUZ } from "@/shared/utils/date.utils";
+
+// Router
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+
+// API
+import { classesAPI } from "@/shared/api/classes.api";
+import { holidaysAPI } from "@/shared/api/holidays.api";
+import { subjectsAPI } from "@/shared/api/subjects.api";
+import { usersAPI } from "@/shared/api/users.api";
+
+// Components
+import EditUserModal from "@/features/users/components/EditUserModal";
+import EditClassModal from "@/features/classes/components/EditClassModal";
+import CreateUserModal from "@/features/users/components/CreateUserModal";
+import DeleteUserModal from "@/features/users/components/DeleteUserModal";
+import CreateClassModal from "@/features/classes/components/CreateClassModal";
+import DeleteClassModal from "@/features/classes/components/DeleteClassModal";
+import EditSubjectModal from "@/features/subjects/components/EditSubjectModal";
+import SendMessageModal from "@/features/messages/components/SendMessageModal";
+import ExportUsersModal from "@/features/users/components/ExportUsersModal";
+import EditScheduleModal from "@/features/schedules/components/EditScheduleModal";
+import UploadTopicsModal from "@/features/subjects/components/UploadTopicsModal";
+import CreateSubjectModal from "@/features/subjects/components/CreateSubjectModal";
+import DeleteSubjectModal from "@/features/subjects/components/DeleteSubjectModal";
+import MessageDetailsModal from "@/features/messages/components/MessageDetailsModal";
+import CreateScheduleModal from "@/features/schedules/components/CreateScheduleModal";
+import DeleteScheduleModal from "@/features/schedules/components/DeleteScheduleModal";
+import ViewUserPasswordModal from "@/features/users/components/ViewUserPasswordModal";
+import StudentStatisticsModal from "@/features/statistics/components/StudentStatisticsModal";
+import ResetUserPasswordModal from "@/features/users/components/ResetUserPasswordModal";
+
+const DashboardLayout = () => {
+  const { user, logout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  // Role-based navigation
+  const getNavigation = () => {
+    const baseNav = [{ name: "Bosh sahifa", href: "/", icon: Home }];
+
+    if (user?.role === "owner") {
+      return [
+        ...baseNav,
+        { name: "Foydalanuvchilar", href: "/users", icon: Users },
+        { name: "Sinflar", href: "/classes", icon: GraduationCap },
+        { name: "Statistika", href: "/statistics", icon: BarChart2 },
+        { name: "Baholar jurnali", href: "/grades", icon: Eye },
+        { name: "Xabarlar", href: "/messages", icon: MessageSquare },
+        { name: "Fanlar", href: "/subjects", icon: BookOpen },
+        { name: "Dars jadvali", href: "/schedules", icon: Calendar },
+        { name: "Dars mavzulari", href: "/topics", icon: ClipboardList },
+        { name: "Dam olish kunlari", href: "/holidays", icon: CalendarDays },
+        { name: "Coin sozlamalari", href: "/coin-settings", icon: Coins },
+      ];
+    }
+
+    if (user?.role === "teacher") {
+      return [
+        ...baseNav,
+        { name: "Dars jadvali", href: "/schedules", icon: Calendar },
+        { name: "Baho qo'yish", href: "/add-grade", icon: PlusCircle },
+        { name: "Baholar jurnali", href: "/grades", icon: Eye },
+        { name: "Xabarlarim", href: "/my-messages", icon: MessageSquare },
+      ];
+    }
+
+    return baseNav;
+  };
+
+  const navigation = getNavigation();
+
+  const isActive = (path) => {
+    if (path === "/") return location.pathname === "/";
+    return location.pathname.startsWith(path);
+  };
+
+  actions(user);
+
+  return (
+    <>
+      <div className="min-h-screen bg-gray-50">
+        {/* Mobile sidebar backdrop */}
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 bg-black/70 z-20 lg:hidden"
+          />
+        )}
+
+        {/* Sidebar */}
+        <aside
+          className={`fixed inset-y-0 left-0 z-30 w-64 bg-white transform transition-transform duration-300 ease-in-out border-r lg:translate-x-0 ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <div className="flex flex-col h-full">
+            {/* Logo */}
+            <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <img
+                  width={40}
+                  alt="Logo"
+                  height={40}
+                  src={logo}
+                  className="size-10"
+                />
+
+                <span className="lg:text-xl font-bold text-gray-900">
+                  MBSI School
+                </span>
+              </div>
+
+              {/* Close sidebar */}
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden text-gray-500 hover:text-gray-700"
+              >
+                <X className="size-6" strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* User Info */}
+            <div className="space-y-1 px-6 py-3 border-b border-gray-200">
+              <b className="max-w-[195px] text-sm font-medium text-gray-900 truncate">
+                {user?.fullName}
+              </b>
+
+              <p className="text-xs text-gray-500">
+                {getRoleLabel(user?.role)}
+              </p>
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                      active
+                        ? "bg-indigo-50 text-indigo-600"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon className="size-5 mr-3" strokeWidth={1.5} />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Logout */}
+            <div className="p-4 border-t border-gray-200">
+              <button
+                onClick={handleLogout}
+                className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="size-5 mr-3" strokeWidth={1.5} />
+                Chiqish
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <div className="lg:pl-64">
+          {/* Top bar */}
+          <header className="z-10 sticky top-0 inset-x-0 bg-white h-16 border-b border-gray-200">
+            <div className="flex items-center justify-between gap-3.5 h-16 px-4 sm:px-6 lg:px-8">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="flex items-center justify-center size-11 lg:hidden text-gray-500 hover:text-gray-700"
+              >
+                <Menu className="size-6" strokeWidth={1.5} />
+              </button>
+
+              <div className="flex-1 lg:flex-none">
+                <h1 className="text-xl font-semibold text-gray-900">
+                  {navigation.find((item) => isActive(item.href))?.name ||
+                    "MBSI School"}
+                </h1>
+              </div>
+
+              <p className="">
+                <span className="hidden text-sm text-gray-500 sm:inline">
+                  {formatDateUZ(new Date())}
+                </span>{" "}
+                <span className="capitalize text-sm text-gray-500">
+                  {getDayOfWeekUZ(new Date())}
+                </span>
+              </p>
+            </div>
+          </header>
+
+          {/* Page content */}
+          <main className="p-5 lg:p-6">
+            <Outlet />
+          </main>
+        </div>
+      </div>
+
+      {/* User Modals */}
+      <EditUserModal />
+      <DeleteUserModal />
+      <CreateUserModal />
+      <ResetUserPasswordModal />
+      <ViewUserPasswordModal />
+      <ExportUsersModal />
+
+      {/* Class Modals */}
+      <EditClassModal />
+      <CreateClassModal />
+      <DeleteClassModal />
+
+      {/* Subject Modals */}
+      <EditSubjectModal />
+      <CreateSubjectModal />
+      <DeleteSubjectModal />
+
+      {/* Schedule Modals */}
+      <EditScheduleModal />
+      <CreateScheduleModal />
+      <DeleteScheduleModal />
+
+      {/* Message Modals */}
+      <SendMessageModal />
+      <MessageDetailsModal />
+
+      {/* Topic Modals */}
+      <UploadTopicsModal />
+
+      {/* Stats */}
+      <StudentStatisticsModal />
+    </>
+  );
+};
+
+const actions = (user) => {
+  const {
+    initialize,
+    hasCollection,
+    setCollection,
+    getCollectionData,
+    setCollectionErrorState,
+    setCollectionLoadingState,
+  } = useArrayStore();
+
+  const isOwner = user?.role === "owner";
+  const classes = getCollectionData("classes");
+  const subjects = getCollectionData("subjects");
+  const teachers = getCollectionData("teachers");
+
+  const { addEntity, hasEntity } = useObjectStore("holidayCheck");
+
+  // Initialize collection (pagination = false)
+  useEffect(() => {
+    if (!hasCollection("classes")) initialize(false, "classes");
+    if (!hasCollection("subjects")) initialize(false, "subjects");
+    if (!hasCollection("teachers")) initialize(false, "teachers");
+  }, [initialize, hasCollection]);
+
+  const fetchClasses = () => {
+    setCollectionLoadingState(true, "classes");
+
+    classesAPI
+      .getAll()
+      .then((res) => {
+        setCollection(res.data.data, null, "classes");
+      })
+      .catch(() => {
+        setCollectionErrorState(true, "classes");
+      });
+  };
+
+  const fetchSubjects = () => {
+    setCollectionLoadingState(true, "subjects");
+
+    subjectsAPI
+      .getAll()
+      .then((res) => {
+        setCollection(res.data.data, null, "subjects");
+      })
+      .catch(() => {
+        setCollectionErrorState(true, "subjects");
+      });
+  };
+
+  const fetchTeachers = () => {
+    setCollectionLoadingState(true, "teachers");
+
+    usersAPI
+      .getAll({ role: "teacher", limit: 200 })
+      .then((res) => {
+        setCollection(res.data.data, null, "teachers");
+      })
+      .catch(() => {
+        setCollectionErrorState(true, "teachers");
+      });
+  };
+
+  const checkTodayHoliday = () => {
+    holidaysAPI
+      .checkToday()
+      .then((res) => addEntity("today", res.data.data))
+      .catch(() => {
+        addEntity("today", { isHoliday: false, holiday: null });
+      });
+  };
+
+  useEffect(() => {
+    !classes?.length && fetchClasses();
+    !subjects?.length && fetchSubjects();
+    !teachers?.length && isOwner && fetchTeachers();
+    if (!hasEntity("today")) checkTodayHoliday();
+  }, [classes?.length, subjects?.length, teachers?.length]);
+};
+
+export default DashboardLayout;

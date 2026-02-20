@@ -10,9 +10,9 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 217 91% 60%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
+    --secondary: 220 14% 96%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -90,4 +90,14 @@
       @apply last:bg-gray-100;
     }
   }
+}
+
+@layer utilities {
+  .container {
+    @apply max-w-xl mx-auto px-4;
+  }
+}
+
+.bottom-navigation{
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.1);
 }
