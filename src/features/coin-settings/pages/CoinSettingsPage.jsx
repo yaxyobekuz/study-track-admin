@@ -23,6 +23,7 @@ const CoinSettings = () => {
     dailyCoinPercentage: 60,
     schoolRankBonus: 100,
     classRankBonus: 20,
+    minDailyGradeForCoin: 10,
   });
 
   const fetchAll = useCallback(async () => {
@@ -37,6 +38,7 @@ const CoinSettings = () => {
         dailyCoinPercentage: s.dailyCoinPercentage,
         schoolRankBonus: s.schoolRankBonus,
         classRankBonus: s.classRankBonus,
+        minDailyGradeForCoin: s.minDailyGradeForCoin ?? 10,
       });
       setStats(statsRes.data.data);
     } catch {
@@ -81,6 +83,27 @@ const CoinSettings = () => {
         </h2>
 
         <div className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Coin olish uchun minimal ball
+            </label>
+            <p className="text-xs text-gray-500 mb-2">
+              O'quvchi kunlik shu balldan kam to'plasa coin berilmaydi (default: 10)
+            </p>
+            <input
+              type="number"
+              min="0"
+              value={form.minDailyGradeForCoin}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  minDailyGradeForCoin: Number(e.target.value),
+                }))
+              }
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Kunlik coin foizi (%)
