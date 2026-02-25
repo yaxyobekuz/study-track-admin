@@ -44,6 +44,12 @@ import HolidaysPage from "@/features/holidays/pages/HolidaysPage";
 // Pages — Coin Settings
 import CoinSettingsPage from "@/features/coin-settings/pages/CoinSettingsPage";
 
+// Pages — Market
+import MarketOrdersPage from "@/features/market/pages/MarketOrdersPage";
+import MarketProductsPage from "@/features/market/pages/MarketProductsPage";
+import MarketProductEditPage from "@/features/market/pages/MarketProductEditPage";
+import MarketProductCreatePage from "@/features/market/pages/MarketProductCreatePage";
+
 // Router
 import { Routes as RoutesWrapper, Route, Navigate } from "react-router-dom";
 
@@ -92,6 +98,12 @@ const Routes = () => {
 
           {/* Coin Settings */}
           <Route path="/coin-settings" element={<CoinSettingsPage />} />
+
+          {/* Market */}
+          <Route path="/market/products" element={<MarketProductsPage />} />
+          <Route path="/market/products/new" element={<MarketProductCreatePage />} />
+          <Route path="/market/products/:productId/edit" element={<MarketProductEditPage />} />
+          <Route path="/market/orders" element={<MarketOrdersPage />} />
         </Route>
       </Route>
 
