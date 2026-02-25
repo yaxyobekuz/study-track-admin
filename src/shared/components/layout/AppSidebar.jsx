@@ -2,6 +2,7 @@
 import {
   Home,
   LogOut,
+  Store,
   BookOpen,
   Settings2,
   PanelLeft,
@@ -127,6 +128,22 @@ const navItems = [
       {
         title: "Dam olish kunlari",
         url: "/holidays",
+      },
+    ],
+  },
+  {
+    title: "Market",
+    url: "/market/products",
+    icon: Store,
+    isActive: false,
+    items: [
+      {
+        title: "Mahsulotlar",
+        url: "/market/products",
+      },
+      {
+        title: "Buyurtmalar",
+        url: "/market/orders",
       },
     ],
   },
