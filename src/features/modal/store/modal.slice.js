@@ -48,6 +48,10 @@ const initialState = {
   // Topics
   uploadTopics: initialModalData,
 
+  // Market
+  deleteMarketProduct: initialModalData,
+  updateMarketOrderStatus: initialModalData,
+
   exportUsers: initialModalData,
 };
 
