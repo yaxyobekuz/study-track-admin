@@ -37,11 +37,13 @@ import EditScheduleModal from "@/features/schedules/components/EditScheduleModal
 import UploadTopicsModal from "@/features/subjects/components/UploadTopicsModal";
 import CreateSubjectModal from "@/features/subjects/components/CreateSubjectModal";
 import DeleteSubjectModal from "@/features/subjects/components/DeleteSubjectModal";
+import DeleteProductModal from "@/features/market/components/DeleteProductModal";
 import MessageDetailsModal from "@/features/messages/components/MessageDetailsModal";
 import CreateScheduleModal from "@/features/schedules/components/CreateScheduleModal";
 import DeleteScheduleModal from "@/features/schedules/components/DeleteScheduleModal";
 import ViewUserPasswordModal from "@/features/users/components/ViewUserPasswordModal";
 import ResetUserPasswordModal from "@/features/users/components/ResetUserPasswordModal";
+import UpdateOrderStatusModal from "@/features/market/components/UpdateOrderStatusModal";
 import StudentStatisticsModal from "@/features/statistics/components/StudentStatisticsModal";
 
 const DashboardLayout = () => {
@@ -89,6 +91,10 @@ const DashboardLayout = () => {
 
       {/* Topic Modals */}
       <UploadTopicsModal />
+
+      {/* Market */}
+      <DeleteProductModal />
+      <UpdateOrderStatusModal />
 
       {/* Stats */}
       <StudentStatisticsModal />
