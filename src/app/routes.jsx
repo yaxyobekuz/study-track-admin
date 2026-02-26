@@ -25,7 +25,6 @@ import SubjectTopicsPage from "@/features/subjects/pages/SubjectTopicsPage";
 
 // Pages — Grades
 import GradesPage from "@/features/grades/pages/GradesPage";
-import AddGradePage from "@/features/grades/pages/AddGradePage";
 import MissingGradesPage from "@/features/grades/pages/MissingGradesPage";
 
 // Pages — Schedules
@@ -33,7 +32,6 @@ import SchedulesPage from "@/features/schedules/pages/SchedulesPage";
 
 // Pages — Messages
 import MessagesPage from "@/features/messages/pages/MessagesPage";
-import TeacherMessagesPage from "@/features/messages/pages/TeacherMessagesPage";
 
 // Pages — Statistics
 import StatisticsPage from "@/features/statistics/pages/StatisticsPage";
@@ -80,7 +78,6 @@ const Routes = () => {
 
           {/* Grades */}
           <Route path="/grades" element={<GradesPage />} />
-          <Route path="/add-grade" element={<AddGradePage />} />
           <Route path="/grades/missing" element={<MissingGradesPage />} />
 
           {/* Schedules */}
@@ -88,7 +85,6 @@ const Routes = () => {
 
           {/* Messages */}
           <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/my-messages" element={<TeacherMessagesPage />} />
 
           {/* Statistics */}
           <Route path="/statistics" element={<StatisticsPage />} />
