@@ -269,6 +269,11 @@ const Footer = () => {
 
   const isMobile = useIsMobile();
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
+
   return (
     <SidebarFooter>
       <SidebarMenu>
@@ -328,9 +333,9 @@ const Footer = () => {
 
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
                 <LogOut strokeWidth={1.5} />
-                Log out
+                Chiqish
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
