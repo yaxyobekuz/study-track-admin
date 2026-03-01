@@ -9,9 +9,16 @@ import { cn } from "@/shared/utils/cn";
  * @param {React.ReactNode} props.children - Card content.
  * @param {boolean} [props.responsive=false] - Apply responsive padding/rounding.
  * @param {string} [props.title=""] - Optional title text.
+ * @param {React.ElementType} [props.icon=null] - Optional icon component for title.
  * @returns {JSX.Element}
  */
-const Card = ({ className = "", children, responsive = false, title = "" }) => {
+const Card = ({
+  children,
+  title = "",
+  icon = null,
+  className = "",
+  responsive = false,
+}) => {
   return (
     <div
       className={cn(
@@ -22,7 +29,10 @@ const Card = ({ className = "", children, responsive = false, title = "" }) => {
       )}
     >
       {title && (
-        <h2 className="font-semibold mb-2 text-blue-600 xs:mb-3.5">{title}</h2>
+        <div className="flex items-center gap-1.5 xs:gap-3.5">
+          {icon && icon}
+          <h2 className="font-semibold text-blue-600">{title}</h2>
+        </div>
       )}
       {children}
     </div>
