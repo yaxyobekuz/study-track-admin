@@ -1,41 +1,48 @@
 // Icons
 import {
   Bot,
-  Users,
   BookOpen,
   Briefcase,
   PartyPopper,
   GraduationCap,
 } from "lucide-react";
 
-// Components
-import Card from "@/shared/components/ui/Card";
-
-// Router
-import { Link } from "react-router-dom";
-
 // React
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+
+// Lottie
+import Lottie from "lottie-react";
 
 // Store
 import useAuth from "@/shared/hooks/useAuth";
 
-// Utils
-import { getDayOfWeekUZ } from "@/shared/utils/date.utils";
-
-// Helpers
-import { getRoleLabel } from "@/shared/helpers/role.helpers";
+// Tanstack Query
+import { useQuery } from "@tanstack/react-query";
 
 // API
-import { schedulesAPI } from "@/shared/api/schedules.api";
 import { usersAPI } from "@/shared/api/users.api";
+import { schedulesAPI } from "@/shared/api/schedules.api";
 
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectStore from "@/shared/hooks/useObjectStore";
 
+// Components
+import Card from "@/shared/components/ui/Card";
+import Counter from "@/shared/components/ui/Counter";
+import { Skeleton } from "@/shared/components/shadcn/skeleton";
+
+// Utils
+import { getDayOfWeekUZ } from "@/shared/utils/date.utils";
+import { getTimedRandomAnimation } from "@/shared/utils/animations.utils";
+
 const Dashboard = () => {
   const { user } = useAuth();
+
+  const { animation } = getTimedRandomAnimation({
+    family: "duck",
+    sentiment: ["positive", "playful"],
+  });
 
   // Holiday Info
   const { getEntity } = useObjectStore("holidayCheck");
@@ -70,70 +77,17 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Welcome Section */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl">
+      {/* Top Bar */}
+      <Card className="flex items-center gap-1.5 mb-4 !py-3 md:gap-3">
+        <h2 className="text-xl leading-none font-bold text-gray-900">
           Xush kelibsiz, {user?.firstName}!
         </h2>
-        <p className="mt-2 text-gray-600">
-          Rolingiz:{" "}
-          <span className="font-medium">{getRoleLabel(user?.role)}</span>
-        </p>
-      </div>
+
+        <Lottie className="size-6 sm:size-7" animationData={animation} />
+      </Card>
 
       {/* User Statistics - Owner only */}
       {user?.role === "owner" && <UserStats />}
-
-      {/* Quick Actions */}
-      <Card className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Tezkor harakatlar
-        </h3>
-
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Users */}
-          <Link
-            to="/users"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Users className="size-6 text-indigo-600 mr-3" strokeWidth={1.5} />
-            <div>
-              <p className="font-medium text-gray-900">Foydalanuvchilar</p>
-              <p className="text-sm text-gray-500">Boshqarish</p>
-            </div>
-          </Link>
-
-          {/* Classes */}
-          <Link
-            to="/classes"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <GraduationCap
-              className="size-6 text-indigo-600 mr-3"
-              strokeWidth={1.5}
-            />
-            <div>
-              <p className="font-medium text-gray-900">Sinflar</p>
-              <p className="text-sm text-gray-500">Boshqarish</p>
-            </div>
-          </Link>
-
-          {/* Schedules */}
-          <Link
-            to="/schedules"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <BookOpen
-              className="size-6 text-indigo-600 mr-3"
-              strokeWidth={1.5}
-            />
-            <div>
-              <p className="font-medium text-gray-900">Dars jadvali</p>
-              <p className="text-sm text-gray-500">Sozlash</p>
-            </div>
-          </Link>
-        </div>
-      </Card>
 
       <AllSchedulesToday />
     </div>
@@ -141,63 +95,50 @@ const Dashboard = () => {
 };
 
 const UserStats = () => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    usersAPI
-      .getStats()
-      .then((res) => setStats(res.data.data))
-      .catch(() => setStats(null))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        {[1, 2, 3].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <div className="h-16 bg-gray-200 rounded" />
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (!stats) return null;
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["users", "stats"],
+    queryFn: () => usersAPI.getStats().then((res) => res.data.data),
+  });
 
   const statItems = [
     {
       label: "O'quvchilar",
-      value: stats.students,
+      value: stats?.students || 0,
       icon: GraduationCap,
-      color: "bg-purple-100 text-purple-600",
     },
     {
       label: "O'qituvchilar",
-      value: stats.teachers,
+      value: stats?.teachers || 0,
       icon: Briefcase,
-      color: "bg-green-100 text-green-600",
     },
     {
       label: "Bot foydalanuvchilar",
-      value: stats.telegramUsers,
+      value: stats?.telegramUsers || 0,
       icon: Bot,
-      color: "bg-blue-100 text-blue-600",
     },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
       {statItems.map((item, idx) => (
-        <Card key={idx} className="flex items-center gap-4">
-          <div className={`p-3 rounded-full ${item.color}`}>
-            <item.icon className="size-6" strokeWidth={1.5} />
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-gray-900">{item.value}</p>
-            <p className="text-sm text-gray-500">{item.label}</p>
-          </div>
+        <Card
+          key={idx}
+          title={item.label}
+          className="flex flex-col items-center justify-between sm:flex-row"
+          icon={
+            <div className="flex items-center justify-center size-10 bg-blue-50 rounded-full">
+              <item.icon className="size-5 text-blue-700" strokeWidth={1.5} />
+            </div>
+          }
+        >
+          {isLoading ? (
+            <Skeleton className="w-16 h-7" />
+          ) : (
+            <Counter
+              value={item.value}
+              className="text-2xl font-bold text-gray-900"
+            />
+          )}
         </Card>
       ))}
     </div>
