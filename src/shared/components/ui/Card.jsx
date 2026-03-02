@@ -31,7 +31,7 @@ const Card = ({
       {title && (
         <div className="flex items-center gap-1.5 xs:gap-3.5">
           {icon && icon}
-          <h2 className="font-semibold text-blue-600">{title}</h2>
+          <h2 className="font-semibold text-gray-900">{title}</h2>
         </div>
       )}
       {children}
