@@ -3,7 +3,7 @@
  * @param {string | Date} date - The date to be formatted
  * @returns {string} Formatted date string
  */
-export const formatDateUZ = (date) => {
+export const formatDateUZ = (date, options = {}) => {
   const dateObj = new Date(date);
 
   const months = [
@@ -24,6 +24,10 @@ export const formatDateUZ = (date) => {
   const day = dateObj.getDate();
   const month = months[dateObj.getMonth()];
   const year = dateObj.getFullYear();
+
+  if (options.hideYear) {
+    return `${day}-${month}`;
+  }
 
   return `${day}-${month}, ${year}`;
 };
@@ -100,7 +104,7 @@ export const formatHolidayDate = (holiday) => {
 
   if (holiday.type === "range" && holiday.startDate && holiday.endDate) {
     return `${formatDateUZ(holiday.startDate)} - ${formatDateUZ(
-      holiday.endDate
+      holiday.endDate,
     )}`;
   }
 
