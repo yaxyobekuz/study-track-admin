@@ -43,9 +43,9 @@ const Content = ({
     if (scheduleData.subjects && scheduleData.subjects.length > 0) {
       return scheduleData.subjects.map((subj) => ({
         subject:
-          typeof subj.subject === "object" ? subj.subject._id : subj.subject,
+          typeof subj.subject === "object" ? subj.subject?._id : subj.subject,
         teacher:
-          typeof subj.teacher === "object" ? subj.teacher._id : subj.teacher,
+          typeof subj.teacher === "object" ? subj.teacher?._id : subj.teacher,
         order: subj.order,
         startTime: subj.startTime || "",
         endTime: subj.endTime || "",
@@ -141,7 +141,7 @@ const Content = ({
                 label="Fan"
                 value={subj.subject}
                 onChange={(v) => updateSubjectRow(index, "subject", v)}
-                options={subjects.map((s) => ({ label: s.name, value: s._id }))}
+                options={subjects.map((s) => ({ label: s.name, value: s?._id }))}
               />
 
               <Select
@@ -151,7 +151,7 @@ const Content = ({
                 onChange={(v) => updateSubjectRow(index, "teacher", v)}
                 options={teachers.map((t) => ({
                   label: `${t.firstName} ${t.lastName}`,
-                  value: t._id,
+                  value: t?._id,
                 }))}
               />
 
