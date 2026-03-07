@@ -7,6 +7,7 @@ import useAuth from "@/shared/hooks/useAuth";
 // Components
 import Card from "@/shared/components/ui/Card";
 import CoinStats from "../components/CoinStats";
+import PenaltyStats from "../components/PenaltyStats";
 import UsersStats from "../components/UsersStats";
 import HolidayInfo from "../components/HolidayInfo";
 import AllSchedulesToday from "../components/AllSchedulesToday";
@@ -41,6 +42,9 @@ const Dashboard = () => {
 
       {/* Coin Statistics - Owner only */}
       <CoinStats />
+
+      {/* Penalty Statistics - Owner only */}
+      <PenaltyStats />
 
       {/* Today's Schedules */}
       <AllSchedulesToday />
