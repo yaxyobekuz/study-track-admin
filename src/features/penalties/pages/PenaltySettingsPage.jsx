@@ -15,7 +15,7 @@ import { penaltiesAPI } from "@/shared/api/penalties.api";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 
 const PenaltySettingsPage = () => {
   const queryClient = useQueryClient();
@@ -136,7 +136,7 @@ const PenaltySettingsPage = () => {
           </div>
 
           <Button
-            variant="primary"
+            
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
             className="w-full px-4 text-sm font-medium"
