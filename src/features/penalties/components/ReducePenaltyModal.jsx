@@ -1,21 +1,21 @@
 // Toast
 import { toast } from "sonner";
 
-// Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
 // API
-import { penaltiesAPI } from "@/shared/api/penalties.api";
 import { usersAPI } from "@/shared/api/users.api";
-
-// Components
-import Input from "@/shared/components/form/input";
-import Combobox from "@/shared/components/form/combobox";
-import Button from "@/shared/components/form/button";
-import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
+import { penaltiesAPI } from "@/shared/api/penalties.api";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+
+// Components
+import Combobox from "@/shared/components/form/combobox";
+import Button from "@/shared/components/ui/button/Button";
+import InputField from "@/shared/components/ui/input/InputField";
+import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
+
+// Tanstack Query
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const ReducePenaltyModal = () => (
   <ResponsiveModal
@@ -32,7 +32,8 @@ const Content = ({ close }) => {
 
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["users", "all"],
-    queryFn: () => usersAPI.getAll({ limit: 500 }).then((res) => res.data.data || []),
+    queryFn: () =>
+      usersAPI.getAll({ limit: 500 }).then((res) => res.data.data || []),
   });
 
   const users = (usersData || [])
@@ -71,13 +72,13 @@ const Content = ({ close }) => {
     <form onSubmit={handleSubmit} className="space-y-3.5">
       <Combobox
         required
-        label="Foydalanuvchi"
         value={userId}
+        options={users}
+        label="Foydalanuvchi"
         isLoading={usersLoading}
         placeholder="Foydalanuvchini tanlang..."
+        onChange={(value) => setField("userId", value)}
         searchPlaceholder="Ism, username bo'yicha qidirish..."
-        onChange={(v) => setField("userId", v)}
-        options={users}
       />
 
       {selectedUser && (
@@ -89,31 +90,28 @@ const Content = ({ close }) => {
         </p>
       )}
 
-      <Input
-        required
-        label="Kamaytirilayotgan ball"
-        type="number"
+      <InputField
         min={1}
-        max={selectedUser?.penaltyPoints || 999}
+        required
+        type="number"
         value={points}
-        onChange={(v) => setField("points", v)}
+        label="Kamaytirilayotgan ball"
+        max={selectedUser?.penaltyPoints || 999}
+        onChange={(e) => setField("points", e.target.value)}
       />
 
-      <Input
+      <InputField
         required
         label="Sabab"
-        type="textarea"
         value={reason}
-        onChange={(v) => setField("reason", v)}
+        type="textarea"
+        onChange={(e) => setField("reason", e.target.value)}
       />
 
       <Button
-        type="submit"
-        variant="primary"
         disabled={reduceMutation.isPending || !userId || !points || !reason}
-        className="w-full px-4 text-sm font-medium"
       >
-        {reduceMutation.isPending ? "Kamaytirilmoqda..." : "Kamaytirish"}
+        Kamaytirish{reduceMutation.isPending && "..."}
       </Button>
     </form>
   );
