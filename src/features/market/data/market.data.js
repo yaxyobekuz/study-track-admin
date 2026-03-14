@@ -1,5 +1,5 @@
 export const marketOrderStatusOptions = [
-  { label: "Barchasi", value: "all" },
+  { label: "Barcha holatlar", value: "all" },
   { label: "Kutilmoqda", value: "pending" },
   { label: "Tasdiqlangan", value: "approved" },
   { label: "Rad etilgan", value: "rejected" },
