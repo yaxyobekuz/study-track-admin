@@ -1,36 +1,46 @@
+// Sonner
 import { toast } from "sonner";
+
+// React
 import { useState } from "react";
+
+// Hooks
+import useModal from "@/shared/hooks/useModal";
+
+// API
+import { marketAPI } from "@/shared/api/market.api";
+
+// Tanstack Query
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import Input from "@/shared/components/form/input";
-import Select from "@/shared/components/form/select";
-import Button from "@/shared/components/form/button";
-import useModal from "@/shared/hooks/useModal";
+// Components
+import Button from "@/shared/components/ui/button/Button";
+import InputField from "@/shared/components/ui/input/InputField";
+import SelectField from "@/shared/components/ui/select/SelectField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
-import { marketAPI } from "@/shared/api/market.api";
+
+// Data
 import { marketOrderUpdateStatusOptions } from "@/features/market/data/market.data";
 
 /**
  * Modal for updating market order status by owner.
  * @returns {JSX.Element} Update order status modal.
  */
-const UpdateOrderStatusModal = () => <ModalContainer />;
-
-const ModalContainer = () => {
+const UpdateOrderStatusModal = () => {
   const { data } = useModal("updateMarketOrderStatus");
 
   return (
     <ResponsiveModal
       name="updateMarketOrderStatus"
       title="Buyurtma holatini o'zgartirish"
-      description="Statusni tanlab buyurtmani yakunlang"
+      description="Holatni tanlab buyurtmani yakunlang"
     >
       <Content key={data?.sessionId || data?.orderId || "order-status-modal"} />
     </ResponsiveModal>
   );
 };
 
-const Content = ({ close, orderId, orderStatus }) => {
+const Content = ({ close, orderId }) => {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState("approved");
   const [rejectReason, setRejectReason] = useState("");
@@ -66,30 +76,33 @@ const Content = ({ close, orderId, orderStatus }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Select
-        label="Status"
+      <SelectField
+        required
+        label="Holat"
         value={status}
-        options={marketOrderUpdateStatusOptions}
         onChange={setStatus}
+        triggerClassName="w-full"
+        options={marketOrderUpdateStatusOptions}
       />
 
       {status === "rejected" && (
-        <Input
+        <InputField
           required
-          type="textarea"
           label="Sabab"
+          name="reason"
+          type="textarea"
           value={rejectReason}
-          onChange={setRejectReason}
           placeholder="Rad etish sababini yozing"
+          onChange={(e) => setRejectReason(e.target.value)}
         />
       )}
 
       <div className="flex flex-col-reverse gap-3.5 w-full xs:m-0 xs:flex-row xs:justify-end">
         <Button
           type="button"
-          variant="neutral"
-          className="w-full xs:w-32"
           onClick={close}
+          variant="secondary"
+          className="w-full xs:w-32"
         >
           Bekor qilish
         </Button>
@@ -97,7 +110,7 @@ const Content = ({ close, orderId, orderStatus }) => {
         <Button
           className="w-full xs:w-32"
           disabled={updateStatusMutation.isPending}
-          variant={status === "approved" ? "primary" : "danger"}
+          variant={status === "approved" ? "default" : "danger"}
         >
           Saqlash
         </Button>

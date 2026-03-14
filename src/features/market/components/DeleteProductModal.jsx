@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 import { marketAPI } from "@/shared/api/market.api";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 /**
@@ -45,7 +45,7 @@ const Content = ({ _id, close }) => {
       <Button
         type="button"
         onClick={close}
-        variant="neutral"
+        variant="secondary"
         className="w-full xs:w-32"
       >
         Bekor qilish

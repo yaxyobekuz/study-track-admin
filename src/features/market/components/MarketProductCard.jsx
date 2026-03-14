@@ -8,7 +8,7 @@ import { Edit, Trash2 } from "lucide-react";
 import { formatUzDate } from "@/shared/utils/formatDate";
 
 // Components
-import { Button } from "@/shared/components/shadcn/button";
+import Button from "@/shared/components/ui/button/Button";
 
 // Helpers
 import { getMarketProductBadge } from "@/shared/helpers/market.helpers";
@@ -66,12 +66,12 @@ const MarketProductCard = ({ product, onDelete }) => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 pt-1">
-          <Link to={`/market/products/${product._id}/edit`} className="flex-1">
-            <Button variant="outline" className="w-full px-0 bg-gray-50">
+          <Button variant="outline" className="w-full px-0" asChild>
+            <Link to={`/market/products/${product._id}/edit`}>
               <span className="hidden sm:inline">Tahrirlash</span>
               <Edit className="size-4" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
 
           <Button
             variant="danger"
