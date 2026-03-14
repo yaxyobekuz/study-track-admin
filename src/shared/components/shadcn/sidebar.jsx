@@ -33,8 +33,8 @@ import { cva } from "class-variance-authority";
 import { useIsMobile } from "@/shared/hooks/useMobile";
 
 // Components
-import { Input } from "@/shared/components/shadcn/input";
-import { Button } from "@/shared/components/shadcn/button";
+import Input from "@/shared/components/ui/input/Input";
+import Button from "@/shared/components/ui/button/Button";
 
 // Skeleton
 import { Skeleton } from "@/shared/components/shadcn/skeleton";
