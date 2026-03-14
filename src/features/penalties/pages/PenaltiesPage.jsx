@@ -1,6 +1,3 @@
-// Toast
-import { toast } from "sonner";
-
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
@@ -8,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, Link } from "react-router-dom";
 
 // Icons
-import { Plus, AlertTriangle, Minus } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 
 // API
 import { penaltiesAPI } from "@/shared/api/penalties.api";
@@ -26,8 +23,8 @@ import { formatDateUZ } from "@/shared/utils/date.utils";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Select from "@/shared/components/form/select";
-import Button from "@/shared/components/form/button";
+import Select from "@/shared/components/ui/select/Select";
+import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
 
 // Hooks
@@ -87,50 +84,31 @@ const PenaltiesPage = () => {
 
   return (
     <div>
-      {/* Header */}
-      <Card className="mb-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <AlertTriangle className="size-5 text-red-500" />
-            Jarimalar
-          </h2>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              size="md"
-              variant="lightindigo"
-              className="px-4 text-sm"
-              onClick={() => openModal("reducePenalty")}
-            >
-              <Minus className="size-4 mr-1.5" />
-              Kamaytirish
-            </Button>
-            <Button
-              size="md"
-              variant="primary"
-              className="px-4 text-sm"
-              onClick={() => openModal("createPenalty")}
-            >
-              <Plus className="size-4 mr-1.5" />
-              Jarima yozish
-            </Button>
-          </div>
-        </div>
-      </Card>
+      {/* Top */}
+      <div className="flex items-center justify-between mb-4">
+        {/* Title */}
+        <h1 className="page-title">Jarimalar</h1>
 
-      {/* Filters */}
-      <Card className="mb-4">
-        <div className="flex items-end gap-3 flex-wrap">
-          <div className="w-40">
-            <Select
-              size="md"
-              label="Status"
-              value={statusFilter}
-              onChange={handleStatusChange}
-              options={penaltyStatusOptions}
-            />
-          </div>
+        {/* Buttons */}
+        <div className="flex items-center gap-4 flex-wrap">
+          <Select
+            label="Status"
+            value={statusFilter}
+            onChange={handleStatusChange}
+            options={penaltyStatusOptions}
+          />
+
+          <Button onClick={() => openModal("reducePenalty")}>
+            <Minus />
+            Kamaytirish
+          </Button>
+
+          <Button variant="danger" onClick={() => openModal("createPenalty")}>
+            <Plus />
+            Jarima yozish
+          </Button>
         </div>
-      </Card>
+      </div>
 
       {/* Penalties Table */}
       {isLoading ? (
