@@ -25,7 +25,7 @@ import { formatUzDate } from "@/shared/utils/formatDate";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Select from "@/shared/components/form/select";
+import Select from "@/shared/components/ui/select/Select";
 import Pagination from "@/shared/components/ui/Pagination";
 
 /**
@@ -54,19 +54,19 @@ const MarketOrdersPage = () => {
   const pagination = data?.pagination;
 
   return (
-    <div className="space-y-4" ref={contentRef}>
+    <div ref={contentRef} className="space-y-4">
+      {/* Top */}
       <div className="flex items-end justify-between gap-3">
-        <h1 className="text-xl font-semibold text-gray-900">Buyurtmalar</h1>
-        <div className="w-60">
-          <Select
-            value={status}
-            options={marketOrderStatusOptions}
-            onChange={(value) => {
-              setPage(1);
-              setStatus(value);
-            }}
-          />
-        </div>
+        <h1 className="page-title">Buyurtmalar</h1>
+
+        <Select
+          value={status}
+          options={marketOrderStatusOptions}
+          onChange={(value) => {
+            setPage(1);
+            setStatus(value);
+          }}
+        />
       </div>
 
       <Card responsive>

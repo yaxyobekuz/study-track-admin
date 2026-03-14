@@ -12,27 +12,19 @@ import { marketAPI } from "@/shared/api/market.api";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Input from "@/shared/components/form/input";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
+import InputField from "@/shared/components/ui/input/InputField";
+import InputGroup from "@/shared/components/ui/input/InputGroup";
 
 // Tanstack Query
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-/**
- * Formats upload size to KB/MB.
- * @param {number} bytes Size in bytes.
- * @returns {string} Formatted size.
- */
 const formatUploadSize = (bytes) => {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 KB";
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 };
 
-/**
- * Admin create market product page.
- * @returns {JSX.Element} Product create page.
- */
 const MarketProductCreatePage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -89,97 +81,102 @@ const MarketProductCreatePage = () => {
   };
 
   return (
-    <Card title="Mahsulot qo'shish" className="max-w-3xl">
-      <form onSubmit={onSubmit} className="space-y-4">
-        <Input
-          required
-          label="Nomi"
-          value={form.name}
-          onChange={(value) => setForm((prev) => ({ ...prev, name: value }))}
-          placeholder="Mahsulot nomi"
-        />
+    <div>
+      <h1 className="page-title mb-4">Mahsulot qo'shish</h1>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <Input
+      <Card className="max-w-3xl">
+        <InputGroup onSubmit={onSubmit} as="form">
+          <InputField
             required
-            min={1}
-            type="number"
-            label="Narxi (coin)"
-            value={form.price}
-            onChange={(value) => setForm((prev) => ({ ...prev, price: value }))}
-            placeholder="Masalan: 120"
-          />
-
-          <Input
-            required
-            min={0}
-            type="number"
-            label="Soni"
-            value={form.quantity}
-            onChange={(value) =>
-              setForm((prev) => ({ ...prev, quantity: value }))
+            label="Nomi"
+            value={form.name}
+            name="product-name"
+            placeholder="Mahsulot nomi"
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, name: e.target.value }))
             }
-            placeholder="Masalan: 10"
           />
-        </div>
 
-        <Input
-          type="textarea"
-          label="Tavsif"
-          value={form.description}
-          onChange={(value) =>
-            setForm((prev) => ({ ...prev, description: value }))
-          }
-          placeholder="Qo'shimcha ma'lumot"
-        />
+          <InputGroup className="md:grid-cols-2">
+            <InputField
+              min={1}
+              required
+              name="price"
+              type="number"
+              label="Narxi"
+              value={form.price}
+              placeholder="Masalan: 120"
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, price: e.target.value }))
+              }
+            />
 
-        <div className="space-y-1.5">
-          <label className="ml-1 text-sm font-medium text-gray-700">
-            Rasmlar <span className="text-indigo-500">*</span>
-          </label>
-          <input
-            required
+            <InputField
+              min={0}
+              required
+              label="Soni"
+              type="number"
+              name="quantity"
+              value={form.quantity}
+              placeholder="Masalan: 10"
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, quantity: e.target.value }))
+              }
+            />
+          </InputGroup>
+
+          <InputField
+            label="Tavsif"
+            type="textarea"
+            name="description"
+            value={form.description}
+            placeholder="Qo'shimcha ma'lumot"
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, description: e.target.value }))
+            }
+          />
+
+          <InputField
             multiple
+            required
             type="file"
+            name="images"
+            label="Rasmlar"
             accept="image/*"
-            onChange={(event) =>
+            placeholder="Qo'shimcha ma'lumot"
+            description="1 tadan 3 tagacha rasm yuklang"
+            onChange={(e) => {
               setForm((prev) => ({
                 ...prev,
-                images: event.target.files,
-              }))
-            }
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                images: e.target.files,
+              }));
+            }}
           />
-          <p className="text-xs text-gray-500">
-            1 tadan 3 tagacha rasm yuklang
-          </p>
-        </div>
 
-        {createMutation.isPending && (
-          <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
-            <p className="font-medium">Yuklanmoqda: {upload.percent}%</p>
-            <p>
-              {formatUploadSize(upload.loaded)} /{" "}
-              {formatUploadSize(upload.total || upload.loaded)}
-            </p>
+          {createMutation.isPending && (
+            <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
+              <p className="font-medium">Yuklanmoqda: {upload.percent}%</p>
+              <p>
+                {formatUploadSize(upload.loaded)} /{" "}
+                {formatUploadSize(upload.total || upload.loaded)}
+              </p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => navigate("/market/products")}
+            >
+              Bekor qilish
+            </Button>
+
+            <Button disabled={createMutation.isPending}>Saqlash</Button>
           </div>
-        )}
-
-        <div className="flex items-center justify-end gap-2 pt-2">
-          <Button
-            type="button"
-            variant="neutral"
-            onClick={() => navigate("/market/products")}
-            className="px-4"
-          >
-            Bekor qilish
-          </Button>
-          <Button disabled={createMutation.isPending} className="px-4">
-            Saqlash
-          </Button>
-        </div>
-      </form>
-    </Card>
+        </InputGroup>
+      </Card>
+    </div>
   );
 };
 

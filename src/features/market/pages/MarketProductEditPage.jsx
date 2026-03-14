@@ -4,8 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import Card from "@/shared/components/ui/Card";
-import Input from "@/shared/components/form/input";
-import Button from "@/shared/components/form/button";
+import Input from "@/shared/components/ui/input/Input";
+import Button from "@/shared/components/ui/button/Button";
 import { marketAPI } from "@/shared/api/market.api";
 
 /**
@@ -211,7 +211,7 @@ const MarketProductEditPage = () => {
         <div className="flex items-center justify-end gap-2 pt-2">
           <Button
             type="button"
-            variant="neutral"
+            variant="secondary"
             onClick={() => navigate("/market/products")}
             className="px-4"
           >

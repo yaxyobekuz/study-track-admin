@@ -18,7 +18,7 @@ import { marketAPI } from "@/shared/api/market.api";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
 import MarketProductCard from "@/features/market/components/MarketProductCard";
 
@@ -43,15 +43,17 @@ const MarketProductsPage = () => {
   const pagination = data?.pagination;
 
   return (
-    <div className="space-y-5" ref={contentRef}>
+    <div ref={contentRef} className="space-y-4">
+      {/* Top */}
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold text-gray-900">Mahsulotlar</h1>
-        <Link to="/market/products/new">
-          <Button className="px-4">
-            <Plus className="size-4 mr-2" />
+        <h1 className="page-title">Mahsulotlar</h1>
+
+        <Button asChild>
+          <Link to="/market/products/new">
+            <Plus strokeWidth={1.5} />
             Mahsulot qo'shish
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {isLoading ? (
