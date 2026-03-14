@@ -12,21 +12,17 @@ import { penaltiesAPI } from "@/shared/api/penalties.api";
 import { usersAPI } from "@/shared/api/users.api";
 
 // Components
-import Input from "@/shared/components/form/input";
-import Select from "@/shared/components/form/select";
 import Combobox from "@/shared/components/form/combobox";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
+import InputField from "@/shared/components/ui/input/InputField";
+import SelectField from "@/shared/components/ui/select/SelectField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 
 const CreatePenaltyModal = () => (
-  <ResponsiveModal
-    name="createPenalty"
-    title="Jarima yozish"
-    className="max-w-lg"
-  >
+  <ResponsiveModal name="createPenalty" title="Jarima yozish">
     <Content />
   </ResponsiveModal>
 );
@@ -56,7 +52,8 @@ const Content = ({ close }) => {
 
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["users", "all"],
-    queryFn: () => usersAPI.getAll({ limit: 500 }).then((res) => res.data.data || []),
+    queryFn: () =>
+      usersAPI.getAll({ limit: 500 }).then((res) => res.data.data || []),
   });
 
   const users = (usersData || [])
@@ -130,13 +127,13 @@ const Content = ({ close }) => {
     <form onSubmit={handleSubmit} className="space-y-3.5">
       <Combobox
         required
-        label="Foydalanuvchi"
         value={userId}
+        options={users}
+        label="Foydalanuvchi"
         isLoading={usersLoading}
         placeholder="Foydalanuvchini tanlang..."
+        onChange={(value) => setField("userId", value)}
         searchPlaceholder="Ism, username bo'yicha qidirish..."
-        onChange={(v) => setField("userId", v)}
-        options={users}
       />
 
       {userId && (
@@ -154,61 +151,57 @@ const Content = ({ close }) => {
       )}
 
       {userId && !isCustom && (
-        <Select
+        <SelectField
           required
           label="Kategoriya"
           value={categoryId}
+          options={categories}
           placeholder="Tanlang..."
           onChange={(v) => setField("categoryId", v)}
-          options={categories}
         />
       )}
 
       {userId && isCustom && (
         <>
-          <Input
+          <InputField
             required
             label="Sarlavha"
             value={title}
-            onChange={(v) => setField("title", v)}
+            onChange={(e) => setField("title", e.target.value)}
           />
-          <Input
+
+          <InputField
             required
             label="Ball"
             type="number"
             min={1}
             value={points}
-            onChange={(v) => setField("points", v)}
+            onChange={(e) => setField("points", e.target.value)}
           />
         </>
       )}
 
       {userId && (
         <>
-          <Input
+          <InputField
             label="Izoh"
             type="textarea"
             value={description}
-            onChange={(v) => setField("description", v)}
+            onChange={(e) => setField("description", e.target.value)}
           />
 
-          <Input
-            label="Fayllar (rasm/video/pdf)"
-            type="file"
-            onChange={(filesList) => setFiles(filesList)}
-            accept="image/*,video/mp4,video/webm,application/pdf"
+          <InputField
             multiple
+            type="file"
+            label="Fayllar (rasm/video/pdf)"
+            onChange={(e) => setFiles(e.target.files)}
+            accept="image/*,video/mp4,video/webm,application/pdf"
           />
         </>
       )}
 
-      <Button
-        type="submit"
-        variant="primary"
-        disabled={createMutation.isPending || !userId}
-        className="w-full px-4 text-sm font-medium"
-      >
-        {createMutation.isPending ? "Yozilmoqda..." : "Jarima yozish"}
+      <Button variant="danger" disabled={createMutation.isPending || !userId}>
+        Yozish{createMutation.isPending && "..."}
       </Button>
     </form>
   );
