@@ -4,14 +4,14 @@ import { toast } from "sonner";
 // API
 import { classesAPI } from "@/shared/api/classes.api";
 
-// Components
-import Input from "@/shared/components/form/input";
-import Button from "@/shared/components/form/button";
-import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
-
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+
+// Components
+import Button from "@/shared/components/ui/button/Button";
+import InputField from "@/shared/components/ui/input/InputField";
+import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 const CreateClassModal = () => (
   <ResponsiveModal name="createClass" title="Yangi sinf">
@@ -46,32 +46,27 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
   return (
     <form onSubmit={handleCreateClass} className="space-y-3.5">
-      <Input
+      <InputField
         required
-        label="Sinf nomi"
         name="name"
-        maxLength={32}
         value={name}
-        placeholder="Masalan: 5-A, 9-B..."
-        onChange={(v) => setField("name", v)}
+        maxLength={32}
+        label="Sinf nomi"
+        placeholder="1-A, 3-C, ..."
+        onChange={(e) => setField("name", e.target.value)}
       />
 
       <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
         <Button
           type="button"
           className="w-full xs:w-32"
-          variant="neutral"
+          variant="secondary"
           onClick={close}
         >
           Bekor qilish
         </Button>
 
-        <Button
-          autoFocus
-          className="w-full xs:w-32"
-          variant="primary"
-          disabled={isLoading}
-        >
+        <Button autoFocus className="w-full xs:w-32" disabled={isLoading}>
           Yaratish
           {isLoading && "..."}
         </Button>

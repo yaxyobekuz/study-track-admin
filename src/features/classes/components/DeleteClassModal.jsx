@@ -4,12 +4,12 @@ import { toast } from "sonner";
 // API
 import { classesAPI } from "@/shared/api/classes.api";
 
-// Components
-import Button from "@/shared/components/form/button";
-import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
-
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
+
+// Components
+import Button from "@/shared/components/ui/button/Button";
+import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 const DeleteClassModal = () => (
   <ResponsiveModal
@@ -46,11 +46,21 @@ const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
       onSubmit={handleDeleteClass}
       className="flex flex-col-reverse gap-3.5 w-full xs:m-0 xs:flex-row xs:justify-end"
     >
-      <Button type="button" className="w-full xs:w-32" variant="neutral" onClick={close}>
+      <Button
+        type="button"
+        onClick={close}
+        variant="secondary"
+        className="w-full xs:w-32"
+      >
         Bekor qilish
       </Button>
 
-      <Button autoFocus className="w-full xs:w-32" variant="danger" disabled={isLoading}>
+      <Button
+        autoFocus
+        variant="danger"
+        disabled={isLoading}
+        className="w-full xs:w-32"
+      >
         O'chirish
         {isLoading && "..."}
       </Button>
