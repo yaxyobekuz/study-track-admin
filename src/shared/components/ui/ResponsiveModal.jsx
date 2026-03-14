@@ -66,7 +66,7 @@ const ResponsiveModal = ({
         </DialogHeader>
 
         {/* Body */}
-        <div className="w-full max-h-[calc(100vh-154px)] overflow-y-auto hidden-scroll">
+        <div className="w-full max-h-[calc(100vh-154px)] overflow-y-auto hidden-scrollbar">
           {body}
         </div>
       </DrawerContent>
