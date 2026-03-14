@@ -12,7 +12,7 @@ import { schedulesAPI } from "@/shared/api/schedules.api";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Select from "@/shared/components/form/select";
+import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 
 // Hooks
@@ -138,16 +138,27 @@ const Schedules = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <Select
-          value={selectedClass}
-          onChange={(v) => setSelectedClass(e.target.value)}
-          options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
-        />
+      {/* Top */}
+      <div className="flex items-center justify-between mb-4">
+        {/* Title */}
+        <h1 className="page-title">Dars jadvali</h1>
 
-        <Button onClick={handleExport} disabled={!selectedClass}>
-          <Download strokeWidth={1.5} />
-        </Button>
+        {/* Filter & Download buttons */}
+        <div className="flex items-center gap-4">
+          <Select
+            value={selectedClass}
+            onChange={(v) => setSelectedClass(v)}
+            options={classes.map((cls) => ({
+              label: cls.name,
+              value: cls._id,
+            }))}
+          />
+
+          <Button onClick={handleExport} disabled={!selectedClass}>
+            <Download strokeWidth={1.5} />
+            Jadvalni yuklash
+          </Button>
+        </div>
       </div>
 
       {/* Schedule Grid */}
