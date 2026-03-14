@@ -21,8 +21,8 @@ import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Button from "@/shared/components/form/button";
-import Select from "@/shared/components/form/select";
+import Button from "@/shared/components/ui/button/Button";
+import Select from "@/shared/components/ui/select/Select";
 import Pagination from "@/shared/components/ui/Pagination";
 
 // React
@@ -40,7 +40,6 @@ const recipientTypeOptions = [
 ];
 
 const Messages = () => {
-  const { user: currentUser } = useAuth();
   const { openModal } = useModal();
 
   // Search params
@@ -173,30 +172,27 @@ const Messages = () => {
     messages?.length,
   ]);
 
-  // Load teachers and classes for filters (Owner only)
   useEffect(() => {
-    if (currentUser?.role === "owner") {
-      // Load teachers
-      usersAPI
-        .getAll({ role: "teacher", limit: 200 })
-        .then((res) => {
-          setTeachers(res.data.data || []);
-        })
-        .catch(() => {
-          toast.error("O'qituvchilarni yuklashda xato");
-        });
+    // Load teachers
+    usersAPI
+      .getAll({ role: "teacher", limit: 200 })
+      .then((res) => {
+        setTeachers(res.data.data || []);
+      })
+      .catch(() => {
+        toast.error("O'qituvchilarni yuklashda xato");
+      });
 
-      // Load classes
-      classesAPI
-        .getAll()
-        .then((res) => {
-          setClasses(res.data.data || []);
-        })
-        .catch(() => {
-          toast.error("Sinflarni yuklashda xato");
-        });
-    }
-  }, [currentUser]);
+    // Load classes
+    classesAPI
+      .getAll()
+      .then((res) => {
+        setClasses(res.data.data || []);
+      })
+      .catch(() => {
+        toast.error("Sinflarni yuklashda xato");
+      });
+  }, []);
 
   // Get recipient type label
   const getRecipientTypeLabel = (type) => {
@@ -226,27 +222,25 @@ const Messages = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        {/* Create New Btn */}
-        <Button onClick={() => openModal("sendMessage")} className="px-3.5">
-          <Plus className="size-5 mr-2" strokeWidth={1.5} />
-          Yangi xabar
-        </Button>
+      <div className="flex justify-between gap-4 mb-4">
+        {/* Title */}
+        <h1 className="page-title">Xabalar</h1>
 
-        {/* Recipient Type Filter */}
-        <Select
-          size="lg"
-          options={recipientTypeOptions}
-          placeholder="Qabul qiluvchi"
-          onChange={handleRecipientTypeChange}
-          value={recipientTypeFilter || "all_type"}
-          className="w-full sm:w-44"
-        />
-
-        {/* Sent By Filter (Owner only) */}
-        {currentUser?.role === "owner" && (
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Recipient Type Filter */}
           <Select
-            size="lg"
+            placeholder="Qabul qiluvchi"
+            options={recipientTypeOptions}
+            onChange={handleRecipientTypeChange}
+            value={recipientTypeFilter || "all_type"}
+          />
+
+          {/* Sent By Filter */}
+          <Select
+            placeholder="Yuboruvchi"
+            onChange={handleSentByChange}
+            value={sentByFilter || "all"}
             options={[
               { value: "all", label: "Barcha yuboruvchilar" },
               ...teachers.map((t) => ({
@@ -254,28 +248,28 @@ const Messages = () => {
                 label: t.fullName,
               })),
             ]}
-            placeholder="Yuboruvchi"
-            onChange={handleSentByChange}
-            value={sentByFilter || "all"}
-            className="w-full sm:w-48"
           />
-        )}
 
-        {/* Class Filter */}
-        <Select
-          size="lg"
-          options={[
-            { value: "all", label: "Barcha sinflar" },
-            ...classes.map((c) => ({
-              value: c._id,
-              label: c.name,
-            })),
-          ]}
-          placeholder="Sinf"
-          onChange={handleClassChange}
-          value={classIdFilter || "all"}
-          className="w-full sm:w-44"
-        />
+          {/* Class Filter */}
+          <Select
+            placeholder="Sinf"
+            onChange={handleClassChange}
+            value={classIdFilter || "all"}
+            options={[
+              { value: "all", label: "Barcha sinflar" },
+              ...classes.map((c) => ({
+                value: c._id,
+                label: c.name,
+              })),
+            ]}
+          />
+
+          {/* Create New Btn */}
+          <Button onClick={() => openModal("sendMessage")}>
+            <Plus strokeWidth={1.5} />
+            Yangi xabar
+          </Button>
+        </div>
       </div>
 
       {/* Table */}
