@@ -11,8 +11,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { penaltiesAPI } from "@/shared/api/penalties.api";
 
 // Components
-import Input from "@/shared/components/form/input";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
+import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
@@ -60,36 +60,31 @@ const Content = ({ close, _id, ...data }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3.5">
-      <Input
+      <InputField
         required
         label="Sarlavha"
         value={title}
-        onChange={(v) => setField("title", v)}
+        onChange={(e) => setField("title", e.target.value)}
       />
 
-      <Input
+      <InputField
         label="Izoh"
         type="textarea"
         value={description}
-        onChange={(v) => setField("description", v)}
+        onChange={(e) => setField("description", e.target.value)}
       />
 
-      <Input
+      <InputField
+        min={1}
         required
         label="Ball"
         type="number"
-        min={1}
         value={points}
-        onChange={(v) => setField("points", v)}
+        onChange={(e) => setField("points", e.target.value)}
       />
 
-      <Button
-        type="submit"
-        variant="primary"
-        disabled={updateMutation.isPending}
-        className="w-full px-4 text-sm font-medium"
-      >
-        {updateMutation.isPending ? "Saqlanmoqda..." : "Saqlash"}
+      <Button disabled={updateMutation.isPending}>
+        Saqlash{updateMutation.isPending && "..."}
       </Button>
     </form>
   );
