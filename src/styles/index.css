@@ -114,6 +114,12 @@
   }
 }
 
+@layer components {
+  .page-title {
+    @apply text-lg font-semibold md:text-xl;
+  }
+}
+
 .bottom-navigation {
   box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.1);
 }
