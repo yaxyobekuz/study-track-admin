@@ -20,7 +20,7 @@ import Card from "@/shared/components/ui/Card";
 
 // API
 import { gradesAPI } from "@/shared/api/grades.api";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 import { useNavigate } from "react-router-dom";
 
 const MissingGrades = () => {
@@ -69,22 +69,16 @@ const MissingGrades = () => {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-1.5">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/grades")}
-            className="px-3"
-          >
+          <Button variant="ghost" onClick={() => navigate("/grades")}>
             <ArrowLeft className="size-5" strokeWidth={1.5} />
           </Button>
 
-          <h1 className="text-2xl font-bold text-gray-900">
-            Qo'yilmagan baholar
-          </h1>
+          <h1 className="page-title">Qo'yilmagan baholar</h1>
         </div>
 
         <Card>
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         </Card>
       </div>
@@ -96,17 +90,11 @@ const MissingGrades = () => {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-1.5">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/grades")}
-            className="px-3"
-          >
+          <Button variant="ghost" onClick={() => navigate("/grades")}>
             <ArrowLeft className="size-5" strokeWidth={1.5} />
           </Button>
 
-          <h1 className="text-2xl font-bold text-gray-900">
-            Qo'yilmagan baholar
-          </h1>
+          <h1 className="page-title">Qo'yilmagan baholar</h1>
         </div>
         <Card className="bg-red-50 border-red-200">
           <div className="flex items-center gap-3 text-red-700">
@@ -123,17 +111,11 @@ const MissingGrades = () => {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-1.5">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/grades")}
-            className="px-3"
-          >
+          <Button variant="ghost" onClick={() => navigate("/grades")}>
             <ArrowLeft className="size-5" strokeWidth={1.5} />
           </Button>
 
-          <h1 className="text-2xl font-bold text-gray-900">
-            Qo'yilmagan baholar
-          </h1>
+          <h1 className="page-title">Qo'yilmagan baholar</h1>
         </div>
         <Card className="bg-blue-50 border-blue-200">
           <div className="flex items-center gap-3 text-blue-700">
@@ -151,17 +133,11 @@ const MissingGrades = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/grades")}
-              className="px-3"
-            >
+            <Button variant="ghost" onClick={() => navigate("/grades")}>
               <ArrowLeft className="size-5" strokeWidth={1.5} />
             </Button>
 
-            <h1 className="text-2xl font-bold text-gray-900">
-              Qo'yilmagan baholar
-            </h1>
+            <h1 className="page-title">Qo'yilmagan baholar</h1>
           </div>
           <button
             onClick={fetchData}
@@ -194,18 +170,13 @@ const MissingGrades = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/grades")}
-            className="px-3"
-          >
+          <Button variant="ghost" onClick={() => navigate("/grades")}>
             <ArrowLeft className="size-5" strokeWidth={1.5} />
           </Button>
 
-          <h1 className="text-2xl font-bold text-gray-900">
-            Qo'yilmagan baholar
-          </h1>
+          <h1 className="page-title">Qo'yilmagan baholar</h1>
         </div>
+
         <button
           onClick={fetchData}
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -263,14 +234,17 @@ const MissingGrades = () => {
       {/* Teachers List */}
       <div className="space-y-4">
         {data.byTeacher.map((teacherData) => (
-          <Card key={teacherData.teacher._id} className="p-0 overflow-hidden">
+          <Card
+            key={teacherData.teacher._id}
+            className="p-0 overflow-hidden xs:p-0"
+          >
             {/* Teacher Header */}
             <button
               onClick={() => toggleTeacher(teacherData.teacher._id)}
-              className="w-full flex items-center justify-between p-4 bg-indigo-500 text-white hover:bg-indigo-600 transition-colors mb-0"
+              className="w-full flex items-center justify-between p-4 bg-blue-500 text-white hover:bg-blue-600 transition-colors mb-0"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-400 rounded-full">
+                <div className="p-2 bg-blue-400 rounded-full">
                   <User className="size-5" />
                 </div>
                 <div className="text-left">
@@ -306,7 +280,7 @@ const MissingGrades = () => {
                     {/* Lesson Header */}
                     <div className="flex items-center justify-between p-3 bg-gray-50">
                       <div className="flex items-center gap-3">
-                        <span className="flex items-center justify-center w-8 h-8 bg-indigo-100 text-indigo-700 font-semibold rounded text-sm">
+                        <span className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-700 font-semibold rounded text-sm">
                           {lesson.lessonOrder}
                         </span>
                         <div>
