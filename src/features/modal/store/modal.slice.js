@@ -61,9 +61,11 @@ const initialState = {
   penaltyDetail: initialModalData,
   reducePenalty: initialModalData,
 
-
   createPenaltyCategory: initialModalData,
   editPenaltyCategory: initialModalData,
+
+  // Download App
+  downloadApp: initialModalData,
 };
 
 export const modalSlice = createSlice({
