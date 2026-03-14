@@ -13,7 +13,7 @@ import { schedulesAPI } from "@/shared/api/schedules.api";
 // Components
 import Card from "@/shared/components/ui/Card";
 import Select from "@/shared/components/form/select";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -121,13 +121,13 @@ const Schedules = () => {
 
   if (isLoading) {
     return (
-      <div className="">
-        <div className="flex items-center justify-between gap-3 mb-6 animate-pulse">
-          <Card className="w-40 h-10" />
-          <Card className="size-10" />
+      <div className="animate-pulse">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <Card className="w-40 h-10 rounded-lg" />
+          <Card className="size-10 rounded-lg" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, index) => (
             <Card key={index} className="h-96" />
           ))}
@@ -138,26 +138,20 @@ const Schedules = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 mb-6">
+      <div className="flex items-center justify-between gap-3 mb-4">
         <Select
-          className="w-32"
           value={selectedClass}
-          onChange={(v) => setSelectedClass(v)}
+          onChange={(v) => setSelectedClass(e.target.value)}
           options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
         />
 
-        <Button
-          onClick={handleExport}
-          variant="primary"
-          className="px-3.5"
-          disabled={!selectedClass}
-        >
-          <Download className="size-5" strokeWidth={1.5} />
+        <Button onClick={handleExport} disabled={!selectedClass}>
+          <Download strokeWidth={1.5} />
         </Button>
       </div>
 
       {/* Schedule Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {days.map((day) => {
           const schedule = getScheduleForDay(day.value);
 
@@ -168,7 +162,7 @@ const Schedules = () => {
                 <div className="flex items-center gap-3.5">
                   <Calendar
                     strokeWidth={1.5}
-                    className="size-5 text-indigo-600"
+                    className="size-5 text-blue-500"
                   />
                   <h3 className="text-lg font-semibold text-gray-900">
                     {day.label}
@@ -183,7 +177,7 @@ const Schedules = () => {
                       onClick={() =>
                         handleOpenScheduleModal(day.value, schedule)
                       }
-                      className="text-indigo-600 hover:text-indigo-900"
+                      className="text-blue-600 hover:text-blue-900"
                     >
                       {schedule ? (
                         <Edit className="size-5" strokeWidth={1.5} />
