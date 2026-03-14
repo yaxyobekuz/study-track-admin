@@ -1,6 +1,6 @@
 // Components
 import Card from "@/shared/components/ui/Card";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 
 // API
 import { classesAPI } from "@/shared/api/classes.api";
@@ -44,19 +44,19 @@ const Classes = () => {
   return (
     <div>
       {/* Action Buttons */}
-      <div className="flex items-center justify-between gap-3 mb-6">
+      <div className="flex items-center justify-between gap-3 mb-4">
         <Button onClick={() => openModal("createClass")} className="px-3.5">
-          <Plus className="size-5 mr-2" strokeWidth={1.5} />
+          <Plus strokeWidth={1.5} />
           Yangi sinf
         </Button>
 
-        <Button onClick={handleExport} variant="primary" className="px-3.5">
-          <Download className="size-5" strokeWidth={1.5} />
+        <Button onClick={handleExport} className="px-3.5">
+          <Download strokeWidth={1.5} />
         </Button>
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {classes.map((classItem) => (
           <Card key={classItem._id}>
             {/* Top */}
@@ -64,7 +64,7 @@ const Classes = () => {
               <h3>
                 <Link
                   to={`/classes/${classItem._id}`}
-                  className="flex items-center gap-1.5 text-lg font-semibold text-gray-900 transition-colors duration-200 hover:text-indigo-600"
+                  className="flex items-center gap-1.5 text-lg font-semibold text-gray-900 transition-colors duration-200 hover:text-blue-600"
                 >
                   {classItem.name}
                   <ChevronRight className="size-5" strokeWidth={1.5} />
@@ -76,7 +76,7 @@ const Classes = () => {
                 {/* Edit */}
                 <button
                   onClick={() => openModal("editClass", classItem)}
-                  className="text-indigo-600 hover:text-indigo-900"
+                  className="text-blue-600 hover:text-blue-900"
                 >
                   <Edit className="size-5" strokeWidth={1.5} />
                 </button>
