@@ -1,5 +1,6 @@
 // Styles
 import "animate.css";
+import "./styles/scrollbars.css";
 import "./styles/index.css";
 
 // Toaster
