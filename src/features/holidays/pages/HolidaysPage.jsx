@@ -87,45 +87,42 @@ const Holidays = () => {
           <p className="text-gray-500">Dam olish kunlari mavjud emas</p>
         </Card>
       ) : (
-        <Card responsive>
+        <div>
           <div className="rounded-lg overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               {/* Thead */}
               <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left">#</th>
-                  <th className="px-6 py-3 text-left">Nomi</th>
-                  <th className="px-6 py-3 text-left">Turi</th>
-                  <th className="px-6 py-3 text-left">Sana</th>
-                  <th className="px-6 py-3 text-left">Holat</th>
-                  <th className="px-6 py-3 text-right">Amallar</th>
+                  <th>#</th>
+                  <th>Nomi</th>
+                  <th>Turi</th>
+                  <th>Sana</th>
+                  <th>Holat</th>
+                  <th>Amallar</th>
                 </tr>
               </thead>
 
               {/* Tbody */}
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {holidays.map((holiday, index) => (
                   <tr key={holiday._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="text-center text-sm text-gray-500">
                       {index + 1}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {holiday.name}
-                      </div>
-                      {holiday.description && (
-                        <div className="text-sm text-gray-500">
-                          {holiday.description}
-                        </div>
-                      )}
+
+                    <td className="text-center text-sm font-medium">
+                      {holiday.name}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+
+                    <td className="text-center text-sm text-gray-500">
                       {getHolidayTypeLabel(holiday.type)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+
+                    <td className="text-center text-sm text-gray-500">
                       {formatHolidayDate(holiday)}
                     </td>
-                    <td className="px-6 py-4">
+
+                    <td className="text-center">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           holiday.isActive
@@ -136,8 +133,9 @@ const Holidays = () => {
                         {holiday.isActive ? "Aktiv" : "Noaktiv"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
+
+                    <td className="px-6 py-4">
+                      <div className="flex justify-center gap-2">
                         <button
                           onClick={() => openModal("editHoliday", holiday)}
                           className="text-blue-600 hover:text-blue-800 p-1"
@@ -157,7 +155,7 @@ const Holidays = () => {
               </tbody>
             </table>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Create Modal */}
