@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // API
-import { coinsAPI } from "@/shared/api/coins.api";
+import { coinsAPI } from "@/features/coin-settings/api/coins.api";
 
 // React
 import { useState, useEffect, useCallback } from "react";
