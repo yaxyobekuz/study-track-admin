@@ -15,6 +15,16 @@ export const inputBaseClasses =
  * @returns {JSX.Element} Styled input element
  */
 const Input = ({ className, type = "text", ...props }, ref) => {
+  if (type === "textarea") {
+    return (
+      <textarea
+        ref={ref}
+        {...props}
+        className={cn(inputBaseClasses, "h-auto min-h-40 max-h-96", className)}
+      />
+    );
+  }
+
   return (
     <input
       ref={ref}
