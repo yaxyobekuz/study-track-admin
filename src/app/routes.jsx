@@ -14,6 +14,9 @@ import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 // Pages — Users
 import UsersPage from "@/features/users/pages/UsersPage";
 
+// Pages — Roles
+import RolesPage from "@/features/roles/pages/RolesPage";
+
 // Pages — Classes
 import ClassesPage from "@/features/classes/pages/ClassesPage";
 import ClassDetailPage from "@/features/classes/pages/ClassDetailPage";
@@ -72,6 +75,9 @@ const Routes = () => {
 
           {/* Users */}
           <Route path="/users" element={<UsersPage />} />
+
+          {/* Roles */}
+          <Route path="/roles" element={<RolesPage />} />
 
           {/* Classes */}
           <Route path="/classes" element={<ClassesPage />} />
