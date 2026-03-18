@@ -69,7 +69,7 @@ const MarketOrdersPage = () => {
         />
       </div>
 
-      <Card responsive>
+      <div>
         {isLoading ? (
           <div className="text-center py-8">Yuklanmoqda...</div>
         ) : orders.length === 0 ? (
@@ -78,7 +78,7 @@ const MarketOrdersPage = () => {
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full">
               <thead>
                 <tr>
                   <th className="px-4 py-3 text-left">O'quvchi</th>
@@ -90,7 +90,7 @@ const MarketOrdersPage = () => {
                   <th className="px-4 py-3 text-right">Amallar</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody>
                 {orders.map((order) => (
                   <tr key={order._id} className="hover:bg-gray-50 align-top">
                     <td className="px-4 py-3 text-sm">
@@ -146,7 +146,7 @@ const MarketOrdersPage = () => {
             </table>
           </div>
         )}
-      </Card>
+      </div>
 
       {pagination?.totalPages > 1 && (
         <Pagination
