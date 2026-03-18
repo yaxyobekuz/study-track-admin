@@ -20,7 +20,9 @@ const RolesPage = () => {
   return (
     <div>
       {/* Action Buttons */}
-      <div className="flex items-center justify-between gap-3 mb-6">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h1 className="page-title">Rollar</h1>
+
         <Button onClick={() => openModal("createRole")} className="px-3.5">
           <Plus strokeWidth={1.5} />
           Yangi rol
