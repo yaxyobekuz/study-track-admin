@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { penaltiesAPI } from "@/shared/api/penalties.api";
+import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
 
 // Data
 import { targetRoleOptions } from "../data/penalties.data";

@@ -14,7 +14,7 @@ import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { penaltiesAPI } from "@/shared/api/penalties.api";
+import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
 
 // Data
 import {

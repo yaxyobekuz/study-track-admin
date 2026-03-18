@@ -8,8 +8,8 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { penaltiesAPI } from "@/shared/api/penalties.api";
-import { usersAPI } from "@/shared/api/users.api";
+import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
+import { usersAPI } from "@/features/users/api/users.api";
 
 // Components
 import Combobox from "@/shared/components/form/combobox";

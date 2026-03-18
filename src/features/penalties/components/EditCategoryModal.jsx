@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { penaltiesAPI } from "@/shared/api/penalties.api";
+import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";

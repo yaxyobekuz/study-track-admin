@@ -8,7 +8,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Plus, Minus } from "lucide-react";
 
 // API
-import { penaltiesAPI } from "@/shared/api/penalties.api";
+import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
 
 // Data
 import {
