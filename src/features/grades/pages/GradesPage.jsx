@@ -20,10 +20,6 @@ import { Eye, Calendar, Download } from "lucide-react";
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
-// API
-import { gradesAPI } from "@/features/grades/api/grades.api";
-import { schedulesAPI } from "@/features/schedules/api/schedules.api";
-
 // Components
 import Card from "@/shared/components/ui/Card";
 import Input from "@/shared/components/ui/input/Input";
@@ -32,6 +28,10 @@ import Button from "@/shared/components/ui/button/Button";
 
 // Utils
 import { getDayOfWeekUZ } from "@/shared/utils/date.utils";
+
+// API
+import { gradesAPI } from "@/features/grades/api/grades.api";
+import { schedulesAPI } from "@/features/schedules/api/schedules.api";
 
 const Grades = () => {
   // Load saved filters from localStorage
@@ -169,9 +169,9 @@ const Grades = () => {
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       {/* Top */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between">
         {/* Title */}
         <h1 className="page-title">Baholar jurnali</h1>
 
@@ -198,7 +198,7 @@ const Grades = () => {
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Select
           required
           value={filters.classId}
@@ -258,20 +258,20 @@ const Grades = () => {
 
       {/* Grades */}
       {students.length > 0 && (
-        <Card responsive>
+        <div>
           <div className="rounded-lg overflow-x-auto">
-            <table className="divide-y divide-gray-200">
+            <table>
               {/* Thead */}
               <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left">#</th>
-                  <th className="px-6 py-3 text-left">O'quvchi</th>
+                  <th>#</th>
+                  <th>O'quvchi</th>
 
                   {/* Subject */}
                   {filters.subjectId !== "all" && (
                     <>
-                      <th className="px-6 py-3 text-center">Baho</th>
-                      <th className="px-6 py-3 text-left">O'qituvchi</th>
+                      <th>Baho</th>
+                      <th>O'qituvchi</th>
                     </>
                   )}
 
@@ -279,22 +279,19 @@ const Grades = () => {
                   {filters.subjectId === "all" && (
                     <>
                       {todaySubjects.map((subject, index) => (
-                        <th
-                          className="px-4 py-3 text-center"
-                          key={`${subject.lessonOrder}-${subject._id}`}
-                        >
+                        <th key={`${subject.lessonOrder}-${subject._id}`}>
                           {index + 1}. {subject.name}
                         </th>
                       ))}
 
-                      <th className="px-6 py-3 text-center">O'rtacha</th>
+                      <th>O'rtacha</th>
                     </>
                   )}
                 </tr>
               </thead>
 
               {/* Tbody */}
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {students.map((studentData, index) => {
                   const relevantGrades =
                     filters.subjectId !== "all"
@@ -304,12 +301,9 @@ const Grades = () => {
                       : studentData.grades;
 
                   return (
-                    <tr
-                      key={studentData.student._id}
-                      className="hover:bg-gray-50"
-                    >
+                    <tr key={studentData.student._id}>
                       {/* Index */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="text-center text-sm text-gray-500">
                         {index + 1}
                       </td>
 
@@ -420,7 +414,7 @@ const Grades = () => {
               </tbody>
             </table>
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );
