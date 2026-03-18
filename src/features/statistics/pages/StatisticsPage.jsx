@@ -17,7 +17,7 @@ import { classesAPI } from "@/features/classes/api/classes.api";
 // Components
 import Card from "@/shared/components/ui/Card";
 import Select from "@/shared/components/form/select";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
 
 // React
@@ -183,20 +183,20 @@ const Statistics = () => {
 
             <div className="flex gap-4">
               <Button
-                variant={viewMode === "school" ? "primary" : "neutral"}
+                className="w-full"
                 onClick={() => setViewMode("school")}
-                className="flex-1 flex items-center justify-center gap-2"
+                variant={viewMode === "school" ? "default" : "secondary"}
               >
-                <School className="size-4" />
+                <School />
                 Maktab bo'yicha
               </Button>
 
               <Button
-                variant={viewMode === "class" ? "primary" : "neutral"}
+                className="w-full"
                 onClick={() => setViewMode("class")}
-                className="flex-1 flex items-center justify-center gap-2"
+                variant={viewMode === "class" ? "default" : "secondary"}
               >
-                <Users className="size-4" />
+                <Users />
                 Sinf bo'yicha
               </Button>
             </div>
@@ -220,7 +220,7 @@ const Statistics = () => {
       </Card>
 
       {/* Rankings Table */}
-      <Card ref={contentRef}>
+      <div ref={contentRef}>
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -237,18 +237,16 @@ const Statistics = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left">O'rin</th>
-                  <th className="px-6 py-3 text-left">O'quvchi</th>
-                  {viewMode === "school" && (
-                    <th className="px-6 py-3 text-left">Sinflar</th>
-                  )}
-                  <th className="px-6 py-3 text-left">Umumiy Ball</th>
-                  <th className="px-6 py-3 text-left">Baholar soni</th>
-                  <th className="px-6 py-3 text-left">Harakatlar</th>
+                  <th>O'rin</th>
+                  <th>O'quvchi</th>
+                  {viewMode === "school" && <th>Sinflar</th>}
+                  <th>Umumiy Ball</th>
+                  <th>Baholar soni</th>
+                  <th>Harakatlar</th>
                 </tr>
               </thead>
 
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {rankings.map((item) => (
                   <tr
                     key={item.student._id}
@@ -332,7 +330,7 @@ const Statistics = () => {
             totalPages={totalPages}
           />
         )}
-      </Card>
+      </div>
 
       {/* Legend */}
       <Card className="flex flex-wrap gap-6 text-sm mt-6">
@@ -359,12 +357,11 @@ const Statistics = () => {
 
         {/* Export Button */}
         <Button
-          variant="primary"
+          className="ml-auto"
           onClick={handleExport}
-          className="gap-3.5 px-3.5 ml-auto"
           disabled={isLoading || (viewMode === "class" && !selectedClass)}
         >
-          <Download className="size-4" />
+          <Download />
           Yuklab olish
         </Button>
       </Card>
