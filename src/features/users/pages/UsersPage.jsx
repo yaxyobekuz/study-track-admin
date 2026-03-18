@@ -18,9 +18,8 @@ import useModal from "@/shared/hooks/useModal";
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // Components
-import Card from "@/shared/components/ui/Card";
 import Select from "@/shared/components/form/select";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
 
 // React
@@ -189,7 +188,7 @@ const Users = () => {
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         {/* Create New Btn */}
         <Button onClick={() => openModal("createUser")} className="px-3.5">
-          <Plus className="size-5 mr-2" strokeWidth={1.5} />
+          <Plus strokeWidth={1.5} />
           Yangi foydalanuvchi
         </Button>
 
@@ -228,50 +227,46 @@ const Users = () => {
         />
 
         {/* Download Data */}
-        <Button
-          variant="primary"
-          onClick={() => openModal("exportUsers")}
-          className="flex items-center gap-3.5 px-3.5"
-        >
-          <Download className="size-4" strokeWidth={1.5} />
+        <Button onClick={() => openModal("exportUsers")}>
+          <Download strokeWidth={1.5} />
           <span className="sm:hidden">Foydalanuvchilarni yuklash</span>
         </Button>
       </div>
 
-      {/* Table */}
-      <Card responsive>
+      {/* Table Wrapper */}
+      <div>
         {/* Table */}
         <div className="rounded-lg overflow-x-auto">
-          <table className="divide-y divide-gray-200">
+          <table>
             {/* Thead */}
             <thead>
               <tr>
-                <th className="px-6 py-3 text-left">F.I.O</th>
-                <th className="px-6 py-3 text-left">Username</th>
-                <th className="px-6 py-3 text-left">Rol</th>
-                <th className="px-6 py-3 text-left">Sinflar</th>
-                <th className="px-6 py-3 text-right">Harakatlar</th>
+                <th>F.I.O</th>
+                <th>Username</th>
+                <th>Rol</th>
+                <th>Tangalar</th>
+                <th>Jarimalar</th>
+                <th>Sinflar</th>
+                <th>Harakatlar</th>
               </tr>
             </thead>
 
             {/* Tbody */}
-            <tbody className="divide-y divide-gray-200">
+            <tbody>
               {users.map((user) => (
-                <tr key={user._id} className="hover:bg-gray-50">
+                <tr key={user._id}>
                   {/* Full Name */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {user.fullName}
-                    </div>
+                  <td className="py-4 text-center text-sm font-medium text-gray-900">
+                    {user.fullName}
                   </td>
 
                   {/* Username */}
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="text-center">
                     <div className="text-sm text-gray-500">{user.username}</div>
                   </td>
 
                   {/* Role */}
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="text-center">
                     <span
                       className={`${
                         user.role === "teacher"
@@ -283,16 +278,30 @@ const Users = () => {
                     </span>
                   </td>
 
+                  {/* Coin */}
+                  <td className="text-center">
+                    <div className="text-sm text-gray-500">
+                      {user.coinBalance}
+                    </div>
+                  </td>
+
+                  {/* Penalty Points */}
+                  <td className="text-center">
+                    <div className="text-sm text-gray-500">
+                      {user.penaltyPoints}
+                    </div>
+                  </td>
+
                   {/* Class */}
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="text-center text-sm text-gray-500">
                     {user.role === "student" && user.classes?.length > 0
                       ? user.classes.map((c) => c.name).join(", ")
                       : "-"}
                   </td>
 
                   {/* Actions */}
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end space-x-2">
+                  <td className="text-center text-sm font-medium">
+                    <div className="flex justify-center space-x-2">
                       {/* Edit */}
                       <button
                         onClick={() => openModal("editUser", user)}
@@ -349,7 +358,7 @@ const Users = () => {
             totalPages={metadata?.totalPages || 1}
           />
         )}
-      </Card>
+      </div>
 
       {/* Mobile Pagination Controls */}
       {!isLoading && !hasError && users.length > 0 && (
