@@ -21,8 +21,8 @@ import { Eye, Calendar, Download } from "lucide-react";
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // API
-import { gradesAPI } from "@/shared/api/grades.api";
-import { schedulesAPI } from "@/shared/api/schedules.api";
+import { gradesAPI } from "@/features/grades/api/grades.api";
+import { schedulesAPI } from "@/features/schedules/api/schedules.api";
 
 // Components
 import Card from "@/shared/components/ui/Card";

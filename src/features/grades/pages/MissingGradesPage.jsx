@@ -19,7 +19,7 @@ import { useState, useEffect } from "react";
 import Card from "@/shared/components/ui/Card";
 
 // API
-import { gradesAPI } from "@/shared/api/grades.api";
+import { gradesAPI } from "@/features/grades/api/grades.api";
 import Button from "@/shared/components/ui/button/Button";
 import { useNavigate } from "react-router-dom";
 
