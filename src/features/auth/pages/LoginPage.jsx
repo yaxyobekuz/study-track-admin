@@ -1,6 +1,9 @@
 // Toast
 import { toast } from "sonner";
 
+// Lottie
+import Lottie from "lottie-react";
+
 // Utils
 import { cn } from "@/shared/utils/cn";
 
@@ -20,6 +23,9 @@ import { authAPI } from "@/features/auth/api/auth.api";
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 
+// Animations
+import { lockWithKeyEmojiAnimation } from "@/shared/assets/animations";
+
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
@@ -31,8 +37,10 @@ const LoginPage = () => {
     showLoginForm: false,
     currentPlatform: platforms.find((platform) => platform.isCurrent),
   });
+
   return (
-    <div className="w-full h-svh">
+    <div className="flex w-full h-svh">
+      {/* Form */}
       <div
         className={cn(
           "flex items-center justify-center size-full relative z-10 bg-white/50 backdrop-blur px-5 transition-transform duration-500 md:w-1/2",
@@ -48,6 +56,24 @@ const LoginPage = () => {
             onPlatformChange={(p) => setField("currentPlatform", p)}
           />
         )}
+      </div>
+
+      {/* Animation Data */}
+      <div
+        className={cn(
+          "hidden items-center justify-center w-1/2 h-full transition-transform duration-500 md:flex",
+          showLoginForm ? "-translate-x-full" : "translate-x-0",
+        )}
+      >
+        <Lottie
+          className="size-64 animate__animated animate__fadeIn"
+          key={showLoginForm ? "loginForm" : currentPlatform.name}
+          animationData={
+            showLoginForm
+              ? lockWithKeyEmojiAnimation
+              : currentPlatform.animationData
+          }
+        />
       </div>
 
       {/* Background Patterns */}
