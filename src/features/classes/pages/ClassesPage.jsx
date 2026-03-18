@@ -3,7 +3,7 @@ import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
 
 // API
-import { classesAPI } from "@/shared/api/classes.api";
+import { classesAPI } from "@/features/classes/api/classes.api";
 
 // Icons
 import { Plus, Edit, Trash2, ChevronRight, Download } from "lucide-react";

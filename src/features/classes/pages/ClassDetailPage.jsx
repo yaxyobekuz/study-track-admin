@@ -5,8 +5,8 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
 // API
-import { usersAPI } from "@/shared/api/users.api";
-import { classesAPI } from "@/shared/api/classes.api";
+import { usersAPI } from "@/features/users/api/users.api";
+import { classesAPI } from "@/features/classes/api/classes.api";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";

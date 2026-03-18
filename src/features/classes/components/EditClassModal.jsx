@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // API
-import { classesAPI } from "@/shared/api/classes.api";
+import { classesAPI } from "@/features/classes/api/classes.api";
 
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
