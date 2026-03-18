@@ -11,7 +11,7 @@ import { Trash2 } from "lucide-react";
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // API
-import { schedulesAPI } from "@/shared/api/schedules.api";
+import { schedulesAPI } from "@/features/schedules/api/schedules.api";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";

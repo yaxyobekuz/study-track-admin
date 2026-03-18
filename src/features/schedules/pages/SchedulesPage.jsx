@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import useAuth from "@/shared/hooks/useAuth";
 
 // API
-import { schedulesAPI } from "@/shared/api/schedules.api";
+import { schedulesAPI } from "@/features/schedules/api/schedules.api";
 
 // Components
 import Card from "@/shared/components/ui/Card";
