@@ -29,6 +29,7 @@ import Pagination from "@/shared/components/ui/Pagination";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // Modals
 import CreatePenaltyModal from "../components/CreatePenaltyModal";
@@ -36,6 +37,8 @@ import ReducePenaltyModal from "../components/ReducePenaltyModal";
 
 const PenaltiesPage = () => {
   const { openModal } = useModal();
+  const { getCollectionData: getRolesData } = useArrayStore("roles");
+  const roles = getRolesData();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
@@ -144,7 +147,7 @@ const PenaltiesPage = () => {
                       {formatUserName(penalty.user)}
                     </td>
                     <td className="py-2.5 px-3 text-xs text-gray-600">
-                      {getRoleLabel(penalty.user?.role)}
+                      {getRoleLabel(penalty.user?.role, roles)}
                     </td>
                     <td className="py-2.5 px-3">
                       <p className="text-xs text-gray-800 max-w-48 truncate">

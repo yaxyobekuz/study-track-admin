@@ -27,6 +27,9 @@ import {
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
 import { formatDateUZ } from "@/shared/utils/date.utils";
 
+// Hooks
+import useArrayStore from "@/shared/hooks/useArrayStore";
+
 // Components
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
@@ -34,6 +37,8 @@ import Select from "@/shared/components/ui/select/Select";
 import Input from "@/shared/components/ui/input/Input";
 
 const PenaltyDetailPage = () => {
+  const { getCollectionData: getRolesData } = useArrayStore("roles");
+  const roles = getRolesData();
   const { penaltyId } = useParams();
   const navigate = useNavigate();
 
@@ -141,7 +146,7 @@ const PenaltyDetailPage = () => {
                 )}
               </InfoRow>
 
-              <InfoRow label="Rol">{getRoleLabel(penalty.user?.role)}</InfoRow>
+              <InfoRow label="Rol">{getRoleLabel(penalty.user?.role, roles)}</InfoRow>
 
               {(penalty.title || penalty.description) && (
                 <InfoRow label="Sabab">
@@ -186,7 +191,7 @@ const PenaltyDetailPage = () => {
               <InfoRow label="Yozgan">
                 {penalty.givenBy?.firstName} {penalty.givenBy?.lastName}
                 <span className="text-gray-400 ml-1 text-xs">
-                  ({getRoleLabel(penalty.givenBy?.role)})
+                  ({getRoleLabel(penalty.givenBy?.role, roles)})
                 </span>
               </InfoRow>
 
