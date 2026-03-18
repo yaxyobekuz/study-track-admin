@@ -6,9 +6,6 @@ import { messagesAPI } from "@/shared/api/messages.api";
 import { usersAPI } from "@/shared/api/users.api";
 import { classesAPI } from "@/shared/api/classes.api";
 
-// Store
-import useAuth from "@/shared/hooks/useAuth";
-
 // Router
 import { useSearchParams } from "react-router-dom";
 
@@ -107,6 +104,9 @@ const Messages = () => {
     setPageErrorState,
     setPageLoadingState,
   } = useArrayStore("messages");
+
+  const { getCollectionData: getRolesData } = useArrayStore("roles");
+  const roles = getRolesData();
 
   // Initialize collection on mount
   useEffect(() => {
@@ -315,7 +315,7 @@ const Messages = () => {
                         {message.sentBy?.fullName}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {getRoleLabel(message.sentBy?.role)}
+                        {getRoleLabel(message.sentBy?.role, roles)}
                       </div>
                     </td>
 
