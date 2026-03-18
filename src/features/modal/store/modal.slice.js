@@ -71,6 +71,9 @@ const initialState = {
 
   // Download App
   downloadApp: initialModalData,
+
+  // Bug Report
+  bugReport: initialModalData,
 };
 
 export const modalSlice = createSlice({

@@ -50,6 +50,7 @@ import StudentStatisticsModal from "@/features/statistics/components/StudentStat
 import CreateRoleModal from "@/features/roles/components/CreateRoleModal";
 import EditRoleModal from "@/features/roles/components/EditRoleModal";
 import DeleteRoleModal from "@/features/roles/components/DeleteRoleModal";
+import BugReport from "../components/layout/BugReport";
 
 const DashboardLayout = () => {
   actions();
@@ -66,6 +67,9 @@ const DashboardLayout = () => {
           </div>
         </SidebarInset>
       </SidebarProvider>
+
+      {/* Bug Report */}
+      <BugReport />
 
       {/* Background Patterns */}
       <MainBackgroundPatterns />
