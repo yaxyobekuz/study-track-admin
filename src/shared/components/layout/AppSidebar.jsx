@@ -75,6 +75,10 @@ const navItems = [
         url: "/",
       },
       {
+        title: "Foydalanuvchilar",
+        url: "/users",
+      },
+      {
         title: "Statistika",
         url: "/statistics",
       },
@@ -115,8 +119,8 @@ const navItems = [
     isActive: false,
     items: [
       {
-        title: "Foydalanuvchilar",
-        url: "/users",
+        title: "Rollar",
+        url: "/roles",
       },
       {
         title: "Xabarlar",
