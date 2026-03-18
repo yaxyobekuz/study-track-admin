@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 
 // API
-import { holidaysAPI } from "@/shared/api/holidays.api";
+import { holidaysAPI } from "@/features/holidays/api/holidays.api";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";

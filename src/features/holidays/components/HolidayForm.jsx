@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { months } from "@/shared/utils/date.utils";
 
 // API
-import { holidaysAPI } from "@/shared/api/holidays.api";
+import { holidaysAPI } from "@/features/holidays/api/holidays.api";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";

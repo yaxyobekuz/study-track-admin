@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // API
-import { holidaysAPI } from "@/shared/api/holidays.api";
+import { holidaysAPI } from "@/features/holidays/api/holidays.api";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
