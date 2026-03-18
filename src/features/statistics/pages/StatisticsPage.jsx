@@ -11,8 +11,8 @@ import useModal from "@/shared/hooks/useModal";
 import { useSearchParams } from "react-router-dom";
 
 // API
-import { statisticsAPI } from "@/shared/api/statistics.api";
-import { classesAPI } from "@/shared/api/classes.api";
+import { statisticsAPI } from "@/features/statistics/api/statistics.api";
+import { classesAPI } from "@/features/classes/api/classes.api";
 
 // Components
 import Card from "@/shared/components/ui/Card";

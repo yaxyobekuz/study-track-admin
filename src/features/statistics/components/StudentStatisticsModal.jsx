@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
 // API
-import { statisticsAPI } from "@/shared/api/statistics.api";
+import { statisticsAPI } from "@/features/statistics/api/statistics.api";
 
 // Components
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
