@@ -4,14 +4,15 @@ import { toast } from "sonner";
 // API
 import { rolesAPI } from "@/features/roles/api/roles.api";
 
-// Components
-import Input from "@/shared/components/form/input";
-import Button from "@/shared/components/form/button";
-import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
-
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+
+// Components
+import Button from "@/shared/components/ui/button/Button";
+import InputField from "@/shared/components/ui/input/InputField";
+import InputGroup from "@/shared/components/ui/input/InputGroup";
+import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 const CreateRoleModal = () => (
   <ResponsiveModal name="createRole" title="Yangi rol">
@@ -45,49 +46,44 @@ const Content = ({ close, isLoading, setIsLoading }) => {
   };
 
   return (
-    <form onSubmit={handleCreateRole} className="space-y-3.5">
-      <Input
+    <InputGroup onSubmit={handleCreateRole} as="form">
+      <InputField
         required
         name="name"
         value={name}
         label="Rol nomi"
         placeholder="Masalan: Mentor"
-        onChange={(v) => setField("name", v)}
+        onChange={(e) => setField("name", e.target.value)}
       />
 
-      <Input
+      <InputField
         required
         name="value"
         value={value}
         label="Rol kaliti"
         placeholder="Masalan: mentor"
-        onChange={(v) => setField("value", v?.toLowerCase().trim())}
+        description="Faqat kichik lotin harflari, raqamlar va pastki chiziq"
+        onChange={(e) =>
+          setField("value", e.target.value?.toLowerCase().trim())
+        }
       />
-      <p className="text-xs text-gray-500 -mt-2">
-        Faqat kichik lotin harflari, raqamlar va pastki chiziq
-      </p>
 
       <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
         <Button
           type="button"
-          className="w-full xs:w-32"
-          variant="neutral"
           onClick={close}
+          variant="secondary"
+          className="w-full xs:w-32"
         >
           Bekor qilish
         </Button>
 
-        <Button
-          autoFocus
-          className="w-full xs:w-32"
-          variant="primary"
-          disabled={isLoading}
-        >
+        <Button autoFocus className="w-full xs:w-32" disabled={isLoading}>
           Yaratish
           {isLoading && "..."}
         </Button>
       </div>
-    </form>
+    </InputGroup>
   );
 };
 

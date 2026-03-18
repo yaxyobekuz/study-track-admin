@@ -1,15 +1,15 @@
 // Toast
 import { toast } from "sonner";
 
+// Hooks
+import useArrayStore from "@/shared/hooks/useArrayStore";
+
 // API
 import { rolesAPI } from "@/features/roles/api/roles.api";
 
 // Components
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
-
-// Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 
 const DeleteRoleModal = () => (
   <ResponsiveModal
@@ -47,8 +47,8 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
     <div>
       {hasUsers && (
         <p className="text-sm text-amber-600 mb-4">
-          Bu rolni o'chirib bo'lmaydi, chunki {role.usersCount} ta
-          foydalanuvchi mavjud.
+          Bu rolni o'chirib bo'lmaydi, chunki {role.usersCount} ta foydalanuvchi
+          mavjud.
         </p>
       )}
 
@@ -59,7 +59,7 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
         <Button
           type="button"
           className="w-full xs:w-32"
-          variant="neutral"
+          variant="secondary"
           onClick={close}
         >
           Bekor qilish
@@ -67,8 +67,8 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
 
         <Button
           autoFocus
-          className="w-full xs:w-32"
           variant="danger"
+          className="w-full xs:w-32"
           disabled={isLoading || hasUsers}
         >
           O'chirish
