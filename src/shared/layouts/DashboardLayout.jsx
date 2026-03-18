@@ -6,6 +6,7 @@ import { Outlet } from "react-router-dom";
 
 // API
 import { usersAPI } from "@/shared/api/users.api";
+import { rolesAPI } from "@/features/roles/api/roles.api";
 import { classesAPI } from "@/shared/api/classes.api";
 import { holidaysAPI } from "@/shared/api/holidays.api";
 import { subjectsAPI } from "@/shared/api/subjects.api";
@@ -46,6 +47,9 @@ import ViewUserPasswordModal from "@/features/users/components/ViewUserPasswordM
 import ResetUserPasswordModal from "@/features/users/components/ResetUserPasswordModal";
 import UpdateOrderStatusModal from "@/features/market/components/UpdateOrderStatusModal";
 import StudentStatisticsModal from "@/features/statistics/components/StudentStatisticsModal";
+import CreateRoleModal from "@/features/roles/components/CreateRoleModal";
+import EditRoleModal from "@/features/roles/components/EditRoleModal";
+import DeleteRoleModal from "@/features/roles/components/DeleteRoleModal";
 
 const DashboardLayout = () => {
   actions();
@@ -100,6 +104,11 @@ const DashboardLayout = () => {
       <DeleteProductModal />
       <UpdateOrderStatusModal />
 
+      {/* Roles */}
+      <CreateRoleModal />
+      <EditRoleModal />
+      <DeleteRoleModal />
+
       {/* Stats */}
       <StudentStatisticsModal />
     </>
@@ -119,6 +128,7 @@ const actions = () => {
   } = useArrayStore();
 
   const isOwner = user?.role === "owner";
+  const roles = getCollectionData("roles");
   const classes = getCollectionData("classes");
   const subjects = getCollectionData("subjects");
   const teachers = getCollectionData("teachers");
@@ -127,10 +137,24 @@ const actions = () => {
 
   // Initialize collection (pagination = false)
   useEffect(() => {
+    if (!hasCollection("roles")) initialize(false, "roles");
     if (!hasCollection("classes")) initialize(false, "classes");
     if (!hasCollection("subjects")) initialize(false, "subjects");
     if (!hasCollection("teachers")) initialize(false, "teachers");
   }, [initialize, hasCollection]);
+
+  const fetchRoles = () => {
+    setCollectionLoadingState(true, "roles");
+
+    rolesAPI
+      .getAll()
+      .then((res) => {
+        setCollection(res.data.data, null, "roles");
+      })
+      .catch(() => {
+        setCollectionErrorState(true, "roles");
+      });
+  };
 
   const fetchClasses = () => {
     setCollectionLoadingState(true, "classes");
@@ -181,11 +205,12 @@ const actions = () => {
   };
 
   useEffect(() => {
+    !roles?.length && isOwner && fetchRoles();
     !classes?.length && fetchClasses();
     !subjects?.length && fetchSubjects();
     !teachers?.length && isOwner && fetchTeachers();
     if (!hasEntity("today")) checkTodayHoliday();
-  }, [classes?.length, subjects?.length, teachers?.length]);
+  }, [roles?.length, classes?.length, subjects?.length, teachers?.length]);
 };
 
 export default DashboardLayout;
