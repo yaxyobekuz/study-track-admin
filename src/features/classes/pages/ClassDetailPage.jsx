@@ -4,28 +4,25 @@ import { toast } from "sonner";
 // React
 import { useState, useEffect } from "react";
 
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-import { classesAPI } from "@/features/classes/api/classes.api";
-
 // Hooks
-import useModal from "@/shared/hooks/useModal";
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // Router
 import { useParams, useNavigate } from "react-router-dom";
 
 // Components
-import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
 
 // Icons
 import { Users, ArrowLeft, Download } from "lucide-react";
 
+// API
+import { usersAPI } from "@/features/users/api/users.api";
+import { classesAPI } from "@/features/classes/api/classes.api";
+
 const ClassDetail = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
-  const { openModal } = useModal();
 
   const {
     initialize,
@@ -87,10 +84,6 @@ const ClassDetail = () => {
       });
   };
 
-  const handleEditClass = () => {
-    openModal("editClass", classInfo);
-  };
-
   const handleExport = async () => {
     try {
       const response = await classesAPI.exportStudents(classId);
@@ -137,11 +130,11 @@ const ClassDetail = () => {
             <ArrowLeft strokeWidth={1.5} />
           </Button>
 
-          <h1 className="text-2xl font-bold text-gray-900">{classInfo.name}</h1>
+          <h1 className="page-title">{classInfo.name}</h1>
         </div>
 
         {students?.length > 0 && (
-          <Button onClick={handleExport} className="px-3.5">
+          <Button onClick={handleExport}>
             <Download strokeWidth={1.5} />
             Yuklash
           </Button>
@@ -149,7 +142,7 @@ const ClassDetail = () => {
       </div>
 
       {/* Students Section */}
-      <Card>
+      <div>
         {/* Loading */}
         {isLoadingStudents && (
           <div className="text-center py-8">
@@ -171,21 +164,21 @@ const ClassDetail = () => {
         {/* Students Table */}
         {!isLoadingStudents && students?.length > 0 && (
           <div className="rounded-lg overflow-x-auto">
-            <table className="divide-y divide-gray-200">
+            <table>
               {/* Thead */}
               <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left">#</th>
-                  <th className="px-6 py-3 text-left">Ism</th>
-                  <th className="px-6 py-3 text-left">Familiya</th>
-                  <th className="px-6 py-3 text-left">Username</th>
+                  <th>#</th>
+                  <th>Ism</th>
+                  <th>Familiya</th>
+                  <th>Username</th>
                 </tr>
               </thead>
 
               {/* Tbody */}
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {students.map((student, index) => (
-                  <tr key={student._id} className="hover:bg-gray-50">
+                  <tr key={student._id}>
                     {/* Index */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {index + 1}
@@ -217,7 +210,7 @@ const ClassDetail = () => {
             </table>
           </div>
         )}
-      </Card>
+      </div>
     </div>
   );
 };
