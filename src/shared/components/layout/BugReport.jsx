@@ -1,6 +1,3 @@
-// API
-import axios from "axios";
-
 // Toaster
 import { toast } from "sonner";
 
@@ -10,6 +7,13 @@ import { BugIcon } from "lucide-react";
 // Router
 import { useLocation } from "react-router-dom";
 
+// Tanstack Query
+import { useQuery } from "@tanstack/react-query";
+
+// API
+import axios from "axios";
+import { authAPI } from "@/features/auth/api/auth.api";
+
 // Env variables
 const chatId = import.meta.env.VITE_BUG_REPORT_CHAT_ID;
 const token = import.meta.env.VITE_BUG_REPORT_BOT_TOKEN;
@@ -18,7 +22,6 @@ const token = import.meta.env.VITE_BUG_REPORT_BOT_TOKEN;
 import { formatUzDate } from "@/shared/utils/formatDate";
 
 // Hooks
-import useAuth from "@/shared/hooks/useAuth";
 import useModal from "@/shared/hooks/useModal";
 import useObjectState from "@/shared/hooks/useObjectState";
 
@@ -53,7 +56,11 @@ const BugReport = () => {
 };
 
 const BugReportForm = ({ close, isLoading, setIsLoading }) => {
-  const { user } = useAuth();
+  const { data: user } = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: () => authAPI.getMe().then((res) => res.data.data),
+  });
+
   const location = useLocation();
   const { description, username, image, setField, setFields } = useObjectState({
     image: null,
@@ -87,10 +94,10 @@ const BugReportForm = ({ close, isLoading, setIsLoading }) => {
         : "";
 
       const userInfo = user
-        ? `👤 User: ${sessionUserStr}\n📞 Tel: ${user.phoneNumber || "Noma'lum"}\n🔑 Rol: ${user.role || "Noma'lum"}${tgUsernameStr}`
+        ? `👤 User: ${sessionUserStr}\n🆔 Username: ${user.username}\n🔑 Rol: ${user.role || "Noma'lum"}${tgUsernameStr}`
         : `👤 User: Topilmadi${tgUsernameStr}`;
 
-      const caption = `🔥 Yangi xatolik (Bug report)\n\n📝 Izoh: ${description.trim()}\n\n🔗 Sahifa: ${pathUrl}\n🕒 Vaqt: ${dateStr}\n\n${userInfo}`;
+      const caption = `🔥 Yangi xatolik\n\n📝 Izoh: ${description.trim()}\n\n🔗 Sahifa: ${pathUrl}\n🕒 Sana: ${dateStr}\n\n${userInfo}`;
 
       const formData = new FormData();
       formData.append("chat_id", chatId);
