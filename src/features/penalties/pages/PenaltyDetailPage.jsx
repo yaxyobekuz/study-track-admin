@@ -326,7 +326,7 @@ const AttachmentItem = ({ attachment }) => {
         <img
           src={url}
           alt={originalName}
-          className="w-full h-32 object-cover rounded-lg border"
+          className="w-full h-auto max-h-96 object-cover rounded-lg border"
         />
       </a>
     );
@@ -337,7 +337,7 @@ const AttachmentItem = ({ attachment }) => {
       <video
         src={url}
         controls
-        className="w-full h-32 rounded-lg border object-cover"
+        className="w-full h-auto max-h-96 rounded-lg border object-cover"
       />
     );
   }
