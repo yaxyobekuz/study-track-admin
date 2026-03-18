@@ -17,7 +17,6 @@ import useModal from "@/shared/hooks/useModal";
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // Components
-import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import Pagination from "@/shared/components/ui/Pagination";
@@ -273,23 +272,23 @@ const Messages = () => {
       </div>
 
       {/* Table */}
-      <Card responsive>
+      <div>
         <div className="rounded-lg overflow-x-auto">
-          <table className="divide-y divide-gray-200">
+          <table>
             {/* Thead */}
             <thead>
               <tr>
-                <th className="px-6 py-3 text-left">Xabar</th>
-                <th className="px-6 py-3 text-left">Yuboruvchi</th>
-                <th className="px-6 py-3 text-left">Kimga</th>
-                <th className="px-6 py-3 text-left">Status</th>
-                <th className="px-6 py-3 text-left">Sana</th>
-                <th className="px-6 py-3 text-right">Harakatlar</th>
+                <th>Xabar</th>
+                <th>Yuboruvchi</th>
+                <th>Kimga</th>
+                <th>Status</th>
+                <th>Sana</th>
+                <th>Harakatlar</th>
               </tr>
             </thead>
 
             {/* Tbody */}
-            <tbody className="divide-y divide-gray-200">
+            <tbody>
               {messages.length === 0 ? (
                 <tr>
                   <td
@@ -400,7 +399,7 @@ const Messages = () => {
             totalPages={metadata?.totalPages || 1}
           />
         )}
-      </Card>
+      </div>
 
       {/* Mobile Pagination Controls */}
       {!isLoading && !hasError && messages.length > 0 && (
