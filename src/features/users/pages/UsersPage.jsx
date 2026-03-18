@@ -38,16 +38,19 @@ import {
   Download,
 } from "lucide-react";
 
-// Role options
-const roleOptions = [
-  { value: "all", label: "Barcha rollar" },
-  { value: "teacher", label: "O'qituvchi" },
-  { value: "student", label: "O'quvchi" },
-];
-
 const Users = () => {
   const { user: currentUser } = useAuth();
   const { openModal } = useModal();
+  const { getCollectionData: getRolesData } = useArrayStore("roles");
+  const roles = getRolesData();
+
+  // Role options for filter (dynamic, excluding owner)
+  const roleOptions = [
+    { value: "all", label: "Barcha rollar" },
+    ...roles
+      .filter((r) => r.value !== "owner")
+      .map((r) => ({ value: r.value, label: r.name })),
+  ];
 
   // Search params
   const [searchParams, setSearchParams] = useSearchParams();
@@ -276,7 +279,7 @@ const Users = () => {
                           : "bg-blue-100 text-blue-800"
                       } px-2 inline-flex text-xs leading-5 font-semibold rounded-full`}
                     >
-                      {getRoleLabel(user.role)}
+                      {getRoleLabel(user.role, roles)}
                     </span>
                   </td>
 

@@ -28,6 +28,9 @@ const Content = ({ close, isLoading, setIsLoading }) => {
   const { getCollectionData, invalidateCache } = useArrayStore("classes");
   const classes = getCollectionData();
 
+  const { getCollectionData: getRolesData } = useArrayStore("roles");
+  const roles = getRolesData().filter((r) => r.value !== "owner");
+
   const { username, password, firstName, lastName, role, gender, state, setField } =
     useObjectState({
       classes: [],
@@ -108,10 +111,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         label="Rol"
         value={role}
         onChange={(v) => setField("role", v)}
-        options={[
-          { label: "O'quvchi", value: "student" },
-          { label: "O'qituvchi", value: "teacher" },
-        ]}
+        options={roles.map((r) => ({ label: r.name, value: r.value }))}
       />
 
       <Select
