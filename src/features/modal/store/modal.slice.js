@@ -64,6 +64,11 @@ const initialState = {
   createPenaltyCategory: initialModalData,
   editPenaltyCategory: initialModalData,
 
+  // Roles
+  createRole: initialModalData,
+  editRole: initialModalData,
+  deleteRole: initialModalData,
+
   // Download App
   downloadApp: initialModalData,
 };
