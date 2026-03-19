@@ -152,9 +152,11 @@ const LoginForm = ({ onShowLoginForm }) => {
     authAPI
       .login(data)
       .then((response) => {
+        // Save token to localStorage
         const { token } = response.data.data;
         localStorage.setItem("authToken", token);
-        toast.success("Tizimga muvaffaqiyatli kirdingiz!");
+
+        // Navigate to dashboard
         navigate("/dashboard");
       })
       .catch((error) => {
