@@ -138,6 +138,10 @@ const navItems = [
         title: "Ijtimoiy tarmoqlar",
         url: "/social-networks",
       },
+      {
+        title: "Monitorlar",
+        url: "/monitors",
+      },
     ],
   },
   {

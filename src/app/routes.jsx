@@ -54,6 +54,9 @@ import MarketProductCreatePage from "@/features/market/pages/MarketProductCreate
 // Pages — Social Networks
 import SocialNetworksPage from "@/features/social-networks/pages/SocialNetworksPage";
 
+// Pages — Monitors
+import MonitorsPage from "@/features/monitors/pages/MonitorsPage";
+
 // Pages — Penalties
 import PenaltiesPage from "@/features/penalties/pages/PenaltiesPage";
 import PenaltyDetailPage from "@/features/penalties/pages/PenaltyDetailPage";
@@ -118,6 +121,9 @@ const Routes = () => {
 
           {/* Social Networks */}
           <Route path="/social-networks" element={<SocialNetworksPage />} />
+
+          {/* Monitors */}
+          <Route path="/monitors" element={<MonitorsPage />} />
 
           {/* Penalties */}
           <Route path="/penalties" element={<PenaltiesPage />} />
