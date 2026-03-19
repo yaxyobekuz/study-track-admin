@@ -134,6 +134,10 @@ const navItems = [
         title: "Dam olish kunlari",
         url: "/holidays",
       },
+      {
+        title: "Ijtimoiy tarmoqlar",
+        url: "/social-networks",
+      },
     ],
   },
   {
