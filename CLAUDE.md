@@ -5,13 +5,11 @@
 ## Structure
 
 - Follow the existing feature-based structure in this module.
-- Place new pages/components/hooks inside the appropriate feature folder.
 
 ## Static data
 
 - Do not hardcode reusable static UI data inside pages/components.
 - Always move reusable static data into a dedicated adjacent `*.data.js` file and import it.
-  - Examples: select options, filters, status labels/colors, table column configs.
 
 ## Dates
 
