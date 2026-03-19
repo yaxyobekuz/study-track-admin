@@ -1,4 +1,5 @@
 // Emoji Animations
+import tvEmojiAnimation from "./emoji/tv.json";
 import timeEmojiAnimation from "./emoji/time.json";
 import gcapEmojiAnimation from "./emoji/gcap.json";
 import adminEmojiAnimation from "./emoji/admin.json";
@@ -17,6 +18,7 @@ import blowingKissDuckAnimation from "./duck/blowing-kiss.json";
 
 export {
   // Emoji Animations
+  tvEmojiAnimation,
   gcapEmojiAnimation,
   timeEmojiAnimation,
   adminEmojiAnimation,
