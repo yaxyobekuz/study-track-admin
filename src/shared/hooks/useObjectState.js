@@ -7,8 +7,8 @@ import { useState } from "react";
  * @returns {{state: Object, setField: Function, setFields: Function, resetState: Function}} State and helpers.
  */
 const useObjectState = (initialState = {}) => {
-  const savedInitialState = useState(initialState);
   const [state, setState] = useState(initialState);
+  const [savedInitialState] = useState(initialState);
 
   /**
    * Updates a single key in state.
