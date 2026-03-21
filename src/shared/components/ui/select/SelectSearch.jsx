@@ -39,7 +39,7 @@ const SelectSearch = ({
 }) => {
   const { playSound } = useSound();
   const [open, setOpen] = useState(false);
-  const selectedOption = !options.find((o) => o.value === value);
+  const selectedOption = options.find((o) => o.value === value);
 
   const handleOpenChange = (isOpen) => {
     setOpen(isOpen);
@@ -66,7 +66,7 @@ const SelectSearch = ({
           disabled={props.disabled || isLoading}
           className="justify-between font-normal px-3 hover:bg-white"
         >
-          <span>{props.placeholder || selectedOption?.label}</span>
+          <span>{selectedOption?.label || props.placeholder}</span>
           <ChevronDown className="size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
