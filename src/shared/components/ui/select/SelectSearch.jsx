@@ -66,7 +66,11 @@ const SelectSearch = ({
           disabled={props.disabled || isLoading}
           className="justify-between font-normal px-3 hover:bg-white"
         >
-          <span>{selectedOption?.label || props.placeholder}</span>
+          <span
+            className={selectedOption?.label ? "text-black" : "text-gray-500"}
+          >
+            {selectedOption?.label || props.placeholder}
+          </span>
           <ChevronDown className="size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
