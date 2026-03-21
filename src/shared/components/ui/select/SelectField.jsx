@@ -5,8 +5,10 @@ import {
   FieldLabel,
   FieldDescription,
 } from "@/shared/components/shadcn/field";
+import SelectSearch from "./SelectSearch";
 
 const SelectComponent = ({ ...props }) => {
+  if (props.searchable) return <SelectSearch {...props} />;
   return <Select {...props} />;
 };
 
