@@ -131,6 +131,10 @@ const navItems = [
         url: "/coin-settings",
       },
       {
+        title: "Tanga tarqatish",
+        url: "/coin-distribution",
+      },
+      {
         title: "Dam olish kunlari",
         url: "/holidays",
       },

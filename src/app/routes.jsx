@@ -45,6 +45,9 @@ import HolidaysPage from "@/features/holidays/pages/HolidaysPage";
 // Pages — Coin Settings
 import CoinSettingsPage from "@/features/coin-settings/pages/CoinSettingsPage";
 
+// Pages — Coin Distribution
+import CoinDistributionPage from "@/features/coin-distribution/pages/CoinDistributionPage";
+
 // Pages — Market
 import MarketOrdersPage from "@/features/market/pages/MarketOrdersPage";
 import MarketProductsPage from "@/features/market/pages/MarketProductsPage";
@@ -112,6 +115,9 @@ const Routes = () => {
 
           {/* Coin Settings */}
           <Route path="/coin-settings" element={<CoinSettingsPage />} />
+
+          {/* Coin Distribution */}
+          <Route path="/coin-distribution" element={<CoinDistributionPage />} />
 
           {/* Market */}
           <Route path="/market/products" element={<MarketProductsPage />} />
