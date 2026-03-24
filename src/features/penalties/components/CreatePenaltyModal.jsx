@@ -6,6 +6,10 @@ import { useState, useEffect } from "react";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import useArrayStore from "@/shared/hooks/useArrayStore";
+
+// Helpers
+import { getRoleLabel } from "@/shared/helpers/role.helpers";
 
 // API
 import { usersAPI } from "@/features/users/api/users.api";
@@ -29,6 +33,8 @@ const CreatePenaltyModal = () => (
 
 const Content = ({ close }) => {
   const queryClient = useQueryClient();
+  const { getCollectionData } = useArrayStore();
+  const roles = getCollectionData("roles") || [];
 
   const {
     userId,
@@ -59,7 +65,7 @@ const Content = ({ close }) => {
   const users = (usersData || [])
     .filter((u) => u.role !== "owner")
     .map((u) => ({
-      label: `${u.firstName}${u.lastName ? ` ${u.lastName}` : ""} (${u.username}) — ${u.role === "teacher" ? "O'qituvchi" : "O'quvchi"}`,
+      label: `${u.firstName}${u.lastName ? ` ${u.lastName}` : ""} (${u.username}) — ${getRoleLabel(u.role, roles)}`,
       value: u._id,
       role: u.role,
     }));

@@ -7,9 +7,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 // API
 import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
 
-// Data
-import { targetRoleOptions } from "../data/penalties.data";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
@@ -18,6 +15,10 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import useArrayStore from "@/shared/hooks/useArrayStore";
+
+// Helpers
+import { getAllRoles } from "@/shared/helpers/role.helpers";
 
 const CreateCategoryModal = () => (
   <ResponsiveModal name="createPenaltyCategory" title="Yangi kategoriya">
@@ -27,11 +28,17 @@ const CreateCategoryModal = () => (
 
 const Content = ({ close }) => {
   const queryClient = useQueryClient();
+  const { getCollectionData } = useArrayStore();
+  const roles = getCollectionData("roles") || [];
+
+  // Owner va developer'dan tashqari barcha rollar
+  const roleOptions = getAllRoles(roles).filter((r) => r.value !== "developer");
+
   const { title, description, points, targetRole, setField } = useObjectState({
     title: "",
     description: "",
     points: "",
-    targetRole: "student",
+    targetRole: roleOptions[0]?.value || "",
   });
 
   const createMutation = useMutation({
@@ -62,7 +69,7 @@ const Content = ({ close }) => {
         required
         label="Rol"
         value={targetRole}
-        options={targetRoleOptions}
+        options={roleOptions}
         onChange={(v) => setField("targetRole", v)}
       />
 
