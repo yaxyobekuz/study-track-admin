@@ -1,6 +1,7 @@
 // Animations
 import {
   tvEmojiAnimation,
+  bagEmojiAnimation,
   gcapEmojiAnimation,
   adminEmojiAnimation,
   teacherEmojiAnimation,
@@ -23,6 +24,12 @@ const platforms = [
     isCurrent: false,
     animationData: gcapEmojiAnimation,
     href: "https://student.studytrack.uz",
+  },
+  {
+    name: "Ishchi",
+    isCurrent: false,
+    animationData: bagEmojiAnimation,
+    href: "https://worker.studytrack.uz",
   },
   {
     name: "Monitor",
