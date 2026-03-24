@@ -22,15 +22,6 @@ export const penaltyReviewOptions = [
   { value: "rejected", label: "Rad etish" },
 ];
 
-export const targetRoleOptions = [
-  { value: "student", label: "O'quvchi" },
-  { value: "teacher", label: "O'qituvchi" },
-];
-
-export const targetRoleTabs = [
-  { label: "O'quvchi kategoriyalari", value: "student" },
-  { label: "O'qituvchi kategoriyalari", value: "teacher" },
-];
 
 export const penaltyPageTabs = [
   { label: "Jarimalar", value: "penalties" },
