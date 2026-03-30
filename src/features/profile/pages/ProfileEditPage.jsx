@@ -76,7 +76,7 @@ const ProfileEditPage = () => {
 
         {!isLoading && !isError && (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Card title="Umumiy a'lumotlar" className="space-y-4">
+            <Card title="Umumiy ma'lumotlar" className="space-y-4">
               <div className="space-y-1">
                 <label className="text-sm text-gray-500">Ism</label>
                 <input
