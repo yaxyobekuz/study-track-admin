@@ -9,6 +9,9 @@ import {
   TrendingUp,
   ChevronRight,
   AlertTriangle,
+  Hash,
+  Coins,
+  BadgeDollarSign,
 } from "lucide-react";
 
 // Router
@@ -88,7 +91,7 @@ const navItems = [
     title: "Ta'lim",
     url: "/classes",
     icon: BookOpen,
-    isActive: true,
+    isActive: false,
     items: [
       {
         title: "Baholar jurnali",
@@ -113,44 +116,7 @@ const navItems = [
     ],
   },
   {
-    title: "Boshqaruv",
-    url: "/users",
-    icon: Settings2,
-    isActive: false,
-    items: [
-      {
-        title: "Rollar",
-        url: "/roles",
-      },
-      {
-        title: "Xabarlar",
-        url: "/messages",
-      },
-      {
-        title: "Tanga sozlamalari",
-        url: "/coin-settings",
-      },
-      {
-        title: "Tanga tarqatish",
-        url: "/coin-distribution",
-      },
-      {
-        title: "Dam olish kunlari",
-        url: "/holidays",
-      },
-      {
-        title: "Ijtimoiy tarmoqlar",
-        url: "/social-networks",
-      },
-      {
-        title: "Monitorlar",
-        url: "/monitors",
-      },
-    ],
-  },
-  {
-    title: "Market",
-    url: "/market/products",
+    title: "Do'kon",
     icon: Store,
     isActive: false,
     items: [
@@ -166,7 +132,6 @@ const navItems = [
   },
   {
     title: "Jarimalar",
-    url: "/penalties",
     icon: AlertTriangle,
     isActive: false,
     items: [
@@ -181,6 +146,56 @@ const navItems = [
       {
         title: "Sozlamalar",
         url: "/penalties/settings",
+      },
+    ],
+  },
+  {
+    title: "Tangalar",
+    icon: BadgeDollarSign,
+    isActive: false,
+    items: [
+      {
+        title: "Tarqatish/Olish",
+        url: "/coin-distribution",
+      },
+      {
+        title: "Sozlamalar",
+        url: "/coin-settings",
+      },
+    ],
+  },
+  {
+    title: "Boshqaruv",
+    url: "/users",
+    icon: Settings2,
+    isActive: false,
+    items: [
+      {
+        title: "Rollar",
+        url: "/roles",
+      },
+      {
+        title: "Dam olish kunlari",
+        url: "/holidays",
+      },
+      {
+        title: "Monitorlar",
+        url: "/monitors",
+      },
+    ],
+  },
+  {
+    title: "Ijtimoiy tarmoqlar",
+    icon: Hash,
+    isActive: false,
+    items: [
+      {
+        title: "Xabarlar",
+        url: "/messages",
+      },
+      {
+        title: "Ijtimoiy tarmoqlar",
+        url: "/social-networks",
       },
     ],
   },
