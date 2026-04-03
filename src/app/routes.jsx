@@ -60,6 +60,10 @@ import SocialNetworksPage from "@/features/social-networks/pages/SocialNetworksP
 // Pages — Monitors
 import MonitorsPage from "@/features/monitors/pages/MonitorsPage";
 
+// Pages — Tasks
+import TasksPage from "@/features/tasks/pages/TasksPage";
+import TaskDetailPage from "@/features/tasks/pages/TaskDetailPage";
+
 // Pages — Penalties
 import PenaltiesPage from "@/features/penalties/pages/PenaltiesPage";
 import PenaltyDetailPage from "@/features/penalties/pages/PenaltyDetailPage";
@@ -130,6 +134,10 @@ const Routes = () => {
 
           {/* Monitors */}
           <Route path="/monitors" element={<MonitorsPage />} />
+
+          {/* Tasks */}
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/tasks/:taskId" element={<TaskDetailPage />} />
 
           {/* Penalties */}
           <Route path="/penalties" element={<PenaltiesPage />} />
