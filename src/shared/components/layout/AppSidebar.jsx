@@ -1,16 +1,16 @@
 // Icons
 import {
   Home,
-  LogOut,
+  Hash,
   Store,
+  LogOut,
   BookOpen,
   Settings2,
   PanelLeft,
   TrendingUp,
   ChevronRight,
+  ClipboardList,
   AlertTriangle,
-  Hash,
-  Coins,
   BadgeDollarSign,
 } from "lucide-react";
 
@@ -127,6 +127,17 @@ const navItems = [
       {
         title: "Buyurtmalar",
         url: "/market/orders",
+      },
+    ],
+  },
+  {
+    title: "Topshiriqlar",
+    icon: ClipboardList,
+    isActive: false,
+    items: [
+      {
+        title: "Topshiriqlar ro'yxati",
+        url: "/tasks",
       },
     ],
   },
