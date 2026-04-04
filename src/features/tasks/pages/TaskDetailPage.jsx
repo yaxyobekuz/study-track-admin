@@ -53,7 +53,7 @@ const TaskDetailPage = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
       </div>
     );
   }
@@ -88,7 +88,7 @@ const TaskDetailPage = () => {
               <ArrowLeft className="size-4" />
             </button>
             <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              <ClipboardList className="size-5 text-indigo-500" />
+              <ClipboardList className="size-5 text-blue-500" />
               Topshiriq tafsilotlari
             </h2>
           </div>

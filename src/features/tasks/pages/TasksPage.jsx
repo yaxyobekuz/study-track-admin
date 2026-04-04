@@ -122,7 +122,7 @@ const TasksPage = () => {
       {/* Tasks Table */}
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
         </div>
       ) : tasks.length === 0 ? (
         <Card className="text-center py-8">
@@ -190,7 +190,7 @@ const TasksPage = () => {
                   <td className="py-2.5 px-3 text-center">
                     <Link
                       to={`/tasks/${task._id}`}
-                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                     >
                       Batafsil
                     </Link>
