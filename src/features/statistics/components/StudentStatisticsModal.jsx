@@ -62,7 +62,7 @@ const Content = ({ studentId }) => {
   return (
     <div className="space-y-8">
       {/* Student Info */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+      <div className="bg-gradient-to-r from-blue-50 to-blue-50 p-4 rounded-lg border border-blue-200">
         <div className="flex items-center gap-4">
           <div className="size-14 bg-blue-100 rounded-full flex items-center justify-center">
             <User className="size-6 text-blue-600" strokeWidth={1.5} />
