@@ -116,7 +116,7 @@ const PenaltiesPage = () => {
       {/* Penalties Table */}
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
         </div>
       ) : penalties.length === 0 ? (
         <Card className="text-center py-8">
@@ -185,7 +185,7 @@ const PenaltiesPage = () => {
                     <td className="py-2.5 px-3">
                       <Link
                         to={`/penalties/${penalty._id}`}
-                        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                       >
                         Ba'tafsil
                       </Link>

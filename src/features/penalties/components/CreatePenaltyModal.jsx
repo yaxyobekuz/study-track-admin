@@ -149,7 +149,7 @@ const Content = ({ close }) => {
               type="checkbox"
               checked={isCustom}
               onChange={(e) => setField("isCustom", e.target.checked)}
-              className="rounded border-gray-300 text-indigo-500 focus:ring-indigo-500"
+              className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
             />
             Maxsus jarima
           </label>

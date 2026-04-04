@@ -67,7 +67,7 @@ const PenaltyCategoriesPage = () => {
       {/* Categories list */}
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
         </div>
       ) : categories.length === 0 ? (
         <Card className="text-center py-8">
@@ -91,7 +91,7 @@ const PenaltyCategoriesPage = () => {
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-red-100 text-red-700">
                       {cat.points} ball
                     </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-indigo-100 text-indigo-700">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700">
                       {getRoleLabel(cat.targetRole, roles)}
                     </span>
                   </div>

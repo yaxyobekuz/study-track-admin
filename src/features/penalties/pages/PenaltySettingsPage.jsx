@@ -72,7 +72,7 @@ const PenaltySettingsPage = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-16">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
       </div>
     );
   }
@@ -81,7 +81,7 @@ const PenaltySettingsPage = () => {
     <div className="max-w-lg mx-auto">
       <Card>
         <h2 className="text-base font-semibold text-gray-900 mb-5 flex items-center gap-2">
-          <Settings className="size-5 text-indigo-500" />
+          <Settings className="size-5 text-blue-500" />
           Jarima sozlamalari
         </h2>
 
@@ -117,7 +117,7 @@ const PenaltySettingsPage = () => {
                       [role.value]: Number(e.target.value),
                     }))
                   }
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                 />
                 {(fineAmounts[role.value] ?? 0) > 0 && (
                   <p className="text-xs text-gray-400 mt-1">
