@@ -1,29 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-// ─── useAppQuery ───────────────────────────────────────────────────────
+// useAppQuery
 
-/**
- * Wrapper around `useQuery` that normalises the Axios response.
- * Automatically extracts `response.data` so consumers work with plain data.
- *
- * @param {object} options
- * @param {readonly unknown[]} options.queryKey - TanStack query key.
- * @param {() => Promise<import("axios").AxiosResponse>} options.queryFn - Axios-based fetch function.
- * @param {boolean}  [options.enabled=true]  - Whether the query should run.
- * @param {number}   [options.staleTime]     - Override default stale time (ms).
- * @param {number}   [options.gcTime]        - Override default GC time (ms).
- * @param {number}   [options.retry]         - Number of retries on failure.
- * @param {boolean}  [options.keepPreviousData] - Keep previous data while refetching.
- * @param {Function} [options.select]        - Transform/select a subset of data.
- * @param {import("@tanstack/react-query").UseQueryOptions} [options.rest] - Any extra TanStack Query options.
- * @returns {import("@tanstack/react-query").UseQueryResult}
- *
- * @example
- * const { data, isLoading } = useAppQuery({
- *   queryKey: usersKeys.list({ page: 1 }),
- *   queryFn: () => usersAPI.getAll({ page: 1 }),
- * });
- */
 export const useAppQuery = ({
   queryKey,
   queryFn,
@@ -51,30 +29,8 @@ export const useAppQuery = ({
   });
 };
 
-// ─── useAppMutation ────────────────────────────────────────────────────
+// useAppMutation
 
-/**
- * Wrapper around `useMutation` with built-in cache invalidation.
- * Automatically extracts `response.data` from the Axios response.
- *
- * @param {object} options
- * @param {(variables: unknown) => Promise<import("axios").AxiosResponse>} options.mutationFn - Axios-based mutation function.
- * @param {Array<readonly unknown[]>} [options.invalidateKeys=[]] - Query keys to invalidate on success.
- * @param {(data: unknown, variables: unknown) => void} [options.onSuccess] - Callback after successful mutation.
- * @param {(error: unknown, variables: unknown) => void} [options.onError] - Callback on error.
- * @param {(data: unknown, error: unknown, variables: unknown) => void} [options.onSettled] - Callback when mutation settles.
- * @param {import("@tanstack/react-query").UseMutationOptions} [options.rest] - Any extra TanStack Query options.
- * @returns {import("@tanstack/react-query").UseMutationResult}
- *
- * @example
- * const createUser = useAppMutation({
- *   mutationFn: (data) => usersAPI.create(data),
- *   invalidateKeys: [usersKeys.lists()],
- *   onSuccess: (data) => toast.success("User created"),
- * });
- *
- * createUser.mutate({ name: "John" });
- */
 export const useAppMutation = ({
   mutationFn,
   invalidateKeys = [],
@@ -106,33 +62,8 @@ export const useAppMutation = ({
   });
 };
 
-// ─── useOptimisticMutation ─────────────────────────────────────────────
+// useOptimisticMutation
 
-/**
- * Mutation hook with optimistic update support.
- * Cancels in-flight queries, snapshots cache, applies optimistic update,
- * and rolls back on error automatically.
- *
- * @param {object} options
- * @param {(variables: unknown) => Promise<import("axios").AxiosResponse>} options.mutationFn - Axios mutation function.
- * @param {readonly unknown[]} options.queryKey - The query key to optimistically update.
- * @param {(oldData: unknown, variables: unknown) => unknown} options.updater - Function that produces the optimistic cache state.
- * @param {Array<readonly unknown[]>} [options.invalidateKeys=[]] - Extra keys to invalidate on settle.
- * @param {(data: unknown, variables: unknown) => void} [options.onSuccess] - Called on success.
- * @param {(error: unknown, variables: unknown) => void} [options.onError] - Called on error (after rollback).
- * @returns {import("@tanstack/react-query").UseMutationResult}
- *
- * @example
- * const deleteUser = useOptimisticMutation({
- *   mutationFn: (id) => usersAPI.delete(id),
- *   queryKey: usersKeys.list({ page: 1 }),
- *   updater: (old, id) => ({
- *     ...old,
- *     data: old.data.filter((u) => u.id !== id),
- *   }),
- *   invalidateKeys: [usersKeys.lists()],
- * });
- */
 export const useOptimisticMutation = ({
   mutationFn,
   queryKey,
