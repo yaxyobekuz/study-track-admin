@@ -292,6 +292,8 @@ const Header = () => {
 };
 
 const Main = () => {
+  const { toggleSidebar } = useSidebar();
+
   return (
     <SidebarContent>
       <SidebarGroup>
@@ -327,7 +329,9 @@ const Main = () => {
                     {item.items?.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
                         <SidebarMenuSubButton className="h-auto py-2" asChild>
-                          <Link to={subItem.url}>{subItem.title}</Link>
+                          <Link to={subItem.url} onClick={toggleSidebar}>
+                            {subItem.title}
+                          </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}
