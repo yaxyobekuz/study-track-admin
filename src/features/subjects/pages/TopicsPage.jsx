@@ -10,8 +10,8 @@ import { useNavigate } from "react-router-dom";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Select from "@/shared/components/form/select";
-import Button from "@/shared/components/form/button";
+import Select from "@/shared/components/ui/select/Select";
+import Button from "@/shared/components/ui/button/Button";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";

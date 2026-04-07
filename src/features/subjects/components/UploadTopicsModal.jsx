@@ -8,8 +8,8 @@ import { topicsAPI } from "@/features/subjects/api/topics.api";
 import { useState, useRef } from "react";
 
 // Components
-import Select from "@/shared/components/form/select";
-import Button from "@/shared/components/form/button";
+import Select from "@/shared/components/ui/select/Select";
+import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Icons

@@ -1,6 +1,6 @@
 // Components
 import Card from "@/shared/components/ui/Card";
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 
 // API
 import { subjectsAPI } from "@/features/subjects/api/subjects.api";
