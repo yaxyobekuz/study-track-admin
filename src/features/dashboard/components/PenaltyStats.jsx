@@ -45,8 +45,8 @@ const PenaltyStats = () => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-      <div className="col-span-2 space-y-4">
-        {/* Umumiy statistika */}
+      <div className="space-y-4 lg:col-span-2">
+        {/* Total */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card
             title="Jami jarima ballar"
@@ -79,18 +79,18 @@ const PenaltyStats = () => {
           </Card>
         </div>
 
-        {/* Top 10 foydalanuvchilar (barcha rollar) */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {/* Top 10 workers */}
           <TopTenList
-            title="Top 10 jarima olgan foydalanuvchilar"
-            data={stats?.topUsers || []}
             roles={roles}
+            data={stats?.topUsers || []}
+            title="Top 10 jarima olgan xodimlar"
           />
 
           {/* Penalty Stats Chart */}
           <Card
-            title="So'nggi 30 kunlik jarimalar statistikasi"
-            className="min-h-80 space-y-4"
+            title="So'nggi 30 kunlik jarimalar"
+            className="min-h-60 space-y-4 sm:min-h-80"
           >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
@@ -172,11 +172,12 @@ const PenaltyStats = () => {
         </div>
       </div>
 
+      {/* Top 10 students */}
       <TopTenList
         roles={roles}
-        title="Top 10 jarima olgan o'quvchilar"
-        data={stats?.topStudents || []}
         colorClass="text-orange-600"
+        data={stats?.topStudents || []}
+        title="Top 10 jarima olgan o'quvchilar"
       />
     </div>
   );

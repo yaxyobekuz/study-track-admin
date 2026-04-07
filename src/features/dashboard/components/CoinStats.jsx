@@ -35,7 +35,7 @@ const CoinStats = () => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-      <div className="col-span-2 space-y-4">
+      <div className="space-y-4 lg:col-span-2">
         {/* Total coin */}
         <Card
           title="Umumiy tarqatilgan tangalar"
@@ -49,8 +49,8 @@ const CoinStats = () => {
 
         {/* Line Chart */}
         <Card
-          className="col-span-2 h-80 space-y-2.5"
           title="So'nggi 30 kunda tarqatilgan tangalar"
+          className="col-span-2 h-60 space-y-2.5 sm:h-80"
         >
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart

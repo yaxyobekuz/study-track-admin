@@ -42,7 +42,7 @@ const UsersStats = () => {
         <Card
           key={idx}
           title={item.label}
-          className="flex flex-col items-center justify-between sm:flex-row"
+          className="flex items-center justify-between"
           icon={
             <div className="flex items-center justify-center size-10 bg-blue-50 rounded-full">
               <item.icon className="size-5 text-blue-700" strokeWidth={1.5} />

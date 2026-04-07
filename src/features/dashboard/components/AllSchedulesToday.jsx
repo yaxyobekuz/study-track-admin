@@ -78,12 +78,12 @@ const AllSchedulesToday = () => {
   return (
     <div className="relative mt-4">
       {/* Top */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col items-center justify-between mb-4 sm:flex-row">
         {/* Title */}
         <h2 className="section-title">Bugungi barcha sinf dars jadvallari</h2>
 
         {/* Schedules page link */}
-        <Button asChild className="" variant="link">
+        <Button asChild variant="link">
           <Link to="/schedules">Barcha dars jadvali</Link>
         </Button>
       </div>

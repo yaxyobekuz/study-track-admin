@@ -32,7 +32,7 @@ const Dashboard = () => {
   return (
     <div>
       {/* Top Bar */}
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-col gap-4 mb-4 sm:flex-row">
         {/* Greetings */}
         <Card className="flex items-center gap-1.5 !py-3 grow md:gap-3">
           <Lottie className="size-6 sm:size-7" animationData={animation} />
@@ -45,10 +45,10 @@ const Dashboard = () => {
         {/* Download button */}
         <button
           onClick={() => openModal("downloadApp")}
-          className="flex items-center gap-4 h-auto bg-blue-100 text-blue-500 rounded-xl pl-4 overflow-hidden font-medium text-sm"
+          className="flex items-center gap-4 min-h-12  h-auto bg-blue-100 text-blue-500 rounded-xl pl-4 overflow-hidden font-medium text-sm"
         >
           Ilovani yuklab olish
-          <span className="flex items-center justify-center bg-blue-500 text-white h-full px-4">
+          <span className="flex items-center justify-center bg-blue-500 text-white min-h-12 h-full px-4 ml-auto">
             <Download className="size-5" strokeWidth={1.5} />
           </span>
         </button>
@@ -57,13 +57,13 @@ const Dashboard = () => {
       {/* Holiday Info */}
       <HolidayInfo />
 
-      {/* User Statistics - Owner only */}
+      {/* User Statistics */}
       <UsersStats />
 
-      {/* Coin Statistics - Owner only */}
+      {/* Coin Statistics */}
       <CoinStats />
 
-      {/* Penalty Statistics - Owner only */}
+      {/* Penalty Statistics */}
       <PenaltyStats />
 
       {/* Today's Schedules */}
