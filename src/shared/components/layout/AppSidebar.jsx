@@ -3,6 +3,7 @@ import {
   Home,
   Hash,
   Store,
+  Clock,
   LogOut,
   BookOpen,
   Settings2,
@@ -192,6 +193,25 @@ const navItems = [
       {
         title: "Monitorlar",
         url: "/monitors",
+      },
+    ],
+  },
+  {
+    title: "Davomat",
+    icon: Clock,
+    isActive: false,
+    items: [
+      {
+        title: "Davomat ro'yxati",
+        url: "/attendance",
+      },
+      {
+        title: "Excuse so'rovlar",
+        url: "/attendance/excuses",
+      },
+      {
+        title: "Sozlamalar",
+        url: "/attendance/settings",
       },
     ],
   },

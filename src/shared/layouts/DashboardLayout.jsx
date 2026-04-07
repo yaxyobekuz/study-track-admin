@@ -50,6 +50,7 @@ import StudentStatisticsModal from "@/features/statistics/components/StudentStat
 import CreateRoleModal from "@/features/roles/components/CreateRoleModal";
 import EditRoleModal from "@/features/roles/components/EditRoleModal";
 import DeleteRoleModal from "@/features/roles/components/DeleteRoleModal";
+import ReviewExcuseModal from "@/features/attendance/components/ReviewExcuseModal";
 import BugReport from "../components/layout/BugReport";
 
 const DashboardLayout = () => {
@@ -112,6 +113,9 @@ const DashboardLayout = () => {
       <CreateRoleModal />
       <EditRoleModal />
       <DeleteRoleModal />
+
+      {/* Attendance */}
+      <ReviewExcuseModal />
 
       {/* Stats */}
       <StudentStatisticsModal />

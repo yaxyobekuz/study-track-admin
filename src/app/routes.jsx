@@ -70,6 +70,11 @@ import PenaltyDetailPage from "@/features/penalties/pages/PenaltyDetailPage";
 import PenaltyCategoriesPage from "@/features/penalties/pages/PenaltyCategoriesPage";
 import PenaltySettingsPage from "@/features/penalties/pages/PenaltySettingsPage";
 
+// Pages — Attendance
+import AttendanceListPage from "@/features/attendance/pages/AttendanceListPage";
+import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
+import ExcuseRequestsPage from "@/features/attendance/pages/ExcuseRequestsPage";
+
 // Router
 import { Routes as RoutesWrapper, Route, Navigate } from "react-router-dom";
 
@@ -144,6 +149,11 @@ const Routes = () => {
           <Route path="/penalties/:penaltyId" element={<PenaltyDetailPage />} />
           <Route path="/penalties/categories" element={<PenaltyCategoriesPage />} />
           <Route path="/penalties/settings" element={<PenaltySettingsPage />} />
+
+          {/* Attendance */}
+          <Route path="/attendance" element={<AttendanceListPage />} />
+          <Route path="/attendance/settings" element={<AttendanceSettingsPage />} />
+          <Route path="/attendance/excuses" element={<ExcuseRequestsPage />} />
         </Route>
       </Route>
 
