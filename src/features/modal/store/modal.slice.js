@@ -88,6 +88,9 @@ const initialState = {
   reviewTask: initialModalData,
   createTask: initialModalData,
   extendDeadline: initialModalData,
+
+  // Attendance
+  reviewExcuse: initialModalData,
 };
 
 export const modalSlice = createSlice({
