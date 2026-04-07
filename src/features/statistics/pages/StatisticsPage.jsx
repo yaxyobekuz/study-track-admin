@@ -16,7 +16,7 @@ import { classesAPI } from "@/features/classes/api/classes.api";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Select from "@/shared/components/form/select";
+import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
 
