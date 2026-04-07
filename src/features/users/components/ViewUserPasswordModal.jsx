@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { Eye, EyeOff, Copy } from "lucide-react";
 
 // Components
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 const ViewUserPasswordModal = () => (

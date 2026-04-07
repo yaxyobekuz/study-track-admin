@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { usersAPI } from "@/features/users/api/users.api";
 
 // Components
-import Button from "@/shared/components/form/button";
+import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks

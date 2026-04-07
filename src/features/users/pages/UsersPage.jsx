@@ -18,7 +18,7 @@ import useModal from "@/shared/hooks/useModal";
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // Components
-import Select from "@/shared/components/form/select";
+import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
 
