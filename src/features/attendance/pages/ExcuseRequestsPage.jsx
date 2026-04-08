@@ -8,7 +8,7 @@ import { attendanceAPI } from "../api/attendance.api";
 import ExcuseRequestsTable from "../components/ExcuseRequestsTable";
 
 const EXCUSE_STATUS_OPTIONS = [
-  { label: "Barcha so'rovlar", value: "__all__" },
+  { label: "Barcha so'rovlar", value: "all" },
   { label: "Kutilmoqda", value: "pending" },
   { label: "Tasdiqlangan", value: "approved" },
   { label: "Rad etilgan", value: "rejected" },
@@ -30,15 +30,20 @@ const ExcuseRequestsPage = () => {
   const pagination = data?.pagination;
 
   return (
-    <div className="space-y-5">
-      <h1 className="page-title">Excuse so'rovlar</h1>
+    <div className="space-y-4">
+      {/* Top */}
+      <div className="flex items-center justify-between">
+        <h1 className="page-title">Uzrli so'rovlar</h1>
 
-      <div className="w-48">
         <Select
           label="Holat"
-          value={status || "__all__"}
-          onChange={(v) => { setStatus(v === "__all__" ? "" : v); setPage(1); }}
+          triggerClassName="w-40"
+          value={status || "all"}
           options={EXCUSE_STATUS_OPTIONS}
+          onChange={(v) => {
+            setStatus(v === "all" ? "" : v);
+            setPage(1);
+          }}
         />
       </div>
 

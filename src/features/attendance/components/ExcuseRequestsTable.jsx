@@ -7,10 +7,6 @@ import {
   EXCUSE_STATUS_COLORS,
 } from "../data/attendance.data";
 
-/**
- * Excuse so'rovlar jadvali
- * @param {{ excuses: Object[], isLoading: boolean }} props
- */
 const ExcuseRequestsTable = ({ excuses, isLoading }) => {
   const { openModal } = useModal();
 
@@ -27,34 +23,44 @@ const ExcuseRequestsTable = ({ excuses, isLoading }) => {
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200">
-      <table className="min-w-full text-sm">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-lg">
+      <table>
+        {/* Thead */}
+        <thead>
           <tr>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">Xodim</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">Sana</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">Turi</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">Sabab</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">Holat</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">Amal</th>
+            <th className="px-4 py-3">Xodim</th>
+            <th className="px-4 py-3">Sana</th>
+            <th className="px-4 py-3">Turi</th>
+            <th className="px-4 py-3">Sabab</th>
+            <th className="px-4 py-3">Holat</th>
+            <th className="px-4 py-3">Amal</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+
+        {/* Tbody */}
+        <tbody>
           {excuses.map((ex) => (
             <tr key={ex._id} className="hover:bg-gray-50">
               <td className="px-4 py-3">
                 <p className="font-medium text-gray-900">
                   {ex.user?.firstName} {ex.user?.lastName}
                 </p>
+
                 <p className="text-xs text-gray-500">{ex.user?.username}</p>
               </td>
-              <td className="px-4 py-3 text-gray-700">{formatUzDate(ex.date)}</td>
+
+              <td className="px-4 py-3 text-gray-700">
+                {formatUzDate(ex.date)}
+              </td>
+
               <td className="px-4 py-3 text-gray-700">
                 {EXCUSE_TYPE_LABELS[ex.type] || ex.type}
               </td>
+
               <td className="px-4 py-3 text-gray-700 max-w-xs">
                 <p className="truncate">{ex.reason}</p>
               </td>
+
               <td className="px-4 py-3">
                 <span
                   className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -64,11 +70,12 @@ const ExcuseRequestsTable = ({ excuses, isLoading }) => {
                   {EXCUSE_STATUS_LABELS[ex.status]}
                 </span>
               </td>
+
               <td className="px-4 py-3">
                 {ex.status === "pending" && (
                   <Button
                     size="sm"
-                    variant="neutral"
+                    variant="secondary"
                     onClick={() => openModal("reviewExcuse", ex)}
                   >
                     Ko'rib chiqish
