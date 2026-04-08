@@ -1,41 +1,33 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-
 // Store
 import useAuth from "@/shared/hooks/useAuth";
 
 // Router
 import { useSearchParams } from "react-router-dom";
 
-// Helpers
-import { getRoleLabel } from "@/shared/helpers/role.helpers";
-
 // Hooks
 import useModal from "@/shared/hooks/useModal";
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
+// API
+import { usersAPI } from "@/features/users/api/users.api";
+
 // Components
+import Input from "@/shared/components/ui/input/Input";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
+
+// Helpers
+import { getRoleLabel } from "@/shared/helpers/role.helpers";
 
 // React
 import { useEffect, useCallback, useState, useRef } from "react";
 
 // Icons
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Key,
-  Eye,
-  Search,
-  X,
-  Download,
-} from "lucide-react";
+import { Plus, Edit, Trash2, Key, Eye, Download } from "lucide-react";
 
 const Users = () => {
   const { user: currentUser } = useAuth();
@@ -95,7 +87,7 @@ const Users = () => {
           params.set("page", "1");
         }
         setSearchParams(params);
-      }, 1500);
+      }, 300);
     },
     [searchParams, setSearchParams],
   );
@@ -185,50 +177,34 @@ const Users = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      <div className="flex flex-col gap-4 mb-4 sm:flex-row">
         {/* Create New Btn */}
-        <Button onClick={() => openModal("createUser")} className="px-3.5">
-          <Plus strokeWidth={1.5} />
+        <Button onClick={() => openModal("createUser")}>
+          <Plus />
           Yangi foydalanuvchi
         </Button>
 
         {/* Search Input */}
-        <div className="relative flex-1">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-gray-400"
-            strokeWidth={1.5}
-          />
-          <input
-            autoFocus
-            type="text"
-            value={searchInput}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Foydalanuvchi qidirish..."
-            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-          />
-          {searchInput && (
-            <button
-              onClick={clearSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X className="size-5" strokeWidth={1.5} />
-            </button>
-          )}
-        </div>
+        <Input
+          autoFocus
+          type="search"
+          value={searchInput}
+          placeholder="Qidirish..."
+          onChange={(e) => handleSearchChange(e.target.value)}
+        />
 
         {/* Role Filter */}
         <Select
-          size="lg"
           options={roleOptions}
           placeholder="Rol tanlang"
+          className="w-full sm:w-44"
           onChange={handleRoleChange}
           value={roleFilter || "all"}
-          className="w-full sm:w-44"
         />
 
         {/* Download Data */}
         <Button onClick={() => openModal("exportUsers")}>
-          <Download strokeWidth={1.5} />
+          <Download />
           <span className="sm:hidden">Foydalanuvchilarni yuklash</span>
         </Button>
       </div>
