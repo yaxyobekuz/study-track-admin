@@ -206,7 +206,7 @@ const navItems = [
         url: "/attendance",
       },
       {
-        title: "Excuse so'rovlar",
+        title: "Uzrli so'rovlar",
         url: "/attendance/excuses",
       },
       {

@@ -9,7 +9,7 @@ import { attendanceAPI } from "../api/attendance.api";
 import { formatUzDate } from "@/shared/utils/formatDate";
 
 const ReviewExcuseModal = () => (
-  <ResponsiveModal name="reviewExcuse" title="Excuse so'rovni ko'rib chiqish">
+  <ResponsiveModal name="reviewExcuse" title="Uzrli so'rovni ko'rib chiqish">
     <Content />
   </ResponsiveModal>
 );
