@@ -4,20 +4,21 @@ import { toast } from "sonner";
 // API
 import { usersAPI } from "@/features/users/api/users.api";
 
+// Hooks
+import useArrayStore from "@/shared/hooks/useArrayStore";
+import useObjectState from "@/shared/hooks/useObjectState";
+
 // Components
-import Input from "@/shared/components/ui/input/Input";
-import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import MultiSelect from "@/shared/components/form/multi-select";
+import InputField from "@/shared/components/ui/input/InputField";
+import SelectField from "@/shared/components/ui/select/SelectField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
+import { Field, FieldLabel } from "@/shared/components/shadcn/field";
 
 // Data
 import { genderOptions } from "../data/users.data";
 import { WORK_DAYS_OPTIONS } from "@/features/attendance/data/attendance.data";
-
-// Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
-import useObjectState from "@/shared/hooks/useObjectState";
 
 const CreateUserModal = () => (
   <ResponsiveModal name="createUser" title="Yangi foydalanuvchi">
@@ -32,26 +33,36 @@ const Content = ({ close, isLoading, setIsLoading }) => {
   const { getCollectionData: getRolesData } = useArrayStore("roles");
   const roles = getRolesData().filter((r) => r.value !== "owner");
 
-  const { username, password, firstName, lastName, role, gender, state, setField } =
-    useObjectState({
-      classes: [],
-      username: "",
-      password: "",
-      lastName: "",
-      firstName: "",
-      role: "student",
-      gender: "",
-      workStartTime: "",
-      workEndTime: "",
-      workDays: null,
-      hasCustomSchedule: false,
-    });
+  const {
+    role,
+    state,
+    gender,
+    setField,
+    username,
+    password,
+    lastName,
+    firstName,
+  } = useObjectState({
+    classes: [],
+    username: "",
+    password: "",
+    lastName: "",
+    firstName: "",
+    gender: "male",
+    workDays: null,
+    role: "student",
+    workEndTime: "",
+    workStartTime: "",
+    hasCustomSchedule: false,
+  });
 
   const toggleWorkDay = (day) => {
     const current = state.workDays || [];
     setField(
       "workDays",
-      current.includes(day) ? current.filter((d) => d !== day) : [...current, day].sort()
+      current.includes(day)
+        ? current.filter((d) => d !== day)
+        : [...current, day].sort(),
     );
   };
 
@@ -80,8 +91,10 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       ...state,
       password: password?.trim(),
       gender: gender || null,
-      workStartTime: state.hasCustomSchedule ? (state.workStartTime || null) : null,
-      workEndTime: state.hasCustomSchedule ? (state.workEndTime || null) : null,
+      workStartTime: state.hasCustomSchedule
+        ? state.workStartTime || null
+        : null,
+      workEndTime: state.hasCustomSchedule ? state.workEndTime || null : null,
       workDays: state.hasCustomSchedule ? state.workDays : null,
       hasCustomSchedule: undefined,
     };
@@ -101,46 +114,50 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
   return (
     <form onSubmit={handleCreateUser} className="space-y-3.5">
-      <Input
+      <InputField
         required
         label="Ism"
         name="firstName"
         value={firstName}
         autoComplete="off"
-        onChange={(v) => setField("firstName", v)}
+        placeholder="Falonchi"
+        onChange={(e) => setField("firstName", e.target.value)}
       />
 
-      <Input
+      <InputField
         required
         name="lastName"
         label="Familiya"
         value={lastName}
         autoComplete="off"
-        onChange={(v) => setField("lastName", v)}
+        placeholder="Falonchiyev"
+        onChange={(e) => setField("lastName", e.target.value)}
       />
 
-      <Input
+      <InputField
         required
         name="username"
-        label="Username"
         value={username}
         autoComplete="off"
-        className="[&>input]:lowercase"
-        onChange={(v) => setField("username", v?.trim())}
+        label="Foydalanuvchi nomi"
+        placeholder="Raqam va harflardan iborat"
+        onChange={(e) =>
+          setField("username", e.target.value?.toLowerCase()?.trim())
+        }
       />
 
-      <Input
+      <InputField
         required
-        label="Parol"
+        label="O'ron"
         minLength={6}
         type="password"
         name="password"
         value={password}
         autoComplete="off"
-        onChange={(v) => setField("password", v)}
+        onChange={(e) => setField("password", e.target.value)}
       />
 
-      <Select
+      <SelectField
         required
         label="Rol"
         value={role}
@@ -148,13 +165,14 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         options={roles.map((r) => ({ label: r.name, value: r.value }))}
       />
 
-      <Select
+      <SelectField
         label="Jins"
         value={gender}
+        options={genderOptions}
         placeholder="Jinsni tanlang"
         onChange={(v) => setField("gender", v)}
-        options={genderOptions}
       />
+
       {role === "student" && (
         <MultiSelect
           required
@@ -167,7 +185,8 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       )}
 
       {showScheduleSection && (
-        <div className="space-y-3 pt-3 border-t border-gray-100">
+        <div className="space-y-4">
+          {/* Label */}
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -175,46 +194,52 @@ const Content = ({ close, isLoading, setIsLoading }) => {
               checked={state.hasCustomSchedule}
               onChange={(e) => handleCustomScheduleToggle(e.target.checked)}
             />
+
             <span className="text-sm font-medium text-gray-700">
               Maxsus ish jadvali belgilash (ixtiyoriy)
             </span>
           </label>
 
+          {/* Content */}
           {state.hasCustomSchedule && (
-            <div className="pl-6 space-y-3">
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <Input
+                <InputField
                   type="time"
                   label="Boshlanish vaqti"
                   value={state.workStartTime}
-                  onChange={(v) => setField("workStartTime", v)}
+                  onChange={(e) => setField("workStartTime", e.target.value)}
                 />
-                <Input
+
+                <InputField
                   type="time"
                   label="Tugash vaqti"
                   value={state.workEndTime}
-                  onChange={(v) => setField("workEndTime", v)}
+                  onChange={(e) => setField("workEndTime", e.target.value)}
                 />
               </div>
-              <div>
-                <p className="text-xs text-gray-500 mb-2">Ish kunlari</p>
+
+              <Field>
+                <FieldLabel>Ish kunlari</FieldLabel>
+
                 <div className="flex gap-1.5 flex-wrap">
-                  {WORK_DAYS_OPTIONS.map(({ label, value: day }) => (
-                    <button
-                      key={day}
-                      type="button"
-                      onClick={() => toggleWorkDay(day)}
-                      className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                        (state.workDays || []).includes(day)
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-200 text-gray-500 hover:border-gray-300"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                  {WORK_DAYS_OPTIONS.map(({ label, value: day }) => {
+                    const isSelected = (state.workDays || []).includes(day);
+
+                    return (
+                      <Button
+                        key={day}
+                        type="button"
+                        className="flex-1 rounded-full"
+                        onClick={() => toggleWorkDay(day)}
+                        variant={isSelected ? "default" : "secondary"}
+                      >
+                        {label}
+                      </Button>
+                    );
+                  })}
                 </div>
-              </div>
+              </Field>
             </div>
           )}
         </div>
@@ -223,19 +248,14 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
         <Button
           type="button"
-          className="w-full xs:w-32"
-          variant="neutral"
           onClick={close}
+          variant="secondary"
+          className="w-full xs:w-32"
         >
           Bekor qilish
         </Button>
 
-        <Button
-          autoFocus
-          className="w-full xs:w-32"
-          variant="primary"
-          disabled={isLoading}
-        >
+        <Button disabled={isLoading} className="w-full xs:w-32">
           Yaratish
           {isLoading && "..."}
         </Button>
