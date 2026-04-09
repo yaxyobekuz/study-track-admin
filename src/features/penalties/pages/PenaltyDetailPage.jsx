@@ -4,18 +4,6 @@ import { toast } from "sonner";
 // React
 import { useState } from "react";
 
-// Router
-import { useParams, useNavigate } from "react-router-dom";
-
-// Icons
-import { ArrowLeft, AlertTriangle } from "lucide-react";
-
-// Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
-
 // Data
 import {
   penaltyStatusLabels,
@@ -23,29 +11,38 @@ import {
   penaltyReviewOptions,
 } from "../data/penalties.data";
 
-// Helpers
-import { getRoleLabel } from "@/shared/helpers/role.helpers";
-import { formatDateUZ } from "@/shared/utils/date.utils";
+// Router
+import { useParams } from "react-router-dom";
 
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
+// Utils & Helpers
+import { cn } from "@/shared/utils/cn";
+import { formatDateUZ } from "@/shared/utils/date.utils";
+import { getRoleLabel } from "@/shared/helpers/role.helpers";
+
 // Components
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
-import Select from "@/shared/components/ui/select/Select";
-import Input from "@/shared/components/ui/input/Input";
+import InputField from "@/shared/components/ui/input/InputField";
+import SelectField from "@/shared/components/ui/select/SelectField";
+
+// API
+import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
+
+// Tanstack Query
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const PenaltyDetailPage = () => {
   const { getCollectionData: getRolesData } = useArrayStore("roles");
   const roles = getRolesData();
   const { penaltyId } = useParams();
-  const navigate = useNavigate();
 
   const queryClient = useQueryClient();
 
-  const [reviewStatus, setReviewStatus] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
+  const [reviewStatus, setReviewStatus] = useState("approved");
 
   const { data: penalty, isLoading: loading } = useQuery({
     queryKey: ["penalties", "detail", penaltyId],
@@ -55,10 +52,15 @@ const PenaltyDetailPage = () => {
   const reviewMutation = useMutation({
     mutationFn: (body) => penaltiesAPI.review(penaltyId, body),
     onSuccess: (res) => {
-      queryClient.setQueryData(["penalties", "detail", penaltyId], res.data.data);
+      queryClient.setQueryData(
+        ["penalties", "detail", penaltyId],
+        res.data.data,
+      );
       queryClient.invalidateQueries({ queryKey: ["penalties", "list"] });
       toast.success(
-        reviewStatus === "approved" ? "Jarima tasdiqlandi" : "Jarima rad etildi",
+        reviewStatus === "approved"
+          ? "Jarima tasdiqlandi"
+          : "Jarima rad etildi",
       );
       setReviewStatus("");
       setRejectionReason("");
@@ -91,37 +93,27 @@ const PenaltyDetailPage = () => {
   const isReduction = penalty.type === "reduction";
 
   return (
-    <div>
-      {/* Header */}
-      <Card className="mb-4">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
-            >
-              <ArrowLeft className="size-4" />
-            </button>
-            <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              <AlertTriangle className="size-5 text-red-500" />
-              Jarima tafsilotlari
-            </h2>
-          </div>
-          <span
-            className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${penaltyStatusColors[penalty.status]}`}
-          >
-            {penaltyStatusLabels[penalty.status]}
-          </span>
-        </div>
-      </Card>
+    <div className="space-y-4">
+      {/* Top */}
+      <div className="flex items-center gap-4 ">
+        {/* Title */}
+        <h1 className="page-title">Jarima ta'fsilotlari</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Status */}
+        <span
+          className={cn(
+            "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium",
+            penaltyStatusColors[penalty.status],
+          )}
+        >
+          {penaltyStatusLabels[penalty.status]}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Main info */}
         <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
-              Asosiy ma'lumotlar
-            </h3>
+          <Card title="Asosiy ma'lumotlar" className="space-y-4">
             <div className="space-y-2.5 text-sm">
               <InfoRow label="Tur">
                 {isReduction ? (
@@ -136,17 +128,12 @@ const PenaltyDetailPage = () => {
               </InfoRow>
 
               <InfoRow label="Foydalanuvchi">
-                <span className="font-medium">
-                  {penalty.user?.firstName} {penalty.user?.lastName}
-                </span>
-                {penalty.user?.username && (
-                  <span className="text-gray-400 ml-1">
-                    (@{penalty.user.username})
-                  </span>
-                )}
+                {penalty.user?.firstName} {penalty.user?.lastName}
               </InfoRow>
 
-              <InfoRow label="Rol">{getRoleLabel(penalty.user?.role, roles)}</InfoRow>
+              <InfoRow label="Rol">
+                {getRoleLabel(penalty.user?.role, roles)}
+              </InfoRow>
 
               {(penalty.title || penalty.description) && (
                 <InfoRow label="Sabab">
@@ -188,30 +175,34 @@ const PenaltyDetailPage = () => {
                 <InfoRow label="Kategoriya">{penalty.category.title}</InfoRow>
               )}
 
-              <InfoRow label="Yozgan">
+              <InfoRow label="Sana">{formatDateUZ(penalty.createdAt)}</InfoRow>
+            </div>
+          </Card>
+
+          <Card title="Tomonidan berildi" className="space-y-4">
+            <div className="space-y-2.5 text-sm">
+              <InfoRow label="Foydalanuvchi">
                 {penalty.givenBy?.firstName} {penalty.givenBy?.lastName}
-                <span className="text-gray-400 ml-1 text-xs">
-                  ({getRoleLabel(penalty.givenBy?.role, roles)})
-                </span>
               </InfoRow>
 
-              <InfoRow label="Sana">{formatDateUZ(penalty.createdAt)}</InfoRow>
+              <InfoRow label="Rol">
+                {getRoleLabel(penalty.givenBy?.role, roles)}
+              </InfoRow>
             </div>
           </Card>
 
           {/* Review info */}
           {penalty.reviewedBy && (
-            <Card>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                Ko'rib chiqish
-              </h3>
+            <Card title="Ko'rib chiqildi" className="space-y-4">
               <div className="space-y-2.5 text-sm">
-                <InfoRow label="Ko'rib chiqqan">
+                <InfoRow label="Foydalanuvchi">
                   {penalty.reviewedBy?.firstName} {penalty.reviewedBy?.lastName}
                 </InfoRow>
+
                 <InfoRow label="Sana">
                   {formatDateUZ(penalty.reviewedAt)}
                 </InfoRow>
+
                 {penalty.rejectionReason && (
                   <InfoRow label="Rad etish sababi">
                     <span className="text-red-600">
@@ -225,13 +216,10 @@ const PenaltyDetailPage = () => {
 
           {/* Attachments */}
           {penalty.attachments?.length > 0 && (
-            <Card>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                Biriktirmalar
-              </h3>
+            <Card title="Biriktirmalar" className="space-y-4">
               <div className="grid grid-cols-2 gap-2">
-                {penalty.attachments.map((att, idx) => (
-                  <AttachmentItem key={idx} attachment={att} />
+                {penalty.attachments.map((attachment, index) => (
+                  <AttachmentItem key={index} attachment={attachment} />
                 ))}
               </div>
             </Card>
@@ -241,14 +229,11 @@ const PenaltyDetailPage = () => {
         {/* Sidebar */}
         <div className="space-y-4">
           {/* User stats */}
-          <Card>
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
-              Foydalanuvchi holati
-            </h3>
+          <Card title="Foydalanuvchi holati" className="space-y-4">
             <div className="space-y-2 text-sm">
               <InfoRow label="Jami jarima bali">
                 <span className="font-semibold text-red-600">
-                  {penalty.user?.penaltyPoints ?? "—"}
+                  {penalty.user?.penaltyPoints ?? "-"}
                 </span>
               </InfoRow>
             </div>
@@ -256,47 +241,40 @@ const PenaltyDetailPage = () => {
 
           {/* Review action */}
           {penalty.status === "pending" && (
-            <Card>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                Qaror qabul qilish
-              </h3>
-              <div className="space-y-3">
-                <Select
-                  label="Status"
-                  value={reviewStatus}
-                  onChange={setReviewStatus}
-                  options={penaltyReviewOptions}
+            <Card title="Holatni o'zgartirish" className="space-y-4">
+              <SelectField
+                required
+                label="Holat"
+                value={reviewStatus}
+                triggerClassName="w-full"
+                onChange={setReviewStatus}
+                options={penaltyReviewOptions}
+              />
+
+              {reviewStatus === "rejected" && (
+                <InputField
+                  required
+                  type="textarea"
+                  value={rejectionReason}
+                  label="Rad etish sababi"
+                  placeholder="Sababni kiriting..."
+                  onChange={(e) => setRejectionReason(e.target.value)}
                 />
+              )}
 
-                {reviewStatus === "rejected" && (
-                  <Input
-                    required
-                    label="Rad etish sababi"
-                    type="textarea"
-                    value={rejectionReason}
-                    onChange={setRejectionReason}
-                    placeholder="Sababini kiriting..."
-                  />
-                )}
-
-                {reviewStatus && (
-                  <Button
-                    variant={reviewStatus === "approved" ? "primary" : "danger"}
-                    disabled={
-                      reviewMutation.isPending ||
-                      (reviewStatus === "rejected" && !rejectionReason.trim())
-                    }
-                    className="w-full text-sm font-medium"
-                    onClick={handleReview}
-                  >
-                    {reviewMutation.isPending
-                      ? "Saqlanmoqda..."
-                      : reviewStatus === "approved"
-                        ? "Tasdiqlash"
-                        : "Rad etish"}
-                  </Button>
-                )}
-              </div>
+              {reviewStatus && (
+                <Button
+                  className="w-full"
+                  onClick={handleReview}
+                  variant={reviewStatus === "approved" ? "default" : "danger"}
+                  disabled={
+                    reviewMutation.isPending ||
+                    (reviewStatus === "rejected" && !rejectionReason.trim())
+                  }
+                >
+                  O'zgartirish{reviewMutation.isPending && "..."}
+                </Button>
+              )}
             </Card>
           )}
         </div>
@@ -305,23 +283,12 @@ const PenaltyDetailPage = () => {
   );
 };
 
-/**
- * Ma'lumot qatori komponenti
- * @param {Object} props
- * @param {string} props.label - Maydon nomi
- * @param {React.ReactNode} props.children - Maydon qiymati
- */
 const InfoRow = ({ label, children }) => (
   <p>
     <span className="text-gray-500">{label}:</span> <span>{children}</span>
   </p>
 );
 
-/**
- * Biriktirma elementi komponenti
- * @param {Object} props
- * @param {Object} props.attachment - Biriktirma ma'lumotlari (url, type, originalName)
- */
 const AttachmentItem = ({ attachment }) => {
   const { url, type, originalName } = attachment;
 
