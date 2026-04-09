@@ -1,15 +1,25 @@
-import { useState, useEffect } from "react";
+// Toaster
 import { toast } from "sonner";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import Card from "@/shared/components/ui/Card";
-import Button from "@/shared/components/ui/button/Button";
-import Input from "@/shared/components/ui/input/Input";
+// React
+import { useState, useEffect } from "react";
+
+// API
+import { attendanceAPI } from "../api/attendance.api";
+
+// Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
 
-import { attendanceAPI } from "../api/attendance.api";
-import OfficeLocationPicker from "../components/OfficeLocationPicker";
+// Tanstack Query
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+// Components
+import Card from "@/shared/components/ui/Card";
+import Button from "@/shared/components/ui/button/Button";
+import Switch from "@/shared/components/ui/switch/Switch";
+import { FieldLabel } from "@/shared/components/ui/field/Field";
+import InputField from "@/shared/components/ui/input/InputField";
 
 const AttendanceSettingsPage = () => {
   const queryClient = useQueryClient();
@@ -21,13 +31,11 @@ const AttendanceSettingsPage = () => {
   });
 
   const { getCollectionData: getRoles } = useArrayStore("roles");
-  const roles = getRoles().filter((r) => r.value !== "owner" && r.value !== "student");
+  const roles = getRoles().filter(
+    (r) => r.value !== "owner" && r.value !== "student",
+  );
 
-  const {
-    state,
-    setField,
-    setFields,
-  } = useObjectState({
+  const { state, setField, setFields } = useObjectState({
     officeLat: "",
     officeLng: "",
     officeRadius: 100,
@@ -64,7 +72,7 @@ const AttendanceSettingsPage = () => {
       "pausedRoles",
       current.includes(roleValue)
         ? current.filter((r) => r !== roleValue)
-        : [...current, roleValue]
+        : [...current, roleValue],
     );
   };
 
@@ -105,122 +113,138 @@ const AttendanceSettingsPage = () => {
   }
 
   return (
-    <div>
-      <h1 className="page-title mb-6">Davomat sozlamalari</h1>
+    <div className="space-y-4">
+      <h1 className="page-title">Davomat sozlamalari</h1>
 
-      <form onSubmit={handleSave} className="space-y-6 max-w-2xl">
-        {/* Ofis joylashuvi */}
-        <Card>
-          <h2 className="font-semibold text-gray-900 mb-4">Ofis joylashuvi</h2>
-          <OfficeLocationPicker
-            lat={state.officeLat}
-            lng={state.officeLng}
-            radius={state.officeRadius}
-            onLatChange={(v) => setField("officeLat", v)}
-            onLngChange={(v) => setField("officeLng", v)}
-            onRadiusChange={(v) => setField("officeRadius", v)}
-          />
-        </Card>
+      <form onSubmit={handleSave} className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* Location */}
+          <Card title="Ofis joylashuvi" className="space-y-4 md:col-span-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <InputField
+                type="number"
+                placeholder="12.345678"
+                value={state.officeLat}
+                label="Kenglik (Latitude)"
+                onChange={(e) => setField("officeLat", e.target.value)}
+              />
 
-        {/* Kech kelish */}
-        <Card>
-          <h2 className="font-semibold text-gray-900 mb-4">Kech kelish jarimasi</h2>
-          <div className="grid grid-cols-2 gap-3">
-            <Input
+              <InputField
+                type="number"
+                placeholder="12.345678"
+                value={state.officeLng}
+                label="Uzunlik (Longitude)"
+                onChange={(e) => setField("officeLng", e.target.value)}
+              />
+            </div>
+
+            <InputField
               type="number"
-              label="Jarima balli"
-              value={state.lateArrivalPenaltyPoints}
-              onChange={(v) => setField("lateArrivalPenaltyPoints", v)}
+              placeholder="100"
+              value={state.officeRadius}
+              label="Hudud radiusi (metr)"
+              onChange={(e) => setField("officeRadius", e.target.value)}
+            />
+          </Card>
+
+          {/* Late Arrival */}
+          <Card title="Kech kelish jarimasi" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                type="number"
+                label="Jarima balli"
+                value={state.lateArrivalPenaltyPoints}
+                onChange={(e) =>
+                  setField("lateArrivalPenaltyPoints", e.target.value)
+                }
+                min={0}
+              />
+              <InputField
+                type="number"
+                label="Vaqt chegarasi (daqiqa)"
+                value={state.lateArrivalGraceMinutes}
+                onChange={(e) =>
+                  setField("lateArrivalGraceMinutes", e.target.value)
+                }
+                min={0}
+              />
+            </div>
+          </Card>
+
+          {/* Early Departure */}
+          <Card title="Erta ketish jarimasi" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                type="number"
+                label="Jarima balli"
+                value={state.earlyDeparturePenaltyPoints}
+                onChange={(e) =>
+                  setField("earlyDeparturePenaltyPoints", e.target.value)
+                }
+                min={0}
+              />
+              <InputField
+                type="number"
+                label="Vaqt chegarasi (daqiqa)"
+                value={state.earlyDepartureGraceMinutes}
+                onChange={(e) =>
+                  setField("earlyDepartureGraceMinutes", e.target.value)
+                }
+                min={0}
+              />
+            </div>
+          </Card>
+
+          {/* Attendance */}
+          <Card title="Kelmaganlik jarimasi" className="space-y-4">
+            <InputField
+              type="number"
+              label="Jarima balli (kun uchun)"
+              value={state.absentPenaltyPoints}
+              onChange={(e) => setField("absentPenaltyPoints", e.target.value)}
               min={0}
             />
-            <Input
-              type="number"
-              label="Vaqt chegarasi (daqiqa)"
-              value={state.lateArrivalGraceMinutes}
-              onChange={(v) => setField("lateArrivalGraceMinutes", v)}
-              min={0}
-            />
-          </div>
-        </Card>
+          </Card>
 
-        {/* Erta ketish */}
-        <Card>
-          <h2 className="font-semibold text-gray-900 mb-4">Erta ketish jarimasi</h2>
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              type="number"
-              label="Jarima balli"
-              value={state.earlyDeparturePenaltyPoints}
-              onChange={(v) => setField("earlyDeparturePenaltyPoints", v)}
-              min={0}
-            />
-            <Input
-              type="number"
-              label="Vaqt chegarasi (daqiqa)"
-              value={state.earlyDepartureGraceMinutes}
-              onChange={(v) => setField("earlyDepartureGraceMinutes", v)}
-              min={0}
-            />
-          </div>
-        </Card>
-
-        {/* Davomatsizlik */}
-        <Card>
-          <h2 className="font-semibold text-gray-900 mb-4">Davomatsizlik jarimasi</h2>
-          <Input
-            type="number"
-            label="Jarima balli (kun uchun)"
-            value={state.absentPenaltyPoints}
-            onChange={(v) => setField("absentPenaltyPoints", v)}
-            min={0}
-          />
-        </Card>
-
-        {/* Jarima pauza */}
-        <Card>
-          <h2 className="font-semibold text-gray-900 mb-4">Jarima pauza</h2>
-
-          {/* Global pauza */}
-          <label className="flex items-center gap-3 cursor-pointer mb-4">
-            <input
-              type="checkbox"
-              className="size-4 rounded"
-              checked={state.penaltyPaused}
-              onChange={(e) => setField("penaltyPaused", e.target.checked)}
-            />
-            <span className="text-sm font-medium text-gray-700">
+          {/* Penalty Pause */}
+          <Card title="Jarimani to'xtatish" className="space-y-4">
+            <FieldLabel htmlFor="penaltyPaused">
               Barcha davomat jarimalarini to'xtatib turish
-            </span>
-          </label>
+              <Switch
+                id="penaltyPaused"
+                checked={state.penaltyPaused}
+                onChange={(v) => setField("penaltyPaused", v)}
+              />
+            </FieldLabel>
 
-          {/* Rollar bo'yicha pauza */}
-          <p className="text-sm text-gray-600 mb-2">Rollar bo'yicha pauza:</p>
-          <div className="flex flex-wrap gap-2">
-            {roles.map((role) => {
-              const isPaused = state.pausedRoles?.includes(role.value);
-              return (
-                <button
-                  key={role.value}
-                  type="button"
-                  onClick={() => togglePausedRole(role.value)}
-                  className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-                    isPaused
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-200 text-gray-600 hover:border-gray-300"
-                  }`}
-                >
-                  {role.name}
-                </button>
-              );
-            })}
-          </div>
-        </Card>
+            {/* By role */}
+            {!state.penaltyPaused && (
+              <>
+                <hr />
+                <div className="grid grid-cols-2 gap-4 max-w-96">
+                  {roles.map((role) => {
+                    const id = `penaltyPaused-${role.value}`;
+                    const isPaused = state.pausedRoles?.includes(role.value);
 
-        <div className="flex justify-end">
-          <Button type="submit" variant="primary" disabled={isLoading} className="px-6">
-            {isLoading ? "Saqlanmoqda..." : "Saqlash"}
-          </Button>
+                    return (
+                      <>
+                        <FieldLabel htmlFor={id}>{role.name}</FieldLabel>
+                        <Switch
+                          id={id}
+                          checked={isPaused}
+                          onCheckedChange={(v) => togglePausedRole(role.value)}
+                        />
+                      </>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </Card>
         </div>
+
+        {/* Submit button */}
+        <Button disabled={isLoading}>Saqlash{isLoading && "..."}</Button>
       </form>
     </div>
   );
