@@ -2,13 +2,7 @@
 import { toast } from "sonner";
 
 // Icons
-import { Plus, Edit, Trash2, List } from "lucide-react";
-
-// Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
+import { Plus, Edit, Trash2 } from "lucide-react";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -22,8 +16,14 @@ import useArrayStore from "@/shared/hooks/useArrayStore";
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
 
 // Modals
-import CreateCategoryModal from "../components/CreateCategoryModal";
 import EditCategoryModal from "../components/EditCategoryModal";
+import CreateCategoryModal from "../components/CreateCategoryModal";
+
+// API
+import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
+
+// Tanstack Query
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const PenaltyCategoriesPage = () => {
   const queryClient = useQueryClient();
@@ -52,8 +52,9 @@ const PenaltyCategoriesPage = () => {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
+    <div className="space-y-4">
+      {/* Top */}
+      <div className="flex items-center justify-between">
         {/* Title */}
         <h1 className="page-title">Jarima kategoriyalari</h1>
 
@@ -66,27 +67,25 @@ const PenaltyCategoriesPage = () => {
 
       {/* Categories list */}
       {isLoading ? (
-        <div className="flex justify-center py-12">
+        <div className="flex justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
         </div>
       ) : categories.length === 0 ? (
-        <Card className="text-center py-8">
+        <Card className="text-center">
           <p className="text-sm text-gray-500">Kategoriyalar topilmadi</p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((cat) => (
-            <Card key={cat._id} className="relative">
+            <Card key={cat._id} className="relative" title={cat.title}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 text-sm truncate">
-                    {cat.title}
-                  </h3>
                   {cat.description && (
                     <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                       {cat.description}
                     </p>
                   )}
+
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-red-100 text-red-700">
                       {cat.points} ball
@@ -96,6 +95,7 @@ const PenaltyCategoriesPage = () => {
                     </span>
                   </div>
                 </div>
+
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => openModal("editPenaltyCategory", cat)}
