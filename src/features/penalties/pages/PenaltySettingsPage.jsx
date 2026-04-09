@@ -5,13 +5,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
 // Icons
-import { Settings, AlertTriangle } from "lucide-react";
-
-// Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
+import { AlertTriangle } from "lucide-react";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -19,6 +13,14 @@ import Button from "@/shared/components/ui/button/Button";
 
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
+import InputGroup from "@/shared/components/ui/input/InputGroup";
+import InputField from "@/shared/components/ui/input/InputField";
+
+// API
+import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
+
+// Tanstack Query
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const PenaltySettingsPage = () => {
   const queryClient = useQueryClient();
@@ -50,8 +52,7 @@ const PenaltySettingsPage = () => {
   }, [settings, roles.length]);
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      penaltiesAPI.updateSettings({ fineAmounts }),
+    mutationFn: () => penaltiesAPI.updateSettings({ fineAmounts }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["penalties", "settings"] });
       toast.success("Sozlamalar saqlandi");
@@ -60,11 +61,6 @@ const PenaltySettingsPage = () => {
       toast.error(err.response?.data?.message || "Saqlashda xatolik"),
   });
 
-  /**
-   * Summani formatlash (1000 lik ajratish)
-   * @param {number} amount - Summa
-   * @returns {string} Formatlangan summa
-   */
   const formatAmount = (amount) => {
     return new Intl.NumberFormat("uz-UZ").format(amount);
   };
@@ -78,64 +74,48 @@ const PenaltySettingsPage = () => {
   }
 
   return (
-    <div className="max-w-lg mx-auto">
-      <Card>
-        <h2 className="text-base font-semibold text-gray-900 mb-5 flex items-center gap-2">
-          <Settings className="size-5 text-blue-500" />
-          Jarima sozlamalari
-        </h2>
+    <div className="space-y-4">
+      <h1 className="page-title">Jarima sozlamalari</h1>
 
-        <div className="space-y-5">
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5">
-            <p className="text-xs text-amber-700 flex items-start gap-2">
-              <AlertTriangle className="size-4 mt-0.5 shrink-0" />
-              Jarima miqdori o'zgarishi avvalgi jarimalar miqdoriga ta'sir qilmaydi. Yangi
-              jarimalar uchun yangi miqdor qo'llaniladi.
-            </p>
-          </div>
+      <Card
+        className="space-y-4"
+        title="Jarima uchun to'lov miqdori (12 ball uchun)"
+      >
+        <InputGroup className="md:grid-cols-2">
+          {fineRoles.map((role) => (
+            <InputField
+              min="0"
+              required
+              max="1000000"
+              type="number"
+              key={role.value}
+              label={role.name}
+              value={fineAmounts[role.value] ?? 0}
+              description={`${formatAmount(fineAmounts?.[role.value] || 0)} so'm`}
+              onChange={(e) =>
+                setFineAmounts((prev) => ({
+                  ...prev,
+                  [role.value]: Math.min(100000000, Number(e.target.value)),
+                }))
+              }
+            />
+          ))}
+        </InputGroup>
+      </Card>
 
-          {fineRoles.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-4">
-              Rollar yuklanmoqda...
-            </p>
-          ) : (
-            fineRoles.map((role) => (
-              <div key={role.value}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {role.name} uchun jarima miqdori (so'm)
-                </label>
-                <p className="text-xs text-gray-500 mb-2">
-                  12 ball yetganda to'lashi kerak bo'lgan jarima miqdori
-                </p>
-                <input
-                  type="number"
-                  min="0"
-                  value={fineAmounts[role.value] ?? 0}
-                  onChange={(e) =>
-                    setFineAmounts((prev) => ({
-                      ...prev,
-                      [role.value]: Number(e.target.value),
-                    }))
-                  }
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                />
-                {(fineAmounts[role.value] ?? 0) > 0 && (
-                  <p className="text-xs text-gray-400 mt-1">
-                    {formatAmount(fineAmounts[role.value])} so'm
-                  </p>
-                )}
-              </div>
-            ))
-          )}
+      {/* Submit button */}
+      <Button
+        onClick={() => saveMutation.mutate()}
+        disabled={saveMutation.isPending || fineRoles.length === 0}
+      >
+        Saqlash{saveMutation.isPending && "..."}
+      </Button>
 
-          <Button
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending || fineRoles.length === 0}
-            className="w-full px-4 text-sm font-medium"
-          >
-            {saveMutation.isPending ? "Saqlanmoqda..." : "Saqlash"}
-          </Button>
-        </div>
+      {/* Info Alert */}
+      <Card className="flex gap-3.5 bg-yellow-50 text-yellow-700 text-sm">
+        <AlertTriangle className="size-5 shrink-0" strokeWidth={1.5} />
+        Jarima miqdori o'zgarishi avvalgi jarimalar miqdoriga ta'sir qilmaydi.
+        Yangi jarimalar uchun yangi miqdor qo'llaniladi.
       </Card>
     </div>
   );
