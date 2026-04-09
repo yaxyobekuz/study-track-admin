@@ -18,8 +18,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
 import Switch from "@/shared/components/ui/switch/Switch";
-import { FieldLabel } from "@/shared/components/ui/field/Field";
 import InputField from "@/shared/components/ui/input/InputField";
+import Field, { FieldLabel } from "@/shared/components/ui/field/Field";
 
 const AttendanceSettingsPage = () => {
   const queryClient = useQueryClient();
@@ -208,14 +208,17 @@ const AttendanceSettingsPage = () => {
 
           {/* Penalty Pause */}
           <Card title="Jarimani to'xtatish" className="space-y-4">
-            <FieldLabel htmlFor="penaltyPaused">
-              Barcha davomat jarimalarini to'xtatib turish
+            <Field
+              className="flex-row"
+              htmlFor="penaltyPaused"
+              label="Barcha davomat jarimalarini to'xtatib turish"
+            >
               <Switch
                 id="penaltyPaused"
                 checked={state.penaltyPaused}
                 onChange={(v) => setField("penaltyPaused", v)}
               />
-            </FieldLabel>
+            </Field>
 
             {/* By role */}
             {!state.penaltyPaused && (
