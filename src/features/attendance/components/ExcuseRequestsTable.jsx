@@ -17,7 +17,7 @@ const ExcuseRequestsTable = ({ excuses, isLoading }) => {
   if (!excuses || excuses.length === 0) {
     return (
       <div className="py-12 text-center text-gray-500">
-        Hozircha excuse so'rovlar yo'q
+        Hozircha uzrli so'rovlar yo'q
       </div>
     );
   }
@@ -40,7 +40,7 @@ const ExcuseRequestsTable = ({ excuses, isLoading }) => {
         {/* Tbody */}
         <tbody>
           {excuses.map((ex) => (
-            <tr key={ex._id} className="hover:bg-gray-50">
+            <tr key={ex._id} className="text-sm">
               <td className="px-4 py-3">
                 <p className="font-medium text-gray-900">
                   {ex.user?.firstName} {ex.user?.lastName}

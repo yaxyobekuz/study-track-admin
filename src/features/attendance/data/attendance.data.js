@@ -51,6 +51,11 @@ export const EXCUSE_STATUS_COLORS = {
   rejected: "bg-red-100 text-red-700",
 };
 
+export const REVIEW_ACTION_OPTIONS = [
+  { label: "Tasdiqlash", value: "approved" },
+  { label: "Rad etish", value: "rejected" },
+];
+
 export const WORK_DAYS_OPTIONS = [
   { label: "Ya", value: 0 },
   { label: "Du", value: 1 },
