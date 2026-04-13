@@ -1,3 +1,9 @@
+// Duck Animations
+import pedroDuckAnimation from "./duck/pedro.json";
+import coolmanDuckAnimation from "./duck/coolman.json";
+import greetingDuckAnimation from "./duck/greeting.json";
+import blowingKissDuckAnimation from "./duck/blowing-kiss.json";
+
 // Emoji Animations
 import tvEmojiAnimation from "./emoji/tv.json";
 import bagEmojiAnimation from "./emoji/bag.json";
@@ -10,12 +16,7 @@ import teacherEmojiAnimation from "./emoji/teacher.json";
 import greetingEmojiAnimation from "./emoji/greeting.json";
 import statsBarEmojiAnimation from "./emoji/stats-bar.json";
 import lockWithKeyEmojiAnimation from "./emoji/lock-with-key.json";
-
-// Duck Animations
-import pedroDuckAnimation from "./duck/pedro.json";
-import coolmanDuckAnimation from "./duck/coolman.json";
-import greetingDuckAnimation from "./duck/greeting.json";
-import blowingKissDuckAnimation from "./duck/blowing-kiss.json";
+import womantechnologistEmojiAnimation from "./emoji/woman-technologist.json";
 
 export {
   // Emoji Animations
@@ -30,6 +31,7 @@ export {
   greetingEmojiAnimation,
   statsBarEmojiAnimation,
   lockWithKeyEmojiAnimation,
+  womantechnologistEmojiAnimation,
 
   // Duck Animations
   pedroDuckAnimation,
