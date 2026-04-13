@@ -5,6 +5,7 @@ import {
   gcapEmojiAnimation,
   adminEmojiAnimation,
   teacherEmojiAnimation,
+  womantechnologistEmojiAnimation,
 } from "@/shared/assets/animations";
 
 const platforms = [
@@ -30,6 +31,12 @@ const platforms = [
     isCurrent: false,
     animationData: bagEmojiAnimation,
     href: "https://worker.studytrack.uz",
+  },
+  {
+    name: "Qabul Qiluvchi",
+    isCurrent: false,
+    animationData: womantechnologistEmojiAnimation,
+    href: "https://reception.studytrack.uz",
   },
   {
     name: "Monitor",
