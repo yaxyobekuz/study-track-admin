@@ -8,6 +8,7 @@ import {
   BookOpen,
   Settings2,
   PanelLeft,
+  UserPlus,
   TrendingUp,
   ChevronRight,
   ClipboardList,
@@ -227,6 +228,21 @@ const navItems = [
       {
         title: "Ijtimoiy tarmoqlar",
         url: "/social-networks",
+      },
+    ],
+  },
+  {
+    title: "Sotuvlar",
+    icon: UserPlus,
+    isActive: false,
+    items: [
+      {
+        title: "Barcha sotuvlar",
+        url: "/leads",
+      },
+      {
+        title: "Sotuv tahlili",
+        url: "/leads/analytics",
       },
     ],
   },

@@ -75,6 +75,11 @@ import AttendanceListPage from "@/features/attendance/pages/AttendanceListPage";
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 import ExcuseRequestsPage from "@/features/attendance/pages/ExcuseRequestsPage";
 
+// Pages — Leads
+import LeadDetailPage from "@/features/leads/pages/LeadDetailPage";
+import LeadsListPage from "@/features/leads/pages/LeadsListPage";
+import LeadAnalyticsPage from "@/features/leads/pages/LeadAnalyticsPage";
+
 // Router
 import { Routes as RoutesWrapper, Route, Navigate } from "react-router-dom";
 
@@ -154,6 +159,11 @@ const Routes = () => {
           <Route path="/attendance" element={<AttendanceListPage />} />
           <Route path="/attendance/settings" element={<AttendanceSettingsPage />} />
           <Route path="/attendance/excuses" element={<ExcuseRequestsPage />} />
+
+          {/* Leads */}
+          <Route path="/leads" element={<LeadsListPage />} />
+          <Route path="/leads/analytics" element={<LeadAnalyticsPage />} />
+          <Route path="/leads/:leadId" element={<LeadDetailPage />} />
         </Route>
       </Route>
 
