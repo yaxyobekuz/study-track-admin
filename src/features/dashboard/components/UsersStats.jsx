@@ -4,13 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 // API
 import { usersAPI } from "@/features/users/api/users.api";
 
-// Icons
-import { Bot, Briefcase, GraduationCap } from "lucide-react";
-
 // Components
 import Card from "@/shared/components/ui/Card";
 import Counter from "@/shared/components/ui/Counter";
 import { Skeleton } from "@/shared/components/shadcn/skeleton";
+
+// Icons
+import { Bot, Briefcase, GraduationCap, Sparkle } from "lucide-react";
 
 const UsersStats = () => {
   const { data: stats, isLoading } = useQuery({
@@ -25,8 +25,8 @@ const UsersStats = () => {
       icon: GraduationCap,
     },
     {
-      label: "O'qituvchilar",
-      value: stats?.teachers || 0,
+      label: "Xodimlar",
+      value: stats?.workers || 0,
       icon: Briefcase,
     },
     {
@@ -34,29 +34,33 @@ const UsersStats = () => {
       value: stats?.telegramUsers || 0,
       icon: Bot,
     },
+    {
+      label: "Premium foydalanuvchilar",
+      value: stats?.premiumUsers || 0,
+      icon: Sparkle,
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
       {statItems.map((item, idx) => (
-        <Card
-          key={idx}
-          title={item.label}
-          className="flex items-center justify-between"
-          icon={
-            <div className="flex items-center justify-center size-10 bg-blue-50 rounded-full">
+        <Card key={idx} title={item.label} className="space-y-4">
+          <div className="flex items-center justify-between">
+            {/* Icon */}
+            <div className="flex items-center justify-center size-9 bg-blue-50 rounded-full">
               <item.icon className="size-5 text-blue-700" strokeWidth={1.5} />
             </div>
-          }
-        >
-          {isLoading ? (
-            <Skeleton className="w-16 h-7" />
-          ) : (
-            <Counter
-              value={item.value}
-              className="text-2xl font-bold text-gray-900"
-            />
-          )}
+
+            {/* Value */}
+            {isLoading ? (
+              <Skeleton className="w-16 h-7" />
+            ) : (
+              <Counter
+                value={item.value}
+                className="text-2xl font-bold text-gray-900"
+              />
+            )}
+          </div>
         </Card>
       ))}
     </div>
