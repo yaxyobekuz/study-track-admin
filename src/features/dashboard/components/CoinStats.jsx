@@ -36,16 +36,29 @@ const CoinStats = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
       <div className="space-y-4 lg:col-span-2">
-        {/* Total coin */}
-        <Card
-          title="Umumiy tarqatilgan tangalar"
-          className="flex items-center justify-between"
-        >
-          <Counter
-            value={stats?.totalCoinsDistributed ?? 0}
-            className="text-2xl font-bold text-blue-500"
-          />
-        </Card>
+        <div className="grid grid-cols-2 gap-4">
+          {/* Total coin */}
+          <Card
+            title="Umumiy tarqatilgan tangalar"
+            className="flex items-center justify-between"
+          >
+            <Counter
+              value={stats?.totalCoinsDistributed ?? 0}
+              className="text-2xl font-bold text-blue-500"
+            />
+          </Card>
+
+          {/* Available coin */}
+          <Card
+            title="Mavjud tangalar"
+            className="flex items-center justify-between"
+          >
+            <Counter
+              value={stats?.availableCoins ?? 0}
+              className="text-2xl font-bold text-blue-500"
+            />
+          </Card>
+        </div>
 
         {/* Line Chart */}
         <Card
