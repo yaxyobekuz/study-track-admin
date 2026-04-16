@@ -6,6 +6,8 @@ export const leadsAPI = {
   getSourceAnalytics: (params) => http.get("/leads/analytics/sources", { params }),
   getConversion: (params) => http.get("/leads/analytics/conversion", { params }),
   getTrends: (params) => http.get("/leads/analytics/trends", { params }),
+  getDirectionAnalytics: (params) => http.get("/leads/analytics/directions", { params }),
+  getCategoryAnalytics: (params) => http.get("/leads/analytics/categories", { params }),
 
   // Leads
   getAll: (params) => http.get("/leads", { params }),
