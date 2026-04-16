@@ -52,10 +52,42 @@ export const leadStatusChartColors = {
 };
 
 export const periodOptions = [
+  { value: "7", label: "Oxirgi 7 kun" },
   { value: "30", label: "Oxirgi 30 kun" },
   { value: "90", label: "Oxirgi 90 kun" },
   { value: "180", label: "Oxirgi 6 oy" },
   { value: "365", label: "Oxirgi 1 yil" },
+  { value: "custom", label: "Maxsus muddat" },
+];
+
+export const groupByOptions = [
+  { value: "day", label: "Kunlik" },
+  { value: "week", label: "Haftalik" },
+  { value: "month", label: "Oylik" },
+];
+
+// Status tabs for analytics breakdown
+export const analyticsTabOptions = [
+  { value: "overview", label: "Umumiy" },
+  { value: "funnel", label: "Funnel" },
+  { value: "sources", label: "Manbalar" },
+  { value: "directions", label: "Yo'nalishlar" },
+  { value: "categories", label: "Toifalar" },
+  { value: "trends", label: "Trendlar" },
+];
+
+// Chart bar colors (consistent palette)
+export const chartBarColors = [
+  "#3b82f6",
+  "#06b6d4",
+  "#6366f1",
+  "#a855f7",
+  "#f59e0b",
+  "#f97316",
+  "#22c55e",
+  "#ef4444",
+  "#ec4899",
+  "#14b8a6",
 ];
 
 export const leadActivityTypeLabels = {
