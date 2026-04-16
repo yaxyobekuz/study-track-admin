@@ -16,37 +16,40 @@ import { useQuery } from "@tanstack/react-query";
 // API
 import { leadsAPI } from "@/features/leads/api/leads.api";
 
+// Data
+import { chartBarColors } from "@/features/leads/data/leads.data";
+
 // Components
 import Card from "@/shared/components/ui/Card";
 
-const COLORS = [
-  "#3b82f6",
-  "#06b6d4",
-  "#6366f1",
-  "#a855f7",
-  "#f59e0b",
-  "#f97316",
-  "#22c55e",
-  "#ef4444",
-  "#ec4899",
-  "#14b8a6",
-];
+function buildParams(dateParams) {
+  if (!dateParams) return {};
+  if (dateParams.startDate || dateParams.endDate) {
+    const p = {};
+    if (dateParams.startDate) p.startDate = dateParams.startDate;
+    if (dateParams.endDate) p.endDate = dateParams.endDate;
+    return p;
+  }
+  if (dateParams.period) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - Number(dateParams.period));
+    return { startDate: startDate.toISOString().split("T")[0] };
+  }
+  return {};
+}
 
-const LeadSourceChart = ({ period }) => {
+const LeadSourceChart = ({ dateParams }) => {
+  const params = buildParams(dateParams);
+  const queryKey = JSON.stringify(params);
+
   const { data } = useQuery({
-    queryKey: ["leads", "sources-analytics", period],
-    queryFn: () => {
-      const params = {};
-      if (period) {
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - Number(period));
-        params.startDate = startDate.toISOString().split("T")[0];
-      }
-      return leadsAPI.getSourceAnalytics(params).then((res) => res.data.data);
-    },
+    queryKey: ["leads", "sources-analytics", queryKey],
+    queryFn: () => leadsAPI.getSourceAnalytics(params).then((res) => res.data.data),
   });
 
-  const chartData = (data || []).map((item) => ({
+  const items = data || [];
+
+  const chartData = items.map((item) => ({
     name: item.sourceName,
     total: item.total,
     enrolled: item.enrolled,
@@ -55,37 +58,29 @@ const LeadSourceChart = ({ period }) => {
 
   return (
     <Card title="Manbalar bo'yicha lidlar" className="space-y-4">
-      {chartData.length === 0 ? (
+      {items.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-8">
           Ma'lumot topilmadi
         </p>
       ) : (
         <>
-          <div className="h-64 sm:h-80">
+          <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={chartData}
                 margin={{ top: 10, right: 10, left: -20, bottom: 40 }}
               >
-                <CartesianGrid
-                  vertical={false}
-                  stroke="#E5E7EB"
-                  strokeDasharray="3 3"
-                />
+                <CartesianGrid vertical={false} stroke="#E5E7EB" strokeDasharray="3 3" />
                 <XAxis
                   dy={10}
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 11, fill: "#9CA3AF" }}
-                  angle={-35}
+                  angle={-30}
                   textAnchor="end"
                 />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11, fill: "#9CA3AF" }}
-                />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} />
                 <Tooltip
                   contentStyle={{
                     borderRadius: "12px",
@@ -98,12 +93,9 @@ const LeadSourceChart = ({ period }) => {
                     return [value, name];
                   }}
                 />
-                <Bar dataKey="total" radius={[6, 6, 0, 0]} barSize={32}>
+                <Bar dataKey="total" radius={[6, 6, 0, 0]} barSize={28}>
                   {chartData.map((_, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
+                    <Cell key={`cell-${index}`} fill={chartBarColors[index % chartBarColors.length]} />
                   ))}
                 </Bar>
               </BarChart>
@@ -119,40 +111,35 @@ const LeadSourceChart = ({ period }) => {
                   <th className="text-center py-2 px-2">Jami</th>
                   <th className="text-center py-2 px-2">Ro'yxatdan o'tgan</th>
                   <th className="text-center py-2 px-2">Faol</th>
+                  <th className="text-center py-2 px-2">Yo'qoldi</th>
                   <th className="text-center py-2 px-2">Konversiya</th>
                 </tr>
               </thead>
               <tbody>
-                {(data || []).map((item, idx) => (
-                  <tr
-                    key={item._id}
-                    className="border-b border-gray-50 hover:bg-gray-50/50"
-                  >
+                {items.map((item, idx) => (
+                  <tr key={item._id} className="border-b border-gray-50 hover:bg-gray-50/50">
                     <td className="py-2 px-2">
                       <div className="flex items-center gap-2">
                         <div
-                          className="size-3 rounded-full"
-                          style={{
-                            backgroundColor: COLORS[idx % COLORS.length],
-                          }}
+                          className="size-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: chartBarColors[idx % chartBarColors.length] }}
                         />
-                        <span className="font-medium text-gray-800">
-                          {item.sourceName}
-                        </span>
+                        <span className="font-medium text-gray-800">{item.sourceName}</span>
                       </div>
                     </td>
-                    <td className="py-2 px-2 text-center text-gray-600">
-                      {item.total}
-                    </td>
-                    <td className="py-2 px-2 text-center text-green-600 font-medium">
-                      {item.enrolled}
-                    </td>
-                    <td className="py-2 px-2 text-center text-blue-600">
-                      {item.active}
-                    </td>
+                    <td className="py-2 px-2 text-center font-semibold text-gray-700">{item.total}</td>
+                    <td className="py-2 px-2 text-center text-green-600 font-medium">{item.enrolled}</td>
+                    <td className="py-2 px-2 text-center text-blue-600">{item.active}</td>
+                    <td className="py-2 px-2 text-center text-red-500">{item.lost}</td>
                     <td className="py-2 px-2 text-center">
                       <span
-                        className={`font-medium ${item.conversionRate >= 20 ? "text-green-600" : item.conversionRate >= 10 ? "text-yellow-600" : "text-gray-500"}`}
+                        className={`font-semibold ${
+                          item.conversionRate >= 20
+                            ? "text-green-600"
+                            : item.conversionRate >= 10
+                              ? "text-yellow-600"
+                              : "text-gray-500"
+                        }`}
                       >
                         {item.conversionRate}%
                       </span>
