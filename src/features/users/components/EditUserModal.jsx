@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { usersAPI } from "@/features/users/api/users.api";
 
 // Components
-import Input from "@/shared/components/ui/input/Input";
-import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import MultiSelect from "@/shared/components/form/multi-select";
+import InputField from "@/shared/components/ui/input/InputField";
+import SelectField from "@/shared/components/ui/select/SelectField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Data
@@ -46,7 +46,9 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
     const current = state.workDays || [];
     setField(
       "workDays",
-      current.includes(day) ? current.filter((d) => d !== day) : [...current, day].sort()
+      current.includes(day)
+        ? current.filter((d) => d !== day)
+        : [...current, day].sort(),
     );
   };
 
@@ -66,7 +68,10 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
   const handleEditUser = (e) => {
     e.preventDefault();
 
-    if (user.role === "student" && (!state.classes || state.classes.length === 0)) {
+    if (
+      user.role === "student" &&
+      (!state.classes || state.classes.length === 0)
+    ) {
       return toast.warning("Kamida bitta sinf tanlanishi kerak");
     }
 
@@ -74,8 +79,10 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
 
     const data = {
       ...state,
-      workStartTime: state.hasCustomSchedule ? (state.workStartTime || null) : null,
-      workEndTime: state.hasCustomSchedule ? (state.workEndTime || null) : null,
+      workStartTime: state.hasCustomSchedule
+        ? state.workStartTime || null
+        : null,
+      workEndTime: state.hasCustomSchedule ? state.workEndTime || null : null,
       workDays: state.hasCustomSchedule ? state.workDays : null,
       hasCustomSchedule: undefined,
     };
@@ -94,29 +101,29 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
   };
 
   return (
-    <form onSubmit={handleEditUser} className="space-y-3.5">
-      <Input
+    <form onSubmit={handleEditUser} className="space-y-4">
+      <InputField
         required
         label="Ism"
         name="firstName"
         value={firstName}
-        onChange={(v) => setField("firstName", v)}
+        onChange={(e) => setField("firstName", e.target.value)}
       />
 
-      <Input
+      <InputField
         required
         name="lastName"
         label="Familiya"
         value={lastName}
-        onChange={(v) => setField("lastName", v)}
+        onChange={(e) => setField("lastName", e.target.value)}
       />
 
-      <Select
+      <SelectField
         label="Jins"
         value={gender}
+        options={genderOptions}
         placeholder="Jinsni tanlang"
         onChange={(v) => setField("gender", v || null)}
-        options={genderOptions}
       />
 
       {user.role === "student" && (
@@ -147,17 +154,17 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
           {state.hasCustomSchedule && (
             <div className="pl-6 space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <Input
+                <InputField
                   type="time"
                   label="Boshlanish vaqti"
                   value={state.workStartTime}
-                  onChange={(v) => setField("workStartTime", v)}
+                  onChange={(e) => setField("workStartTime", e.target.value)}
                 />
-                <Input
+                <InputField
                   type="time"
                   label="Tugash vaqti"
                   value={state.workEndTime}
-                  onChange={(v) => setField("workEndTime", v)}
+                  onChange={(e) => setField("workEndTime", e.target.value)}
                 />
               </div>
               <div>
@@ -188,7 +195,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
         <Button
           type="button"
           className="w-full xs:w-32"
-          variant="neutral"
+          variant="secondary"
           onClick={close}
         >
           Bekor qilish
@@ -197,7 +204,6 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
         <Button
           autoFocus
           className="w-full xs:w-32"
-          variant="primary"
           disabled={isLoading}
         >
           Yangilash
