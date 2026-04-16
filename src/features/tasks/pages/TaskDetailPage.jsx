@@ -330,20 +330,18 @@ const TaskDetailPage = () => {
                   </Button>
                 )}
 
-                {task.status !== "pending_review" && (
-                  <Button
-                    variant="outline"
-                    className="w-full text-sm"
-                    onClick={() =>
-                      openModal("extendDeadline", {
-                        taskId: task._id,
-                        currentDueDate: task.dueDate,
-                      })
-                    }
-                  >
-                    Muddatni uzaytirish
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  className="w-full text-sm"
+                  onClick={() =>
+                    openModal("extendDeadline", {
+                      taskId: task._id,
+                      currentDueDate: task.dueDate,
+                    })
+                  }
+                >
+                  Muddatni uzaytirish
+                </Button>
 
                 <Button
                   variant="danger"

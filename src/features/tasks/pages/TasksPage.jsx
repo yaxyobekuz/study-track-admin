@@ -144,10 +144,7 @@ const TasksPage = () => {
             </thead>
             <tbody>
               {tasks.map((task) => (
-                <tr
-                  key={task._id}
-                  className="border-b border-gray-50 hover:bg-gray-50/50"
-                >
+                <tr key={task._id} className="text-sm">
                   <td className="py-2.5 px-3">
                     <p className="font-medium text-gray-800">
                       {formatUserName(task.assignee)}
