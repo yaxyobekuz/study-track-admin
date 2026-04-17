@@ -1,5 +1,5 @@
 // Icons
-import { Eye } from "lucide-react";
+import { Eye, ImagePlus } from "lucide-react";
 
 // React
 import { useRef, useState } from "react";
@@ -91,57 +91,89 @@ const MarketOrdersPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
-                  <tr key={order._id} className="hover:bg-gray-50 align-top">
-                    <td className="px-4 py-3 text-sm">
-                      <p className="font-medium">
-                        {order.student?.firstName} {order.student?.lastName}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <p>
-                        {order.productSnapshot?.name || order.product?.name}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3 text-sm">{order.quantity} ta</td>
-                    <td className="px-4 py-3 text-sm">
-                      {order.totalPrice} coin
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                          marketOrderStatusClasses[order.status] ||
-                          "bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        {marketOrderStatusLabels[order.status] || order.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
-                      {formatUzDate(order.createdAt)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {order.status === "pending" ? (
-                        <button
-                          className="inline-flex size-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition-colors hover:bg-gray-100"
-                          onClick={() =>
-                            openModal("updateMarketOrderStatus", {
-                              sessionId: Date.now(),
-                              orderId: order._id,
-                              orderStatus: order.status,
-                            })
-                          }
-                        >
-                          <Eye className="size-4" />
-                        </button>
-                      ) : (
-                        <span className="text-xs text-gray-400">
-                          Yakunlangan
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {orders.map((order) => {
+                  const deliveryImageUrl =
+                    order.deliveryImage?.variants?.sm?.url ||
+                    order.deliveryImage?.variants?.original?.url;
+
+                  return (
+                    <tr key={order._id} className="hover:bg-gray-50 align-top">
+                      <td className="px-4 py-3 text-sm">
+                        <p className="font-medium">
+                          {order.student?.firstName} {order.student?.lastName}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <p>
+                          {order.productSnapshot?.name || order.product?.name}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3 text-sm">{order.quantity} ta</td>
+                      <td className="px-4 py-3 text-sm">
+                        {order.totalPrice} coin
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="space-y-1.5">
+                          <span
+                            className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+                              marketOrderStatusClasses[order.status] ||
+                              "bg-gray-100 text-gray-700"
+                            }`}
+                          >
+                            {marketOrderStatusLabels[order.status] ||
+                              order.status}
+                          </span>
+                          {deliveryImageUrl && (
+                            <div>
+                              <img
+                                src={deliveryImageUrl}
+                                alt="Yetkazib berish rasmi"
+                                className="w-12 h-12 object-cover rounded-md border border-gray-200"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500">
+                        {formatUzDate(order.createdAt)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {order.status === "pending" ||
+                        order.status === "delivering" ? (
+                          <button
+                            className="inline-flex size-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition-colors hover:bg-gray-100"
+                            onClick={() =>
+                              openModal("updateMarketOrderStatus", {
+                                sessionId: Date.now(),
+                                orderId: order._id,
+                                orderStatus: order.status,
+                              })
+                            }
+                          >
+                            <Eye className="size-4" />
+                          </button>
+                        ) : order.status === "approved" ? (
+                          <button
+                            className="inline-flex size-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-colors hover:bg-gray-100"
+                            onClick={() =>
+                              openModal("addDeliveryImage", {
+                                sessionId: Date.now(),
+                                orderId: order._id,
+                              })
+                            }
+                            title="Rasm qo'shish"
+                          >
+                            <ImagePlus className="size-4" />
+                          </button>
+                        ) : (
+                          <span className="text-xs text-gray-400">
+                            Yakunlangan
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
