@@ -21,6 +21,20 @@ export const marketAPI = {
     }),
   deleteProduct: (productId) => http.delete(`/market/admin/products/${productId}`),
   getOrders: (params) => http.get("/market/admin/orders", { params }),
-  updateOrderStatus: (orderId, data) =>
-    http.patch(`/market/admin/orders/${orderId}/status`, data),
+  updateOrderStatus: (orderId, data, config = {}) =>
+    http.patch(`/market/admin/orders/${orderId}/status`, data, {
+      ...config,
+      headers: {
+        ...(config.headers || {}),
+        "Content-Type": "multipart/form-data",
+      },
+    }),
+  addDeliveryImage: (orderId, data, config = {}) =>
+    http.patch(`/market/admin/orders/${orderId}/delivery-image`, data, {
+      ...config,
+      headers: {
+        ...(config.headers || {}),
+        "Content-Type": "multipart/form-data",
+      },
+    }),
 };
