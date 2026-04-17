@@ -23,9 +23,10 @@ import { formatDateUZ } from "@/shared/utils/date.utils";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
+import InputField from "@/shared/components/ui/input/InputField";
+import SelectField from "@/shared/components/ui/select/SelectField";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -43,12 +44,23 @@ const PenaltiesPage = () => {
 
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const statusFilter = searchParams.get("status") || "all";
+  const startDate = searchParams.get("startDate") || "";
+  const endDate = searchParams.get("endDate") || "";
 
   const { data, isLoading } = useQuery({
-    queryKey: ["penalties", "list", currentPage, statusFilter],
+    queryKey: [
+      "penalties",
+      "list",
+      currentPage,
+      statusFilter,
+      startDate,
+      endDate,
+    ],
     queryFn: () => {
       const params = { page: currentPage, limit: 20 };
       if (statusFilter && statusFilter !== "all") params.status = statusFilter;
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
       return penaltiesAPI.getAll(params).then((res) => res.data);
     },
   });
@@ -62,6 +74,17 @@ const PenaltiesPage = () => {
       params.set("status", value);
     } else {
       params.delete("status");
+    }
+    params.set("page", "1");
+    setSearchParams(params);
+  };
+
+  const handleDateChange = (key, value) => {
+    const params = new URLSearchParams(searchParams);
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
     }
     params.set("page", "1");
     setSearchParams(params);
@@ -83,19 +106,12 @@ const PenaltiesPage = () => {
   return (
     <div className="space-y-4">
       {/* Top */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         {/* Title */}
         <h1 className="page-title">Jarimalar</h1>
 
         {/* Buttons */}
-        <div className="flex items-center gap-4 flex-wrap">
-          <Select
-            label="Status"
-            value={statusFilter}
-            onChange={handleStatusChange}
-            options={penaltyStatusOptions}
-          />
-
+        <div className="flex items-center gap-3 flex-wrap">
           <Button onClick={() => openModal("reducePenalty")}>
             <Minus />
             Kamaytirish
@@ -105,6 +121,51 @@ const PenaltiesPage = () => {
             <Plus />
             Jarima yozish
           </Button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <SelectField
+          label="Holat"
+          className="w-auto"
+          value={statusFilter}
+          onChange={handleStatusChange}
+          options={penaltyStatusOptions}
+        />
+
+        <div className="flex gap-4">
+          <InputField
+            type="date"
+            label="Dan"
+            value={startDate}
+            className="w-auto"
+            onChange={(e) => handleDateChange("startDate", e.target.value)}
+          />
+
+          <InputField
+            type="date"
+            label="Gacha"
+            value={endDate}
+            className="w-auto"
+            onChange={(e) => handleDateChange("endDate", e.target.value)}
+          />
+
+          {(startDate || endDate) && (
+            <Button
+              variant="outline"
+              className="mt-auto"
+              onClick={() => {
+                const params = new URLSearchParams(searchParams);
+                params.delete("startDate");
+                params.delete("endDate");
+                params.set("page", "1");
+                setSearchParams(params);
+              }}
+            >
+              Tozalash
+            </Button>
+          )}
         </div>
       </div>
 
