@@ -46,6 +46,7 @@ import DeleteScheduleModal from "@/features/schedules/components/DeleteScheduleM
 import ViewUserPasswordModal from "@/features/users/components/ViewUserPasswordModal";
 import ResetUserPasswordModal from "@/features/users/components/ResetUserPasswordModal";
 import UpdateOrderStatusModal from "@/features/market/components/UpdateOrderStatusModal";
+import AddDeliveryImageModal from "@/features/market/components/AddDeliveryImageModal";
 import StudentStatisticsModal from "@/features/statistics/components/StudentStatisticsModal";
 import CreateRoleModal from "@/features/roles/components/CreateRoleModal";
 import EditRoleModal from "@/features/roles/components/EditRoleModal";
@@ -108,6 +109,7 @@ const DashboardLayout = () => {
       {/* Market */}
       <DeleteProductModal />
       <UpdateOrderStatusModal />
+      <AddDeliveryImageModal />
 
       {/* Roles */}
       <CreateRoleModal />
