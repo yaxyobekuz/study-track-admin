@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // React
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -20,12 +20,11 @@ import SelectField from "@/shared/components/ui/select/SelectField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Data
-import { marketOrderUpdateStatusOptions } from "@/features/market/data/market.data";
+import {
+  marketOrderUpdateStatusOptions,
+  marketOrderDeliverStatusOptions,
+} from "@/features/market/data/market.data";
 
-/**
- * Modal for updating market order status by owner.
- * @returns {JSX.Element} Update order status modal.
- */
 const UpdateOrderStatusModal = () => {
   const { data } = useModal("updateMarketOrderStatus");
 
@@ -40,17 +39,33 @@ const UpdateOrderStatusModal = () => {
   );
 };
 
-const Content = ({ close, orderId }) => {
+const Content = ({ close, orderId, orderStatus }) => {
   const queryClient = useQueryClient();
-  const [status, setStatus] = useState("approved");
+  const fileRef = useRef(null);
+
+  const isDelivering = orderStatus === "delivering";
+
+  const [status, setStatus] = useState(
+    isDelivering ? "approved" : "delivering",
+  );
   const [rejectReason, setRejectReason] = useState("");
+  const [deliveryImage, setDeliveryImage] = useState(null);
 
   const updateStatusMutation = useMutation({
-    mutationFn: () =>
-      marketAPI.updateOrderStatus(orderId, {
-        status,
-        ...(status === "rejected" ? { rejectReason: rejectReason.trim() } : {}),
-      }),
+    mutationFn: () => {
+      const formData = new FormData();
+      formData.append("status", status);
+
+      if (status === "rejected") {
+        formData.append("rejectReason", rejectReason.trim());
+      }
+
+      if (status === "approved" && deliveryImage) {
+        formData.append("deliveryImage", deliveryImage);
+      }
+
+      return marketAPI.updateOrderStatus(orderId, formData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["market", "admin", "orders"],
@@ -74,6 +89,10 @@ const Content = ({ close, orderId }) => {
     updateStatusMutation.mutate();
   };
 
+  const statusOptions = isDelivering
+    ? marketOrderDeliverStatusOptions
+    : marketOrderUpdateStatusOptions;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <SelectField
@@ -82,7 +101,7 @@ const Content = ({ close, orderId }) => {
         value={status}
         onChange={setStatus}
         triggerClassName="w-full"
-        options={marketOrderUpdateStatusOptions}
+        options={statusOptions}
       />
 
       {status === "rejected" && (
@@ -94,6 +113,18 @@ const Content = ({ close, orderId }) => {
           value={rejectReason}
           placeholder="Rad etish sababini yozing"
           onChange={(e) => setRejectReason(e.target.value)}
+        />
+      )}
+
+      {status === "approved" && (
+        <InputField
+          type="file"
+          name="deliveryImage"
+          label="Yetkazib berish rasmi"
+          accept="image/*"
+          description="Ixtiyoriy: yetkazib berish rasmini yuklang"
+          ref={fileRef}
+          onChange={(e) => setDeliveryImage(e.target.files?.[0] || null)}
         />
       )}
 
@@ -110,7 +141,7 @@ const Content = ({ close, orderId }) => {
         <Button
           className="w-full xs:w-32"
           disabled={updateStatusMutation.isPending}
-          variant={status === "approved" ? "default" : "danger"}
+          variant={status === "rejected" ? "danger" : "default"}
         >
           Saqlash
         </Button>
