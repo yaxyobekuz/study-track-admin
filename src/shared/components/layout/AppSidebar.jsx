@@ -157,6 +157,10 @@ const navItems = [
         url: "/penalties/categories",
       },
       {
+        title: "Kamaytirish paketlari",
+        url: "/penalties/reduction-packages",
+      },
+      {
         title: "Sozlamalar",
         url: "/penalties/settings",
       },
