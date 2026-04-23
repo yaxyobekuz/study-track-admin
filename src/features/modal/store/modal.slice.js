@@ -66,6 +66,9 @@ const initialState = {
   createPenaltyCategory: initialModalData,
   editPenaltyCategory: initialModalData,
 
+  createReductionPackage: initialModalData,
+  editReductionPackage: initialModalData,
+
   // Roles
   createRole: initialModalData,
   editRole: initialModalData,
