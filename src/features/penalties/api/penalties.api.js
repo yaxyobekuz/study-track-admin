@@ -32,4 +32,10 @@ export const penaltiesAPI = {
 
   // O'z jarimalari
   getMyPenalties: (params) => http.get("/penalties/my", { params }),
+
+  // Kamaytirish paketlari
+  getReductionPackages: () => http.get("/penalties/reduction-packages"),
+  createReductionPackage: (data) => http.post("/penalties/reduction-packages", data),
+  updateReductionPackage: (id, data) => http.put(`/penalties/reduction-packages/${id}`, data),
+  deleteReductionPackage: (id) => http.delete(`/penalties/reduction-packages/${id}`),
 };
