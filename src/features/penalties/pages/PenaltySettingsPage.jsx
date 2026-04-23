@@ -39,6 +39,7 @@ const PenaltySettingsPage = () => {
 
   // fineAmounts: { student: N, teacher: N, ... }
   const [fineAmounts, setFineAmounts] = useState({});
+  const [premiumDiscountPercent, setPremiumDiscountPercent] = useState(0);
 
   useEffect(() => {
     if (settings && fineRoles.length > 0) {
@@ -48,11 +49,16 @@ const PenaltySettingsPage = () => {
         amounts[role.value] = settings.fineAmounts?.[role.value] ?? 0;
       }
       setFineAmounts(amounts);
+      setPremiumDiscountPercent(settings.premiumReductionDiscountPercent ?? 0);
     }
   }, [settings, roles.length]);
 
   const saveMutation = useMutation({
-    mutationFn: () => penaltiesAPI.updateSettings({ fineAmounts }),
+    mutationFn: () =>
+      penaltiesAPI.updateSettings({
+        fineAmounts,
+        premiumReductionDiscountPercent: Number(premiumDiscountPercent),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["penalties", "settings"] });
       toast.success("Sozlamalar saqlandi");
@@ -100,6 +106,28 @@ const PenaltySettingsPage = () => {
               }
             />
           ))}
+        </InputGroup>
+      </Card>
+
+      {/* Premium chegirma */}
+      <Card
+        className="space-y-4"
+        title="Premium o'quvchilar uchun chegirma"
+      >
+        <InputGroup>
+          <InputField
+            min="0"
+            max="100"
+            type="number"
+            label="Premium chegirma (%)"
+            description="Premium o'quvchilar kamaytirish paketlarini shu foiz chegirma bilan sotib oladilar"
+            value={premiumDiscountPercent}
+            onChange={(e) =>
+              setPremiumDiscountPercent(
+                Math.min(100, Math.max(0, Number(e.target.value))),
+              )
+            }
+          />
         </InputGroup>
       </Card>
 
