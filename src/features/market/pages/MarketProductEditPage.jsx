@@ -9,6 +9,7 @@ import Select from "@/shared/components/ui/select/Select";
 import Pagination from "@/shared/components/ui/Pagination";
 import InputField from "@/shared/components/ui/input/InputField";
 import { marketAPI } from "@/features/market/api/market.api";
+import ProductStatsSection from "@/features/market/components/ProductStatsSection";
 import { formatUzDate } from "@/shared/utils/formatDate";
 import {
   marketOrderStatusOptions,
@@ -248,6 +249,8 @@ const MarketProductEditPage = () => {
           </div>
         </form>
       </Card>
+
+      <ProductStatsSection productId={productId} />
 
       <ProductOrdersSection productId={productId} />
     </div>
