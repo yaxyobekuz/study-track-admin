@@ -31,3 +31,17 @@ export const marketOrderUpdateStatusOptions = [
 export const marketOrderDeliverStatusOptions = [
   { label: "Yetkazib berildi", value: "approved" },
 ];
+
+export const marketStatStatusColors = {
+  pending: "#eab308",
+  delivering: "#3b82f6",
+  approved: "#22c55e",
+  rejected: "#ef4444",
+  cancelled: "#9ca3af",
+};
+
+export const marketStatPeriodOptions = [
+  { label: "7 kun", value: "7" },
+  { label: "30 kun", value: "30" },
+  { label: "90 kun", value: "90" },
+];
