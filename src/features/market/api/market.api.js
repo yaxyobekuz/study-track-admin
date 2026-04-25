@@ -20,6 +20,7 @@ export const marketAPI = {
       },
     }),
   deleteProduct: (productId) => http.delete(`/market/admin/products/${productId}`),
+  getProductStats: (productId, params) => http.get(`/market/admin/products/${productId}/stats`, { params }),
   getOrders: (params) => http.get("/market/admin/orders", { params }),
   updateOrderStatus: (orderId, data, config = {}) =>
     http.patch(`/market/admin/orders/${orderId}/status`, data, {
