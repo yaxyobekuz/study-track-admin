@@ -207,6 +207,10 @@ const navItems = [
     isActive: false,
     items: [
       {
+        title: "Bugungi davomat",
+        url: "/attendance/today",
+      },
+      {
         title: "Davomat ro'yxati",
         url: "/attendance",
       },

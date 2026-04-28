@@ -26,9 +26,7 @@ import AppSidebar from "@/shared/components/layout/AppSidebar";
 import MainBackgroundPatterns from "../components/bg/MainBackgroundPatterns";
 
 // Modals
-import EditUserModal from "@/features/users/components/EditUserModal";
 import EditClassModal from "@/features/classes/components/EditClassModal";
-import CreateUserModal from "@/features/users/components/CreateUserModal";
 import DeleteUserModal from "@/features/users/components/DeleteUserModal";
 import ExportUsersModal from "@/features/users/components/ExportUsersModal";
 import CreateClassModal from "@/features/classes/components/CreateClassModal";
@@ -77,9 +75,7 @@ const DashboardLayout = () => {
       <MainBackgroundPatterns />
 
       {/* User Modals */}
-      <EditUserModal />
       <DeleteUserModal />
-      <CreateUserModal />
       <ResetUserPasswordModal />
       <ViewUserPasswordModal />
       <ExportUsersModal />

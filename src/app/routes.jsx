@@ -13,6 +13,8 @@ import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 
 // Pages — Users
 import UsersPage from "@/features/users/pages/UsersPage";
+import CreateUserPage from "@/features/users/pages/CreateUserPage";
+import EditUserPage from "@/features/users/pages/EditUserPage";
 
 // Pages — Roles
 import RolesPage from "@/features/roles/pages/RolesPage";
@@ -73,6 +75,7 @@ import ReductionPackagesPage from "@/features/penalties/pages/ReductionPackagesP
 
 // Pages — Attendance
 import AttendanceListPage from "@/features/attendance/pages/AttendanceListPage";
+import AttendanceTodayPage from "@/features/attendance/pages/AttendanceTodayPage";
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 import ExcuseRequestsPage from "@/features/attendance/pages/ExcuseRequestsPage";
 
@@ -99,6 +102,8 @@ const Routes = () => {
 
           {/* Users */}
           <Route path="/users" element={<UsersPage />} />
+          <Route path="/users/new" element={<CreateUserPage />} />
+          <Route path="/users/:userId/edit" element={<EditUserPage />} />
 
           {/* Roles */}
           <Route path="/roles" element={<RolesPage />} />
@@ -159,6 +164,7 @@ const Routes = () => {
 
           {/* Attendance */}
           <Route path="/attendance" element={<AttendanceListPage />} />
+          <Route path="/attendance/today" element={<AttendanceTodayPage />} />
           <Route path="/attendance/settings" element={<AttendanceSettingsPage />} />
           <Route path="/attendance/excuses" element={<ExcuseRequestsPage />} />
 
