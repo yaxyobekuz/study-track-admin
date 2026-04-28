@@ -31,6 +31,38 @@ import { formatDateUZ } from "@/shared/utils/date.utils";
 import Card from "@/shared/components/ui/Card";
 import SelectField from "@/shared/components/ui/select/SelectField";
 
+function fillMissingDates(trends, groupBy, dateParams) {
+  if (!trends || trends.length === 0) return trends;
+  if (groupBy === "week" || groupBy === "month") return trends;
+
+  // Determine range boundaries
+  let start, end;
+  if (dateParams?.startDate) {
+    start = new Date(dateParams.startDate);
+  } else if (dateParams?.period) {
+    start = new Date();
+    start.setDate(start.getDate() - Number(dateParams.period));
+  } else {
+    start = new Date(trends[0].date);
+  }
+  end = dateParams?.endDate ? new Date(dateParams.endDate) : new Date();
+
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  const existing = new Map(trends.map((t) => [t.date, t]));
+  const filled = [];
+  const cursor = new Date(start);
+
+  while (cursor <= end) {
+    const key = cursor.toISOString().split("T")[0];
+    filled.push(existing.get(key) || { date: key, total: 0, enrolled: 0, lost: 0, active: 0 });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return filled;
+}
+
 function buildParams(dateParams, groupBy) {
   const p = { groupBy };
   if (!dateParams) return p;
@@ -77,8 +109,8 @@ const LeadTrendChart = ({ dateParams, expanded = false }) => {
     queryFn: () => leadsAPI.getTrends(params).then((res) => res.data.data),
   });
 
-  const chartData = result?.trends || [];
   const resolvedGroupBy = result?.groupBy || groupBy || "day";
+  const chartData = fillMissingDates(result?.trends || [], resolvedGroupBy, dateParams);
 
   const tickInterval = Math.max(Math.floor(chartData.length / 8) - 1, 0);
 

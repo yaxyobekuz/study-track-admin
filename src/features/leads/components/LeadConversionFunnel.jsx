@@ -61,11 +61,8 @@ const LeadConversionFunnel = ({ dateParams }) => {
               return (
                 <div key={stage.stage}>
                   <div className="flex items-center gap-3">
-                    {/* Step number + label */}
-                    <div className="w-32 flex items-center gap-1.5 text-right justify-end">
-                      <span className="text-[10px] text-gray-400 font-medium">
-                        {idx + 1}
-                      </span>
+                    {/* Label */}
+                    <div className="w-32 flex items-center justify-end">
                       <span className="text-xs font-medium text-gray-700">
                         {leadStatusLabels[stage.stage]}
                       </span>
