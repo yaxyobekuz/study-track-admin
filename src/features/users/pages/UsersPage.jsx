@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import useAuth from "@/shared/hooks/useAuth";
 
 // Router
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -179,9 +179,11 @@ const Users = () => {
       {/* Header */}
       <div className="flex flex-col gap-4 mb-4 sm:flex-row">
         {/* Create New Btn */}
-        <Button onClick={() => openModal("createUser")}>
-          <Plus />
-          Yangi foydalanuvchi
+        <Button asChild>
+          <Link to="/users/new">
+            <Plus />
+            Yangi foydalanuvchi
+          </Link>
         </Button>
 
         {/* Search Input */}
@@ -279,12 +281,12 @@ const Users = () => {
                   <td className="text-center text-sm font-medium">
                     <div className="flex justify-center space-x-2">
                       {/* Edit */}
-                      <button
-                        onClick={() => openModal("editUser", user)}
+                      <Link
+                        to={`/users/${user._id}/edit`}
                         className="text-blue-600 hover:text-blue-900"
                       >
                         <Edit className="size-5" strokeWidth={1.5} />
-                      </button>
+                      </Link>
 
                       {/*View Password (Owner only) */}
                       {currentUser?.role === "owner" && (
