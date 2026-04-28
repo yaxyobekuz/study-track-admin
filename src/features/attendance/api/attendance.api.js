@@ -3,6 +3,7 @@ import http from "@/shared/api/http";
 export const attendanceAPI = {
   getSettings: () => http.get("/attendance/settings"),
   updateSettings: (data) => http.put("/attendance/settings", data),
+  getTodayAll: (params) => http.get("/attendance/today/all", { params }),
   getAllRecords: (params) => http.get("/attendance", { params }),
   getUserMonthRecords: (userId, month, year) =>
     http.get(`/attendance/user/${userId}`, { params: { month, year } }),
