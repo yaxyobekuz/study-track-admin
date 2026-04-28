@@ -13,6 +13,7 @@ import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
+import WeeklyScheduleEditor from "@/features/users/components/WeeklyScheduleEditor";
 
 // Data
 import { WORK_DAYS_OPTIONS } from "@/features/attendance/data/attendance.data";
@@ -34,6 +35,11 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
     workStartTime: role.workStartTime || "",
     workEndTime: role.workEndTime || "",
     workDays: role.workDays || [1, 2, 3, 4, 5],
+    weeklySchedule: role.weeklySchedule
+      ? (role.weeklySchedule instanceof Map
+          ? Object.fromEntries(role.weeklySchedule)
+          : role.weeklySchedule)
+      : {},
   });
 
   const toggleWorkDay = (day) => {
@@ -128,6 +134,19 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
               </button>
             ))}
           </div>
+        </div>
+
+        <div>
+          <p className="text-xs text-gray-500 mb-2">
+            Har kun uchun alohida vaqt (ixtiyoriy)
+          </p>
+          <WeeklyScheduleEditor
+            workDays={state.workDays || []}
+            weeklySchedule={state.weeklySchedule}
+            defaultStart={state.workStartTime}
+            defaultEnd={state.workEndTime}
+            onChange={(ws) => setField("weeklySchedule", ws)}
+          />
         </div>
       </div>
 
