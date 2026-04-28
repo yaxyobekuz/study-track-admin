@@ -28,7 +28,7 @@ const AttendanceListPage = () => {
           userId: userId || undefined,
           month,
           year,
-          limit: 200,
+          noPagination: true,
         })
         .then((r) => r.data),
   });
