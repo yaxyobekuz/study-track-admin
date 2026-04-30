@@ -68,6 +68,7 @@ const initialState = {
 
   createReductionPackage: initialModalData,
   editReductionPackage: initialModalData,
+  exemptTeachersModal: initialModalData,
 
   // Roles
   createRole: initialModalData,
