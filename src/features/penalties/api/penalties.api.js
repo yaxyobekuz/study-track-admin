@@ -5,6 +5,10 @@ export const penaltiesAPI = {
   getSettings: () => http.get("/penalties/settings"),
   updateSettings: (data) => http.put("/penalties/settings", data),
 
+  // Baho qo'ymaslik jarima sozlamalari
+  getGradePenaltySettings: () => http.get("/penalties/grade-settings"),
+  updateGradePenaltySettings: (data) => http.put("/penalties/grade-settings", data),
+
   // Statistika
   getStats: () => http.get("/penalties/stats"),
 
