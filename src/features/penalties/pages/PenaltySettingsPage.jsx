@@ -10,20 +10,28 @@ import { AlertTriangle } from "lucide-react";
 // Components
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
+import Switch from "@/shared/components/ui/switch/Switch";
+import Field, { FieldLabel } from "@/shared/components/ui/field/Field";
+import ExemptTeachersModal from "@/features/penalties/components/ExemptTeachersModal";
 
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
+import useModal from "@/shared/hooks/useModal";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import InputField from "@/shared/components/ui/input/InputField";
 
 // API
 import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
 
+// Static data
+import { GRADE_PENALTY_DEFAULTS } from "./PenaltySettingsPage.data";
+
 // Tanstack Query
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const PenaltySettingsPage = () => {
   const queryClient = useQueryClient();
+  const { openModal } = useModal("exemptTeachersModal");
   const { getCollectionData } = useArrayStore();
   const roles = getCollectionData("roles") || [];
 
@@ -62,6 +70,40 @@ const PenaltySettingsPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["penalties", "settings"] });
       toast.success("Sozlamalar saqlandi");
+    },
+    onError: (err) =>
+      toast.error(err.response?.data?.message || "Saqlashda xatolik"),
+  });
+
+  // ─── Baho qo'ymaslik jarima sozlamalari ───────────────────────────
+  const { data: gradeSettings } = useQuery({
+    queryKey: ["penalties", "grade-settings"],
+    queryFn: () =>
+      penaltiesAPI.getGradePenaltySettings().then((res) => res.data.data),
+  });
+
+  const [gradeForm, setGradeForm] = useState({
+    isEnabled: GRADE_PENALTY_DEFAULTS.isEnabled,
+    penaltyPoints: GRADE_PENALTY_DEFAULTS.penaltyPoints,
+    missingThresholdPercent: GRADE_PENALTY_DEFAULTS.missingThresholdPercent,
+  });
+
+  useEffect(() => {
+    if (!gradeSettings) return;
+    setGradeForm({
+      isEnabled: gradeSettings.isEnabled ?? GRADE_PENALTY_DEFAULTS.isEnabled,
+      penaltyPoints: gradeSettings.penaltyPoints ?? GRADE_PENALTY_DEFAULTS.penaltyPoints,
+      missingThresholdPercent:
+        gradeSettings.missingThresholdPercent ??
+        GRADE_PENALTY_DEFAULTS.missingThresholdPercent,
+    });
+  }, [gradeSettings]);
+
+  const gradeSettingsMutation = useMutation({
+    mutationFn: () => penaltiesAPI.updateGradePenaltySettings(gradeForm),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["penalties", "grade-settings"] });
+      toast.success("Baho jarima sozlamalari saqlandi");
     },
     onError: (err) =>
       toast.error(err.response?.data?.message || "Saqlashda xatolik"),
@@ -145,6 +187,86 @@ const PenaltySettingsPage = () => {
         Jarima miqdori o'zgarishi avvalgi jarimalar miqdoriga ta'sir qilmaydi.
         Yangi jarimalar uchun yangi miqdor qo'llaniladi.
       </Card>
+
+      {/* ─── Baho qo'ymaslik jarima sozlamalari ─────────────────────── */}
+      <h2 className="page-title mt-4">Baho qo'ymaslik jarimalari</h2>
+
+      <Card className="space-y-4" title="Avtomatik jarima sozlamalari">
+        <Field>
+          <div className="flex items-center justify-between">
+            <FieldLabel>Avtomatik jarima</FieldLabel>
+            <Switch
+              checked={gradeForm.isEnabled}
+              onChange={(checked) =>
+                setGradeForm((prev) => ({ ...prev, isEnabled: checked }))
+              }
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Har kuni soat 23:55 da ishga tushadi va foiz chegarasidan oshgan
+            ustozlarga jarima beradi
+          </p>
+        </Field>
+
+        <InputGroup className="md:grid-cols-2">
+          <InputField
+            min="1"
+            required
+            type="number"
+            label="Jarima bali"
+            description="Har bir qo'yilmagan dars uchun"
+            value={gradeForm.penaltyPoints}
+            onChange={(e) =>
+              setGradeForm((prev) => ({
+                ...prev,
+                penaltyPoints: Math.max(1, Number(e.target.value)),
+              }))
+            }
+          />
+
+          <InputField
+            min="0"
+            max="100"
+            required
+            type="number"
+            label="Baho qo'yilmagan o'quvchilar foizi (%)"
+            description="Shu foizdan oshsa jarima beriladi"
+            value={gradeForm.missingThresholdPercent}
+            onChange={(e) =>
+              setGradeForm((prev) => ({
+                ...prev,
+                missingThresholdPercent: Math.min(
+                  100,
+                  Math.max(0, Number(e.target.value)),
+                ),
+              }))
+            }
+          />
+        </InputGroup>
+      </Card>
+
+      <div className="flex gap-3 flex-wrap">
+        <Button
+          onClick={() => gradeSettingsMutation.mutate()}
+          disabled={gradeSettingsMutation.isPending}
+        >
+          Saqlash{gradeSettingsMutation.isPending && "..."}
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={() => openModal("exemptTeachersModal")}
+        >
+          Istisno ustozlar
+          {gradeSettings?.exemptTeachers?.length > 0 && (
+            <span className="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full">
+              {gradeSettings.exemptTeachers.length}
+            </span>
+          )}
+        </Button>
+      </div>
+
+      <ExemptTeachersModal />
     </div>
   );
 };
