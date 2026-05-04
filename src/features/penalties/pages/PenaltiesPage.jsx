@@ -1,6 +1,9 @@
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
+// React
+import { useState } from "react";
+
 // Router
 import { useSearchParams, Link } from "react-router-dom";
 
@@ -46,6 +49,8 @@ const PenaltiesPage = () => {
   const statusFilter = searchParams.get("status") || "all";
   const startDate = searchParams.get("startDate") || "";
   const endDate = searchParams.get("endDate") || "";
+  const searchQuery = searchParams.get("search") || "";
+  const [searchInput, setSearchInput] = useState(searchQuery);
 
   const { data, isLoading } = useQuery({
     queryKey: [
@@ -55,12 +60,14 @@ const PenaltiesPage = () => {
       statusFilter,
       startDate,
       endDate,
+      searchQuery,
     ],
     queryFn: () => {
       const params = { page: currentPage, limit: 20 };
       if (statusFilter && statusFilter !== "all") params.status = statusFilter;
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate;
+      if (searchQuery) params.search = searchQuery;
       return penaltiesAPI.getAll(params).then((res) => res.data);
     },
   });
@@ -74,6 +81,18 @@ const PenaltiesPage = () => {
       params.set("status", value);
     } else {
       params.delete("status");
+    }
+    params.set("page", "1");
+    setSearchParams(params);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams(searchParams);
+    if (searchInput) {
+      params.set("search", searchInput);
+    } else {
+      params.delete("search");
     }
     params.set("page", "1");
     setSearchParams(params);
@@ -168,6 +187,17 @@ const PenaltiesPage = () => {
           )}
         </div>
       </div>
+
+      <form onSubmit={handleSearchSubmit} className="flex items-end gap-2">
+        <InputField
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Ism yoki sabab..."
+        />
+        <Button type="submit" >
+          Qidirish
+        </Button>
+      </form>
 
       {/* Penalties Table */}
       {isLoading ? (
