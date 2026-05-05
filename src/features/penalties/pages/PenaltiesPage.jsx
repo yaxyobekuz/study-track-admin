@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 
 // Icons
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Trash2 } from "lucide-react";
 
 // API
 import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
@@ -38,6 +38,7 @@ import useArrayStore from "@/shared/hooks/useArrayStore";
 // Modals
 import CreatePenaltyModal from "../components/CreatePenaltyModal";
 import ReducePenaltyModal from "../components/ReducePenaltyModal";
+import DeletePenaltyModal from "../components/DeletePenaltyModal";
 
 const PenaltiesPage = () => {
   const { openModal } = useModal();
@@ -275,12 +276,24 @@ const PenaltiesPage = () => {
                   </td>
 
                   <td className="py-2.5 px-3">
-                    <Link
-                      to={`/penalties/${penalty._id}`}
-                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      Ba'tafsil
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to={`/penalties/${penalty._id}`}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        Ba'tafsil
+                      </Link>
+
+                      <button
+                        onClick={() => {
+                          openModal("deletePenalty", penalty);
+                        }}
+                        className="text-red-500 hover:text-red-700"
+                        title="O'chirish"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -301,6 +314,7 @@ const PenaltiesPage = () => {
       {/* Modals */}
       <CreatePenaltyModal />
       <ReducePenaltyModal />
+      <DeletePenaltyModal />
     </div>
   );
 };
