@@ -12,7 +12,10 @@ import {
 } from "../data/penalties.data";
 
 // Router
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+
+// Modals
+import DeletePenaltyModal from "../components/DeletePenaltyModal";
 
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
@@ -28,16 +31,24 @@ import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 import SelectField from "@/shared/components/ui/select/SelectField";
 
+// Icons
+import { Trash2 } from "lucide-react";
+
 // API
 import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
 
 // Tanstack Query
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+// Hooks
+import useModal from "@/shared/hooks/useModal";
+
 const PenaltyDetailPage = () => {
   const { getCollectionData: getRolesData } = useArrayStore("roles");
   const roles = getRolesData();
   const { penaltyId } = useParams();
+  const navigate = useNavigate();
+  const { openModal } = useModal();
 
   const queryClient = useQueryClient();
 
@@ -95,19 +106,29 @@ const PenaltyDetailPage = () => {
   return (
     <div className="space-y-4">
       {/* Top */}
-      <div className="flex items-center gap-4 ">
-        {/* Title */}
-        <h1 className="page-title">Jarima ta'fsilotlari</h1>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          {/* Title */}
+          <h1 className="page-title">Jarima ta'fsilotlari</h1>
 
-        {/* Status */}
-        <span
-          className={cn(
-            "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium",
-            penaltyStatusColors[penalty.status],
-          )}
+          {/* Status */}
+          <span
+            className={cn(
+              "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium",
+              penaltyStatusColors[penalty.status],
+            )}
+          >
+            {penaltyStatusLabels[penalty.status]}
+          </span>
+        </div>
+
+        <Button
+          variant="danger"
+          onClick={() => openModal("deletePenalty", penalty)}
         >
-          {penaltyStatusLabels[penalty.status]}
-        </span>
+          <Trash2 size={16} />
+          O'chirish
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -279,6 +300,8 @@ const PenaltyDetailPage = () => {
           )}
         </div>
       </div>
+
+      <DeletePenaltyModal onSuccess={() => navigate("/penalties")} />
     </div>
   );
 };
