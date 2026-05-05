@@ -14,13 +14,13 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 // Tanstack Query
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-const DeletePenaltyModal = () => (
+const DeletePenaltyModal = ({ onSuccess } = {}) => (
   <ResponsiveModal name="deletePenalty" title="Jarimani o'chirish">
-    <Content />
+    <Content onSuccess={onSuccess} />
   </ResponsiveModal>
 );
 
-const Content = ({ _id } = {}) => {
+const Content = ({ _id, onSuccess } = {}) => {
   const { closeModal } = useModal();
   const queryClient = useQueryClient();
 
@@ -30,6 +30,7 @@ const Content = ({ _id } = {}) => {
       queryClient.invalidateQueries({ queryKey: ["penalties", "list"] });
       toast.success("Jarima o'chirildi");
       closeModal("deletePenalty");
+      onSuccess?.();
     },
     onError: (err) =>
       toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
