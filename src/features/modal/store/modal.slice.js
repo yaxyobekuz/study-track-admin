@@ -12,7 +12,7 @@ const initialState = {
   createUser: initialModalData,
   resetUserPassword: initialModalData,
   viewUserPassword: initialModalData,
-  
+
   addDeliveryImage: initialModalData,
 
   // Class
@@ -62,6 +62,7 @@ const initialState = {
   reviewPenalty: initialModalData,
   penaltyDetail: initialModalData,
   reducePenalty: initialModalData,
+  deletePenalty: initialModalData,
 
   createPenaltyCategory: initialModalData,
   editPenaltyCategory: initialModalData,
