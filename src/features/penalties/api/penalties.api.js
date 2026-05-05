@@ -29,6 +29,7 @@ export const penaltiesAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
   review: (id, data) => http.put(`/penalties/${id}/review`, data),
+  delete: (id) => http.delete(`/penalties/${id}`),
 
   // Kamaytirish
   reduce: (data) => http.post("/penalties/reduce", data),
