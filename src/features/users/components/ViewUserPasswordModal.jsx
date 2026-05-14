@@ -99,7 +99,7 @@ const Content = ({ close, isLoading, setIsLoading, ...modalData }) => {
         <Button
           type="button"
           onClick={close}
-          variant="neutral"
+          variant="secondary"
           className="w-full xs:w-32"
         >
           Yopish

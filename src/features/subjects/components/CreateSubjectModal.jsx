@@ -66,7 +66,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         <Button
           type="button"
           className="w-full xs:w-32"
-          variant="neutral"
+          variant="secondary"
           onClick={close}
         >
           Bekor qilish
@@ -75,7 +75,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         <Button
           autoFocus
           className="w-full xs:w-32"
-          variant="primary"
+          variant="default"
           disabled={isLoading}
         >
           Yaratish

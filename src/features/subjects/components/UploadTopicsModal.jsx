@@ -292,7 +292,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         <Button
           type="button"
           onClick={close}
-          variant="neutral"
+          variant="secondary"
           className="w-full xs:w-32"
         >
           Bekor qilish
@@ -300,7 +300,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
         <Button
           autoFocus
-          variant="primary"
+          variant="default"
           className="w-full xs:w-32"
           disabled={isLoading || !selectedFile}
         >

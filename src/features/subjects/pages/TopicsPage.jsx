@@ -127,7 +127,7 @@ const Topics = () => {
           <div className="flex gap-3 items-end">
             <Button
               className="px-5"
-              variant="primary"
+              variant="default"
               onClick={() => openModal("uploadTopics")}
             >
               <Upload className="size-4 mr-2" strokeWidth={1.5} />
@@ -151,7 +151,7 @@ const Topics = () => {
         <Card className="flex justify-end mb-6">
           <Button
             className="px-5"
-            variant="primary"
+            variant="default"
             onClick={() => navigate(`/subjects/${selectedSubject}/topics`)}
           >
             <Users className="size-4 mr-2" strokeWidth={1.5} />

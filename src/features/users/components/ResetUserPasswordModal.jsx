@@ -11,6 +11,7 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import InputField from "@/shared/components/ui/input/InputField";
 
 const ResetUserPasswordModal = () => (
   <ResponsiveModal
@@ -42,7 +43,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
 
   return (
     <form onSubmit={handleEditUser} className="space-y-3.5">
-      <Input
+      <InputField
         required
         autoFocus
         minLength={6}
@@ -50,25 +51,20 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
         name="password"
         value={password}
         label="Yangi parol"
-        onChange={(v) => setField("password", v)}
+        onChange={(e) => setField("password", e.target.value)}
       />
 
       <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
         <Button
           type="button"
           className="w-full xs:w-32"
-          variant="neutral"
+          variant="secondary"
           onClick={close}
         >
           Bekor qilish
         </Button>
 
-        <Button
-          autoFocus
-          className="w-full xs:w-32"
-          variant="primary"
-          disabled={isLoading}
-        >
+        <Button autoFocus className="w-full xs:w-32" disabled={isLoading}>
           Yangilash
           {isLoading && "..."}
         </Button>

@@ -46,7 +46,7 @@ const Content = ({ close, isLoading, setIsLoading, ...subject }) => {
       onSubmit={handleDeleteSubject}
       className="flex flex-col-reverse gap-3.5 w-full xs:m-0 xs:flex-row xs:justify-end"
     >
-      <Button type="button" className="w-full xs:w-32" variant="neutral" onClick={close}>
+      <Button type="button" className="w-full xs:w-32" variant="secondary" onClick={close}>
         Bekor qilish
       </Button>
 

@@ -50,7 +50,7 @@ const Subjects = () => {
           Yangi fan
         </Button>
 
-        <Button onClick={handleExport} variant="primary" className="px-3.5">
+        <Button onClick={handleExport} variant="default" className="px-3.5">
           <Download className="size-5" strokeWidth={1.5} />
         </Button>
       </div>
