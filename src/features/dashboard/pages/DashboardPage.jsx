@@ -14,6 +14,7 @@ import CoinStats from "../components/CoinStats";
 import UsersStats from "../components/UsersStats";
 import HolidayInfo from "../components/HolidayInfo";
 import PenaltyStats from "../components/PenaltyStats";
+import RecentExcuses from "../components/RecentExcuses";
 import DownloadAppModal from "../components/DownloadAppModal";
 import AllSchedulesToday from "../components/AllSchedulesToday";
 
@@ -65,6 +66,11 @@ const Dashboard = () => {
 
       {/* Penalty Statistics */}
       <PenaltyStats />
+
+      {/* Recent Excuse Requests */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <RecentExcuses />
+      </div>
 
       {/* Today's Schedules */}
       <AllSchedulesToday />

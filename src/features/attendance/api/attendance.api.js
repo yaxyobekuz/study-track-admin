@@ -9,6 +9,7 @@ export const attendanceAPI = {
     http.get(`/attendance/user/${userId}`, { params: { month, year } }),
   getRecord: (id) => http.get(`/attendance/${id}`),
   getAllExcuses: (params) => http.get("/attendance/excuse", { params }),
+  getRecentExcuses: () => http.get("/attendance/excuse/recent"),
   getExcuse: (id) => http.get(`/attendance/excuse/${id}`),
   reviewExcuse: (id, data) => http.put(`/attendance/excuse/${id}/review`, data),
 };
