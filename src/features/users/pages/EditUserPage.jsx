@@ -12,6 +12,7 @@ import { usersAPI } from "../api/users.api";
 
 // Components
 import UserForm from "../components/UserForm";
+import StudentAttendanceSummary from "@/features/studentAttendance/components/StudentAttendanceSummary";
 
 const EditUserPage = () => {
   const { userId } = useParams();
@@ -38,7 +39,14 @@ const EditUserPage = () => {
       {isLoading ? (
         <div className="py-8 text-center text-gray-500">Yuklanmoqda...</div>
       ) : data ? (
-        <UserForm mode="edit" initialData={data} />
+        <>
+          <UserForm mode="edit" initialData={data} />
+          {data.role === "student" && (
+            <div className="mt-6 border border-gray-100 rounded-xl p-4">
+              <StudentAttendanceSummary studentId={userId} />
+            </div>
+          )}
+        </>
       ) : (
         <div className="py-8 text-center text-red-500">
           Foydalanuvchi topilmadi
