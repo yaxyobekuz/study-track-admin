@@ -222,6 +222,7 @@ const Users = () => {
                 <th>F.I.O</th>
                 <th>Username</th>
                 <th>Rol</th>
+                <th>Ish vaqti</th>
                 <th>Tangalar</th>
                 <th>Jarimalar</th>
                 <th>Sinflar</th>
@@ -254,6 +255,14 @@ const Users = () => {
                     >
                       {getRoleLabel(user.role, roles)}
                     </span>
+                  </td>
+
+                  {/* Work Schedule */}
+                  <td className="text-center text-sm text-gray-500">
+                    {user.effectiveSchedule?.workStartTime &&
+                    user.effectiveSchedule?.workEndTime
+                      ? `${user.effectiveSchedule.workStartTime}–${user.effectiveSchedule.workEndTime}`
+                      : "-"}
                   </td>
 
                   {/* Coin */}

@@ -10,6 +10,7 @@ import MultiSelect from "@/shared/components/form/multi-select";
 import InputField from "@/shared/components/ui/input/InputField";
 import SelectField from "@/shared/components/ui/select/SelectField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
+import WeeklyScheduleEditor from "./WeeklyScheduleEditor";
 
 // Data
 import { genderOptions } from "../data/users.data";
@@ -29,7 +30,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
   const { getCollectionData, invalidateCache } = useArrayStore("classes");
   const classes = getCollectionData();
 
-  const hasCustomSchedule = !!(user.workStartTime || user.workEndTime);
+  const hasCustomSchedule = !!(user.workStartTime && user.workEndTime);
 
   const { firstName, lastName, gender, state, setField } = useObjectState({
     classes: user.classes?.map((c) => c._id) || [],
@@ -39,6 +40,11 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
     workStartTime: user.workStartTime || "",
     workEndTime: user.workEndTime || "",
     workDays: user.workDays || [1, 2, 3, 4, 5],
+    weeklySchedule: user.weeklySchedule
+      ? user.weeklySchedule instanceof Map
+        ? Object.fromEntries(user.weeklySchedule)
+        : user.weeklySchedule
+      : {},
     hasCustomSchedule,
   });
 
@@ -58,8 +64,17 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
       setField("workStartTime", "");
       setField("workEndTime", "");
       setField("workDays", null);
+      setField("weeklySchedule", {});
     } else {
       setField("workDays", user.workDays || [1, 2, 3, 4, 5]);
+      setField(
+        "weeklySchedule",
+        user.weeklySchedule
+          ? user.weeklySchedule instanceof Map
+            ? Object.fromEntries(user.weeklySchedule)
+            : user.weeklySchedule
+          : {},
+      );
     }
   };
 
@@ -84,6 +99,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
         : null,
       workEndTime: state.hasCustomSchedule ? state.workEndTime || null : null,
       workDays: state.hasCustomSchedule ? state.workDays : null,
+      weeklySchedule: state.hasCustomSchedule ? state.weeklySchedule : {},
       hasCustomSchedule: undefined,
     };
 
@@ -185,6 +201,19 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div>
+                <p className="text-xs text-gray-500 mb-2">
+                  Har kun uchun alohida vaqt (ixtiyoriy)
+                </p>
+                <WeeklyScheduleEditor
+                  workDays={state.workDays || []}
+                  weeklySchedule={state.weeklySchedule}
+                  defaultStart={state.workStartTime}
+                  defaultEnd={state.workEndTime}
+                  onChange={(ws) => setField("weeklySchedule", ws)}
+                />
               </div>
             </div>
           )}
