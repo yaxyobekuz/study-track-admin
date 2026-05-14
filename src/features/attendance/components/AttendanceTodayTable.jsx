@@ -28,6 +28,7 @@ const AttendanceTodayTable = ({ rows }) => {
           <tr>
             <th className="text-left px-4 py-3">Xodim</th>
             <th className="text-left px-4 py-3">Rol</th>
+            <th className="text-left px-4 py-3">Kutilgan vaqt</th>
             <th className="text-left px-4 py-3">Holat</th>
             <th className="text-left px-4 py-3">Keldi</th>
             <th className="text-left px-4 py-3">Ketdi</th>
@@ -41,6 +42,11 @@ const AttendanceTodayTable = ({ rows }) => {
                 {row.user.firstName} {row.user.lastName}
               </td>
               <td className="px-4 py-3 text-gray-500 text-xs">{row.user.role}</td>
+              <td className="px-4 py-3 text-gray-700 text-xs">
+                {row.expectedStart && row.expectedEnd
+                  ? `${row.expectedStart}–${row.expectedEnd}`
+                  : "—"}
+              </td>
               <td className="px-4 py-3">
                 {row.status === "not_marked" ? (
                   <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500">
