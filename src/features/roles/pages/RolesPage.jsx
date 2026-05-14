@@ -43,28 +43,32 @@ const RolesPage = () => {
               </div>
 
               {/* Action buttons */}
-              {role.isSystem ? (
-                <span className="flex items-center gap-1 text-xs text-gray-400">
-                  <Lock className="size-3.5" strokeWidth={1.5} />
-                  Tizim roli
-                </span>
-              ) : (
-                <div className="flex gap-3.5">
-                  <button
-                    onClick={() => openModal("editRole", role)}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    <Edit className="size-5" strokeWidth={1.5} />
-                  </button>
+              <div className="flex items-center gap-3.5">
+                {role.isSystem && (
+                  <span className="flex items-center gap-1 text-xs text-gray-400">
+                    <Lock className="size-3.5" strokeWidth={1.5} />
+                    Tizim roli
+                  </span>
+                )}
 
+                {/* Edit (ish vaqti) — barcha rollar uchun */}
+                <button
+                  onClick={() => openModal("editRole", role)}
+                  className="text-blue-600 hover:text-blue-900"
+                >
+                  <Edit className="size-5" strokeWidth={1.5} />
+                </button>
+
+                {/* Delete — faqat tizimga tegishli bo'lmagan rollar */}
+                {!role.isSystem && (
                   <button
                     className="text-red-600 hover:text-red-900"
                     onClick={() => openModal("deleteRole", role)}
                   >
                     <Trash2 className="size-5" strokeWidth={1.5} />
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Bottom */}

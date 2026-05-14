@@ -28,6 +28,7 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
   const { invalidateCache } = useArrayStore("roles");
 
   const hasUsers = role.usersCount > 0;
+  const isSystem = !!role.isSystem;
 
   const { name, value, state, setField } = useObjectState({
     name: role.name || "",
@@ -74,6 +75,8 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
         name="name"
         value={name}
         label="Rol nomi"
+        disabled={isSystem}
+        description={isSystem ? "Tizim roli, nomini o'zgartirib bo'lmaydi" : undefined}
         onChange={(e) => setField("name", e.target.value)}
       />
 
@@ -83,11 +86,13 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
           name="value"
           value={value}
           label="Rol kaliti"
-          disabled={hasUsers}
+          disabled={isSystem || hasUsers}
           description={
-            hasUsers
-              ? "Foydalanuvchilar mavjud, kalitni o'zgartirib bo'lmaydi"
-              : "Faqat kichik lotin harflari, raqamlar va pastki chiziq"
+            isSystem
+              ? "Tizim roli, kalitni o'zgartirib bo'lmaydi"
+              : hasUsers
+                ? "Foydalanuvchilar mavjud, kalitni o'zgartirib bo'lmaydi"
+                : "Faqat kichik lotin harflari, raqamlar va pastki chiziq"
           }
           onChange={(e) =>
             setField("value", e.target.value?.toLowerCase().trim())
