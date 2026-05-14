@@ -222,6 +222,14 @@ const navItems = [
         title: "Sozlamalar",
         url: "/attendance/settings",
       },
+      {
+        title: "O'quvchilar (bugungi)",
+        url: "/student-attendance/today",
+      },
+      {
+        title: "O'quvchilar davomati",
+        url: "/student-attendance",
+      },
     ],
   },
   {

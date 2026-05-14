@@ -79,6 +79,10 @@ import AttendanceTodayPage from "@/features/attendance/pages/AttendanceTodayPage
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 import ExcuseRequestsPage from "@/features/attendance/pages/ExcuseRequestsPage";
 
+// Pages — Student Attendance
+import StudentAttendanceTodayPage from "@/features/studentAttendance/pages/StudentAttendanceTodayPage";
+import StudentAttendanceListPage from "@/features/studentAttendance/pages/StudentAttendanceListPage";
+
 // Pages — Leads
 import LeadDetailPage from "@/features/leads/pages/LeadDetailPage";
 import LeadsListPage from "@/features/leads/pages/LeadsListPage";
@@ -167,6 +171,10 @@ const Routes = () => {
           <Route path="/attendance/today" element={<AttendanceTodayPage />} />
           <Route path="/attendance/settings" element={<AttendanceSettingsPage />} />
           <Route path="/attendance/excuses" element={<ExcuseRequestsPage />} />
+
+          {/* Student Attendance */}
+          <Route path="/student-attendance" element={<StudentAttendanceListPage />} />
+          <Route path="/student-attendance/today" element={<StudentAttendanceTodayPage />} />
 
           {/* Leads */}
           <Route path="/leads" element={<LeadsListPage />} />
