@@ -38,6 +38,9 @@ const Content = ({ close, isLoading, setIsLoading }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
+  // Guard against double submit (e.g. rapid double-click before isLoading flips)
+  const isSubmittingRef = useRef(false);
+
   const { state, setField } = useObjectState({
     messageText: "",
     recipientType: "class",
@@ -107,6 +110,9 @@ const Content = ({ close, isLoading, setIsLoading }) => {
   const handleSendMessage = (e) => {
     e.preventDefault();
 
+    // Block re-entry if a submit is already in flight
+    if (isSubmittingRef.current) return;
+
     // Validate message text
     if (!state.messageText || !state.messageText.trim()) {
       return toast.warning("Xabar matni majburiy");
@@ -121,6 +127,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       return toast.warning("O'quvchi tanlanishi kerak");
     }
 
+    isSubmittingRef.current = true;
     setIsLoading(true);
 
     const data = {
@@ -151,7 +158,10 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       .catch((err) => {
         toast.error(err.response?.data?.message || "Xatolik yuz berdi");
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        isSubmittingRef.current = false;
+        setIsLoading(false);
+      });
   };
 
   return (

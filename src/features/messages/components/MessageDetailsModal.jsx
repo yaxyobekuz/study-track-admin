@@ -11,7 +11,7 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import { useEffect, useState } from "react";
 
 // Icons
-import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Ban } from "lucide-react";
 import Button from "@/shared/components/ui/button/Button";
 
 const MessageDetailsModal = () => (
@@ -53,6 +53,8 @@ const Content = ({ close, ...data }) => {
         return <XCircle className="size-5 text-red-600" />;
       case "pending":
         return <Clock className="size-5 text-yellow-600" />;
+      case "cancelled":
+        return <Ban className="size-5 text-gray-500" />;
       default:
         return <Clock className="size-5 text-gray-600" />;
     }
@@ -66,6 +68,8 @@ const Content = ({ close, ...data }) => {
         return "Xato";
       case "pending":
         return "Kutilmoqda";
+      case "cancelled":
+        return "To'xtatildi";
       default:
         return status;
     }

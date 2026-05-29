@@ -3,6 +3,7 @@ import http from "@/shared/api/http";
 export const messagesAPI = {
   getAll: (params) => http.get("/messages", { params }),
   getOne: (id) => http.get(`/messages/${id}`),
+  cancel: (id) => http.patch(`/messages/${id}/cancel`),
   send: (data) => {
     const formData = new FormData();
     formData.append("messageText", data.messageText);

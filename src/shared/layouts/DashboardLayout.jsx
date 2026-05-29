@@ -39,6 +39,7 @@ import CreateSubjectModal from "@/features/subjects/components/CreateSubjectModa
 import DeleteSubjectModal from "@/features/subjects/components/DeleteSubjectModal";
 import DeleteProductModal from "@/features/market/components/DeleteProductModal";
 import MessageDetailsModal from "@/features/messages/components/MessageDetailsModal";
+import CancelMessageModal from "@/features/messages/components/CancelMessageModal";
 import CreateScheduleModal from "@/features/schedules/components/CreateScheduleModal";
 import DeleteScheduleModal from "@/features/schedules/components/DeleteScheduleModal";
 import ViewUserPasswordModal from "@/features/users/components/ViewUserPasswordModal";
@@ -98,6 +99,7 @@ const DashboardLayout = () => {
       {/* Message Modals */}
       <SendMessageModal />
       <MessageDetailsModal />
+      <CancelMessageModal />
 
       {/* Topic Modals */}
       <UploadTopicsModal />

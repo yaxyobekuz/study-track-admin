@@ -25,7 +25,7 @@ import Pagination from "@/shared/components/ui/Pagination";
 import { useEffect, useCallback, useState } from "react";
 
 // Icons
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Ban } from "lucide-react";
 
 // Recipient type options
 const recipientTypeOptions = [
@@ -371,13 +371,25 @@ const Messages = () => {
 
                     {/* Actions */}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => openModal("messageDetails", message)}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="Batafsil"
-                      >
-                        <Eye className="size-5" strokeWidth={1.5} />
-                      </button>
+                      <div className="flex items-center justify-end gap-3.5">
+                        <button
+                          onClick={() => openModal("messageDetails", message)}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Batafsil"
+                        >
+                          <Eye className="size-5" strokeWidth={1.5} />
+                        </button>
+
+                        {message.stats.totalPending > 0 && (
+                          <button
+                            onClick={() => openModal("cancelMessage", message)}
+                            className="text-red-600 hover:text-red-900"
+                            title="Yuborishni to'xtatish"
+                          >
+                            <Ban className="size-5" strokeWidth={1.5} />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
