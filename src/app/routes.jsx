@@ -88,6 +88,11 @@ import LeadDetailPage from "@/features/leads/pages/LeadDetailPage";
 import LeadsListPage from "@/features/leads/pages/LeadsListPage";
 import LeadAnalyticsPage from "@/features/leads/pages/LeadAnalyticsPage";
 
+// Pages — Test Seasons
+import TestSeasonsPage from "@/features/test-seasons/pages/TestSeasonsPage";
+import SeasonAssignmentsPage from "@/features/test-seasons/pages/SeasonAssignmentsPage";
+import SeasonRewardsPage from "@/features/test-seasons/pages/SeasonRewardsPage";
+
 // Router
 import { Routes as RoutesWrapper, Route, Navigate } from "react-router-dom";
 
@@ -180,6 +185,17 @@ const Routes = () => {
           <Route path="/leads" element={<LeadsListPage />} />
           <Route path="/leads/analytics" element={<LeadAnalyticsPage />} />
           <Route path="/leads/:leadId" element={<LeadDetailPage />} />
+
+          {/* Test Seasons */}
+          <Route path="/test-seasons" element={<TestSeasonsPage />} />
+          <Route
+            path="/test-seasons/:id/assignments"
+            element={<SeasonAssignmentsPage />}
+          />
+          <Route
+            path="/test-seasons/:id/rewards"
+            element={<SeasonRewardsPage />}
+          />
         </Route>
       </Route>
 

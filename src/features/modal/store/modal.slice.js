@@ -98,6 +98,14 @@ const initialState = {
 
   // Attendance
   reviewExcuse: initialModalData,
+
+  // Test season
+  createSeason: initialModalData,
+  editSeason: initialModalData,
+  deleteSeason: initialModalData,
+  createAssignment: initialModalData,
+  editAssignment: initialModalData,
+  deleteAssignment: initialModalData,
 };
 
 export const modalSlice = createSlice({
