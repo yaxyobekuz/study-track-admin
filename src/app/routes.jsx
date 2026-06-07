@@ -34,6 +34,8 @@ import MissingGradesPage from "@/features/grades/pages/MissingGradesPage";
 
 // Pages — Schedules
 import SchedulesPage from "@/features/schedules/pages/SchedulesPage";
+import CreateSchedulePage from "@/features/schedules/pages/CreateSchedulePage";
+import EditSchedulePage from "@/features/schedules/pages/EditSchedulePage";
 
 // Pages — Messages
 import MessagesPage from "@/features/messages/pages/MessagesPage";
@@ -132,6 +134,14 @@ const Routes = () => {
 
           {/* Schedules */}
           <Route path="/schedules" element={<SchedulesPage />} />
+          <Route
+            path="/schedules/:classId/:day/new"
+            element={<CreateSchedulePage />}
+          />
+          <Route
+            path="/schedules/:classId/:day/edit"
+            element={<EditSchedulePage />}
+          />
 
           {/* Messages */}
           <Route path="/messages" element={<MessagesPage />} />

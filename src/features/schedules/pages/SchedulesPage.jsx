@@ -4,6 +4,9 @@ import { days } from "@/shared/data/days.data";
 // React
 import { useState, useEffect } from "react";
 
+// Router
+import { useNavigate } from "react-router-dom";
+
 // Store
 import useAuth from "@/shared/hooks/useAuth";
 
@@ -24,6 +27,7 @@ import { Plus, Edit, Trash2, Calendar, Download } from "lucide-react";
 
 const Schedules = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { openModal } = useModal();
   const isOwner = user?.role === "owner";
   const [selectedClass, setSelectedClass] = useState("");
@@ -100,23 +104,9 @@ const Schedules = () => {
     }
   };
 
-  const handleOpenScheduleModal = (day, schedule = null) => {
-    const dayData = days.find((d) => d.value === day);
-
-    if (schedule) {
-      return openModal("editSchedule", {
-        ...schedule,
-        day,
-        dayLabel: dayData?.label,
-        classId: selectedClass,
-      });
-    }
-
-    openModal("createSchedule", {
-      day,
-      dayLabel: dayData?.label,
-      classId: selectedClass,
-    });
+  const handleOpenScheduleForm = (day, schedule = null) => {
+    const action = schedule ? "edit" : "new";
+    navigate(`/schedules/${selectedClass}/${day}/${action}`);
   };
 
   if (isLoading) {
@@ -186,7 +176,7 @@ const Schedules = () => {
                     {/* Edit / Create */}
                     <button
                       onClick={() =>
-                        handleOpenScheduleModal(day.value, schedule)
+                        handleOpenScheduleForm(day.value, schedule)
                       }
                       className="text-blue-600 hover:text-blue-900"
                     >
@@ -214,10 +204,7 @@ const Schedules = () => {
               {schedule && (
                 <div className="space-y-3">
                   {schedule.subjects.map((subj, index) => {
-                    const displayOrder =
-                      (schedule.startingOrder || 1) +
-                      (subj.order || index + 1) -
-                      1;
+                    const displayOrder = subj.order || index + 1;
                     return (
                       <div key={index} className="p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-start justify-between mb-1">

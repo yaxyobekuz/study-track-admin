@@ -31,8 +31,6 @@ const initialState = {
   createGrade: initialModalData,
 
   // Schedule
-  createSchedule: initialModalData,
-  editSchedule: initialModalData,
   deleteSchedule: initialModalData,
 
   // Holiday

@@ -33,14 +33,12 @@ import CreateClassModal from "@/features/classes/components/CreateClassModal";
 import DeleteClassModal from "@/features/classes/components/DeleteClassModal";
 import EditSubjectModal from "@/features/subjects/components/EditSubjectModal";
 import SendMessageModal from "@/features/messages/components/SendMessageModal";
-import EditScheduleModal from "@/features/schedules/components/EditScheduleModal";
 import UploadTopicsModal from "@/features/subjects/components/UploadTopicsModal";
 import CreateSubjectModal from "@/features/subjects/components/CreateSubjectModal";
 import DeleteSubjectModal from "@/features/subjects/components/DeleteSubjectModal";
 import DeleteProductModal from "@/features/market/components/DeleteProductModal";
 import MessageDetailsModal from "@/features/messages/components/MessageDetailsModal";
 import CancelMessageModal from "@/features/messages/components/CancelMessageModal";
-import CreateScheduleModal from "@/features/schedules/components/CreateScheduleModal";
 import DeleteScheduleModal from "@/features/schedules/components/DeleteScheduleModal";
 import ViewUserPasswordModal from "@/features/users/components/ViewUserPasswordModal";
 import ResetUserPasswordModal from "@/features/users/components/ResetUserPasswordModal";
@@ -92,8 +90,6 @@ const DashboardLayout = () => {
       <DeleteSubjectModal />
 
       {/* Schedule Modals */}
-      <EditScheduleModal />
-      <CreateScheduleModal />
       <DeleteScheduleModal />
 
       {/* Message Modals */}

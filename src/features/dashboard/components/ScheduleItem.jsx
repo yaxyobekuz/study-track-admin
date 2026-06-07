@@ -22,8 +22,7 @@ const ScheduleItem = ({ schedule }) => {
       icon={<Calendar strokeWidth={1.5} className="size-5 text-blue-500" />}
     >
       {schedule.subjects?.map((subj, index) => {
-        const displayOrder =
-          (schedule.startingOrder || 1) + (subj.order || index + 1) - 1;
+        const displayOrder = subj.order || index + 1;
 
         const endMinutes = toMinutes(subj.endTime);
         const startMinutes = toMinutes(subj.startTime);
