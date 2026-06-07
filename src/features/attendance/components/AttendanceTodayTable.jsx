@@ -5,7 +5,7 @@ import { cn } from "@/shared/utils/cn";
 import { STATUS_COLORS, STATUS_LABELS } from "../data/attendance.data";
 
 const formatTime = (iso) => {
-  if (!iso) return "—";
+  if (!iso) return "-";
   return new Date(iso).toLocaleTimeString("uz-UZ", {
     hour: "2-digit",
     minute: "2-digit",
@@ -45,7 +45,7 @@ const AttendanceTodayTable = ({ rows }) => {
               <td className="px-4 py-3 text-gray-700 text-xs">
                 {row.expectedStart && row.expectedEnd
                   ? `${row.expectedStart}–${row.expectedEnd}`
-                  : "—"}
+                  : "-"}
               </td>
               <td className="px-4 py-3">
                 {row.status === "not_marked" ? (
@@ -71,7 +71,7 @@ const AttendanceTodayTable = ({ rows }) => {
                     {row.lateMinutes} daqiqa
                   </span>
                 ) : (
-                  <span className="text-gray-300">—</span>
+                  <span className="text-gray-300">-</span>
                 )}
               </td>
             </tr>

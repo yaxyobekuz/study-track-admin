@@ -117,7 +117,7 @@ const PenaltiesPage = () => {
   };
 
   const formatUserName = (user) => {
-    if (!user) return "—";
+    if (!user) return "-";
     return user.lastName
       ? `${user.firstName} ${user.lastName}`
       : user.firstName;
@@ -239,7 +239,7 @@ const PenaltiesPage = () => {
 
                   <td className="py-2.5 px-3">
                     <p className="text-xs text-gray-800 max-w-48 truncate">
-                      {penalty.title || penalty.description || "—"}
+                      {penalty.title || penalty.description || "-"}
                     </p>
 
                     {penalty.isCustom && (

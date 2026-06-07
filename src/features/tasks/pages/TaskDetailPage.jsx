@@ -69,7 +69,7 @@ const TaskDetailPage = () => {
    * @returns {string}
    */
   const formatUserName = (user) => {
-    if (!user) return "—";
+    if (!user) return "-";
     return user.lastName
       ? `${user.firstName} ${user.lastName}`
       : user.firstName;
@@ -101,7 +101,7 @@ const TaskDetailPage = () => {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Main — left (2/3) */}
+        {/* Main - left (2/3) */}
         <div className="lg:col-span-2 space-y-4">
           {/* Basic info */}
           <Card>
@@ -211,7 +211,7 @@ const TaskDetailPage = () => {
                     ? "Tizim"
                     : entry.changedBy?.lastName
                       ? `${entry.changedBy.firstName} ${entry.changedBy.lastName}`
-                      : entry.changedBy?.firstName || "—";
+                      : entry.changedBy?.firstName || "-";
 
                   return (
                     <div key={idx} className="flex gap-3">
@@ -244,7 +244,7 @@ const TaskDetailPage = () => {
           )}
         </div>
 
-        {/* Sidebar — right (1/3) */}
+        {/* Sidebar - right (1/3) */}
         <div className="space-y-4">
           {/* Deadline history */}
           {task.deadlineHistory?.length > 0 && (
@@ -367,7 +367,7 @@ const TaskDetailPage = () => {
             <div className="space-y-2 text-sm">
               <InfoRow label="Jami jarima bali">
                 <span className="font-semibold text-red-600">
-                  {task.assignee?.penaltyPoints ?? "—"}
+                  {task.assignee?.penaltyPoints ?? "-"}
                 </span>
               </InfoRow>
             </div>

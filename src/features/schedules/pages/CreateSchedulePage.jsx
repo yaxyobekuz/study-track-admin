@@ -34,7 +34,7 @@ const CreateSchedulePage = () => {
       </div>
 
       <h1 className="page-title">
-        Yangi dars jadvali — {className}, {dayLabel}
+        Yangi dars jadvali - {className}, {dayLabel}
       </h1>
 
       <ScheduleForm mode="create" classId={classId} day={day} />

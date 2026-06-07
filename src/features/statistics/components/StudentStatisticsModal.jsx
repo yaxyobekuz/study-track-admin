@@ -84,7 +84,7 @@ const Content = ({ studentId }) => {
                   </span>
                 ))
               ) : (
-                <span className="text-sm text-gray-500">—</span>
+                <span className="text-sm text-gray-500">-</span>
               )}
             </div>
           </div>

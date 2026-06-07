@@ -61,7 +61,7 @@ const EditSchedulePage = () => {
       </div>
 
       <h1 className="page-title">
-        Dars jadvalini tahrirlash — {className}, {dayLabel}
+        Dars jadvalini tahrirlash - {className}, {dayLabel}
       </h1>
 
       {isLoading ? (

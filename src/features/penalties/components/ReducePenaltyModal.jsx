@@ -39,7 +39,7 @@ const Content = ({ close }) => {
   const users = (usersData || [])
     .filter((u) => u.role !== "owner" && u.penaltyPoints > 0)
     .map((u) => ({
-      label: `${u.firstName}${u.lastName ? ` ${u.lastName}` : ""} (${u.username}) — ${u.penaltyPoints} ball`,
+      label: `${u.firstName}${u.lastName ? ` ${u.lastName}` : ""} (${u.username}) - ${u.penaltyPoints} ball`,
       value: u._id,
       penaltyPoints: u.penaltyPoints,
     }));

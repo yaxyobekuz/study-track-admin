@@ -60,7 +60,7 @@ const RecentLeads = () => {
                   </td>
                   <td className="py-2.5 px-3 text-gray-600">{lead.phone}</td>
                   <td className="py-2.5 px-3 text-gray-600">
-                    {lead.source?.name || "—"}
+                    {lead.source?.name || "-"}
                   </td>
                   <td className="py-2.5 px-3">
                     <span

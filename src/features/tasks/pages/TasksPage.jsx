@@ -76,7 +76,7 @@ const TasksPage = () => {
   };
 
   const formatUserName = (user) => {
-    if (!user) return "—";
+    if (!user) return "-";
     return user.lastName
       ? `${user.firstName} ${user.lastName}`
       : user.firstName;

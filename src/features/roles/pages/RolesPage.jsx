@@ -51,7 +51,7 @@ const RolesPage = () => {
                   </span>
                 )}
 
-                {/* Edit (ish vaqti) — barcha rollar uchun */}
+                {/* Edit (ish vaqti) - barcha rollar uchun */}
                 <button
                   onClick={() => openModal("editRole", role)}
                   className="text-blue-600 hover:text-blue-900"
@@ -59,7 +59,7 @@ const RolesPage = () => {
                   <Edit className="size-5" strokeWidth={1.5} />
                 </button>
 
-                {/* Delete — faqat tizimga tegishli bo'lmagan rollar */}
+                {/* Delete - faqat tizimga tegishli bo'lmagan rollar */}
                 {!role.isSystem && (
                   <button
                     className="text-red-600 hover:text-red-900"

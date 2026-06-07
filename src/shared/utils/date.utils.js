@@ -121,7 +121,7 @@ export const formatHolidayDate = (holiday) => {
     ) {
       return `Har yili ${holiday.recurringStartDate.day}-${
         months[holiday.recurringStartDate.month].label
-      } — ${holiday.recurringEndDate.day}-${
+      } - ${holiday.recurringEndDate.day}-${
         months[holiday.recurringEndDate.month].label
       }`;
     }

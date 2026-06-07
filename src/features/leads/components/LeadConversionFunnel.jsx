@@ -47,7 +47,7 @@ const LeadConversionFunnel = ({ dateParams }) => {
   return (
     <div className="space-y-4">
       {/* Pipeline funnel */}
-      <Card title={`Sotuv funnel — Jami: ${totalLeads} lid`} className="space-y-3">
+      <Card title={`Sotuv funnel - Jami: ${totalLeads} lid`} className="space-y-3">
         {pipeline.length === 0 ? (
           <p className="text-sm text-gray-400 text-center py-8">
             Ma'lumot topilmadi
@@ -139,7 +139,7 @@ const LeadConversionFunnel = ({ dateParams }) => {
               <p className="text-[11px] text-gray-400">
                 {totalLeads > 0
                   ? `${(((pipeline.find((s) => s.stage === "enrolled")?.count || 0) / totalLeads) * 100).toFixed(1)}% konversiya`
-                  : "—"}
+                  : "-"}
               </p>
             </div>
             <div>
@@ -150,7 +150,7 @@ const LeadConversionFunnel = ({ dateParams }) => {
               <p className="text-[11px] text-gray-400">
                 {totalLeads > 0
                   ? `${((exits.reduce((sum, e) => sum + (e.stage === "postponed" ? 0 : e.count), 0) / totalLeads) * 100).toFixed(1)}% yo'qolish`
-                  : "—"}
+                  : "-"}
               </p>
             </div>
           </div>

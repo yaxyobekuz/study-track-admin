@@ -86,10 +86,10 @@ function formatTick(val, groupBy) {
     return `${months[parseInt(m, 10) - 1]} ${y}`;
   }
   if (groupBy === "week") {
-    // val = "2025-W12" — just show as is
+    // val = "2025-W12" - just show as is
     return val.replace("-W", " H");
   }
-  // day — format as date
+  // day - format as date
   try {
     return formatDateUZ(val, { hideYear: true });
   } catch {

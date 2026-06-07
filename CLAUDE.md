@@ -1,4 +1,4 @@
-# Claude Code — Admin Module Rules
+# Claude Code - Admin Module Rules
 
 > Global rules in root CLAUDE.md also apply.
 

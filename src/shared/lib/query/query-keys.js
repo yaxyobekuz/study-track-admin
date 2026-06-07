@@ -6,11 +6,11 @@
  * Creates a type-safe, hierarchical query key factory for a given feature.
  *
  * Provides four granularity levels:
- * - `all`    — matches every query in the feature (e.g. invalidate everything)
- * - `lists`  — matches all list-type queries
- * - `list`   — matches a specific list query filtered by params
- * - `details`— matches all detail-type queries
- * - `detail` — matches a single detail query by id
+ * - `all`    - matches every query in the feature (e.g. invalidate everything)
+ * - `lists`  - matches all list-type queries
+ * - `list`   - matches a specific list query filtered by params
+ * - `details`- matches all detail-type queries
+ * - `detail` - matches a single detail query by id
  *
  * @param {string} feature - The feature/entity name (e.g. "users", "classes").
  * @returns {{

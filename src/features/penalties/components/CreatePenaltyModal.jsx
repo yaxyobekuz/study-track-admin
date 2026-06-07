@@ -65,7 +65,7 @@ const Content = ({ close }) => {
   const users = (usersData || [])
     .filter((u) => u.role !== "owner")
     .map((u) => ({
-      label: `${u.firstName}${u.lastName ? ` ${u.lastName}` : ""} (${u.username}) — ${getRoleLabel(u.role, roles)}`,
+      label: `${u.firstName}${u.lastName ? ` ${u.lastName}` : ""} (${u.username}) - ${getRoleLabel(u.role, roles)}`,
       value: u._id,
       role: u.role,
     }));

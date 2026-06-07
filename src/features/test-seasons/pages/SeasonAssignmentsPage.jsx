@@ -56,7 +56,7 @@ const SeasonAssignmentsPage = () => {
   const assignments = getCollectionData(collectionName);
   const isLoading = isCollectionLoading(collectionName);
 
-  // Mavsum ma'lumotlari (TanStack Query — admin CLAUDE.md tavsiya etadi)
+  // Mavsum ma'lumotlari (TanStack Query - admin CLAUDE.md tavsiya etadi)
   const { data: season, isLoading: seasonLoading } = useQuery({
     queryKey: ["test-season", seasonId],
     queryFn: () =>
@@ -98,7 +98,7 @@ const SeasonAssignmentsPage = () => {
               {seasonLoading
                 ? "Yuklanmoqda..."
                 : season?.name || "Mavsum"}{" "}
-              — biriktiruvlar
+              - biriktiruvlar
             </h1>
             {season && (
               <p className="text-sm text-gray-600 mt-1">
@@ -109,7 +109,7 @@ const SeasonAssignmentsPage = () => {
                 >
                   {SEASON_STATUS_LABELS[season.status]}
                 </span>
-                {formatDateUZ(season.startDate)} —{" "}
+                {formatDateUZ(season.startDate)} -{" "}
                 {formatDateUZ(season.endDate)}
               </p>
             )}
@@ -156,13 +156,13 @@ const SeasonAssignmentsPage = () => {
                     {index + 1}
                   </td>
                   <td className="text-center text-sm font-medium">
-                    {a.class?.name || "—"}
+                    {a.class?.name || "-"}
                   </td>
-                  <td className="text-center text-sm">{a.subject?.name || "—"}</td>
+                  <td className="text-center text-sm">{a.subject?.name || "-"}</td>
                   <td className="text-center text-sm">
                     {a.teacher
                       ? `${a.teacher.firstName} ${a.teacher.lastName || ""}`.trim()
-                      : "—"}
+                      : "-"}
                   </td>
                   <td className="text-center">
                     <span

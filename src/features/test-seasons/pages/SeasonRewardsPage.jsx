@@ -82,7 +82,7 @@ const SeasonRewardsPage = () => {
         </Link>
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-semibold text-gray-900">
-            {season.name} — Mukofotlar
+            {season.name} - Mukofotlar
           </h1>
           <p className="text-sm text-gray-600 mt-0.5">
             {formatDateUZ(season.startDate)} → {formatDateUZ(season.endDate)}

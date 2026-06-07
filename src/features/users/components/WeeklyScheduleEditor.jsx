@@ -77,7 +77,7 @@ const WeeklyScheduleEditor = ({
                   placeholder={defaultStart || "09:00"}
                   onChange={(e) => handleChange(day, "startTime", e.target.value)}
                 />
-                <span className="text-gray-400 text-sm">—</span>
+                <span className="text-gray-400 text-sm">-</span>
                 <InputField
                   type="time"
                   className="w-32"

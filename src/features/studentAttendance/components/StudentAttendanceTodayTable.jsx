@@ -2,7 +2,7 @@ import { cn } from "@/shared/utils/cn";
 import { STATUS_COLORS, STATUS_LABELS } from "../data/studentAttendance.data";
 
 const formatTime = (iso) => {
-  if (!iso) return "—";
+  if (!iso) return "-";
   return new Date(iso).toLocaleTimeString("uz-UZ", {
     hour: "2-digit",
     minute: "2-digit",
@@ -52,10 +52,10 @@ const StudentAttendanceTodayTable = ({ students }) => {
                 )}
               </td>
               <td className="px-4 py-3 text-gray-500">
-                {attendance?.markedAt ? formatTime(attendance.markedAt) : "—"}
+                {attendance?.markedAt ? formatTime(attendance.markedAt) : "-"}
               </td>
               <td className="px-4 py-3 text-gray-500 text-xs">
-                {attendance?.excuseReason || "—"}
+                {attendance?.excuseReason || "-"}
               </td>
             </tr>
           ))}

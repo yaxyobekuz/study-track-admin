@@ -22,7 +22,7 @@ import SelectField from "@/shared/components/ui/select/SelectField";
 
 /**
  * O'qituvchi biriktiruvini yaratish/tahrirlash formasi.
- * `season` prop majburiy — modal data sifatida uzatiladi va edit holatida
+ * `season` prop majburiy - modal data sifatida uzatiladi va edit holatida
  * mavjud assignment maydonlari bilan birga keladi.
  */
 const AssignmentForm = ({
@@ -63,7 +63,7 @@ const AssignmentForm = ({
     queryFn: () => subjectsAPI.getAll().then((res) => res.data.data),
   });
 
-  // O'qituvchilar (qisqartirilgan ro'yxat — userlardan teacher roli)
+  // O'qituvchilar (qisqartirilgan ro'yxat - userlardan teacher roli)
   const { data: usersShort = [] } = useQuery({
     queryKey: ["users", "all-short"],
     queryFn: () => usersAPI.getAllShort().then((res) => res.data.data),

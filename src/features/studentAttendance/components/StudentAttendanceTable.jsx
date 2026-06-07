@@ -29,7 +29,7 @@ const StudentAttendanceTable = ({ records }) => {
               <td className="px-4 py-3 font-medium text-gray-900">
                 {rec.student?.lastName} {rec.student?.firstName}
               </td>
-              <td className="px-4 py-3 text-gray-600">{rec.class?.name || "—"}</td>
+              <td className="px-4 py-3 text-gray-600">{rec.class?.name || "-"}</td>
               <td className="px-4 py-3 text-gray-500">
                 {formatDateUZ(new Date(rec.date))}
               </td>
@@ -44,7 +44,7 @@ const StudentAttendanceTable = ({ records }) => {
                 </span>
               </td>
               <td className="px-4 py-3 text-gray-500 text-xs">
-                {rec.excuseReason || "—"}
+                {rec.excuseReason || "-"}
               </td>
             </tr>
           ))}

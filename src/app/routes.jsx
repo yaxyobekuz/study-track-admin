@@ -5,92 +5,92 @@ import DashboardLayout from "@/shared/layouts/DashboardLayout";
 import AuthGuard from "@/shared/components/guards/AuthGuard";
 import GuestGuard from "@/shared/components/guards/GuestGuard";
 
-// Pages — Auth
+// Pages - Auth
 import LoginPage from "@/features/auth/pages/LoginPage";
 
-// Pages — Dashboard
+// Pages - Dashboard
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 
-// Pages — Users
+// Pages - Users
 import UsersPage from "@/features/users/pages/UsersPage";
 import CreateUserPage from "@/features/users/pages/CreateUserPage";
 import EditUserPage from "@/features/users/pages/EditUserPage";
 
-// Pages — Roles
+// Pages - Roles
 import RolesPage from "@/features/roles/pages/RolesPage";
 
-// Pages — Classes
+// Pages - Classes
 import ClassesPage from "@/features/classes/pages/ClassesPage";
 import ClassDetailPage from "@/features/classes/pages/ClassDetailPage";
 
-// Pages — Subjects
+// Pages - Subjects
 import SubjectsPage from "@/features/subjects/pages/SubjectsPage";
 import TopicsPage from "@/features/subjects/pages/TopicsPage";
 import SubjectTopicsPage from "@/features/subjects/pages/SubjectTopicsPage";
 
-// Pages — Grades
+// Pages - Grades
 import GradesPage from "@/features/grades/pages/GradesPage";
 import MissingGradesPage from "@/features/grades/pages/MissingGradesPage";
 
-// Pages — Schedules
+// Pages - Schedules
 import SchedulesPage from "@/features/schedules/pages/SchedulesPage";
 import CreateSchedulePage from "@/features/schedules/pages/CreateSchedulePage";
 import EditSchedulePage from "@/features/schedules/pages/EditSchedulePage";
 
-// Pages — Messages
+// Pages - Messages
 import MessagesPage from "@/features/messages/pages/MessagesPage";
 
-// Pages — Statistics
+// Pages - Statistics
 import StatisticsPage from "@/features/statistics/pages/StatisticsPage";
 
-// Pages — Holidays
+// Pages - Holidays
 import HolidaysPage from "@/features/holidays/pages/HolidaysPage";
 
-// Pages — Coin Settings
+// Pages - Coin Settings
 import CoinSettingsPage from "@/features/coin-settings/pages/CoinSettingsPage";
 
-// Pages — Coin Distribution
+// Pages - Coin Distribution
 import CoinDistributionPage from "@/features/coin-distribution/pages/CoinDistributionPage";
 
-// Pages — Market
+// Pages - Market
 import MarketOrdersPage from "@/features/market/pages/MarketOrdersPage";
 import MarketProductsPage from "@/features/market/pages/MarketProductsPage";
 import MarketProductEditPage from "@/features/market/pages/MarketProductEditPage";
 import MarketProductCreatePage from "@/features/market/pages/MarketProductCreatePage";
 
-// Pages — Social Networks
+// Pages - Social Networks
 import SocialNetworksPage from "@/features/social-networks/pages/SocialNetworksPage";
 
-// Pages — Monitors
+// Pages - Monitors
 import MonitorsPage from "@/features/monitors/pages/MonitorsPage";
 
-// Pages — Tasks
+// Pages - Tasks
 import TasksPage from "@/features/tasks/pages/TasksPage";
 import TaskDetailPage from "@/features/tasks/pages/TaskDetailPage";
 
-// Pages — Penalties
+// Pages - Penalties
 import PenaltiesPage from "@/features/penalties/pages/PenaltiesPage";
 import PenaltyDetailPage from "@/features/penalties/pages/PenaltyDetailPage";
 import PenaltyCategoriesPage from "@/features/penalties/pages/PenaltyCategoriesPage";
 import PenaltySettingsPage from "@/features/penalties/pages/PenaltySettingsPage";
 import ReductionPackagesPage from "@/features/penalties/pages/ReductionPackagesPage";
 
-// Pages — Attendance
+// Pages - Attendance
 import AttendanceListPage from "@/features/attendance/pages/AttendanceListPage";
 import AttendanceTodayPage from "@/features/attendance/pages/AttendanceTodayPage";
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 import ExcuseRequestsPage from "@/features/attendance/pages/ExcuseRequestsPage";
 
-// Pages — Student Attendance
+// Pages - Student Attendance
 import StudentAttendanceTodayPage from "@/features/studentAttendance/pages/StudentAttendanceTodayPage";
 import StudentAttendanceListPage from "@/features/studentAttendance/pages/StudentAttendanceListPage";
 
-// Pages — Leads
+// Pages - Leads
 import LeadDetailPage from "@/features/leads/pages/LeadDetailPage";
 import LeadsListPage from "@/features/leads/pages/LeadsListPage";
 import LeadAnalyticsPage from "@/features/leads/pages/LeadAnalyticsPage";
 
-// Pages — Test Seasons
+// Pages - Test Seasons
 import TestSeasonsPage from "@/features/test-seasons/pages/TestSeasonsPage";
 import SeasonAssignmentsPage from "@/features/test-seasons/pages/SeasonAssignmentsPage";
 import SeasonRewardsPage from "@/features/test-seasons/pages/SeasonRewardsPage";
