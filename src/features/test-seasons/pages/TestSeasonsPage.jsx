@@ -128,7 +128,7 @@ const TestSeasonsPage = () => {
                   </td>
 
                   <td className="text-center text-sm text-gray-500">
-                    {formatDateUZ(season.startDate)} —{" "}
+                    {formatDateUZ(season.startDate)} -{" "}
                     {formatDateUZ(season.endDate)}
                   </td>
 
@@ -148,28 +148,32 @@ const TestSeasonsPage = () => {
                       <Link
                         to={`/test-seasons/${season._id}/assignments`}
                         title="O'qituvchi biriktiruvlari"
-                        className="text-purple-600 hover:text-purple-800 p-1"
+                        className="inline-flex items-center gap-1 text-purple-600 hover:text-purple-800 p-0.5"
                       >
-                        <UsersIcon className="size-4" />
+                        <UsersIcon className="size-3.5" />
+                        <span className="text-xs">Biriktiruvlar</span>
                       </Link>
                       <Link
                         to={`/test-seasons/${season._id}/rewards`}
                         title="Statistika va mukofotlar"
-                        className="text-amber-600 hover:text-amber-800 p-1"
+                        className="inline-flex items-center gap-1 text-amber-600 hover:text-amber-800 p-0.5"
                       >
-                        <Coins className="size-4" />
+                        <Coins className="size-3.5" />
+                        <span className="text-xs">Mukofotlar</span>
                       </Link>
                       <button
                         onClick={() => openModal("editSeason", season)}
-                        className="text-blue-600 hover:text-blue-800 p-1"
+                        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 p-0.5"
                       >
-                        <Edit className="size-4" />
+                        <Edit className="size-3.5" />
+                        <span className="text-xs">Tahrirlash</span>
                       </button>
                       <button
                         onClick={() => openModal("deleteSeason", season)}
-                        className="text-red-600 hover:text-red-800 p-1"
+                        className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 p-0.5"
                       >
-                        <Trash2 className="size-4" />
+                        <Trash2 className="size-3.5" />
+                        <span className="text-xs">O'chirish</span>
                       </button>
                     </div>
                   </td>
