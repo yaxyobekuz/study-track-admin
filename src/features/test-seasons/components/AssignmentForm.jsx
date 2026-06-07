@@ -124,6 +124,7 @@ const AssignmentForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <SelectField
+        searchable
         required
         label="Sinf"
         value={classId}
@@ -131,9 +132,11 @@ const AssignmentForm = ({
         triggerClassName="w-full"
         onChange={(v) => setField("class", v)}
         placeholder="Sinfni tanlang"
+        searchPlaceholder="Sinf qidirish..."
       />
 
       <SelectField
+        searchable
         required
         label="Fan"
         value={subject}
@@ -141,9 +144,11 @@ const AssignmentForm = ({
         triggerClassName="w-full"
         onChange={(v) => setField("subject", v)}
         placeholder="Fanni tanlang"
+        searchPlaceholder="Fan qidirish..."
       />
 
       <SelectField
+        searchable
         required
         label="O'qituvchi"
         value={teacher}
@@ -151,6 +156,7 @@ const AssignmentForm = ({
         triggerClassName="w-full"
         onChange={(v) => setField("teacher", v)}
         placeholder="O'qituvchini tanlang"
+        searchPlaceholder="O'qituvchi qidirish..."
       />
 
       <div className="flex justify-end gap-4 pt-4">
