@@ -93,6 +93,7 @@ import LeadAnalyticsPage from "@/features/leads/pages/LeadAnalyticsPage";
 // Pages - Test Seasons
 import TestSeasonsPage from "@/features/test-seasons/pages/TestSeasonsPage";
 import SeasonAssignmentsPage from "@/features/test-seasons/pages/SeasonAssignmentsPage";
+import CreateAssignmentsPage from "@/features/test-seasons/pages/CreateAssignmentsPage";
 import SeasonRewardsPage from "@/features/test-seasons/pages/SeasonRewardsPage";
 
 // Router
@@ -201,6 +202,10 @@ const Routes = () => {
           <Route
             path="/test-seasons/:id/assignments"
             element={<SeasonAssignmentsPage />}
+          />
+          <Route
+            path="/test-seasons/:id/assignments/create"
+            element={<CreateAssignmentsPage />}
           />
           <Route
             path="/test-seasons/:id/rewards"

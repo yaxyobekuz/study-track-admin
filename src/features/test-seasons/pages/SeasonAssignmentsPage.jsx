@@ -116,10 +116,12 @@ const SeasonAssignmentsPage = () => {
           </div>
         </div>
 
-        <Button onClick={() => openModal("createAssignment", { seasonId })}>
-          <Plus strokeWidth={1.5} />
-          Biriktiruv qo'shish
-        </Button>
+        <Link to={`/test-seasons/${seasonId}/assignments/create`}>
+          <Button>
+            <Plus strokeWidth={1.5} />
+            Biriktiruv qo'shish
+          </Button>
+        </Link>
       </div>
 
       {/* List */}
@@ -201,10 +203,6 @@ const SeasonAssignmentsPage = () => {
       )}
 
       {/* Modals */}
-      <ResponsiveModal name="createAssignment" title="Yangi biriktiruv">
-        <AssignmentForm onSuccess={fetchAssignments} />
-      </ResponsiveModal>
-
       <ResponsiveModal name="editAssignment" title="Biriktiruvni tahrirlash">
         <AssignmentForm isEdit onSuccess={fetchAssignments} />
       </ResponsiveModal>
