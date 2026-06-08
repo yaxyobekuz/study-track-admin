@@ -30,7 +30,7 @@ const FinalizeSeasonForm = ({ onSuccess, close, isLoading, setIsLoading, ...seas
   return (
     <div>
       <p className="text-sm text-gray-600 mb-4">
-        Diqqat: mavsum to'liq yakunlanadi — o'quvchilar bundan keyin test ishlay
+        Diqqat: mavsum to'liq yakunlanadi - o'quvchilar bundan keyin test ishlay
         olmaydi, mukofot tangalari avtomatik tarqatiladi va har bir o'quvchiga
         bot orqali yakuniy natija yuboriladi. Bu amalni orqaga qaytarib
         bo'lmaydi.
