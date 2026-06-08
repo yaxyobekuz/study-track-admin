@@ -41,6 +41,7 @@ const initialState = {
   // Messages
   sendMessage: initialModalData,
   messageDetails: initialModalData,
+  cancelMessage: initialModalData,
 
   // Test seasons
   announceSeason: initialModalData,
@@ -104,6 +105,7 @@ const initialState = {
   createSeason: initialModalData,
   editSeason: initialModalData,
   deleteSeason: initialModalData,
+  finalizeSeason: initialModalData,
   createAssignment: initialModalData,
   editAssignment: initialModalData,
   deleteAssignment: initialModalData,
