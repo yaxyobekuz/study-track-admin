@@ -39,10 +39,6 @@ import { cn } from "@/shared/utils/cn";
 import { formatDateUZ } from "@/shared/utils/date.utils";
 import { formatScore } from "@/shared/utils/formatScore";
 
-/**
- * Mavsum mukofotlari sahifasi (admin).
- * 3 ta tab: Statistika, Darajalar, Tarqatish.
- */
 const SeasonRewardsPage = () => {
   const { id: seasonId } = useParams();
   const [tab, setTab] = useState(REWARD_TABS.STATS);
@@ -84,7 +80,7 @@ const SeasonRewardsPage = () => {
         </Link>
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-semibold text-gray-900">
-            {season.name} - Mukofotlar
+            {season.name}
           </h1>
           <p className="text-sm text-gray-600 mt-0.5">
             {formatDateUZ(season.startDate)} → {formatDateUZ(season.endDate)}
@@ -220,11 +216,6 @@ const StatsTab = ({ seasonId }) => {
 };
 
 const TiersTab = ({ season }) => {
-  const { data: classes = [] } = useQuery({
-    queryKey: ["classes"],
-    queryFn: () => classesAPI.getAll().then((res) => res.data.data || res.data),
-  });
-
   return (
     <div className="space-y-5">
       <Card>
@@ -232,22 +223,7 @@ const TiersTab = ({ season }) => {
       </Card>
 
       <Card>
-        <div className="space-y-3">
-          <h3 className="font-medium text-gray-900">Sinf bo'yicha o'rinlar (top-N)</h3>
-          <p className="text-sm text-gray-600">
-            Har sinfning eng yaxshi o'quvchilariga coin tarqatish.
-          </p>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {(Array.isArray(classes) ? classes : []).map((c) => (
-              <ClassTiersForm
-                key={c._id}
-                season={season}
-                classId={c._id}
-                className={c.name}
-              />
-            ))}
-          </div>
-        </div>
+        <ClassTiersForm season={season} />
       </Card>
     </div>
   );
@@ -280,13 +256,22 @@ const DistributeTab = ({ season }) => {
     onError: (e) => toast.error(e.response?.data?.message || "Xatolik"),
   });
 
-  if (isLoading) return <Card><p className="text-center py-10 text-gray-500">Yuklanmoqda...</p></Card>;
+  if (isLoading)
+    return (
+      <Card>
+        <p className="text-center py-10 text-gray-500">Yuklanmoqda...</p>
+      </Card>
+    );
 
   return (
     <div className="space-y-4">
       <Card>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Stat label="Jami coinlar" value={preview?.totalCoins || 0} highlight />
+          <Stat
+            label="Jami coinlar"
+            value={preview?.totalCoins || 0}
+            highlight
+          />
           <Stat label="Mukofotlar soni" value={preview?.totalAwards || 0} />
           <Stat label="O'quvchilar" value={preview?.studentCount || 0} />
           <Stat
@@ -323,7 +308,8 @@ const DistributeTab = ({ season }) => {
                     <td className="py-2.5 px-3 text-gray-600">
                       {s.awards.map((a, i) => (
                         <div key={i} className="text-xs">
-                          {a.reason} · <span className="font-semibold">+{a.amount}</span>
+                          {a.reason} ·{" "}
+                          <span className="font-semibold">+{a.amount}</span>
                         </div>
                       ))}
                     </td>

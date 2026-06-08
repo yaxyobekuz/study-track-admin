@@ -22,8 +22,8 @@ export const testSeasonsAPI = {
     http.get(`/test-seasons/${id}/class/${classId}/stats`),
   setSchoolTiers: (id, tiers) =>
     http.put(`/test-seasons/${id}/school-tiers`, { tiers }),
-  setClassTiers: (id, classId, tiers) =>
-    http.put(`/test-seasons/${id}/class/${classId}/tiers`, { tiers }),
+  setClassTiers: (id, tiers) =>
+    http.put(`/test-seasons/${id}/class-tiers`, { tiers }),
   previewDistribution: (id) =>
     http.get(`/test-seasons/${id}/distribute/preview`),
   distributeCoins: (id, force = false) =>
