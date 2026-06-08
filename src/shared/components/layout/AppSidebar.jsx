@@ -14,7 +14,6 @@ import {
   ClipboardList,
   AlertTriangle,
   BadgeDollarSign,
-  CalendarRange,
 } from "lucide-react";
 
 // Router
@@ -116,13 +115,6 @@ const navItems = [
         title: "Fanlar",
         url: "/subjects",
       },
-    ],
-  },
-  {
-    title: "Testlar",
-    icon: CalendarRange,
-    isActive: false,
-    items: [
       {
         title: "Test mavsumlari",
         url: "/test-seasons",
