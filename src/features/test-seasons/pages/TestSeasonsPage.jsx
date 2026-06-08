@@ -27,6 +27,7 @@ import {
   CalendarRange,
   Users as UsersIcon,
   Coins,
+  CheckCircle2,
 } from "lucide-react";
 
 // Components
@@ -44,6 +45,7 @@ import {
 import SeasonForm from "../components/SeasonForm";
 import DeleteSeasonForm from "../components/DeleteSeasonForm";
 import AnnounceSeasonModal from "../components/AnnounceSeasonModal";
+import FinalizeSeasonForm from "../components/FinalizeSeasonForm";
 
 // Data
 import {
@@ -196,6 +198,18 @@ const TestSeasonsPage = () => {
                             Tahrirlash
                           </DropdownMenuItem>
 
+                          <DropdownMenuItem
+                            disabled={Boolean(season.finalizedAt)}
+                            onClick={() =>
+                              openModal("finalizeSeason", season)
+                            }
+                          >
+                            <CheckCircle2 />
+                            {season.finalizedAt
+                              ? "Yakunlangan"
+                              : "Testni to'liq yakunlash"}
+                          </DropdownMenuItem>
+
                           <DropdownMenuSeparator />
 
                           <DropdownMenuItem
@@ -233,6 +247,14 @@ const TestSeasonsPage = () => {
         description="Haqiqatdan ham mavsumni o'chirmoqchimisiz?"
       >
         <DeleteSeasonForm onSuccess={fetchSeasons} />
+      </ResponsiveModal>
+
+      {/* Finalize Modal */}
+      <ResponsiveModal
+        name="finalizeSeason"
+        title="Testni to'liq yakunlash"
+      >
+        <FinalizeSeasonForm onSuccess={fetchSeasons} />
       </ResponsiveModal>
 
       {/* Announce Modal */}
