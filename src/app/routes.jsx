@@ -49,6 +49,9 @@ import HolidaysPage from "@/features/holidays/pages/HolidaysPage";
 // Pages - Coin Settings
 import CoinSettingsPage from "@/features/coin-settings/pages/CoinSettingsPage";
 
+// Pages - Test Settings
+import TestSettingsPage from "@/features/test-settings/pages/TestSettingsPage";
+
 // Pages - Coin Distribution
 import CoinDistributionPage from "@/features/coin-distribution/pages/CoinDistributionPage";
 
@@ -155,6 +158,9 @@ const Routes = () => {
 
           {/* Coin Settings */}
           <Route path="/coin-settings" element={<CoinSettingsPage />} />
+
+          {/* Test Settings */}
+          <Route path="/test-settings" element={<TestSettingsPage />} />
 
           {/* Coin Distribution */}
           <Route path="/coin-distribution" element={<CoinDistributionPage />} />

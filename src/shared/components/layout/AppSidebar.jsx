@@ -119,6 +119,10 @@ const navItems = [
         title: "Test mavsumlari",
         url: "/test-seasons",
       },
+      {
+        title: "Test sozlamalari",
+        url: "/test-settings",
+      },
     ],
   },
   {
