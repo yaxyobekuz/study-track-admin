@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 
 // Router
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // API
 import { testSeasonsAPI } from "../api/testSeasons.api";
@@ -26,7 +26,6 @@ import {
   MoreVertical,
   CalendarRange,
   Users as UsersIcon,
-  Coins,
   CheckCircle2,
 } from "lucide-react";
 
@@ -64,6 +63,7 @@ const TestSeasonsPage = () => {
   } = useArrayStore();
 
   const { openModal } = useModal();
+  const navigate = useNavigate();
   const seasons = getCollectionData("testSeasons");
   const isLoading = isCollectionLoading("testSeasons");
 
@@ -125,7 +125,13 @@ const TestSeasonsPage = () => {
 
             <tbody>
               {seasons.map((season, index) => (
-                <tr key={season._id} className="hover:bg-gray-50">
+                <tr
+                  key={season._id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() =>
+                    navigate(`/test-seasons/${season._id}/rewards`)
+                  }
+                >
                   <td className="text-center text-sm text-gray-500">
                     {index + 1}
                   </td>
@@ -155,7 +161,10 @@ const TestSeasonsPage = () => {
                     </span>
                   </td>
 
-                  <td className="px-6 py-4">
+                  <td
+                    className="px-6 py-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div className="flex justify-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -174,13 +183,6 @@ const TestSeasonsPage = () => {
                             >
                               <UsersIcon />
                               Biriktiruvlar
-                            </Link>
-                          </DropdownMenuItem>
-
-                          <DropdownMenuItem asChild>
-                            <Link to={`/test-seasons/${season._id}/rewards`}>
-                              <Coins />
-                              Mukofotlar
                             </Link>
                           </DropdownMenuItem>
 
