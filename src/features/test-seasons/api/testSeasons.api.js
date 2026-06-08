@@ -28,4 +28,9 @@ export const testSeasonsAPI = {
     http.get(`/test-seasons/${id}/distribute/preview`),
   distributeCoins: (id, force = false) =>
     http.post(`/test-seasons/${id}/distribute`, { force }),
+
+  // O'quvchining mavsumdagi natijalari va bitta natija (javoblar bilan)
+  getStudentResults: (seasonId, studentId) =>
+    http.get(`/test-results/season/${seasonId}/student/${studentId}`),
+  getResultDetail: (resultId) => http.get(`/test-results/admin/${resultId}`),
 };

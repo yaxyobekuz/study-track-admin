@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Router
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 
 // Icons
 import {
@@ -125,8 +125,9 @@ const SeasonRewardsPage = () => {
 };
 
 const StatsTab = ({ seasonId }) => {
-  // "" = maktab (umumiy), aks holda sinf ID
   const [classId, setClassId] = useState("");
+
+  const navigate = useNavigate();
 
   const { data: classes = [] } = useQuery({
     queryKey: ["classes"],
@@ -188,7 +189,21 @@ const StatsTab = ({ seasonId }) => {
             </thead>
             <tbody>
               {stats.map((r) => (
-                <tr key={r.student._id} className="border-b hover:bg-gray-50">
+                <tr
+                  key={r.student._id}
+                  className="border-b hover:bg-gray-50 cursor-pointer"
+                  title="Test javoblarini ko'rish"
+                  onClick={() =>
+                    navigate(
+                      `/test-seasons/${seasonId}/students/${r.student._id}/results`,
+                      {
+                        state: {
+                          studentName: `${r.student.firstName} ${r.student.lastName}`,
+                        },
+                      },
+                    )
+                  }
+                >
                   <td className="py-2.5 px-3 text-gray-500">
                     {classId ? r.classRank : r.rank}
                   </td>

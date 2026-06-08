@@ -98,6 +98,8 @@ import TestSeasonsPage from "@/features/test-seasons/pages/TestSeasonsPage";
 import SeasonAssignmentsPage from "@/features/test-seasons/pages/SeasonAssignmentsPage";
 import CreateAssignmentsPage from "@/features/test-seasons/pages/CreateAssignmentsPage";
 import SeasonRewardsPage from "@/features/test-seasons/pages/SeasonRewardsPage";
+import StudentResultsPage from "@/features/test-seasons/pages/StudentResultsPage";
+import ResultAnswersPage from "@/features/test-seasons/pages/ResultAnswersPage";
 
 // Router
 import { Routes as RoutesWrapper, Route, Navigate } from "react-router-dom";
@@ -130,7 +132,10 @@ const Routes = () => {
           {/* Subjects & Topics */}
           <Route path="/subjects" element={<SubjectsPage />} />
           <Route path="/topics" element={<TopicsPage />} />
-          <Route path="/subjects/:subjectId/topics" element={<SubjectTopicsPage />} />
+          <Route
+            path="/subjects/:subjectId/topics"
+            element={<SubjectTopicsPage />}
+          />
 
           {/* Grades */}
           <Route path="/grades" element={<GradesPage />} />
@@ -159,16 +164,19 @@ const Routes = () => {
           {/* Coin Settings */}
           <Route path="/coin-settings" element={<CoinSettingsPage />} />
 
-          {/* Test Settings */}
-          <Route path="/test-settings" element={<TestSettingsPage />} />
-
           {/* Coin Distribution */}
           <Route path="/coin-distribution" element={<CoinDistributionPage />} />
 
           {/* Market */}
           <Route path="/market/products" element={<MarketProductsPage />} />
-          <Route path="/market/products/new" element={<MarketProductCreatePage />} />
-          <Route path="/market/products/:productId/edit" element={<MarketProductEditPage />} />
+          <Route
+            path="/market/products/new"
+            element={<MarketProductCreatePage />}
+          />
+          <Route
+            path="/market/products/:productId/edit"
+            element={<MarketProductEditPage />}
+          />
           <Route path="/market/orders" element={<MarketOrdersPage />} />
 
           {/* Social Networks */}
@@ -183,25 +191,43 @@ const Routes = () => {
 
           {/* Penalties */}
           <Route path="/penalties" element={<PenaltiesPage />} />
-          <Route path="/penalties/categories" element={<PenaltyCategoriesPage />} />
+          <Route
+            path="/penalties/categories"
+            element={<PenaltyCategoriesPage />}
+          />
           <Route path="/penalties/settings" element={<PenaltySettingsPage />} />
-          <Route path="/penalties/reduction-packages" element={<ReductionPackagesPage />} />
+          <Route
+            path="/penalties/reduction-packages"
+            element={<ReductionPackagesPage />}
+          />
           <Route path="/penalties/:penaltyId" element={<PenaltyDetailPage />} />
 
           {/* Attendance */}
           <Route path="/attendance" element={<AttendanceListPage />} />
           <Route path="/attendance/today" element={<AttendanceTodayPage />} />
-          <Route path="/attendance/settings" element={<AttendanceSettingsPage />} />
+          <Route
+            path="/attendance/settings"
+            element={<AttendanceSettingsPage />}
+          />
           <Route path="/attendance/excuses" element={<ExcuseRequestsPage />} />
 
           {/* Student Attendance */}
-          <Route path="/student-attendance" element={<StudentAttendanceListPage />} />
-          <Route path="/student-attendance/today" element={<StudentAttendanceTodayPage />} />
+          <Route
+            path="/student-attendance"
+            element={<StudentAttendanceListPage />}
+          />
+          <Route
+            path="/student-attendance/today"
+            element={<StudentAttendanceTodayPage />}
+          />
 
           {/* Leads */}
           <Route path="/leads" element={<LeadsListPage />} />
           <Route path="/leads/analytics" element={<LeadAnalyticsPage />} />
           <Route path="/leads/:leadId" element={<LeadDetailPage />} />
+
+          {/* Test Settings */}
+          <Route path="/test-settings" element={<TestSettingsPage />} />
 
           {/* Test Seasons */}
           <Route path="/test-seasons" element={<TestSeasonsPage />} />
@@ -216,6 +242,14 @@ const Routes = () => {
           <Route
             path="/test-seasons/:id/rewards"
             element={<SeasonRewardsPage />}
+          />
+          <Route
+            path="/test-seasons/results/:resultId"
+            element={<ResultAnswersPage />}
+          />
+          <Route
+            path="/test-seasons/:seasonId/students/:studentId/results"
+            element={<StudentResultsPage />}
           />
         </Route>
       </Route>
