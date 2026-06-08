@@ -17,10 +17,6 @@ import { testSeasonsAPI } from "../api/testSeasons.api";
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 
-/**
- * Sinf bo'yicha o'rin mukofotlari - UMUMIY (bitta sozlama, har sinfga qo'llanadi).
- * Har o'rin: { position, coinReward, note? }.
- */
 const ClassTiersForm = ({ season }) => {
   const queryClient = useQueryClient();
   const [tiers, setTiers] = useState([]);
@@ -62,14 +58,7 @@ const ClassTiersForm = ({ season }) => {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <h3 className="font-medium text-gray-900">Sinf bo'yicha o'rinlar</h3>
-        <p className="text-sm text-gray-600">
-          Bu o'rinlar <b>har bir sinfning</b> o'rtacha ball reytingiga
-          qo'llanadi (masalan har sinfning 1-o'rni shu coin'ni oladi). Har
-          o'ringa ixtiyoriy izoh yozish mumkin.
-        </p>
-      </div>
+      <h3 className="font-medium text-gray-900">Sinf bo'yicha o'rinlar</h3>
 
       <div className="space-y-2">
         {tiers.length === 0 && (

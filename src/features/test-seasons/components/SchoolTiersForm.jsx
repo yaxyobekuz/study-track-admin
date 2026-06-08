@@ -17,10 +17,6 @@ import { testSeasonsAPI } from "../api/testSeasons.api";
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 
-/**
- * Maktab bo'yicha o'rin mukofotlari (top-N).
- * Har o'rin: { position, coinReward, note? }.
- */
 const SchoolTiersForm = ({ season }) => {
   const queryClient = useQueryClient();
   const [tiers, setTiers] = useState([]);
@@ -62,13 +58,7 @@ const SchoolTiersForm = ({ season }) => {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <h3 className="font-medium text-gray-900">Maktab bo'yicha o'rinlar</h3>
-        <p className="text-sm text-gray-600">
-          Maktab bo'yicha o'rtacha ball reytingida yuqori o'rinlarga coin
-          tarqatish. Har o'ringa ixtiyoriy izoh yozish mumkin.
-        </p>
-      </div>
+      <h3 className="font-medium text-gray-900">Maktab bo'yicha o'rinlar</h3>
 
       <div className="space-y-2">
         {tiers.length === 0 && (
