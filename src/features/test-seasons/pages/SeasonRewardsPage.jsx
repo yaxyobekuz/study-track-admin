@@ -36,6 +36,7 @@ import ClassTiersForm from "../components/ClassTiersForm";
 // Utils
 import { cn } from "@/shared/utils/cn";
 import { formatDateUZ } from "@/shared/utils/date.utils";
+import { formatScore } from "@/shared/utils/formatScore";
 
 /**
  * Mavsum mukofotlari sahifasi (admin).
@@ -127,56 +128,89 @@ const SeasonRewardsPage = () => {
 };
 
 const StatsTab = ({ seasonId }) => {
-  const { data: stats = [], isLoading } = useQuery({
-    queryKey: ["season-stats", seasonId],
-    queryFn: () =>
-      testSeasonsAPI.getStats(seasonId).then((res) => res.data.data),
+  // "" = maktab (umumiy), aks holda sinf ID
+  const [classId, setClassId] = useState("");
+
+  const { data: classes = [] } = useQuery({
+    queryKey: ["classes"],
+    queryFn: () => classesAPI.getAll().then((res) => res.data.data || res.data),
   });
 
-  if (isLoading) return <Card><p className="text-center py-10 text-gray-500">Yuklanmoqda...</p></Card>;
-  if (stats.length === 0) {
-    return (
-      <Card>
+  const { data: stats = [], isLoading } = useQuery({
+    queryKey: ["season-stats", seasonId, classId || "school"],
+    queryFn: () =>
+      (classId
+        ? testSeasonsAPI.getClassStats(seasonId, classId)
+        : testSeasonsAPI.getStats(seasonId)
+      ).then((res) => res.data.data),
+  });
+
+  const classList = Array.isArray(classes) ? classes : [];
+
+  return (
+    <Card>
+      {/* Sinf / maktab tanlovi */}
+      <div className="mb-4 flex items-center gap-2">
+        <span className="text-sm text-gray-600">Daraja:</span>
+        <select
+          value={classId}
+          onChange={(e) => setClassId(e.target.value)}
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+        >
+          <option value="">Maktab (umumiy)</option>
+          {classList.map((c) => (
+            <option key={c._id} value={c._id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {isLoading ? (
+        <p className="text-center py-10 text-gray-500">Yuklanmoqda...</p>
+      ) : stats.length === 0 ? (
         <div className="flex flex-col items-center py-10 text-center">
           <BarChart3 size={40} className="text-gray-300" />
           <p className="mt-3 text-gray-600">Hozircha natijalar yo'q</p>
         </div>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="border-b text-left text-gray-600">
-              <th className="py-2 px-3 font-medium w-12">#</th>
-              <th className="py-2 px-3 font-medium">O'quvchi</th>
-              <th className="py-2 px-3 font-medium">Sinflar</th>
-              <th className="py-2 px-3 font-medium">Testlar</th>
-              <th className="py-2 px-3 font-medium">Umumiy ball</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stats.map((r) => (
-              <tr key={r.student._id} className="border-b hover:bg-gray-50">
-                <td className="py-2.5 px-3 text-gray-500">{r.rank}</td>
-                <td className="py-2.5 px-3 font-medium text-gray-900">
-                  {r.student.firstName} {r.student.lastName}
-                </td>
-                <td className="py-2.5 px-3 text-gray-600">
-                  {(r.student.classes || []).map((c) => c.name).join(", ")}
-                </td>
-                <td className="py-2.5 px-3 text-gray-600">{r.resultCount}</td>
-                <td className="py-2.5 px-3 font-semibold text-blue-700">
-                  {r.totalScore}
-                </td>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="border-b text-left text-gray-600">
+                <th className="py-2 px-3 font-medium w-12">#</th>
+                <th className="py-2 px-3 font-medium">O'quvchi</th>
+                <th className="py-2 px-3 font-medium">Sinflar</th>
+                <th className="py-2 px-3 font-medium">Topshirgan</th>
+                <th className="py-2 px-3 font-medium">Biriktirilgan</th>
+                <th className="py-2 px-3 font-medium">O'rtacha ball</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {stats.map((r) => (
+                <tr key={r.student._id} className="border-b hover:bg-gray-50">
+                  <td className="py-2.5 px-3 text-gray-500">
+                    {classId ? r.classRank : r.rank}
+                  </td>
+                  <td className="py-2.5 px-3 font-medium text-gray-900">
+                    {r.student.firstName} {r.student.lastName}
+                  </td>
+                  <td className="py-2.5 px-3 text-gray-600">
+                    {(r.student.classes || []).map((c) => c.name).join(", ")}
+                  </td>
+                  <td className="py-2.5 px-3 text-gray-600">{r.resultCount}</td>
+                  <td className="py-2.5 px-3 text-gray-600">
+                    {r.assignedCount}
+                  </td>
+                  <td className="py-2.5 px-3 font-semibold text-blue-700">
+                    {formatScore(r.averageScore)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </Card>
   );
 };

@@ -62,8 +62,12 @@ const AbsoluteTiersForm = ({ season, onSaved }) => {
       <div className="space-y-2">
         <h3 className="font-medium text-gray-900">Absolyut darajalar</h3>
         <p className="text-sm text-gray-600">
-          O'quvchining mavsumdagi ball yig'indisi belgilangan chegaradan oshsa,
-          coin oladi. Yuqori darajadan boshlab tekshiriladi.
+          O'quvchining mavsumdagi <b>o'rtacha</b> bali belgilangan chegaradan
+          oshsa, coin oladi. Yuqori darajadan boshlab tekshiriladi.
+        </p>
+        <p className="text-xs text-amber-700">
+          Diqqat: chegara endi o'rtacha ballga (0 dan maksimal ballgacha)
+          nisbatan tekshiriladi - eski chegaralarni qayta kiriting.
         </p>
       </div>
 
