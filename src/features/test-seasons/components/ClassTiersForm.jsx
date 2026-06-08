@@ -33,6 +33,7 @@ const ClassTiersForm = ({ season, classId, className }) => {
         .map((t) => ({
           position: t.position,
           coinReward: t.coinReward,
+          note: t.note || "",
         }))
         .sort((a, b) => a.position - b.position),
     );
@@ -43,7 +44,7 @@ const ClassTiersForm = ({ season, classId, className }) => {
       tiers.length === 0
         ? 1
         : Math.max(...tiers.map((t) => t.position)) + 1;
-    setTiers([...tiers, { position: nextPos, coinReward: 0 }]);
+    setTiers([...tiers, { position: nextPos, coinReward: 0, note: "" }]);
   };
 
   const removeTier = (index) => {
@@ -86,7 +87,7 @@ const ClassTiersForm = ({ season, classId, className }) => {
           {tiers.map((tier, idx) => (
             <div
               key={idx}
-              className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end"
+              className="grid grid-cols-[1fr_1fr_2fr_auto] gap-2 items-end"
             >
               <InputField
                 type="number"
@@ -105,6 +106,12 @@ const ClassTiersForm = ({ season, classId, className }) => {
                 onChange={(e) =>
                   updateTier(idx, { coinReward: Number(e.target.value) })
                 }
+              />
+              <InputField
+                label="Izoh"
+                value={tier.note}
+                placeholder="Ixtiyoriy"
+                onChange={(e) => updateTier(idx, { note: e.target.value })}
               />
               <button
                 type="button"

@@ -18,25 +18,29 @@ import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 
 /**
- * Absolyut darajalar formasi (admin).
- * Mavsum'da bo'lgan absolyut darajalarni tahrirlash.
+ * Maktab bo'yicha o'rin mukofotlari (top-N).
+ * Har o'rin: { position, coinReward, note? }.
  */
-const AbsoluteTiersForm = ({ season, onSaved }) => {
+const SchoolTiersForm = ({ season }) => {
   const queryClient = useQueryClient();
   const [tiers, setTiers] = useState([]);
 
   useEffect(() => {
     setTiers(
-      (season.absoluteTiers || []).map((t) => ({
-        name: t.name,
-        minScore: t.minScore,
-        coinReward: t.coinReward,
-      })),
+      (season.schoolTiers || [])
+        .map((t) => ({
+          position: t.position,
+          coinReward: t.coinReward,
+          note: t.note || "",
+        }))
+        .sort((a, b) => a.position - b.position),
     );
-  }, [season._id, season.absoluteTiers]);
+  }, [season._id, season.schoolTiers]);
 
   const addTier = () => {
-    setTiers([...tiers, { name: "", minScore: 0, coinReward: 0 }]);
+    const nextPos =
+      tiers.length === 0 ? 1 : Math.max(...tiers.map((t) => t.position)) + 1;
+    setTiers([...tiers, { position: nextPos, coinReward: 0, note: "" }]);
   };
 
   const removeTier = (index) => {
@@ -48,11 +52,10 @@ const AbsoluteTiersForm = ({ season, onSaved }) => {
   };
 
   const mutation = useMutation({
-    mutationFn: () => testSeasonsAPI.setAbsoluteTiers(season._id, tiers),
+    mutationFn: () => testSeasonsAPI.setSchoolTiers(season._id, tiers),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["test-season", season._id] });
-      toast.success("Absolyut darajalar saqlandi");
-      onSaved?.();
+      toast.success("Maktab darajalari saqlandi");
     },
     onError: (e) => toast.error(e.response?.data?.message || "Saqlanmadi"),
   });
@@ -60,41 +63,31 @@ const AbsoluteTiersForm = ({ season, onSaved }) => {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <h3 className="font-medium text-gray-900">Absolyut darajalar</h3>
+        <h3 className="font-medium text-gray-900">Maktab bo'yicha o'rinlar</h3>
         <p className="text-sm text-gray-600">
-          O'quvchining mavsumdagi <b>o'rtacha</b> bali belgilangan chegaradan
-          oshsa, coin oladi. Yuqori darajadan boshlab tekshiriladi.
-        </p>
-        <p className="text-xs text-amber-700">
-          Diqqat: chegara endi o'rtacha ballga (0 dan maksimal ballgacha)
-          nisbatan tekshiriladi - eski chegaralarni qayta kiriting.
+          Maktab bo'yicha o'rtacha ball reytingida yuqori o'rinlarga coin
+          tarqatish. Har o'ringa ixtiyoriy izoh yozish mumkin.
         </p>
       </div>
 
       <div className="space-y-2">
         {tiers.length === 0 && (
           <p className="text-sm text-gray-400 italic py-3">
-            Hozircha daraja yo'q. "+ Daraja qo'shish" tugmasini bosing.
+            Hozircha o'rin yo'q. "+ O'rin qo'shish" tugmasini bosing.
           </p>
         )}
         {tiers.map((tier, idx) => (
           <div
             key={idx}
-            className="grid grid-cols-1 gap-3 p-3 bg-gray-50 rounded-lg md:grid-cols-[1fr_1fr_1fr_auto]"
+            className="grid grid-cols-1 gap-3 p-3 bg-gray-50 rounded-lg md:grid-cols-[1fr_1fr_2fr_auto]"
           >
             <InputField
-              label="Nomi"
-              value={tier.name}
-              onChange={(e) => updateTier(idx, { name: e.target.value })}
-              placeholder="Masalan: Oltin"
-            />
-            <InputField
               type="number"
-              label="Min ball"
-              min={0}
-              value={tier.minScore}
+              label="O'rin"
+              min={1}
+              value={tier.position}
               onChange={(e) =>
-                updateTier(idx, { minScore: Number(e.target.value) })
+                updateTier(idx, { position: Number(e.target.value) })
               }
             />
             <InputField
@@ -105,6 +98,12 @@ const AbsoluteTiersForm = ({ season, onSaved }) => {
               onChange={(e) =>
                 updateTier(idx, { coinReward: Number(e.target.value) })
               }
+            />
+            <InputField
+              label="Izoh (ixtiyoriy)"
+              value={tier.note}
+              placeholder="Masalan: Tabriklaymiz, g'olib!"
+              onChange={(e) => updateTier(idx, { note: e.target.value })}
             />
             <button
               type="button"
@@ -125,7 +124,7 @@ const AbsoluteTiersForm = ({ season, onSaved }) => {
           className="gap-2"
         >
           <Plus size={16} />
-          Daraja qo'shish
+          O'rin qo'shish
         </Button>
         <Button
           type="button"
@@ -141,4 +140,4 @@ const AbsoluteTiersForm = ({ season, onSaved }) => {
   );
 };
 
-export default AbsoluteTiersForm;
+export default SchoolTiersForm;

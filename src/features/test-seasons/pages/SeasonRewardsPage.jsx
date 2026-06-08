@@ -30,7 +30,8 @@ import { REWARD_TABS, REWARD_TAB_LABELS } from "../data/seasonRewards.data";
 // Components
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
-import AbsoluteTiersForm from "../components/AbsoluteTiersForm";
+import SelectSearch from "@/shared/components/ui/select/SelectSearch";
+import SchoolTiersForm from "../components/SchoolTiersForm";
 import ClassTiersForm from "../components/ClassTiersForm";
 
 // Utils
@@ -147,23 +148,26 @@ const StatsTab = ({ seasonId }) => {
 
   const classList = Array.isArray(classes) ? classes : [];
 
+  // Daraja tanlovi: "" = maktab (umumiy), aks holda sinf
+  const levelOptions = [
+    { value: "", label: "Maktab (umumiy)" },
+    ...classList.map((c) => ({ value: c._id, label: c.name })),
+  ];
+
   return (
     <Card>
       {/* Sinf / maktab tanlovi */}
       <div className="mb-4 flex items-center gap-2">
         <span className="text-sm text-gray-600">Daraja:</span>
-        <select
+        <SelectSearch
           value={classId}
-          onChange={(e) => setClassId(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
-        >
-          <option value="">Maktab (umumiy)</option>
-          {classList.map((c) => (
-            <option key={c._id} value={c._id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+          onChange={setClassId}
+          options={levelOptions}
+          placeholder="Maktab (umumiy)"
+          searchPlaceholder="Sinfni qidirish..."
+          emptyText="Sinf topilmadi"
+          triggerClassName="w-56"
+        />
       </div>
 
       {isLoading ? (
@@ -224,7 +228,7 @@ const TiersTab = ({ season }) => {
   return (
     <div className="space-y-5">
       <Card>
-        <AbsoluteTiersForm season={season} />
+        <SchoolTiersForm season={season} />
       </Card>
 
       <Card>
