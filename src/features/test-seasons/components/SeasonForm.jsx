@@ -10,14 +10,10 @@ import { testSeasonsAPI } from "../api/testSeasons.api";
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 
-// Data
-import { SEASON_STATUS_OPTIONS } from "../data/seasonStatuses.data";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
-import SelectField from "@/shared/components/ui/select/SelectField";
 
 const SeasonForm = ({
   close,
@@ -32,7 +28,6 @@ const SeasonForm = ({
     description,
     startDate,
     endDate,
-    status,
     isActive,
     setField,
     setFields,
@@ -41,7 +36,6 @@ const SeasonForm = ({
     description: "",
     startDate: "",
     endDate: "",
-    status: "draft",
     isActive: true,
   });
 
@@ -52,7 +46,6 @@ const SeasonForm = ({
         description: season.description || "",
         startDate: season.startDate ? season.startDate.split("T")[0] : "",
         endDate: season.endDate ? season.endDate.split("T")[0] : "",
-        status: season.status || "draft",
         isActive: season.isActive ?? true,
       });
     }
@@ -74,7 +67,6 @@ const SeasonForm = ({
         description,
         startDate,
         endDate,
-        status,
         isActive,
       };
 
@@ -138,15 +130,11 @@ const SeasonForm = ({
         />
       </InputGroup>
 
-      <SelectField
-        required
-        label="Holat"
-        value={status}
-        options={SEASON_STATUS_OPTIONS}
-        triggerClassName="w-full"
-        onChange={(v) => setField("status", v)}
-        description="O'quvchilar testni faqat 'Faol' holatdagi mavsumda topshira oladi"
-      />
+      <p className="text-xs text-gray-500">
+        Holat boshlanish va tugash sanalari asosida avtomatik belgilanadi
+        (Kutilmoqda → Faol → Yakunlangan). O'quvchilar testni faqat shu sanalar
+        oralig'ida topshira oladi.
+      </p>
 
       <div className="flex items-center gap-2">
         <input

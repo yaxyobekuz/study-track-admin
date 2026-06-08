@@ -6,8 +6,6 @@ export const testSeasonsAPI = {
   getOne: (id) => http.get(`/test-seasons/${id}`),
   create: (data) => http.post("/test-seasons", data),
   update: (id, data) => http.put(`/test-seasons/${id}`, data),
-  setStatus: (id, status) =>
-    http.patch(`/test-seasons/${id}/status`, { status }),
   delete: (id) => http.delete(`/test-seasons/${id}`),
 
   // E'lon (bot orqali)

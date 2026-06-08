@@ -7,9 +7,9 @@ export const SEASON_STATUSES = {
 };
 
 export const SEASON_STATUS_LABELS = {
-  draft: "Tayyorlanmoqda",
+  draft: "Kutilmoqda",
   active: "Faol",
-  closed: "Yopilgan",
+  closed: "Yakunlangan",
 };
 
 export const SEASON_STATUS_COLORS = {
@@ -19,9 +19,9 @@ export const SEASON_STATUS_COLORS = {
 };
 
 export const SEASON_STATUS_OPTIONS = [
-  { label: "Tayyorlanmoqda", value: "draft" },
+  { label: "Kutilmoqda", value: "draft" },
   { label: "Faol", value: "active" },
-  { label: "Yopilgan", value: "closed" },
+  { label: "Yakunlangan", value: "closed" },
 ];
 
 export const SEASON_STATUS_FILTER_OPTIONS = [
