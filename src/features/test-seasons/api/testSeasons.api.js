@@ -10,6 +10,10 @@ export const testSeasonsAPI = {
     http.patch(`/test-seasons/${id}/status`, { status }),
   delete: (id) => http.delete(`/test-seasons/${id}`),
 
+  // E'lon (bot orqali)
+  getAnnounceClasses: (id) => http.get(`/test-seasons/${id}/announce/classes`),
+  announce: (id, data) => http.post(`/test-seasons/${id}/announce`, data),
+
   // Mavsum mukofotlari
   getStats: (id, params = {}) =>
     http.get(`/test-seasons/${id}/stats`, { params }),

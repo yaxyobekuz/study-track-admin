@@ -22,6 +22,8 @@ import {
   Plus,
   Trash2,
   Edit,
+  Megaphone,
+  MoreVertical,
   CalendarRange,
   Users as UsersIcon,
   Coins,
@@ -31,9 +33,17 @@ import {
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/shared/components/shadcn/dropdown-menu";
 
 import SeasonForm from "../components/SeasonForm";
 import DeleteSeasonForm from "../components/DeleteSeasonForm";
+import AnnounceSeasonModal from "../components/AnnounceSeasonModal";
 
 // Data
 import {
@@ -144,37 +154,59 @@ const TestSeasonsPage = () => {
                   </td>
 
                   <td className="px-6 py-4">
-                    <div className="flex justify-center gap-2">
-                      <Link
-                        to={`/test-seasons/${season._id}/assignments`}
-                        title="O'qituvchi biriktiruvlari"
-                        className="inline-flex items-center gap-1 text-purple-600 hover:text-purple-800 p-0.5"
-                      >
-                        <UsersIcon className="size-3.5" />
-                        <span className="text-xs">Biriktiruvlar</span>
-                      </Link>
-                      <Link
-                        to={`/test-seasons/${season._id}/rewards`}
-                        title="Statistika va mukofotlar"
-                        className="inline-flex items-center gap-1 text-amber-600 hover:text-amber-800 p-0.5"
-                      >
-                        <Coins className="size-3.5" />
-                        <span className="text-xs">Mukofotlar</span>
-                      </Link>
-                      <button
-                        onClick={() => openModal("editSeason", season)}
-                        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 p-0.5"
-                      >
-                        <Edit className="size-3.5" />
-                        <span className="text-xs">Tahrirlash</span>
-                      </button>
-                      <button
-                        onClick={() => openModal("deleteSeason", season)}
-                        className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 p-0.5"
-                      >
-                        <Trash2 className="size-3.5" />
-                        <span className="text-xs">O'chirish</span>
-                      </button>
+                    <div className="flex justify-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            title="Amallar"
+                            className="inline-flex items-center justify-center size-8 rounded-lg text-gray-600 hover:bg-gray-100"
+                          >
+                            <MoreVertical className="size-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem asChild>
+                            <Link
+                              to={`/test-seasons/${season._id}/assignments`}
+                            >
+                              <UsersIcon />
+                              Biriktiruvlar
+                            </Link>
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem asChild>
+                            <Link to={`/test-seasons/${season._id}/rewards`}>
+                              <Coins />
+                              Mukofotlar
+                            </Link>
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            onClick={() => openModal("announceSeason", season)}
+                          >
+                            <Megaphone />
+                            E'lon qilish
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            onClick={() => openModal("editSeason", season)}
+                          >
+                            <Edit />
+                            Tahrirlash
+                          </DropdownMenuItem>
+
+                          <DropdownMenuSeparator />
+
+                          <DropdownMenuItem
+                            onClick={() => openModal("deleteSeason", season)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 />
+                            O'chirish
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </td>
                 </tr>
@@ -202,6 +234,9 @@ const TestSeasonsPage = () => {
       >
         <DeleteSeasonForm onSuccess={fetchSeasons} />
       </ResponsiveModal>
+
+      {/* Announce Modal */}
+      <AnnounceSeasonModal />
     </div>
   );
 };

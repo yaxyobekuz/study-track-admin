@@ -42,6 +42,9 @@ const initialState = {
   sendMessage: initialModalData,
   messageDetails: initialModalData,
 
+  // Test seasons
+  announceSeason: initialModalData,
+
   // Stats
   studentStats: initialModalData,
 
