@@ -2,10 +2,10 @@
 import { days } from "@/shared/data/days.data";
 
 // React
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
 // Router
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 // Store
 import useAuth from "@/shared/hooks/useAuth";
@@ -15,23 +15,21 @@ import { schedulesAPI } from "@/features/schedules/api/schedules.api";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
+import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 
 // Hooks
-import useModal from "@/shared/hooks/useModal";
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // Icons
-import { Plus, Edit, Trash2, Calendar, Download } from "lucide-react";
+import { Edit, Calendar, Download } from "lucide-react";
 
 const Schedules = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { openModal } = useModal();
+  const { classId } = useParams();
   const isOwner = user?.role === "owner";
-  const [selectedClass, setSelectedClass] = useState("");
-  const collectionName = "schedules-" + selectedClass;
+  const collectionName = "schedules-" + classId;
 
   const {
     isLoading,
@@ -47,25 +45,11 @@ const Schedules = () => {
   const schedules = getCollectionData(collectionName);
   const classesLoading = isCollectionLoading("classes");
 
-  useEffect(() => {
-    if (!hasCollection()) initialize(false, collectionName);
-  }, [initialize, hasCollection]);
-
-  useEffect(() => {
-    if (classes.length > 0 && !selectedClass) {
-      setSelectedClass(classes[0]._id);
-    }
-  }, [classes, selectedClass]);
-
-  useEffect(() => {
-    if (selectedClass && !schedules?.length) fetchSchedules();
-  }, [selectedClass, schedules?.length, classesLoading]);
-
   const fetchSchedules = () => {
     setCollectionLoadingState(true);
 
     schedulesAPI
-      .getByClass(selectedClass)
+      .getByClass(classId)
       .then((res) => {
         setCollection(res.data.data);
       })
@@ -74,6 +58,21 @@ const Schedules = () => {
       });
   };
 
+  // Redirect to the first class when no class is selected in the URL
+  useEffect(() => {
+    if (!classId && classes.length > 0) {
+      navigate(`/schedules/${classes[0]._id}`, { replace: true });
+    }
+  }, [classId, classes, navigate]);
+
+  useEffect(() => {
+    if (classId && !hasCollection()) initialize(false, collectionName);
+  }, [classId, initialize, hasCollection, collectionName]);
+
+  useEffect(() => {
+    if (classId && hasCollection() && !schedules?.length) fetchSchedules();
+  }, [classId, schedules?.length, classesLoading]);
+
   const getScheduleForDay = (day) => {
     return schedules.find((s) => s.day === day);
   };
@@ -81,15 +80,15 @@ const Schedules = () => {
   // Excel yuklab olish
   const handleExport = async () => {
     try {
-      if (!selectedClass) return;
+      if (!classId) return;
 
-      const response = await schedulesAPI.exportByClass(selectedClass);
+      const response = await schedulesAPI.exportByClass(classId);
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
 
       const className =
-        classes.find((cls) => cls._id === selectedClass)?.name || "sinf";
+        classes.find((cls) => cls._id === classId)?.name || "sinf";
       link.setAttribute(
         "download",
         `dars_jadvali_${className}_${new Date().toISOString().split("T")[0]}.xlsx`,
@@ -104,12 +103,7 @@ const Schedules = () => {
     }
   };
 
-  const handleOpenScheduleForm = (day, schedule = null) => {
-    const action = schedule ? "edit" : "new";
-    navigate(`/schedules/${selectedClass}/${day}/${action}`);
-  };
-
-  if (isLoading) {
+  if (isLoading || !classId) {
     return (
       <div className="animate-pulse">
         <div className="flex items-center justify-between gap-3 mb-4">
@@ -133,18 +127,30 @@ const Schedules = () => {
         {/* Title */}
         <h1 className="page-title">Dars jadvali</h1>
 
-        {/* Filter & Download buttons */}
+        {/* Filter & Action buttons */}
         <div className="flex items-center gap-4">
-          <Select
-            value={selectedClass}
-            onChange={(v) => setSelectedClass(v)}
+          <SelectSearch
+            value={classId}
+            placeholder="Sinfni tanlang"
+            triggerClassName="w-44"
+            onChange={(v) => v && navigate(`/schedules/${v}`)}
             options={classes.map((cls) => ({
               label: cls.name,
               value: cls._id,
             }))}
           />
 
-          <Button onClick={handleExport} disabled={!selectedClass}>
+          {isOwner && (
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/schedules/${classId}/edit`)}
+            >
+              <Edit strokeWidth={1.5} />
+              Tahrirlash
+            </Button>
+          )}
+
+          <Button onClick={handleExport}>
             <Download strokeWidth={1.5} />
             Jadvalni yuklash
           </Button>
@@ -169,35 +175,6 @@ const Schedules = () => {
                     {day.label}
                   </h3>
                 </div>
-
-                {/* Owner Controls */}
-                {isOwner && (
-                  <div className="flex items-center gap-3.5">
-                    {/* Edit / Create */}
-                    <button
-                      onClick={() =>
-                        handleOpenScheduleForm(day.value, schedule)
-                      }
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      {schedule ? (
-                        <Edit className="size-5" strokeWidth={1.5} />
-                      ) : (
-                        <Plus className="size-5" strokeWidth={1.5} />
-                      )}
-                    </button>
-
-                    {/* Delete */}
-                    {schedule && (
-                      <button
-                        onClick={() => openModal("deleteSchedule", schedule)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 className="size-5" strokeWidth={1.5} />
-                      </button>
-                    )}
-                  </div>
-                )}
               </div>
 
               {/* Schedule Subjects */}

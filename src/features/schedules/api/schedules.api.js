@@ -9,6 +9,8 @@ export const schedulesAPI = {
   exportByClass: (classId) =>
     http.get(`/schedules/class/${classId}/export`, { responseType: "blob" }),
   createOrUpdate: (data) => http.post("/schedules", data),
+  saveClassSchedule: (classId, schedules) =>
+    http.put(`/schedules/class/${classId}`, { schedules }),
   updateCurrentTopic: (classId, subjectId, topicNumber) =>
     http.patch(`/schedules/class/${classId}/subject/${subjectId}/topic`, {
       topicNumber,

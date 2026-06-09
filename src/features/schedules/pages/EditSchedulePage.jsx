@@ -1,6 +1,3 @@
-// Data
-import { days } from "@/shared/data/days.data";
-
 // React
 import { useEffect, useState } from "react";
 
@@ -24,35 +21,34 @@ import Card from "@/shared/components/ui/Card";
 import ScheduleForm from "../components/ScheduleForm";
 
 const EditSchedulePage = () => {
-  const { classId, day } = useParams();
+  const { classId } = useParams();
   const navigate = useNavigate();
   const { getCollectionData } = useArrayStore();
   const classes = getCollectionData("classes");
 
   const [isLoading, setIsLoading] = useState(true);
-  const [subjects, setSubjects] = useState([]);
+  const [schedules, setSchedules] = useState([]);
 
   const className = classes.find((cls) => cls._id === classId)?.name || "Sinf";
-  const dayLabel = days.find((d) => d.value === day)?.label || day;
 
   useEffect(() => {
     schedulesAPI
-      .getByDay(classId, day)
+      .getByClass(classId)
       .then((res) => {
-        setSubjects(res.data.data?.subjects || []);
+        setSchedules(res.data.data || []);
       })
       .catch(() => {
-        toast.error("Bu kun uchun dars jadvali topilmadi");
-        navigate("/schedules");
+        toast.error("Dars jadvalini yuklashda xatolik yuz berdi");
+        navigate(`/schedules/${classId}`);
       })
       .finally(() => setIsLoading(false));
-  }, [classId, day, navigate]);
+  }, [classId, navigate]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Link
-          to="/schedules"
+          to={`/schedules/${classId}`}
           className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
         >
           <ChevronLeft className="size-4" />
@@ -61,18 +57,13 @@ const EditSchedulePage = () => {
       </div>
 
       <h1 className="page-title">
-        Dars jadvalini tahrirlash - {className}, {dayLabel}
+        Dars jadvalini tahrirlash - {className}
       </h1>
 
       {isLoading ? (
         <Card className="h-96 max-w-2xl animate-pulse" />
       ) : (
-        <ScheduleForm
-          mode="edit"
-          classId={classId}
-          day={day}
-          initialSubjects={subjects}
-        />
+        <ScheduleForm classId={classId} initialSchedules={schedules} />
       )}
     </div>
   );
