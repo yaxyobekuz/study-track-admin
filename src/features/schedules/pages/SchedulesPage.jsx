@@ -7,6 +7,9 @@ import { useEffect } from "react";
 // Router
 import { useNavigate, useParams } from "react-router-dom";
 
+// Tanstack Query
+import { useQuery } from "@tanstack/react-query";
+
 // Store
 import useAuth from "@/shared/hooks/useAuth";
 
@@ -29,34 +32,16 @@ const Schedules = () => {
   const navigate = useNavigate();
   const { classId } = useParams();
   const isOwner = user?.role === "owner";
-  const collectionName = "schedules-" + classId;
 
-  const {
-    isLoading,
-    initialize,
-    hasCollection,
-    setCollection,
-    getCollectionData,
-    isCollectionLoading,
-    setCollectionErrorState,
-    setCollectionLoadingState,
-  } = useArrayStore(collectionName);
+  const { getCollectionData } = useArrayStore();
   const classes = getCollectionData("classes");
-  const schedules = getCollectionData(collectionName);
-  const classesLoading = isCollectionLoading("classes");
 
-  const fetchSchedules = () => {
-    setCollectionLoadingState(true);
-
-    schedulesAPI
-      .getByClass(classId)
-      .then((res) => {
-        setCollection(res.data.data);
-      })
-      .catch(() => {
-        setCollectionErrorState(true);
-      });
-  };
+  const { data: schedules = [], isLoading } = useQuery({
+    queryKey: ["schedules", "class", classId],
+    queryFn: () =>
+      schedulesAPI.getByClass(classId).then((res) => res.data.data),
+    enabled: !!classId,
+  });
 
   // Redirect to the first class when no class is selected in the URL
   useEffect(() => {
@@ -64,14 +49,6 @@ const Schedules = () => {
       navigate(`/schedules/${classes[0]._id}`, { replace: true });
     }
   }, [classId, classes, navigate]);
-
-  useEffect(() => {
-    if (classId && !hasCollection()) initialize(false, collectionName);
-  }, [classId, initialize, hasCollection, collectionName]);
-
-  useEffect(() => {
-    if (classId && hasCollection() && !schedules?.length) fetchSchedules();
-  }, [classId, schedules?.length, classesLoading]);
 
   const getScheduleForDay = (day) => {
     return schedules.find((s) => s.day === day);

@@ -1,8 +1,11 @@
 // React
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 // Router
 import { Link, useParams, useNavigate } from "react-router-dom";
+
+// Tanstack Query
+import { useQuery } from "@tanstack/react-query";
 
 // Toast
 import { toast } from "sonner";
@@ -26,23 +29,21 @@ const EditSchedulePage = () => {
   const { getCollectionData } = useArrayStore();
   const classes = getCollectionData("classes");
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [schedules, setSchedules] = useState([]);
-
   const className = classes.find((cls) => cls._id === classId)?.name || "Sinf";
 
+  const { data: schedules, isLoading, isError } = useQuery({
+    queryKey: ["schedules", "class", classId],
+    queryFn: () =>
+      schedulesAPI.getByClass(classId).then((res) => res.data.data),
+    enabled: !!classId,
+  });
+
   useEffect(() => {
-    schedulesAPI
-      .getByClass(classId)
-      .then((res) => {
-        setSchedules(res.data.data || []);
-      })
-      .catch(() => {
-        toast.error("Dars jadvalini yuklashda xatolik yuz berdi");
-        navigate(`/schedules/${classId}`);
-      })
-      .finally(() => setIsLoading(false));
-  }, [classId, navigate]);
+    if (isError) {
+      toast.error("Dars jadvalini yuklashda xatolik yuz berdi");
+      navigate(`/schedules/${classId}`);
+    }
+  }, [isError, classId, navigate]);
 
   return (
     <div className="space-y-4">
@@ -56,14 +57,12 @@ const EditSchedulePage = () => {
         </Link>
       </div>
 
-      <h1 className="page-title">
-        Dars jadvalini tahrirlash - {className}
-      </h1>
+      <h1 className="page-title">Dars jadvalini tahrirlash - {className}</h1>
 
       {isLoading ? (
-        <Card className="h-96 max-w-2xl animate-pulse" />
+        <Card className="h-96 animate-pulse" />
       ) : (
-        <ScheduleForm classId={classId} initialSchedules={schedules} />
+        <ScheduleForm classId={classId} initialSchedules={schedules || []} />
       )}
     </div>
   );

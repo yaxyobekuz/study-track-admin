@@ -10,6 +10,9 @@ import { useState } from "react";
 // Router
 import { useNavigate } from "react-router-dom";
 
+// Tanstack Query
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 // Icons
 import { Trash2, Plus } from "lucide-react";
 
@@ -50,12 +53,11 @@ const toLessonShape = (subj, index) => ({
  */
 const ScheduleForm = ({ classId, initialSchedules = [] }) => {
   const navigate = useNavigate();
-  const { invalidateCacheByStartsName, getCollectionData } =
-    useArrayStore("schedules");
+  const queryClient = useQueryClient();
+  const { getCollectionData } = useArrayStore();
   const subjects = getCollectionData("subjects");
   const teachers = getCollectionData("teachers");
 
-  const [isLoading, setIsLoading] = useState(false);
   const [week, setWeek] = useState(() => {
     const initial = {};
     for (const day of days) {
@@ -63,6 +65,20 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
       initial[day.value] = (schedule?.subjects || []).map(toLessonShape);
     }
     return initial;
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: (payload) => schedulesAPI.saveClassSchedule(classId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["schedules", "class", classId],
+      });
+      toast.success("Dars jadvali saqlandi");
+      navigate(`/schedules/${classId}`);
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+    },
   });
 
   const addLesson = (day) => {
@@ -117,147 +133,142 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
       return toast.error("Kamida bitta kun uchun dars jadvali kiriting");
     }
 
-    setIsLoading(true);
-
-    schedulesAPI
-      .saveClassSchedule(classId, payload)
-      .then(() => {
-        invalidateCacheByStartsName();
-        toast.success("Dars jadvali saqlandi");
-        navigate(`/schedules/${classId}`);
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    saveMutation.mutate(payload);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl">
-      {days.map((day) => {
-        const lessons = week[day.value];
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {days.map((day) => {
+          const lessons = week[day.value];
 
-        return (
-          <Card key={day.value} className="space-y-3">
-            <h3 className="text-lg font-semibold text-gray-900">{day.label}</h3>
+          return (
+            <Card key={day.value} className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {day.label}
+              </h3>
 
-            {lessons.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-2">
-                Bu kun uchun dars yo'q
-              </p>
-            )}
+              {lessons.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-2">
+                  Bu kun uchun dars yo'q
+                </p>
+              )}
 
-            {lessons.map((subj, index) => (
-              <div
-                key={index}
-                className="bg-white border border-gray-200 rounded-xl"
-              >
-                <div className="flex justify-between items-center px-4 py-2 rounded-t-lg bg-gray-100">
-                  <h4 className="font-medium text-gray-900">{index + 1}-dars</h4>
-                  <button
-                    type="button"
-                    onClick={() => removeLesson(day.value, index)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    <Trash2 className="size-4" strokeWidth={1.5} />
-                  </button>
-                </div>
-
-                <InputGroup className="grid-cols-2 p-1.5">
-                  <InputField
-                    min={1}
-                    max={100}
-                    required
-                    type="number"
-                    label="Dars tartibi"
-                    placeholder="1, 2, 3, ..."
-                    value={subj.order}
-                    onChange={(e) =>
-                      updateLesson(day.value, index, "order", e.target.value)
-                    }
-                  />
-
-                  <SelectField
-                    required
-                    searchable
-                    label="Fan"
-                    placeholder="Fanni tanlang"
-                    value={subj.subject}
-                    onChange={(v) =>
-                      updateLesson(day.value, index, "subject", v)
-                    }
-                    options={subjects.map((s) => ({
-                      label: s?.name,
-                      value: s?._id,
-                    }))}
-                  />
-
-                  <SelectField
-                    required
-                    searchable
-                    label="O'qituvchi"
-                    placeholder="O'qituvchini tanlang"
-                    value={subj.teacher}
-                    onChange={(v) =>
-                      updateLesson(day.value, index, "teacher", v)
-                    }
-                    options={teachers.map((t) => ({
-                      value: t?._id,
-                      label: t?.fullName,
-                    }))}
-                  />
-
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <InputField
-                      required
-                      type="time"
-                      label="Boshlanish vaqti"
-                      value={subj.startTime}
-                      onChange={(e) =>
-                        updateLesson(
-                          day.value,
-                          index,
-                          "startTime",
-                          e.target.value,
-                        )
-                      }
-                    />
-
-                    <InputField
-                      required
-                      type="time"
-                      label="Tugash vaqti"
-                      value={subj.endTime}
-                      onChange={(e) =>
-                        updateLesson(
-                          day.value,
-                          index,
-                          "endTime",
-                          e.target.value,
-                        )
-                      }
-                    />
+              {lessons.map((subj, index) => (
+                <div
+                  key={index}
+                  className="bg-white border border-gray-200 rounded-xl"
+                >
+                  <div className="flex justify-between items-center px-4 py-2 rounded-t-lg bg-gray-100">
+                    <h4 className="font-medium text-gray-900">
+                      {index + 1}-dars
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => removeLesson(day.value, index)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      <Trash2 className="size-4" strokeWidth={1.5} />
+                    </button>
                   </div>
-                </InputGroup>
-              </div>
-            ))}
 
-            {/* Add lesson button */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => addLesson(day.value)}
-              className="w-full border-2 border-dashed text-gray-600 hover:border-blue-500 hover:text-blue-500"
-            >
-              <Plus className="size-4" strokeWidth={1.5} />
-              Dars qo'shish
-            </Button>
-          </Card>
-        );
-      })}
+                  <InputGroup className="grid-cols-2 p-1.5">
+                    <InputField
+                      min={1}
+                      max={100}
+                      required
+                      type="number"
+                      label="Dars tartibi"
+                      placeholder="1, 2, 3, ..."
+                      value={subj.order}
+                      onChange={(e) =>
+                        updateLesson(day.value, index, "order", e.target.value)
+                      }
+                    />
 
-      {/* Action buttons */}
-      <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
+                    <SelectField
+                      required
+                      searchable
+                      label="Fan"
+                      placeholder="Fanni tanlang"
+                      value={subj.subject}
+                      onChange={(v) =>
+                        updateLesson(day.value, index, "subject", v)
+                      }
+                      options={subjects.map((s) => ({
+                        label: s?.name,
+                        value: s?._id,
+                      }))}
+                    />
+
+                    <SelectField
+                      required
+                      searchable
+                      className="col-span-2"
+                      label="O'qituvchi"
+                      placeholder="O'qituvchini tanlang"
+                      value={subj.teacher}
+                      onChange={(v) =>
+                        updateLesson(day.value, index, "teacher", v)
+                      }
+                      options={teachers.map((t) => ({
+                        value: t?._id,
+                        label: t?.fullName,
+                      }))}
+                    />
+
+                    <div className="grid grid-cols-2 gap-1.5 col-span-2">
+                      <InputField
+                        required
+                        type="time"
+                        label="Boshlanish vaqti"
+                        value={subj.startTime}
+                        onChange={(e) =>
+                          updateLesson(
+                            day.value,
+                            index,
+                            "startTime",
+                            e.target.value,
+                          )
+                        }
+                      />
+
+                      <InputField
+                        required
+                        type="time"
+                        label="Tugash vaqti"
+                        value={subj.endTime}
+                        onChange={(e) =>
+                          updateLesson(
+                            day.value,
+                            index,
+                            "endTime",
+                            e.target.value,
+                          )
+                        }
+                      />
+                    </div>
+                  </InputGroup>
+                </div>
+              ))}
+
+              {/* Add lesson button */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => addLesson(day.value)}
+                className="w-full border-2 border-dashed text-gray-600 hover:border-blue-500 hover:text-blue-500"
+              >
+                <Plus className="size-4" strokeWidth={1.5} />
+                Dars qo'shish
+              </Button>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Action buttons (fixed bottom bar) */}
+      <div className="sticky bottom-0 z-20 -mx-4 mt-4 flex flex-col-reverse gap-3.5 border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur xs:flex-row xs:justify-end">
         <Button
           type="button"
           variant="secondary"
@@ -267,9 +278,9 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
           Bekor qilish
         </Button>
 
-        <Button className="w-full xs:w-32" disabled={isLoading}>
+        <Button className="w-full xs:w-32" disabled={saveMutation.isPending}>
           Saqlash
-          {isLoading && "..."}
+          {saveMutation.isPending && "..."}
         </Button>
       </div>
     </form>
