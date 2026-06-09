@@ -11,6 +11,9 @@ import LoginPage from "@/features/auth/pages/LoginPage";
 // Pages - Dashboard
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 
+// Pages - Profile
+import ProfilePage from "@/features/profile/pages/ProfilePage";
+
 // Pages - Users
 import UsersPage from "@/features/users/pages/UsersPage";
 import CreateUserPage from "@/features/users/pages/CreateUserPage";
@@ -115,6 +118,9 @@ const Routes = () => {
       <Route element={<AuthGuard />}>
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<DashboardPage />} />
+
+          {/* Profile */}
+          <Route path="/profile" element={<ProfilePage />} />
 
           {/* Users */}
           <Route path="/users" element={<UsersPage />} />

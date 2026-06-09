@@ -1,5 +1,6 @@
 import http from "@/shared/api/http";
 
 export const usersAPI = {
-  updateProfile: (data) => http.put("/api/users/me", data),
+  // baseURL allaqachon `/api` bilan tugaydi, shuning uchun bu yerda qo'shilmaydi
+  updateProfile: (data) => http.put("users/me", data),
 };

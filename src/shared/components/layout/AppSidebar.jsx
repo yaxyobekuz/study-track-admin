@@ -9,6 +9,7 @@ import {
   Settings2,
   PanelLeft,
   UserPlus,
+  UserRound,
   TrendingUp,
   ChevronRight,
   ClipboardList,
@@ -463,6 +464,13 @@ const Footer = () => {
               </DropdownMenuLabel>
 
               <DropdownMenuSeparator />
+
+              <DropdownMenuItem asChild>
+                <Link to="/profile">
+                  <UserRound strokeWidth={1.5} />
+                  Profil
+                </Link>
+              </DropdownMenuItem>
 
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut strokeWidth={1.5} />
