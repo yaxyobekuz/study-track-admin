@@ -28,6 +28,8 @@ import MainBackgroundPatterns from "../components/bg/MainBackgroundPatterns";
 // Modals
 import EditClassModal from "@/features/classes/components/EditClassModal";
 import DeleteUserModal from "@/features/users/components/DeleteUserModal";
+import ArchiveUserModal from "@/features/users/components/ArchiveUserModal";
+import RestoreUserModal from "@/features/users/components/RestoreUserModal";
 import ExportUsersModal from "@/features/users/components/ExportUsersModal";
 import CreateClassModal from "@/features/classes/components/CreateClassModal";
 import DeleteClassModal from "@/features/classes/components/DeleteClassModal";
@@ -74,6 +76,8 @@ const DashboardLayout = () => {
 
       {/* User Modals */}
       <DeleteUserModal />
+      <ArchiveUserModal />
+      <RestoreUserModal />
       <ResetUserPasswordModal />
       <ViewUserPasswordModal />
       <ExportUsersModal />

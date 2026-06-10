@@ -9,6 +9,8 @@ const initialState = {
   profile: initialModalData,
   editUser: initialModalData,
   deleteUser: initialModalData,
+  archiveUser: initialModalData,
+  restoreUser: initialModalData,
   createUser: initialModalData,
   resetUserPassword: initialModalData,
   viewUserPassword: initialModalData,
