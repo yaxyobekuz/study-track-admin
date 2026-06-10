@@ -15,6 +15,7 @@ import useArrayStore from "@/shared/hooks/useArrayStore";
 import { usersAPI } from "@/features/users/api/users.api";
 
 // Components
+import Tabs from "@/shared/components/ui/Tabs";
 import Input from "@/shared/components/ui/input/Input";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
@@ -27,7 +28,22 @@ import { getRoleLabel } from "@/shared/helpers/role.helpers";
 import { useEffect, useCallback, useState, useRef } from "react";
 
 // Icons
-import { Plus, Edit, Trash2, Key, Eye, Download } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Key,
+  Eye,
+  Download,
+  Archive,
+  ArchiveRestore,
+} from "lucide-react";
+
+// Tabs
+const TAB_ITEMS = [
+  { value: "main", label: "Asosiy" },
+  { value: "archived", label: "Arxivlangan" },
+];
 
 const Users = () => {
   const { user: currentUser } = useAuth();
@@ -48,6 +64,23 @@ const Users = () => {
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const searchQuery = searchParams.get("search") || "";
   const roleFilter = searchParams.get("role") || "";
+  const activeTab = searchParams.get("tab") === "archived" ? "archived" : "main";
+  const isArchivedTab = activeTab === "archived";
+
+  // Handle tab change (Asosiy / Arxivlangan)
+  const handleTabChange = useCallback(
+    (value) => {
+      const params = new URLSearchParams(searchParams);
+      if (value === "archived") {
+        params.set("tab", "archived");
+      } else {
+        params.delete("tab");
+      }
+      params.set("page", "1");
+      setSearchParams(params);
+    },
+    [searchParams, setSearchParams],
+  );
 
   // Handle role filter change
   const handleRoleChange = useCallback(
@@ -134,11 +167,12 @@ const Users = () => {
 
   // Load templates for current page & type
   const fetchUsers = useCallback(
-    (page, search, role) => {
+    (page, search, role, archived) => {
       setPageLoadingState(page, true);
       const params = { page, limit: 32 };
       if (search) params.search = search;
       if (role) params.role = role;
+      if (archived) params.archived = true;
 
       usersAPI
         .getAll(params)
@@ -167,8 +201,8 @@ const Users = () => {
 
   // Load users when page or search changes
   useEffect(() => {
-    fetchUsers(currentPage, searchQuery, roleFilter);
-  }, [currentPage, searchQuery, roleFilter, users?.length]);
+    fetchUsers(currentPage, searchQuery, roleFilter, isArchivedTab);
+  }, [currentPage, searchQuery, roleFilter, isArchivedTab, users?.length]);
 
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
@@ -176,6 +210,14 @@ const Users = () => {
 
   return (
     <div>
+      {/* Tabs: Asosiy / Arxivlangan */}
+      <Tabs
+        items={TAB_ITEMS}
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="mb-4"
+      />
+
       {/* Header */}
       <div className="flex flex-col gap-4 mb-4 sm:flex-row">
         {/* Create New Btn */}
@@ -317,13 +359,37 @@ const Users = () => {
                         <Key className="size-5" strokeWidth={1.5} />
                       </button>
 
-                      {/* Delete */}
-                      <button
-                        onClick={() => openModal("deleteUser", user)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 className="size-5" strokeWidth={1.5} />
-                      </button>
+                      {/* Archive / Restore (students) or Delete (others) */}
+                      {user.role === "student" ? (
+                        isArchivedTab ? (
+                          <button
+                            onClick={() => openModal("restoreUser", user)}
+                            className="text-green-600 hover:text-green-900"
+                            title="Arxivdan qaytarish"
+                          >
+                            <ArchiveRestore
+                              className="size-5"
+                              strokeWidth={1.5}
+                            />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => openModal("archiveUser", user)}
+                            className="text-amber-600 hover:text-amber-900"
+                            title="Arxivlash"
+                          >
+                            <Archive className="size-5" strokeWidth={1.5} />
+                          </button>
+                        )
+                      ) : (
+                        <button
+                          onClick={() => openModal("deleteUser", user)}
+                          className="text-red-600 hover:text-red-900"
+                          title="O'chirish"
+                        >
+                          <Trash2 className="size-5" strokeWidth={1.5} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
