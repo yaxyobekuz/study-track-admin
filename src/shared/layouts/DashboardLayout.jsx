@@ -33,6 +33,9 @@ import RestoreUserModal from "@/features/users/components/RestoreUserModal";
 import ExportUsersModal from "@/features/users/components/ExportUsersModal";
 import CreateClassModal from "@/features/classes/components/CreateClassModal";
 import DeleteClassModal from "@/features/classes/components/DeleteClassModal";
+import AddStudentsToClassModal from "@/features/classes/components/AddStudentsToClassModal";
+import MoveClassStudentsModal from "@/features/classes/components/MoveClassStudentsModal";
+import RemoveClassStudentsModal from "@/features/classes/components/RemoveClassStudentsModal";
 import EditSubjectModal from "@/features/subjects/components/EditSubjectModal";
 import SendMessageModal from "@/features/messages/components/SendMessageModal";
 import UploadTopicsModal from "@/features/subjects/components/UploadTopicsModal";
@@ -86,6 +89,9 @@ const DashboardLayout = () => {
       <EditClassModal />
       <CreateClassModal />
       <DeleteClassModal />
+      <AddStudentsToClassModal />
+      <MoveClassStudentsModal />
+      <RemoveClassStudentsModal />
 
       {/* Subject Modals */}
       <EditSubjectModal />

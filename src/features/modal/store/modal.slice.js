@@ -22,6 +22,11 @@ const initialState = {
   editClass: initialModalData,
   deleteClass: initialModalData,
 
+  // Class students
+  addStudentsToClass: initialModalData,
+  moveClassStudents: initialModalData,
+  removeClassStudents: initialModalData,
+
   // Subject
   createSubject: initialModalData,
   editSubject: initialModalData,
