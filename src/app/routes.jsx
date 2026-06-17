@@ -54,6 +54,9 @@ import CoinSettingsPage from "@/features/coin-settings/pages/CoinSettingsPage";
 // Pages - Test Settings
 import TestSettingsPage from "@/features/test-settings/pages/TestSettingsPage";
 
+// Pages - Schedule Settings
+import ScheduleSettingsPage from "@/features/schedule-settings/pages/ScheduleSettingsPage";
+
 // Pages - Coin Distribution
 import CoinDistributionPage from "@/features/coin-distribution/pages/CoinDistributionPage";
 
@@ -230,6 +233,12 @@ const Routes = () => {
 
           {/* Test Settings */}
           <Route path="/test-settings" element={<TestSettingsPage />} />
+
+          {/* Schedule Settings */}
+          <Route
+            path="/schedule-settings"
+            element={<ScheduleSettingsPage />}
+          />
 
           {/* Test Seasons */}
           <Route path="/test-seasons" element={<TestSeasonsPage />} />

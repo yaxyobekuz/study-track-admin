@@ -105,6 +105,10 @@ const navItems = [
         url: "/schedules",
       },
       {
+        title: "Dars jadvali sozlamalari",
+        url: "/schedule-settings",
+      },
+      {
         title: "Dars mavzulari",
         url: "/topics",
       },
