@@ -5,13 +5,13 @@ import { days } from "@/shared/data/days.data";
 import { toast } from "sonner";
 
 // React
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 // Router
 import { useNavigate } from "react-router-dom";
 
 // Tanstack Query
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Icons
 import { Trash2, Plus } from "lucide-react";
@@ -21,6 +21,7 @@ import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // API
 import { schedulesAPI } from "@/features/schedules/api/schedules.api";
+import { scheduleSettingsAPI } from "@/features/schedule-settings/api/scheduleSettings.api";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -58,6 +59,21 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
   const subjects = getCollectionData("subjects");
   const teachers = getCollectionData("teachers");
 
+  // Dars tartibi -> standart { startTime, endTime } sozlamalari
+  const { data: settingsData } = useQuery({
+    queryKey: ["schedule-settings"],
+    queryFn: () => scheduleSettingsAPI.getSettings(),
+  });
+
+  const periodMap = useMemo(() => {
+    const map = new Map();
+    const periods = settingsData?.data?.data?.periods || [];
+    for (const p of periods) {
+      map.set(Number(p.order), { startTime: p.startTime, endTime: p.endTime });
+    }
+    return map;
+  }, [settingsData]);
+
   const [week, setWeek] = useState(() => {
     const initial = {};
     for (const day of days) {
@@ -86,7 +102,14 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
       const lessons = prev[day];
       const nextOrder =
         Math.max(0, ...lessons.map((s) => Number(s.order) || 0)) + 1;
-      return { ...prev, [day]: [...lessons, createEmptyLesson(nextOrder)] };
+      const lesson = createEmptyLesson(nextOrder);
+      // Sozlamada shu tartib uchun standart vaqtlar bo'lsa, avto to'ldiramiz
+      const preset = periodMap.get(nextOrder);
+      if (preset) {
+        lesson.startTime = preset.startTime;
+        lesson.endTime = preset.endTime;
+      }
+      return { ...prev, [day]: [...lessons, lesson] };
     });
   };
 
@@ -100,7 +123,21 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
   const updateLesson = (day, index, field, value) => {
     setWeek((prev) => {
       const lessons = [...prev[day]];
-      lessons[index] = { ...lessons[index], [field]: value };
+      let updated = { ...lessons[index], [field]: value };
+
+      // Dars tartibi o'zgarganda, sozlamadagi standart vaqtlarni avto to'ldiramiz
+      if (field === "order") {
+        const preset = periodMap.get(Number(value));
+        if (preset) {
+          updated = {
+            ...updated,
+            startTime: preset.startTime,
+            endTime: preset.endTime,
+          };
+        }
+      }
+
+      lessons[index] = updated;
       return { ...prev, [day]: lessons };
     });
   };
