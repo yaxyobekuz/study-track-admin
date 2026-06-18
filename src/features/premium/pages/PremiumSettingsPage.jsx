@@ -214,13 +214,6 @@ const PremiumSettingsPage = () => {
       <Button onClick={handleSave} disabled={saveMutation.isPending}>
         Saqlash{saveMutation.isPending && "..."}
       </Button>
-
-      <Card className="flex gap-3.5 bg-blue-50 text-blue-700 text-sm">
-        <Info className="size-5 shrink-0" strokeWidth={1.5} />
-        Narx yoki muddat o'zgarishi faqat yangi obunalarga ta'sir qiladi. Yangi
-        rang qo'shsangiz, o'quvchi ilovasida ham unga mos rang qo'llab-quvvatlanishi
-        kerak.
-      </Card>
     </div>
   );
 };
