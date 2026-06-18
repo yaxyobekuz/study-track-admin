@@ -15,6 +15,7 @@ import {
   ClipboardList,
   AlertTriangle,
   BadgeDollarSign,
+  Crown,
 } from "lucide-react";
 
 // Router
@@ -176,6 +177,25 @@ const navItems = [
       {
         title: "Sozlamalar",
         url: "/penalties/settings",
+      },
+    ],
+  },
+  {
+    title: "MBSI Premium",
+    icon: Crown,
+    isActive: false,
+    items: [
+      {
+        title: "Hisobot",
+        url: "/premium",
+      },
+      {
+        title: "Emojilar",
+        url: "/premium/emojis",
+      },
+      {
+        title: "Sozlamalar",
+        url: "/premium/settings",
       },
     ],
   },

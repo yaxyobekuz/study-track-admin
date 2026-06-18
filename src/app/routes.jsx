@@ -83,6 +83,11 @@ import PenaltyCategoriesPage from "@/features/penalties/pages/PenaltyCategoriesP
 import PenaltySettingsPage from "@/features/penalties/pages/PenaltySettingsPage";
 import ReductionPackagesPage from "@/features/penalties/pages/ReductionPackagesPage";
 
+// Pages - Premium
+import PremiumSubscriptionsPage from "@/features/premium/pages/PremiumSubscriptionsPage";
+import PremiumSettingsPage from "@/features/premium/pages/PremiumSettingsPage";
+import PremiumEmojisPage from "@/features/premium/pages/PremiumEmojisPage";
+
 // Pages - Attendance
 import AttendanceListPage from "@/features/attendance/pages/AttendanceListPage";
 import AttendanceTodayPage from "@/features/attendance/pages/AttendanceTodayPage";
@@ -206,6 +211,11 @@ const Routes = () => {
             element={<ReductionPackagesPage />}
           />
           <Route path="/penalties/:penaltyId" element={<PenaltyDetailPage />} />
+
+          {/* Premium */}
+          <Route path="/premium" element={<PremiumSubscriptionsPage />} />
+          <Route path="/premium/emojis" element={<PremiumEmojisPage />} />
+          <Route path="/premium/settings" element={<PremiumSettingsPage />} />
 
           {/* Attendance */}
           <Route path="/attendance" element={<AttendanceListPage />} />

@@ -105,6 +105,11 @@ const initialState = {
   // Attendance
   reviewExcuse: initialModalData,
 
+  // Premium
+  grantPremium: initialModalData,
+  createEmoji: initialModalData,
+  editEmoji: initialModalData,
+
   // Test season
   createSeason: initialModalData,
   editSeason: initialModalData,
