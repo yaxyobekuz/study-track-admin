@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2, Info } from "lucide-react";
 // Components
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
+import EmojiPreview from "../components/EmojiPreview";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -66,60 +67,33 @@ const PremiumEmojisPage = () => {
           <p className="text-sm text-gray-500">Hali emojilar yo'q</p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {emojis.map((emoji) => (
-            <Card key={emoji._id} title={emoji.label}>
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700">
-                      ID: {emoji.emojiId}
-                    </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
-                      {emoji.key}
-                    </span>
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${
-                        emoji.isActive
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {emoji.isActive ? "Faol" : "Nofaol"}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1.5">
-                    Tartib: {emoji.sortOrder}
-                  </p>
-                </div>
+            <Card key={emoji._id} className="flex flex-col items-center gap-2">
+              <EmojiPreview url={emoji.animationUrl} className="size-16" />
 
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => openModal("editEmoji", emoji)}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600"
-                  >
-                    <Edit className="size-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(emoji._id)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </button>
-                </div>
+              <p className="text-sm font-medium text-gray-800 text-center truncate w-full">
+                {emoji.name || "—"}
+              </p>
+
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => openModal("editEmoji", emoji)}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                >
+                  <Edit className="size-3.5" />
+                </button>
+                <button
+                  onClick={() => handleDelete(emoji._id)}
+                  className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
               </div>
             </Card>
           ))}
         </div>
       )}
-
-      {/* Info */}
-      <Card className="flex gap-3.5 bg-yellow-50 text-yellow-700 text-sm">
-        <Info className="size-5 shrink-0" strokeWidth={1.5} />
-        Emoji ID o'quvchi ilovasidagi animatsiya fayliga mos kelishi kerak. Yangi
-        ID qo'shsangiz, ilovada ham shu ID uchun animatsiya mavjud bo'lishi shart,
-        aks holda o'quvchiga ko'rinmaydi.
-      </Card>
 
       {/* Modals */}
       <CreateEmojiModal />

@@ -21,7 +21,13 @@ export const premiumAPI = {
 
   // Emoji boshqaruvi
   getEmojis: () => http.get("/premium/admin/emojis"),
-  createEmoji: (data) => http.post("/premium/admin/emojis", data),
-  updateEmoji: (id, data) => http.put(`/premium/admin/emojis/${id}`, data),
+  createEmoji: (formData) =>
+    http.post("/premium/admin/emojis", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  updateEmoji: (id, formData) =>
+    http.put(`/premium/admin/emojis/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
   deleteEmoji: (id) => http.delete(`/premium/admin/emojis/${id}`),
 };

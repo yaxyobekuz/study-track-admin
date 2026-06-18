@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // React
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Tanstack Query
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,9 +14,8 @@ import { premiumAPI } from "@/features/premium/api/premium.api";
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
-
-// Hooks
-import useObjectState from "@/shared/hooks/useObjectState";
+import EmojiPreview from "./EmojiPreview";
+import JsonDropzone from "./JsonDropzone";
 
 const EditEmojiModal = () => (
   <ResponsiveModal name="editEmoji" title="Emojini tahrirlash">
@@ -27,36 +26,21 @@ const EditEmojiModal = () => (
 const Content = ({ close, _id, ...data }) => {
   const queryClient = useQueryClient();
 
-  const { emojiId, key, label, sortOrder, isActive, setField, setFields } =
-    useObjectState({
-      emojiId: "",
-      key: "",
-      label: "",
-      sortOrder: 0,
-      isActive: true,
-    });
+  const [name, setName] = useState("");
+  const [file, setFile] = useState(null);
 
   useEffect(() => {
-    if (data.label !== undefined) {
-      setFields({
-        emojiId: data.emojiId ?? "",
-        key: data.key || "",
-        label: data.label || "",
-        sortOrder: data.sortOrder ?? 0,
-        isActive: data.isActive ?? true,
-      });
-    }
+    if (data.name !== undefined) setName(data.name || "");
+    setFile(null);
   }, [_id]);
 
   const updateMutation = useMutation({
-    mutationFn: () =>
-      premiumAPI.updateEmoji(_id, {
-        emojiId: Number(emojiId),
-        key,
-        label,
-        sortOrder: Number(sortOrder),
-        isActive,
-      }),
+    mutationFn: () => {
+      const formData = new FormData();
+      formData.append("name", name);
+      if (file) formData.append("file", file);
+      return premiumAPI.updateEmoji(_id, formData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["premium", "emojis"] });
       toast.success("Emoji yangilandi");
@@ -68,51 +52,33 @@ const Content = ({ close, _id, ...data }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!name.trim()) return toast.error("Emoji nomini kiriting");
     updateMutation.mutate();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3.5">
-      <InputField
-        required
-        min={1}
-        type="number"
-        label="Emoji ID"
-        value={emojiId}
-        onChange={(e) => setField("emojiId", e.target.value)}
-      />
+      {/* Joriy animatsiya */}
+      {data.animationUrl && (
+        <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
+          <EmojiPreview url={data.animationUrl} className="size-12" />
+          <span className="text-xs text-gray-500">Joriy animatsiya</span>
+        </div>
+      )}
 
       <InputField
         required
-        label="Kalit (key)"
-        value={key}
-        onChange={(e) => setField("key", e.target.value)}
+        label="Nomi"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
       />
 
-      <InputField
-        required
-        label="Nom (label)"
-        value={label}
-        onChange={(e) => setField("label", e.target.value)}
+      <JsonDropzone
+        value={file}
+        onChange={setFile}
+        label="Yangi lottie fayl (.json)"
+        description="Faqat almashtirmoqchi bo'lsangiz tanlang"
       />
-
-      <InputField
-        min={0}
-        type="number"
-        label="Tartib raqami"
-        value={sortOrder}
-        onChange={(e) => setField("sortOrder", e.target.value)}
-      />
-
-      <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
-        <input
-          type="checkbox"
-          className="rounded"
-          checked={isActive}
-          onChange={(e) => setField("isActive", e.target.checked)}
-        />
-        <span>Faol (o'quvchilarga ko'rinadi)</span>
-      </label>
 
       <Button disabled={updateMutation.isPending}>
         Saqlash{updateMutation.isPending && "..."}

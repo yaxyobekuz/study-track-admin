@@ -1,6 +1,9 @@
 // Toast
 import { toast } from "sonner";
 
+// React
+import { useState } from "react";
+
 // Tanstack Query
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -11,9 +14,7 @@ import { premiumAPI } from "@/features/premium/api/premium.api";
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
-
-// Hooks
-import useObjectState from "@/shared/hooks/useObjectState";
+import JsonDropzone from "./JsonDropzone";
 
 const CreateEmojiModal = () => (
   <ResponsiveModal name="createEmoji" title="Yangi emoji">
@@ -24,28 +25,19 @@ const CreateEmojiModal = () => (
 const Content = ({ close }) => {
   const queryClient = useQueryClient();
 
-  const { emojiId, key, label, sortOrder, isActive, setField, resetState } =
-    useObjectState({
-      emojiId: "",
-      key: "",
-      label: "",
-      sortOrder: 0,
-      isActive: true,
-    });
+  const [name, setName] = useState("");
+  const [file, setFile] = useState(null);
 
   const createMutation = useMutation({
-    mutationFn: () =>
-      premiumAPI.createEmoji({
-        emojiId: Number(emojiId),
-        key,
-        label,
-        sortOrder: Number(sortOrder),
-        isActive,
-      }),
+    mutationFn: () => {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("file", file);
+      return premiumAPI.createEmoji(formData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["premium", "emojis"] });
       toast.success("Emoji qo'shildi");
-      resetState();
       close();
     },
     onError: (err) =>
@@ -54,6 +46,8 @@ const Content = ({ close }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!name.trim()) return toast.error("Emoji nomini kiriting");
+    if (!file) return toast.error("Lottie (.json) faylni tanlang");
     createMutation.mutate();
   };
 
@@ -61,47 +55,13 @@ const Content = ({ close }) => {
     <form onSubmit={handleSubmit} className="space-y-3.5">
       <InputField
         required
-        min={1}
-        type="number"
-        label="Emoji ID"
-        description="Ilovadagi animatsiya bilan bir xil bo'lishi kerak"
-        value={emojiId}
-        onChange={(e) => setField("emojiId", e.target.value)}
-      />
-
-      <InputField
-        required
-        label="Kalit (key)"
-        placeholder="magic"
-        value={key}
-        onChange={(e) => setField("key", e.target.value)}
-      />
-
-      <InputField
-        required
-        label="Nom (label)"
+        label="Nomi"
         placeholder="Sehrli"
-        value={label}
-        onChange={(e) => setField("label", e.target.value)}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
       />
 
-      <InputField
-        min={0}
-        type="number"
-        label="Tartib raqami"
-        value={sortOrder}
-        onChange={(e) => setField("sortOrder", e.target.value)}
-      />
-
-      <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
-        <input
-          type="checkbox"
-          className="rounded"
-          checked={isActive}
-          onChange={(e) => setField("isActive", e.target.checked)}
-        />
-        <span>Faol (o'quvchilarga ko'rinadi)</span>
-      </label>
+      <JsonDropzone required value={file} onChange={setFile} />
 
       <Button disabled={createMutation.isPending}>
         Qo'shish{createMutation.isPending && "..."}
