@@ -5,9 +5,19 @@ import { cn } from "@/shared/utils/cn";
 import Tooltip from "@/shared/components/ui/tooltip/Tooltip";
 
 // Data
-import { STATUS_DOT_COLORS, STATUS_LABELS } from "../data/attendance.data";
+import {
+  STATUS_DOT_COLORS,
+  STATUS_LABELS,
+  buildRoleLabelMap,
+} from "../data/attendance.data";
+
+// Hooks
+import useArrayStore from "@/shared/hooks/useArrayStore";
 
 const AttendanceTable = ({ records, month, year }) => {
+  const { getCollectionData } = useArrayStore("roles");
+  const roleLabelMap = buildRoleLabelMap(getCollectionData());
+
   const daysInMonth = new Date(year, month, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
@@ -64,7 +74,9 @@ const AttendanceTable = ({ records, month, year }) => {
                     {user?.firstName} {user?.lastName?.[0]}.
                   </p>
 
-                  <p className="text-xs text-gray-500">{user?.role}</p>
+                  <p className="text-xs text-gray-500">
+                    {roleLabelMap[user?.role] || user?.role}
+                  </p>
                 </div>
               </td>
 
