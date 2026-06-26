@@ -62,6 +62,22 @@ export const formatDateUZAlt = (date) => {
   return `${day} ${month}, ${year}`;
 };
 
+/**
+ * Daqiqalarni "8 soat 36 daqiqa" ko'rinishida formatlaydi.
+ * Masalan: 516 -> "8 soat 36 daqiqa", 60 -> "1 soat", 45 -> "45 daqiqa"
+ * @param {number} totalMinutes - Jami daqiqalar
+ * @returns {string} Soat va daqiqada ifodalangan davomiylik
+ */
+export const formatDurationUZ = (totalMinutes) => {
+  const mins = Math.max(0, Math.round(Number(totalMinutes) || 0));
+  const hours = Math.floor(mins / 60);
+  const minutes = mins % 60;
+
+  if (hours && minutes) return `${hours} soat ${minutes} daqiqa`;
+  if (hours) return `${hours} soat`;
+  return `${minutes} daqiqa`;
+};
+
 export const getDayOfWeekUZ = (date) => {
   const dateObj = new Date(date);
   const daysUz = [

@@ -1,5 +1,6 @@
 // Utils
 import { cn } from "@/shared/utils/cn";
+import { formatDurationUZ } from "@/shared/utils/date.utils";
 
 // Components
 import Tooltip from "@/shared/components/ui/tooltip/Tooltip";
@@ -142,12 +143,14 @@ const TooltipContent = ({ record }) => (
     )}
 
     {record.isLate && (
-      <p className="text-yellow-300">{record.lateMinutes} daqiqa kech</p>
+      <p className="text-yellow-300">
+        {formatDurationUZ(record.lateMinutes)} kech
+      </p>
     )}
 
     {record.isEarlyOut && (
       <p className="text-orange-300">
-        {record.earlyOutMinutes} daqiqa erta ketdi
+        {formatDurationUZ(record.earlyOutMinutes)} erta ketdi
       </p>
     )}
 

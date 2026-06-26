@@ -1,5 +1,6 @@
 // Utils
 import { cn } from "@/shared/utils/cn";
+import { formatDurationUZ } from "@/shared/utils/date.utils";
 
 // Data
 import {
@@ -87,7 +88,7 @@ const AttendanceTodayTable = ({ rows }) => {
               <td className="px-4 py-3">
                 {row.isLate ? (
                   <span className="text-yellow-600 text-xs">
-                    {row.lateMinutes} daqiqa
+                    {formatDurationUZ(row.lateMinutes)}
                   </span>
                 ) : (
                   <span className="text-gray-300">-</span>
