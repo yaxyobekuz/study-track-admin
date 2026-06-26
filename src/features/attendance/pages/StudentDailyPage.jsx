@@ -1,5 +1,6 @@
 // React
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +19,7 @@ import StudentAttendanceTodayTable from "../components/StudentAttendanceTodayTab
 import { SUMMARY_CARDS } from "../data/studentAttendance.data";
 
 const StudentDailyPage = () => {
-  const { date } = useOutletContext();
+  const { date, filterSlot } = useOutletContext();
   const [classId, setClassId] = useState("");
 
   const { data: classesData } = useQuery({
@@ -44,18 +45,23 @@ const StudentDailyPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Sinf filtri (qidiruvli) */}
-      <div className="flex justify-end">
-        <SelectSearch
-          value={selectedClassId || undefined}
-          triggerClassName="min-w-44"
-          placeholder="Sinfni tanlang"
-          searchPlaceholder="Sinfni qidirish..."
-          emptyText="Sinf topilmadi"
-          onChange={(v) => setClassId(v)}
-          options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
-        />
-      </div>
+      {/* Sinf filtri (qidiruvli) - layoutdagi tablar qatoriga portal orqali joylanadi */}
+      {filterSlot &&
+        createPortal(
+          <SelectSearch
+            value={selectedClassId || undefined}
+            triggerClassName="min-w-44"
+            placeholder="Sinfni tanlang"
+            searchPlaceholder="Sinfni qidirish..."
+            emptyText="Sinf topilmadi"
+            onChange={(v) => setClassId(v)}
+            options={classes.map((cls) => ({
+              label: cls.name,
+              value: cls._id,
+            }))}
+          />,
+          filterSlot,
+        )}
 
       {/* Yig'indi */}
       {!isLoading && (
