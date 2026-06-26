@@ -29,11 +29,11 @@ const StudentAttendanceTodayTable = ({ students }) => {
     <div className="overflow-x-auto rounded-lg">
       <table className="min-w-full text-sm">
         <thead>
-          <tr className="bg-gray-50">
-            <th className="text-left px-4 py-3 font-medium text-gray-600">O&apos;quvchi</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Holat</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Belgilangan vaqt</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Sabab</th>
+          <tr>
+            <th className="text-left px-4 py-3">O&apos;quvchi</th>
+            <th className="text-left px-4 py-3">Holat</th>
+            <th className="text-left px-4 py-3">Belgilangan vaqt</th>
+            <th className="text-left px-4 py-3">Sabab</th>
           </tr>
         </thead>
         <tbody>
@@ -58,7 +58,7 @@ const StudentAttendanceTodayTable = ({ students }) => {
                   </span>
                 )}
               </td>
-              <td className="px-4 py-3 text-gray-500">
+              <td className="px-4 py-3 text-gray-700">
                 {attendance?.markedAt ? formatTime(attendance.markedAt) : "-"}
               </td>
               <td className="px-4 py-3 text-gray-500 text-xs">
