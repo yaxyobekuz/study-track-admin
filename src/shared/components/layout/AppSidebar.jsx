@@ -3,7 +3,6 @@ import {
   Home,
   Hash,
   Store,
-  Clock,
   LogOut,
   BookOpen,
   Settings2,
@@ -97,6 +96,10 @@ const navItems = [
     icon: BookOpen,
     isActive: false,
     items: [
+      {
+        title: "Davomat",
+        url: "/attendance",
+      },
       {
         title: "Baholar jurnali",
         url: "/grades",
@@ -231,37 +234,6 @@ const navItems = [
       {
         title: "Monitorlar",
         url: "/monitors",
-      },
-    ],
-  },
-  {
-    title: "Davomat",
-    icon: Clock,
-    isActive: false,
-    items: [
-      {
-        title: "Bugungi davomat",
-        url: "/attendance/today",
-      },
-      {
-        title: "Davomat ro'yxati",
-        url: "/attendance",
-      },
-      {
-        title: "Uzrli so'rovlar",
-        url: "/attendance/excuses",
-      },
-      {
-        title: "Sozlamalar",
-        url: "/attendance/settings",
-      },
-      {
-        title: "O'quvchilar (bugungi)",
-        url: "/student-attendance/today",
-      },
-      {
-        title: "O'quvchilar davomati",
-        url: "/student-attendance",
       },
     ],
   },

@@ -34,3 +34,21 @@ export const SUMMARY_CARDS = [
   { key: "excused", label: "Sababli", color: "bg-blue-100 text-blue-700" },
   { key: "unmarked", label: "Belgilanmagan", color: "bg-gray-100 text-gray-500" },
 ];
+
+// Oylik o'quvchilar davomati uchun holat filtri optionlari
+export const STATUS_FILTER_OPTIONS = [
+  { label: "Barcha holatlar", value: "all" },
+  { label: "Keldi", value: "present" },
+  { label: "Kech keldi", value: "late" },
+  { label: "Kelmadi", value: "absent" },
+  { label: "Sababli", value: "excused" },
+];
+
+// Yil filtri optionlari (joriy yil va oldingi 2 yil)
+export const YEAR_OPTIONS = (() => {
+  const current = new Date().getFullYear();
+  return Array.from({ length: 3 }, (_, i) => ({
+    label: String(current - i),
+    value: current - i,
+  }));
+})();

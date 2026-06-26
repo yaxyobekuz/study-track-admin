@@ -19,6 +19,22 @@ export const STATUS_DOT_COLORS = {
   excused: "bg-blue-500",
 };
 
+// Xodimlar kunlik davomati uchun yig'indi kartalari
+export const STAFF_SUMMARY_CARDS = [
+  { key: "total", label: "Jami", color: "bg-gray-100 text-gray-700" },
+  { key: "present", label: "Keldi", color: "bg-green-100 text-green-700" },
+  { key: "late", label: "Kech keldi", color: "bg-yellow-100 text-yellow-700" },
+  { key: "absent", label: "Kelmadi", color: "bg-red-100 text-red-700" },
+  { key: "excused", label: "Sababli", color: "bg-blue-100 text-blue-700" },
+  { key: "notMarked", label: "Belgilanmagan", color: "bg-gray-50 text-gray-400" },
+];
+
+// Xodimlar uchun rol filtri yordamchisi: rollardan select optionlari yasaydi
+export const buildRoleOptions = (roles = []) => [
+  { label: "Barcha rollar", value: "all" },
+  ...roles.map((r) => ({ label: r.name, value: r.value })),
+];
+
 export const MONTH_OPTIONS = [
   { label: "Yanvar", value: 1 },
   { label: "Fevral", value: 2 },

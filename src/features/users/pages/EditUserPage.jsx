@@ -12,7 +12,7 @@ import { usersAPI } from "../api/users.api";
 
 // Components
 import UserForm from "../components/UserForm";
-import StudentAttendanceSummary from "@/features/studentAttendance/components/StudentAttendanceSummary";
+import StudentAttendanceSummary from "@/features/attendance/components/StudentAttendanceSummary";
 
 const EditUserPage = () => {
   const { userId } = useParams();

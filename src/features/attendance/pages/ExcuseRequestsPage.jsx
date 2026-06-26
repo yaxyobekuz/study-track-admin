@@ -31,10 +31,8 @@ const ExcuseRequestsPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Top */}
-      <div className="flex items-center justify-between">
-        <h1 className="page-title">Uzrli so'rovlar</h1>
-
+      {/* Holat filtri */}
+      <div className="flex justify-end">
         <Select
           label="Holat"
           triggerClassName="w-40"

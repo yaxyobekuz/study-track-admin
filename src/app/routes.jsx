@@ -88,15 +88,16 @@ import PremiumSubscriptionsPage from "@/features/premium/pages/PremiumSubscripti
 import PremiumSettingsPage from "@/features/premium/pages/PremiumSettingsPage";
 import PremiumEmojisPage from "@/features/premium/pages/PremiumEmojisPage";
 
-// Pages - Attendance
-import AttendanceListPage from "@/features/attendance/pages/AttendanceListPage";
-import AttendanceTodayPage from "@/features/attendance/pages/AttendanceTodayPage";
-import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
+// Davomat (Attendance) - layouts & route-level pages
+import AttendanceLayout from "@/features/attendance/layouts/AttendanceLayout";
+import DailyAttendanceLayout from "@/features/attendance/layouts/DailyAttendanceLayout";
+import MonthlyAttendanceLayout from "@/features/attendance/layouts/MonthlyAttendanceLayout";
+import StudentDailyPage from "@/features/attendance/pages/StudentDailyPage";
+import StaffDailyPage from "@/features/attendance/pages/StaffDailyPage";
+import StudentMonthlyPage from "@/features/attendance/pages/StudentMonthlyPage";
+import StaffMonthlyPage from "@/features/attendance/pages/StaffMonthlyPage";
 import ExcuseRequestsPage from "@/features/attendance/pages/ExcuseRequestsPage";
-
-// Pages - Student Attendance
-import StudentAttendanceTodayPage from "@/features/studentAttendance/pages/StudentAttendanceTodayPage";
-import StudentAttendanceListPage from "@/features/studentAttendance/pages/StudentAttendanceListPage";
+import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 
 // Pages - Leads
 import LeadDetailPage from "@/features/leads/pages/LeadDetailPage";
@@ -217,23 +218,52 @@ const Routes = () => {
           <Route path="/premium/emojis" element={<PremiumEmojisPage />} />
           <Route path="/premium/settings" element={<PremiumSettingsPage />} />
 
-          {/* Attendance */}
-          <Route path="/attendance" element={<AttendanceListPage />} />
-          <Route path="/attendance/today" element={<AttendanceTodayPage />} />
-          <Route
-            path="/attendance/settings"
-            element={<AttendanceSettingsPage />}
-          />
-          <Route path="/attendance/excuses" element={<ExcuseRequestsPage />} />
+          {/* Davomat - yagona layout + route-darajali sahifalar */}
+          <Route path="/attendance" element={<AttendanceLayout />}>
+            <Route
+              index
+              element={<Navigate to="/attendance/daily" replace />}
+            />
 
-          {/* Student Attendance */}
+            {/* Kunlik davomat (O'quvchilar / Xodimlar) */}
+            <Route path="daily" element={<DailyAttendanceLayout />}>
+              <Route
+                index
+                element={<Navigate to="/attendance/daily/students" replace />}
+              />
+              <Route path="students" element={<StudentDailyPage />} />
+              <Route path="staff" element={<StaffDailyPage />} />
+            </Route>
+
+            {/* Oylik davomat (O'quvchilar / Xodimlar) */}
+            <Route path="monthly" element={<MonthlyAttendanceLayout />}>
+              <Route
+                index
+                element={<Navigate to="/attendance/monthly/students" replace />}
+              />
+              <Route path="students" element={<StudentMonthlyPage />} />
+              <Route path="staff" element={<StaffMonthlyPage />} />
+            </Route>
+
+            {/* Uzrli so'rovlar */}
+            <Route path="excuses" element={<ExcuseRequestsPage />} />
+
+            {/* Sozlamalar */}
+            <Route path="settings" element={<AttendanceSettingsPage />} />
+          </Route>
+
+          {/* Eski yo'llardan yangi yo'llarga yo'naltirish (backward-compat) */}
+          <Route
+            path="/attendance/today"
+            element={<Navigate to="/attendance/daily/staff" replace />}
+          />
           <Route
             path="/student-attendance"
-            element={<StudentAttendanceListPage />}
+            element={<Navigate to="/attendance/monthly/students" replace />}
           />
           <Route
             path="/student-attendance/today"
-            element={<StudentAttendanceTodayPage />}
+            element={<Navigate to="/attendance/daily/students" replace />}
           />
 
           {/* Leads */}

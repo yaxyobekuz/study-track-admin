@@ -114,8 +114,6 @@ const AttendanceSettingsPage = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="page-title">Davomat sozlamalari</h1>
-
       <form onSubmit={handleSave} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Location */}

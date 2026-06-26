@@ -4,28 +4,39 @@ import { useState } from "react";
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
+// Router
+import { useOutletContext } from "react-router-dom";
+
 // API
 import { attendanceAPI } from "../api/attendance.api";
 
 // Components
+import Select from "@/shared/components/ui/select/Select";
 import AttendanceTable from "../components/AttendanceTable";
-import AttendanceFilters from "../components/AttendanceFilters";
 import AttendanceSummaryCard from "../components/AttendanceSummaryCard";
 
-const AttendanceListPage = () => {
-  const now = new Date();
+// Data
+import { buildRoleOptions } from "../data/attendance.data";
+
+// Hooks
+import useArrayStore from "@/shared/hooks/useArrayStore";
+
+const StaffMonthlyPage = () => {
+  const { month, year } = useOutletContext();
   const [role, setRole] = useState("");
-  const [userId, setUserId] = useState("");
-  const [month, setMonth] = useState(now.getMonth() + 1);
-  const [year, setYear] = useState(now.getFullYear());
+
+  const { getCollectionData } = useArrayStore("roles");
+  const roles = getCollectionData().filter(
+    (r) => r.value !== "owner" && r.value !== "student",
+  );
+  const roleOptions = buildRoleOptions(roles);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["attendance", "all", { role, userId, month, year }],
+    queryKey: ["attendance", "all", { role, month, year }],
     queryFn: () =>
       attendanceAPI
         .getAllRecords({
           role: role || undefined,
-          userId: userId || undefined,
           month,
           year,
           noPagination: true,
@@ -45,20 +56,14 @@ const AttendanceListPage = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        {/* Title */}
-        <h1 className="page-title">Davomat</h1>
-
-        {/* Filters */}
-        <AttendanceFilters
-          role={role}
-          year={year}
-          month={month}
-          userId={userId}
-          onRoleChange={setRole}
-          onYearChange={setYear}
-          onUserChange={setUserId}
-          onMonthChange={setMonth}
+      {/* Rol filtri */}
+      <div className="flex justify-end">
+        <Select
+          value={role || "all"}
+          triggerClassName="min-w-44"
+          placeholder="Barcha rollar"
+          options={roleOptions}
+          onChange={(v) => setRole(v === "all" ? "" : v)}
         />
       </div>
 
@@ -75,4 +80,4 @@ const AttendanceListPage = () => {
   );
 };
 
-export default AttendanceListPage;
+export default StaffMonthlyPage;

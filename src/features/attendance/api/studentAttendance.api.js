@@ -2,7 +2,8 @@ import http from "@/shared/api/http";
 
 export const studentAttendanceAPI = {
   getAllRecords: (params) => http.get("/student-attendance", { params }),
-  getTodayClass: (classId) => http.get(`/student-attendance/today/${classId}`),
+  getTodayClass: (classId, date) =>
+    http.get(`/student-attendance/today/${classId}`, { params: { date } }),
   getClasses: () => http.get("/student-attendance/classes"),
   getClassMonthRecords: (classId, month, year) =>
     http.get(`/student-attendance/class/${classId}`, { params: { month, year } }),
