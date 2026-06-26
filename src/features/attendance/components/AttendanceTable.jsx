@@ -22,7 +22,12 @@ const AttendanceTable = ({ records, month, year }) => {
     byUser[uid].days[day] = rec;
   });
 
-  const userRows = Object.values(byUser);
+  // Ism-familiya bo'yicha A-Z tartib
+  const userRows = Object.values(byUser).sort((a, b) => {
+    const nameA = `${a.user?.firstName || ""} ${a.user?.lastName || ""}`;
+    const nameB = `${b.user?.firstName || ""} ${b.user?.lastName || ""}`;
+    return nameA.localeCompare(nameB);
+  });
 
   if (userRows.length === 0) {
     return (
