@@ -12,6 +12,14 @@ export const STATUS_COLORS = {
   excused: "bg-blue-100 text-blue-700",
 };
 
+// Oylik jadval (kun matritsasi) uchun nuqta ranglari
+export const STATUS_DOT_COLORS = {
+  present: "bg-green-500",
+  late: "bg-yellow-500",
+  absent: "bg-red-500",
+  excused: "bg-blue-500",
+};
+
 export const MONTH_OPTIONS = [
   { label: "Yanvar", value: 1 },
   { label: "Fevral", value: 2 },
@@ -33,15 +41,6 @@ export const SUMMARY_CARDS = [
   { key: "absent", label: "Kelmadi", color: "bg-red-100 text-red-700" },
   { key: "excused", label: "Sababli", color: "bg-blue-100 text-blue-700" },
   { key: "unmarked", label: "Belgilanmagan", color: "bg-gray-100 text-gray-500" },
-];
-
-// Oylik o'quvchilar davomati uchun holat filtri optionlari
-export const STATUS_FILTER_OPTIONS = [
-  { label: "Barcha holatlar", value: "all" },
-  { label: "Keldi", value: "present" },
-  { label: "Kech keldi", value: "late" },
-  { label: "Kelmadi", value: "absent" },
-  { label: "Sababli", value: "excused" },
 ];
 
 // Yil filtri optionlari (joriy yil va oldingi 2 yil)
