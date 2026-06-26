@@ -2,7 +2,14 @@
 import { cn } from "@/shared/utils/cn";
 
 // Data
-import { STATUS_COLORS, STATUS_LABELS } from "../data/attendance.data";
+import {
+  STATUS_COLORS,
+  STATUS_LABELS,
+  buildRoleLabelMap,
+} from "../data/attendance.data";
+
+// Hooks
+import useArrayStore from "@/shared/hooks/useArrayStore";
 
 const formatTime = (iso) => {
   if (!iso) return "-";
@@ -13,6 +20,9 @@ const formatTime = (iso) => {
 };
 
 const AttendanceTodayTable = ({ rows }) => {
+  const { getCollectionData } = useArrayStore("roles");
+  const roleLabelMap = buildRoleLabelMap(getCollectionData());
+
   if (!rows || rows.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -48,7 +58,9 @@ const AttendanceTodayTable = ({ rows }) => {
               <td className="px-4 py-3 font-medium text-gray-900">
                 {row.user.firstName} {row.user.lastName}
               </td>
-              <td className="px-4 py-3 text-gray-500 text-xs">{row.user.role}</td>
+              <td className="px-4 py-3 text-gray-500 text-xs">
+                {roleLabelMap[row.user.role] || row.user.role}
+              </td>
               <td className="px-4 py-3 text-gray-700 text-xs">
                 {row.expectedStart && row.expectedEnd
                   ? `${row.expectedStart}–${row.expectedEnd}`

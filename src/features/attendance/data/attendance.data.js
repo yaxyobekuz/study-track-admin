@@ -35,6 +35,10 @@ export const buildRoleOptions = (roles = []) => [
   ...roles.map((r) => ({ label: r.name, value: r.value })),
 ];
 
+// Rol value -> label (name) xaritasi. Jadvallarda value emas, tushunarli label ko'rsatish uchun.
+export const buildRoleLabelMap = (roles = []) =>
+  Object.fromEntries(roles.map((r) => [r.value, r.name]));
+
 export const MONTH_OPTIONS = [
   { label: "Yanvar", value: 1 },
   { label: "Fevral", value: 2 },
