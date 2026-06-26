@@ -11,7 +11,7 @@ import { useOutletContext } from "react-router-dom";
 import { studentAttendanceAPI } from "../api/studentAttendance.api";
 
 // Components
-import Select from "@/shared/components/ui/select/Select";
+import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 import StudentAttendanceTodayTable from "../components/StudentAttendanceTodayTable";
 
 // Data
@@ -44,12 +44,14 @@ const StudentDailyPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Sinf filtri */}
+      {/* Sinf filtri (qidiruvli) */}
       <div className="flex justify-end">
-        <Select
+        <SelectSearch
           value={selectedClassId || undefined}
           triggerClassName="min-w-44"
           placeholder="Sinfni tanlang"
+          searchPlaceholder="Sinfni qidirish..."
+          emptyText="Sinf topilmadi"
           onChange={(v) => setClassId(v)}
           options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
         />
