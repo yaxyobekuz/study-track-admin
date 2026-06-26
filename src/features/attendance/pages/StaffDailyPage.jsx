@@ -14,6 +14,7 @@ import { attendanceAPI } from "../api/attendance.api";
 // Components
 import Select from "@/shared/components/ui/select/Select";
 import AttendanceTodayTable from "../components/AttendanceTodayTable";
+import AttendanceSummaryCards from "../components/AttendanceSummaryCards";
 
 // Data
 import { STAFF_SUMMARY_CARDS, buildRoleOptions } from "../data/attendance.data";
@@ -61,17 +62,11 @@ const StaffDailyPage = () => {
 
       {/* Yig'indi */}
       {!isLoading && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {STAFF_SUMMARY_CARDS.map(({ key, label, color }) => (
-            <div
-              key={key}
-              className={`rounded-xl px-4 py-3 text-center ${color}`}
-            >
-              <p className="text-2xl font-bold">{summary[key] ?? 0}</p>
-              <p className="text-xs mt-0.5">{label}</p>
-            </div>
-          ))}
-        </div>
+        <AttendanceSummaryCards
+          cards={STAFF_SUMMARY_CARDS}
+          summary={summary}
+          className="sm:grid-cols-3 lg:grid-cols-6"
+        />
       )}
 
       {/* Jadval */}

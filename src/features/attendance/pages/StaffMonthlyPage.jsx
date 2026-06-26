@@ -14,10 +14,10 @@ import { attendanceAPI } from "../api/attendance.api";
 // Components
 import Select from "@/shared/components/ui/select/Select";
 import AttendanceTable from "../components/AttendanceTable";
-import AttendanceSummaryCard from "../components/AttendanceSummaryCard";
+import AttendanceSummaryCards from "../components/AttendanceSummaryCards";
 
 // Data
-import { buildRoleOptions } from "../data/attendance.data";
+import { buildRoleOptions, STATUS_SUMMARY_CARDS } from "../data/attendance.data";
 
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
@@ -71,7 +71,11 @@ const StaffMonthlyPage = () => {
         )}
 
       {!isLoading && records.length > 0 && (
-        <AttendanceSummaryCard summary={summary} />
+        <AttendanceSummaryCards
+          cards={STATUS_SUMMARY_CARDS}
+          summary={summary}
+          className="sm:grid-cols-4"
+        />
       )}
 
       {isLoading ? (

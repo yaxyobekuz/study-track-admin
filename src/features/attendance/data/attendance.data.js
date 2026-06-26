@@ -19,6 +19,14 @@ export const STATUS_DOT_COLORS = {
   excused: "bg-blue-500",
 };
 
+// Oylik davomat (o'quvchi va xodim) uchun yig'indi kartalari - holatlar bo'yicha
+export const STATUS_SUMMARY_CARDS = [
+  { key: "present", label: "Keldi", color: "bg-green-100 text-green-700" },
+  { key: "late", label: "Kech keldi", color: "bg-yellow-100 text-yellow-700" },
+  { key: "absent", label: "Kelmadi", color: "bg-red-100 text-red-700" },
+  { key: "excused", label: "Sababli", color: "bg-blue-100 text-blue-700" },
+];
+
 // Xodimlar kunlik davomati uchun yig'indi kartalari
 export const STAFF_SUMMARY_CARDS = [
   { key: "total", label: "Jami", color: "bg-gray-100 text-gray-700" },

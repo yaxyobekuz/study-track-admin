@@ -14,6 +14,7 @@ import { studentAttendanceAPI } from "../api/studentAttendance.api";
 // Components
 import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 import StudentAttendanceTodayTable from "../components/StudentAttendanceTodayTable";
+import AttendanceSummaryCards from "../components/AttendanceSummaryCards";
 
 // Data
 import { SUMMARY_CARDS } from "../data/studentAttendance.data";
@@ -65,17 +66,11 @@ const StudentDailyPage = () => {
 
       {/* Yig'indi */}
       {!isLoading && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {SUMMARY_CARDS.map(({ key, label, color }) => (
-            <div
-              key={key}
-              className={`rounded-xl px-4 py-3 text-center ${color}`}
-            >
-              <p className="text-2xl font-bold">{summary[key] ?? 0}</p>
-              <p className="text-xs mt-0.5">{label}</p>
-            </div>
-          ))}
-        </div>
+        <AttendanceSummaryCards
+          cards={SUMMARY_CARDS}
+          summary={summary}
+          className="sm:grid-cols-3 lg:grid-cols-5"
+        />
       )}
 
       {/* Jadval */}

@@ -14,9 +14,10 @@ import { studentAttendanceAPI } from "../api/studentAttendance.api";
 // Components
 import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 import StudentAttendanceMonthTable from "../components/StudentAttendanceMonthTable";
+import AttendanceSummaryCards from "../components/AttendanceSummaryCards";
 
 // Data
-import { SUMMARY_CARDS } from "../data/studentAttendance.data";
+import { STATUS_SUMMARY_CARDS } from "../data/attendance.data";
 
 const StudentMonthlyPage = () => {
   const { month, year, filterSlot } = useOutletContext();
@@ -65,19 +66,11 @@ const StudentMonthlyPage = () => {
 
       {/* Yig'indi */}
       {!isLoading && records.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {SUMMARY_CARDS.filter((c) => c.key !== "unmarked").map(
-            ({ key, label, color }) => (
-              <div
-                key={key}
-                className={`rounded-xl px-4 py-3 text-center ${color}`}
-              >
-                <p className="text-2xl font-bold">{summary[key] ?? 0}</p>
-                <p className="text-xs mt-0.5">{label}</p>
-              </div>
-            ),
-          )}
-        </div>
+        <AttendanceSummaryCards
+          cards={STATUS_SUMMARY_CARDS}
+          summary={summary}
+          className="sm:grid-cols-4"
+        />
       )}
 
       {/* Jadval (Xodimlar oylik jadvali singari kun matritsasi) */}
