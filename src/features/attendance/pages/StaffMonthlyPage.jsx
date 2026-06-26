@@ -1,5 +1,6 @@
 // React
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
@@ -22,7 +23,7 @@ import { buildRoleOptions } from "../data/attendance.data";
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
 const StaffMonthlyPage = () => {
-  const { month, year } = useOutletContext();
+  const { month, year, filterSlot } = useOutletContext();
   const [role, setRole] = useState("");
 
   const { getCollectionData } = useArrayStore("roles");
@@ -56,16 +57,18 @@ const StaffMonthlyPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Rol filtri */}
-      <div className="flex justify-end">
-        <Select
-          value={role || "all"}
-          triggerClassName="min-w-44"
-          placeholder="Barcha rollar"
-          options={roleOptions}
-          onChange={(v) => setRole(v === "all" ? "" : v)}
-        />
-      </div>
+      {/* Rol filtri - layoutdagi tablar qatoriga portal orqali joylanadi */}
+      {filterSlot &&
+        createPortal(
+          <Select
+            value={role || "all"}
+            triggerClassName="min-w-44"
+            placeholder="Barcha rollar"
+            options={roleOptions}
+            onChange={(v) => setRole(v === "all" ? "" : v)}
+          />,
+          filterSlot,
+        )}
 
       {!isLoading && records.length > 0 && (
         <AttendanceSummaryCard summary={summary} />
