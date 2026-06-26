@@ -21,6 +21,13 @@ const AttendanceTodayTable = ({ rows }) => {
     );
   }
 
+  // Ism-familiya bo'yicha A-Z tartib
+  const sortedRows = [...rows].sort((a, b) => {
+    const nameA = `${a.user?.firstName || ""} ${a.user?.lastName || ""}`;
+    const nameB = `${b.user?.firstName || ""} ${b.user?.lastName || ""}`;
+    return nameA.localeCompare(nameB);
+  });
+
   return (
     <div className="overflow-x-auto rounded-lg">
       <table className="min-w-full text-sm">
@@ -36,7 +43,7 @@ const AttendanceTodayTable = ({ rows }) => {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {sortedRows.map((row) => (
             <tr key={row.user._id} className="border-t border-gray-100">
               <td className="px-4 py-3 font-medium text-gray-900">
                 {row.user.firstName} {row.user.lastName}

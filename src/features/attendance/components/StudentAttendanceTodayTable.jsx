@@ -18,6 +18,13 @@ const StudentAttendanceTodayTable = ({ students }) => {
     );
   }
 
+  // Familiya-ism bo'yicha A-Z tartib
+  const sortedStudents = [...students].sort((a, b) => {
+    const nameA = `${a.student?.lastName || ""} ${a.student?.firstName || ""}`;
+    const nameB = `${b.student?.lastName || ""} ${b.student?.firstName || ""}`;
+    return nameA.localeCompare(nameB);
+  });
+
   return (
     <div className="overflow-x-auto rounded-lg">
       <table className="min-w-full text-sm">
@@ -30,7 +37,7 @@ const StudentAttendanceTodayTable = ({ students }) => {
           </tr>
         </thead>
         <tbody>
-          {students.map(({ student, attendance }) => (
+          {sortedStudents.map(({ student, attendance }) => (
             <tr key={student._id} className="border-t border-gray-100">
               <td className="px-4 py-3 font-medium text-gray-900">
                 {student.lastName} {student.firstName}
