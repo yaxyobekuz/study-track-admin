@@ -25,24 +25,34 @@ const getTodayInputValue = () => {
 const DailyAttendanceLayout = () => {
   const [date, setDate] = useState(getTodayInputValue);
 
+  // Sahifaga xos filtr (sinf/rol) shu slotga portal orqali joylanadi -
+  // shunda tablar, sahifa filtri va sana bitta qatorda turadi.
+  const [filterSlot, setFilterSlot] = useState(null);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         {/* Sub-tablar */}
         <TabsLinks items={DAILY_SUBTABS} />
 
-        {/* Sana tanlagich (istalgan kunni ko'rish mumkin) */}
-        <input
-          type="date"
-          value={date}
-          max={getTodayInputValue()}
-          onChange={(e) => setDate(e.target.value || getTodayInputValue())}
-          className="h-10 rounded-md border border-input bg-white px-3 text-sm outline-2 outline-primary"
-        />
+        {/* O'ng tomon: sahifa filtri + sana - bitta qatorda */}
+        <div className="flex items-center flex-wrap gap-2">
+          {/* Sahifaga xos filtr uchun slot (portal) */}
+          <div ref={setFilterSlot} className="flex items-center gap-2" />
+
+          {/* Sana tanlagich (istalgan kunni ko'rish mumkin) */}
+          <input
+            type="date"
+            value={date}
+            max={getTodayInputValue()}
+            onChange={(e) => setDate(e.target.value || getTodayInputValue())}
+            className="h-10 rounded-md border border-input bg-white px-3 text-sm outline-2 outline-primary"
+          />
+        </div>
       </div>
 
-      {/* Sahifalar tanlangan sanani useOutletContext() orqali oladi */}
-      <Outlet context={{ date }} />
+      {/* Sahifalar sana va filtr slotini useOutletContext() orqali oladi */}
+      <Outlet context={{ date, filterSlot }} />
     </div>
   );
 };
