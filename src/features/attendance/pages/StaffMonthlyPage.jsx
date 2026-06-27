@@ -26,17 +26,11 @@ import {
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
 
-// Tanlangan holatga ega (kamida bitta kun) foydalanuvchilar yozuvlarini qoldiradi
+// Status filtri qo'llanganda faqat tanlangan holatdagi kunlar qoladi
+// (jadvalda boshqa kunlar bo'sh ko'rinadi)
 const filterRecordsByStatus = (records, status) => {
   if (!status) return records;
-  const matchedUserIds = new Set(
-    records
-      .filter((r) => r.status === status)
-      .map((r) => String(r.user?._id || r.user)),
-  );
-  return records.filter((r) =>
-    matchedUserIds.has(String(r.user?._id || r.user)),
-  );
+  return records.filter((r) => r.status === status);
 };
 
 const StaffMonthlyPage = () => {

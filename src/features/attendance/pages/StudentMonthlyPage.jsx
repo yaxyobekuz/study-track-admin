@@ -20,17 +20,11 @@ import AttendanceSummaryCards from "../components/AttendanceSummaryCards";
 // Data
 import { STATUS_SUMMARY_CARDS, STATUS_FILTER_OPTIONS } from "../data/attendance.data";
 
-// Tanlangan holatga ega (kamida bitta kun) o'quvchilar yozuvlarini qoldiradi
+// Status filtri qo'llanganda faqat tanlangan holatdagi kunlar qoladi
+// (jadvalda boshqa kunlar bo'sh ko'rinadi)
 const filterRecordsByStatus = (records, status) => {
   if (!status) return records;
-  const matchedIds = new Set(
-    records
-      .filter((r) => r.status === status)
-      .map((r) => String(r.student?._id || r.student)),
-  );
-  return records.filter((r) =>
-    matchedIds.has(String(r.student?._id || r.student)),
-  );
+  return records.filter((r) => r.status === status);
 };
 
 const StudentMonthlyPage = () => {
