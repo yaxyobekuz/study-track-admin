@@ -9,11 +9,17 @@ const formatTime = (iso) => {
   });
 };
 
-const StudentAttendanceTodayTable = ({ students }) => {
+// O'quvchining sinf(lar)i nomini ko'rsatadi (populate qilingan classes massivi)
+const formatClasses = (classes) => {
+  if (!Array.isArray(classes) || classes.length === 0) return "-";
+  return classes.map((c) => c?.name).filter(Boolean).join(", ") || "-";
+};
+
+const StudentAttendanceTodayTable = ({ students, showClass = false }) => {
   if (!students || students.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
-        Bu sinf uchun ma&apos;lumot topilmadi
+        Ma&apos;lumot topilmadi
       </div>
     );
   }
@@ -31,6 +37,7 @@ const StudentAttendanceTodayTable = ({ students }) => {
         <thead>
           <tr>
             <th className="text-left px-4 py-3">O&apos;quvchi</th>
+            {showClass && <th className="text-left px-4 py-3">Sinf</th>}
             <th className="text-left px-4 py-3">Holat</th>
             <th className="text-left px-4 py-3">Belgilangan vaqt</th>
             <th className="text-left px-4 py-3">Sabab</th>
@@ -42,6 +49,11 @@ const StudentAttendanceTodayTable = ({ students }) => {
               <td className="px-4 py-3 font-medium text-gray-900">
                 {student.lastName} {student.firstName}
               </td>
+              {showClass && (
+                <td className="px-4 py-3 text-gray-500 text-xs">
+                  {formatClasses(student.classes)}
+                </td>
+              )}
               <td className="px-4 py-3">
                 {!attendance ? (
                   <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500">
