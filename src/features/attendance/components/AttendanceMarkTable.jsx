@@ -3,9 +3,10 @@ import { cn } from "@/shared/utils/cn";
 
 // Components
 import Input from "@/shared/components/ui/input/Input";
+import Button from "@/shared/components/ui/button/Button";
 
 // Data
-import { STATUS_COLORS, MARK_STATUS_OPTIONS } from "../data/attendance.data";
+import { MARK_STATUS_OPTIONS, MARK_SELECTED_COLORS } from "../data/attendance.data";
 
 /**
  * Davomat belgilash/o'zgartirish jadvali (boshqariladigan komponent).
@@ -69,23 +70,25 @@ const AttendanceMarkTable = ({
 
                 {/* Holat tugmalari */}
                 <td className="px-4 py-3">
-                  <div className="flex flex-wrap items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
                     {MARK_STATUS_OPTIONS.map((opt) => {
                       const selected = current === opt.value;
                       return (
-                        <button
+                        <Button
                           key={opt.value}
                           type="button"
+                          variant="outline"
                           onClick={() => onStatusChange(person.id, opt.value)}
                           className={cn(
-                            "px-2.5 py-1 rounded-md text-xs font-medium border transition-colors",
-                            selected
-                              ? cn(STATUS_COLORS[opt.value], "border-transparent shadow-sm")
-                              : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50",
+                            selected &&
+                              cn(
+                                MARK_SELECTED_COLORS[opt.value],
+                                "border-transparent shadow-sm",
+                              ),
                           )}
                         >
                           {opt.label}
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>

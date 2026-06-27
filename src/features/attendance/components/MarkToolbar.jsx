@@ -5,7 +5,7 @@ import { cn } from "@/shared/utils/cn";
 import Button from "@/shared/components/ui/button/Button";
 
 // Data
-import { STATUS_COLORS, MARK_STATUS_OPTIONS } from "../data/attendance.data";
+import { MARK_STATUS_OPTIONS, MARK_SELECTED_COLORS } from "../data/attendance.data";
 
 /**
  * Davomat belgilash paneli: "barchasini belgilash" tugmalari + saqlash.
@@ -20,17 +20,16 @@ const MarkToolbar = ({ onBulk, dirtyCount = 0, onSave, isSaving = false }) => (
       <span className="text-sm text-gray-600">Barchasini belgilash:</span>
 
       {MARK_STATUS_OPTIONS.map((opt) => (
-        <button
+        <Button
           key={opt.value}
           type="button"
+          size="sm"
+          variant="outline"
           onClick={() => onBulk(opt.value)}
-          className={cn(
-            "px-2.5 py-1 rounded-md text-xs font-medium border border-transparent transition-opacity hover:opacity-80",
-            STATUS_COLORS[opt.value],
-          )}
+          className={cn(MARK_SELECTED_COLORS[opt.value], "border-transparent")}
         >
           {opt.label}
-        </button>
+        </Button>
       ))}
     </div>
 
