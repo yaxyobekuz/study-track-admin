@@ -47,6 +47,27 @@ export const buildRoleOptions = (roles = []) => [
 export const buildRoleLabelMap = (roles = []) =>
   Object.fromEntries(roles.map((r) => [r.value, r.name]));
 
+// Holat filtri optionlari - 4 ta asosiy holat (oylik davomat sahifalari uchun)
+export const STATUS_FILTER_OPTIONS = [
+  { label: "Barcha holatlar", value: "all" },
+  { label: "Keldi", value: "present" },
+  { label: "Kech keldi", value: "late" },
+  { label: "Kelmadi", value: "absent" },
+  { label: "Sababli", value: "excused" },
+];
+
+// Xodimlar kunlik davomati - "Belgilanmagan" (not_marked) ham qo'shiladi
+export const STAFF_DAILY_STATUS_OPTIONS = [
+  ...STATUS_FILTER_OPTIONS,
+  { label: "Belgilanmagan", value: "not_marked" },
+];
+
+// O'quvchilar kunlik davomati - "Belgilanmagan" (unmarked) ham qo'shiladi
+export const STUDENT_DAILY_STATUS_OPTIONS = [
+  ...STATUS_FILTER_OPTIONS,
+  { label: "Belgilanmagan", value: "unmarked" },
+];
+
 export const MONTH_OPTIONS = [
   { label: "Yanvar", value: 1 },
   { label: "Fevral", value: 2 },

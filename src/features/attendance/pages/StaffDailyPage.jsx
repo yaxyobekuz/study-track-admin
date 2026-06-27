@@ -17,7 +17,11 @@ import AttendanceTodayTable from "../components/AttendanceTodayTable";
 import AttendanceSummaryCards from "../components/AttendanceSummaryCards";
 
 // Data
-import { STAFF_SUMMARY_CARDS, buildRoleOptions } from "../data/attendance.data";
+import {
+  STAFF_SUMMARY_CARDS,
+  STAFF_DAILY_STATUS_OPTIONS,
+  buildRoleOptions,
+} from "../data/attendance.data";
 
 // Hooks
 import useArrayStore from "@/shared/hooks/useArrayStore";
@@ -25,6 +29,7 @@ import useArrayStore from "@/shared/hooks/useArrayStore";
 const StaffDailyPage = () => {
   const { date, filterSlot } = useOutletContext();
   const [role, setRole] = useState("");
+  const [status, setStatus] = useState("");
 
   const { getCollectionData } = useArrayStore("roles");
   const roles = getCollectionData().filter(
@@ -43,20 +48,32 @@ const StaffDailyPage = () => {
 
   const rows = data?.rows || [];
   const summary = data?.summary || {};
-  const filteredRows = role ? rows.filter((r) => r.user.role === role) : rows;
+  const filteredRows = rows
+    .filter((r) => (role ? r.user.role === role : true))
+    .filter((r) => (status ? r.status === status : true));
 
   return (
     <div className="space-y-4">
-      {/* Rol filtri - layoutdagi tablar qatoriga portal orqali joylanadi */}
+      {/* Rol va holat filtri - layoutdagi tablar qatoriga portal orqali joylanadi */}
       {filterSlot &&
         createPortal(
-          <Select
-            value={role || "all"}
-            triggerClassName="min-w-44"
-            placeholder="Barcha rollar"
-            options={roleOptions}
-            onChange={(v) => setRole(v === "all" ? "" : v)}
-          />,
+          <>
+            <Select
+              value={role || "all"}
+              triggerClassName="min-w-44"
+              placeholder="Barcha rollar"
+              options={roleOptions}
+              onChange={(v) => setRole(v === "all" ? "" : v)}
+            />
+
+            <Select
+              value={status || "all"}
+              triggerClassName="min-w-40"
+              placeholder="Barcha holatlar"
+              options={STAFF_DAILY_STATUS_OPTIONS}
+              onChange={(v) => setStatus(v === "all" ? "" : v)}
+            />
+          </>,
           filterSlot,
         )}
 
