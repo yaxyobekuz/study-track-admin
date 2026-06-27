@@ -104,7 +104,7 @@ const AttendanceMarkTable = ({
                       className="h-9 w-full max-w-xs"
                     />
                   ) : (
-                    <span className="text-gray-300">—</span>
+                    <span className="text-gray-300">-</span>
                   )}
                 </td>
               </tr>

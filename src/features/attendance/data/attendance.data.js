@@ -76,6 +76,15 @@ export const MARK_STATUS_OPTIONS = [
   { value: "excused", label: "Sababli" },
 ];
 
+// Belgilash tugmasining tanlangan/aktiv ko'rinishi.
+// hover: ranglari ham saqlanadi (Button outline varianti hover:bg-accent ni bermasligi uchun).
+export const MARK_SELECTED_COLORS = {
+  present: "bg-green-100 text-green-700 hover:bg-green-100 hover:text-green-700",
+  late: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-700",
+  absent: "bg-red-100 text-red-700 hover:bg-red-100 hover:text-red-700",
+  excused: "bg-blue-100 text-blue-700 hover:bg-blue-100 hover:text-blue-700",
+};
+
 export const MONTH_OPTIONS = [
   { label: "Yanvar", value: 1 },
   { label: "Fevral", value: 2 },

@@ -73,7 +73,7 @@ const PremiumEmojisPage = () => {
               <EmojiPreview url={emoji.animationUrl} className="size-16" />
 
               <p className="text-sm font-medium text-gray-800 text-center truncate w-full">
-                {emoji.name || "—"}
+                {emoji.name || "-"}
               </p>
 
               <div className="flex items-center gap-1">

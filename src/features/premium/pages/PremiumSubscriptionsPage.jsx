@@ -188,25 +188,25 @@ const PremiumSubscriptionsPage = () => {
         <StatCard
           icon={Crown}
           label="Faol obunalar"
-          value={stats?.activeCount ?? "—"}
+          value={stats?.activeCount ?? "-"}
           color="bg-yellow-100 text-yellow-600"
         />
         <StatCard
           icon={Coins}
           label="Sarflangan tangalar"
-          value={stats ? formatNumber(totalSpentCoins) : "—"}
+          value={stats ? formatNumber(totalSpentCoins) : "-"}
           color="bg-green-100 text-green-600"
         />
         <StatCard
           icon={Clock}
           label="7 kunda tugaydi"
-          value={stats?.expiringSoon ?? "—"}
+          value={stats?.expiringSoon ?? "-"}
           color="bg-orange-100 text-orange-600"
         />
         <StatCard
           icon={Users}
           label="Jami obunalar"
-          value={stats?.totalSubscriptions ?? "—"}
+          value={stats?.totalSubscriptions ?? "-"}
           color="bg-blue-100 text-blue-600"
         />
       </div>

@@ -63,8 +63,8 @@ const Content = ({
     <form onSubmit={handleRemove} className="flex flex-col gap-4">
       <p className="text-sm text-gray-600">
         {all
-          ? "Sinfdagi barcha o'quvchilar sinfdan chiqariladi. O'quvchilar o'chirilmaydi — faqat shu sinfdan olib tashlanadi."
-          : `${studentIds.length} ta o'quvchi shu sinfdan chiqariladi. O'quvchilar o'chirilmaydi — faqat shu sinfdan olib tashlanadi.`}
+          ? "Sinfdagi barcha o'quvchilar sinfdan chiqariladi. O'quvchilar o'chirilmaydi - faqat shu sinfdan olib tashlanadi."
+          : `${studentIds.length} ta o'quvchi shu sinfdan chiqariladi. O'quvchilar o'chirilmaydi - faqat shu sinfdan olib tashlanadi.`}
       </p>
 
       <div className="flex flex-col-reverse gap-3.5 w-full xs:m-0 xs:flex-row xs:justify-end">
