@@ -68,6 +68,14 @@ export const STUDENT_DAILY_STATUS_OPTIONS = [
   { label: "Belgilanmagan", value: "unmarked" },
 ];
 
+// Davomat belgilash uchun holat tugmalari (segmented control)
+export const MARK_STATUS_OPTIONS = [
+  { value: "present", label: "Keldi" },
+  { value: "late", label: "Kech keldi" },
+  { value: "absent", label: "Kelmadi" },
+  { value: "excused", label: "Sababli" },
+];
+
 export const MONTH_OPTIONS = [
   { label: "Yanvar", value: 1 },
   { label: "Fevral", value: 2 },

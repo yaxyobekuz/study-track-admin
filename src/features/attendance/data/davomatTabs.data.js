@@ -15,6 +15,12 @@ export const ATTENDANCE_TABS = [
     exact: false,
   },
   {
+    to: "/attendance/mark",
+    label: "Belgilash",
+    title: "Davomat belgilash",
+    exact: false,
+  },
+  {
     to: "/attendance/excuses",
     label: "Uzrli so'rovlar",
     title: "Uzrli so'rovlar",
@@ -38,4 +44,10 @@ export const DAILY_SUBTABS = [
 export const MONTHLY_SUBTABS = [
   { to: "/attendance/monthly/students", label: "O'quvchilar" },
   { to: "/attendance/monthly/staff", label: "Xodimlar" },
+];
+
+// Belgilash ichidagi sub-tablar
+export const MARK_SUBTABS = [
+  { to: "/attendance/mark/students", label: "O'quvchilar" },
+  { to: "/attendance/mark/staff", label: "Xodimlar" },
 ];

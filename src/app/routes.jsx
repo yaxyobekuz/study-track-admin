@@ -92,10 +92,13 @@ import PremiumEmojisPage from "@/features/premium/pages/PremiumEmojisPage";
 import AttendanceLayout from "@/features/attendance/layouts/AttendanceLayout";
 import DailyAttendanceLayout from "@/features/attendance/layouts/DailyAttendanceLayout";
 import MonthlyAttendanceLayout from "@/features/attendance/layouts/MonthlyAttendanceLayout";
+import MarkAttendanceLayout from "@/features/attendance/layouts/MarkAttendanceLayout";
 import StudentDailyPage from "@/features/attendance/pages/StudentDailyPage";
 import StaffDailyPage from "@/features/attendance/pages/StaffDailyPage";
 import StudentMonthlyPage from "@/features/attendance/pages/StudentMonthlyPage";
 import StaffMonthlyPage from "@/features/attendance/pages/StaffMonthlyPage";
+import MarkStudentsPage from "@/features/attendance/pages/MarkStudentsPage";
+import MarkStaffPage from "@/features/attendance/pages/MarkStaffPage";
 import ExcuseRequestsPage from "@/features/attendance/pages/ExcuseRequestsPage";
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 
@@ -243,6 +246,16 @@ const Routes = () => {
               />
               <Route path="students" element={<StudentMonthlyPage />} />
               <Route path="staff" element={<StaffMonthlyPage />} />
+            </Route>
+
+            {/* Davomat belgilash (O'quvchilar / Xodimlar) */}
+            <Route path="mark" element={<MarkAttendanceLayout />}>
+              <Route
+                index
+                element={<Navigate to="/attendance/mark/students" replace />}
+              />
+              <Route path="students" element={<MarkStudentsPage />} />
+              <Route path="staff" element={<MarkStaffPage />} />
             </Route>
 
             {/* Uzrli so'rovlar */}
