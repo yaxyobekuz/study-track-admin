@@ -79,7 +79,7 @@ const DailyAttendanceChart = ({ byDay = [] }) => {
           <Tooltip content={<ChartTooltip />} />
           <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }} />
 
-          {/* Har bir status - alohida chiziq */}
+          {/* Har bir status - alohida chiziq (ma'lumotsiz kunlar 0 da) */}
           {DAILY_CHART_SERIES.map((series) => (
             <Line
               key={series.key}

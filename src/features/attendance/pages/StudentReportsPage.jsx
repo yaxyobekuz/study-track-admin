@@ -74,11 +74,11 @@ const StudentReportsPage = () => {
       : {
           day,
           date: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-          // null - chiziqli grafikда bo'sh kun uzilish sifatida ko'rinadi
-          present: null,
-          late: null,
-          absent: null,
-          excused: null,
+          // Ma'lumotsiz kunlar 0 chizig'ida turadi
+          present: 0,
+          late: 0,
+          absent: 0,
+          excused: 0,
           total: 0,
           percent: null,
         };
