@@ -104,6 +104,8 @@ const initialState = {
 
   // Attendance
   reviewExcuse: initialModalData,
+  createAbsenceReason: initialModalData,
+  editAbsenceReason: initialModalData,
 
   // Premium
   grantPremium: initialModalData,

@@ -27,6 +27,12 @@ export const ATTENDANCE_TABS = [
     exact: false,
   },
   {
+    to: "/attendance/reasons",
+    label: "Kelmaslik sabablari",
+    title: "Kelmaslik sabablari",
+    exact: false,
+  },
+  {
     to: "/attendance/settings",
     label: "Sozlamalar",
     title: "Davomat sozlamalari",

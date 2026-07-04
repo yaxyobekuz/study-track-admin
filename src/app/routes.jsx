@@ -100,6 +100,7 @@ import StaffMonthlyPage from "@/features/attendance/pages/StaffMonthlyPage";
 import MarkStudentsPage from "@/features/attendance/pages/MarkStudentsPage";
 import MarkStaffPage from "@/features/attendance/pages/MarkStaffPage";
 import ExcuseRequestsPage from "@/features/attendance/pages/ExcuseRequestsPage";
+import AbsenceReasonsPage from "@/features/attendance/pages/AbsenceReasonsPage";
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 
 // Pages - Leads
@@ -260,6 +261,9 @@ const Routes = () => {
 
             {/* Uzrli so'rovlar */}
             <Route path="excuses" element={<ExcuseRequestsPage />} />
+
+            {/* Kelmaslik sabablari */}
+            <Route path="reasons" element={<AbsenceReasonsPage />} />
 
             {/* Sozlamalar */}
             <Route path="settings" element={<AttendanceSettingsPage />} />
