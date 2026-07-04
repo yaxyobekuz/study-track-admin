@@ -18,8 +18,11 @@ const ReportBarList = ({ items = [], barColor = "bg-blue-500" }) => {
     <div className="space-y-2.5">
       {items.map((item, idx) => (
         <div key={idx} className="flex items-center gap-3">
-          <span className="w-28 shrink-0 text-sm text-gray-600 truncate">
-            {item.label}
+          <span
+            title={item.label}
+            className="w-28 sm:w-40 shrink-0 text-sm text-gray-600 truncate"
+          >
+            {item.label || "-"}
           </span>
 
           <div className="flex-1 h-5 rounded-md bg-gray-100 overflow-hidden">

@@ -70,6 +70,12 @@ const StudentReportsPage = () => {
   const riskGroup = data.riskGroup || [];
   const topStudents = data.topStudents || [];
   const reasons = data.reasons || {};
+  // ReportBarList `label` kutadi - kategoriya sarlavhasini map qilamiz
+  const categoryItems = (reasons.categories || []).map((c) => ({
+    label: c.title,
+    count: c.count,
+    percent: c.percent,
+  }));
   const weekdayItems = (data.weekdayTrend || []).map((w) => ({
     label: WEEKDAY_LABELS[w.dayOfWeek] || "-",
     count: w.missed,
@@ -230,12 +236,12 @@ const StudentReportsPage = () => {
               </div>
             </div>
 
-            {(reasons.categories || []).length > 0 && (
+            {categoryItems.length > 0 && (
               <div className="pt-2">
                 <p className="text-xs text-gray-500 mb-2">
                   Sabab kategoriyalari kesimida (jami qoldirishga nisbatan)
                 </p>
-                <ReportBarList items={reasons.categories} />
+                <ReportBarList items={categoryItems} />
               </div>
             )}
           </>
