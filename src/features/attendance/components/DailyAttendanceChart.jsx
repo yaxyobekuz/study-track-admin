@@ -1,11 +1,11 @@
 // Recharts
 import {
-  Bar,
+  Line,
   XAxis,
   YAxis,
   Legend,
   Tooltip,
-  BarChart,
+  LineChart,
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
@@ -17,6 +17,15 @@ import { DAILY_CHART_SERIES } from "../data/attendanceReports.data";
 const ChartTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
+
+  if (!d.total) {
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs shadow-md">
+        <p className="font-semibold text-gray-800">{d.day}-kun</p>
+        <p className="text-gray-400">Ma&apos;lumot yo&apos;q</p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs shadow-md space-y-0.5">
@@ -33,10 +42,9 @@ const ChartTooltip = ({ active, payload }) => {
 };
 
 /**
- * Oy ichida kun bo'yicha davomat grafigi.
- * Har bir kunda statuslar (Keldi / Kech keldi / Kelmadi / Sababli)
- * yonma-yon alohida ustunlar sifatida ko'rsatiladi.
- * Ma'lumoti yo'q kunlar bo'sh joy sifatida qoladi.
+ * Oy ichida kun bo'yicha davomat grafigi (chiziqli).
+ * Har bir status (Keldi / Kech keldi / Kelmadi / Sababli) alohida chiziq.
+ * Ma'lumoti yo'q kunlarda chiziq uziladi (bo'sh joy).
  * @param {Array} byDay - [{ date, day, percent, present, late, absent, excused, total }]
  */
 const DailyAttendanceChart = ({ byDay = [] }) => {
@@ -53,12 +61,7 @@ const DailyAttendanceChart = ({ byDay = [] }) => {
   return (
     <div className="h-64 sm:h-72">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={byDay}
-          barGap={1}
-          barCategoryGap="18%"
-          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-        >
+        <LineChart data={byDay} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke="#E5E7EB" strokeDasharray="3 3" />
           <XAxis
             dy={6}
@@ -73,21 +76,23 @@ const DailyAttendanceChart = ({ byDay = [] }) => {
             tickLine={false}
             tick={{ fontSize: 11, fill: "#9CA3AF" }}
           />
-          <Tooltip content={<ChartTooltip />} cursor={{ fill: "#F3F4F6" }} />
+          <Tooltip content={<ChartTooltip />} />
           <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }} />
 
-          {/* Har bir status - kun ichida yonma-yon alohida ustun */}
+          {/* Har bir status - alohida chiziq */}
           {DAILY_CHART_SERIES.map((series) => (
-            <Bar
+            <Line
               key={series.key}
+              type="monotone"
               dataKey={series.key}
               name={series.name}
-              fill={series.color}
-              maxBarSize={6}
-              radius={[2, 2, 0, 0]}
+              stroke={series.color}
+              strokeWidth={2}
+              dot={{ r: 2.5, strokeWidth: 0, fill: series.color }}
+              activeDot={{ r: 4.5 }}
             />
           ))}
-        </BarChart>
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );
