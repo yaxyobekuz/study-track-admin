@@ -58,7 +58,12 @@ const ExcuseRequestsTable = ({ excuses, isLoading }) => {
               </td>
 
               <td className="px-4 py-3 text-gray-700 max-w-xs">
-                <p className="truncate">{ex.reason}</p>
+                <p className="font-medium truncate">
+                  {ex.absenceReason?.title || "-"}
+                </p>
+                {ex.reason && (
+                  <p className="text-xs text-gray-500 truncate">{ex.reason}</p>
+                )}
               </td>
 
               <td className="px-4 py-3">

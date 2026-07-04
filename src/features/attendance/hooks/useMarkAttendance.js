@@ -4,13 +4,13 @@ import { useState } from "react";
 /**
  * Davomat belgilash holatini boshqaradi (o'quvchilar va xodimlar uchun umumiy).
  *
- * `people` - [{ id, originalStatus, defaultStatus, originalReason }]
+ * `people` - [{ id, role, originalStatus, defaultStatus, originalReasonId, originalNote }]
  *   - originalStatus: bazadagi joriy status (dirty hisoblash uchun, belgilanmagan bo'lsa null)
  *   - defaultStatus: dastlabki tanlov (o'quvchilarda "present", xodimlarda null bo'lishi mumkin)
- * `syncKey` - ma'lumot yangilanganda (yangi query natijasi) marks ni qayta tiklash kaliti
- *   (masalan, query.dataUpdatedAt). null bo'lsa tiklash o'tkazilmaydi.
+ *   - originalReasonId / originalNote: "Sababli" holatdagi tanlangan sabab va izoh
+ * `syncKey` - ma'lumot yangilanganda marks ni qayta tiklash kaliti (masalan, query.dataUpdatedAt)
  *
- * @returns {{ marks, setStatus, setReason, setAll, dirty, counts }}
+ * @returns {{ marks, setStatus, setReason, setNote, setAll, dirty, counts }}
  */
 const useMarkAttendance = (people, syncKey) => {
   const [marks, setMarks] = useState({});
@@ -25,7 +25,8 @@ const useMarkAttendance = (people, syncKey) => {
           p.id,
           {
             status: p.defaultStatus ?? p.originalStatus ?? null,
-            excuseReason: p.originalReason || "",
+            absenceReasonId: p.originalReasonId || null,
+            note: p.originalNote || "",
           },
         ]),
       ),
@@ -35,8 +36,11 @@ const useMarkAttendance = (people, syncKey) => {
   const setStatus = (id, status) =>
     setMarks((prev) => ({ ...prev, [id]: { ...prev[id], status } }));
 
-  const setReason = (id, excuseReason) =>
-    setMarks((prev) => ({ ...prev, [id]: { ...prev[id], excuseReason } }));
+  const setReason = (id, absenceReasonId) =>
+    setMarks((prev) => ({ ...prev, [id]: { ...prev[id], absenceReasonId } }));
+
+  const setNote = (id, note) =>
+    setMarks((prev) => ({ ...prev, [id]: { ...prev[id], note } }));
 
   const setAll = (status) =>
     setMarks((prev) => {
@@ -51,11 +55,9 @@ const useMarkAttendance = (people, syncKey) => {
     const current = m.status || null;
     if (!current) return false;
     if (current !== (p.originalStatus || null)) return true;
-    if (
-      current === "excused" &&
-      (m.excuseReason || "") !== (p.originalReason || "")
-    ) {
-      return true;
+    if (current === "excused") {
+      if ((m.absenceReasonId || null) !== (p.originalReasonId || null)) return true;
+      if ((m.note || "") !== (p.originalNote || "")) return true;
     }
     return false;
   });
@@ -68,7 +70,7 @@ const useMarkAttendance = (people, syncKey) => {
     else counts.unmarked++;
   }
 
-  return { marks, setStatus, setReason, setAll, dirty, counts };
+  return { marks, setStatus, setReason, setNote, setAll, dirty, counts };
 };
 
 export default useMarkAttendance;

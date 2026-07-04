@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 // API
 import { attendanceAPI } from "../api/attendance.api";
+import { absenceReasonAPI } from "../api/absenceReason.api";
 
 // Components
 import Select from "@/shared/components/ui/select/Select";
@@ -39,6 +40,13 @@ const MarkStaffPage = () => {
   const roleOptions = buildRoleOptions(roles);
   const roleLabelMap = buildRoleLabelMap(allRoles);
 
+  // Barcha aktiv "Kelmaslik sabablari" (jadvalda rol bo'yicha filtrlanadi)
+  const { data: reasonsData } = useQuery({
+    queryKey: ["absenceReasons", "active"],
+    queryFn: () => absenceReasonAPI.getActive().then((r) => r.data.data),
+  });
+  const reasons = reasonsData || [];
+
   const { data, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ["attendance", "mark-staff", { role, date }],
     queryFn: () =>
@@ -64,14 +72,16 @@ const MarkStaffPage = () => {
         id: r.user._id,
         name: `${r.user.firstName} ${r.user.lastName}`,
         subtitle: roleLabelMap[r.user.role] || r.user.role,
+        role: r.user.role,
         originalStatus: persisted,
         defaultStatus: persisted,
-        originalReason: r.excuseReason || "",
+        originalReasonId: r.absenceReason || null,
+        originalNote: r.excuseReason || "",
       };
     });
 
   const syncKey = data ? dataUpdatedAt : null;
-  const { marks, setStatus, setReason, setAll, dirty, counts } =
+  const { marks, setStatus, setReason, setNote, setAll, dirty, counts } =
     useMarkAttendance(people, syncKey);
 
   const { mutate: save, isPending } = useMutation({
@@ -86,16 +96,28 @@ const MarkStaffPage = () => {
 
   const handleSave = () => {
     if (dirty.length === 0) return;
+
+    // "Sababli" uchun sabab majburiy
+    const missing = dirty.find(
+      (p) => marks[p.id].status === "excused" && !marks[p.id].absenceReasonId,
+    );
+    if (missing) {
+      toast.warning("'Sababli' belgilangan xodim uchun sabab tanlang");
+      return;
+    }
+
     save({
       date,
-      records: dirty.map((p) => ({
-        userId: p.id,
-        status: marks[p.id].status,
-        excuseReason:
-          marks[p.id].status === "excused"
-            ? marks[p.id].excuseReason
-            : undefined,
-      })),
+      records: dirty.map((p) => {
+        const m = marks[p.id];
+        const excused = m.status === "excused";
+        return {
+          userId: p.id,
+          status: m.status,
+          absenceReason: excused ? m.absenceReasonId : undefined,
+          excuseReason: excused ? m.note : undefined,
+        };
+      }),
     });
   };
 
@@ -140,8 +162,10 @@ const MarkStaffPage = () => {
         <AttendanceMarkTable
           people={people}
           marks={marks}
+          reasons={reasons}
           onStatusChange={setStatus}
           onReasonChange={setReason}
+          onNoteChange={setNote}
         />
       )}
     </div>

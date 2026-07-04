@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 // API
 import { studentAttendanceAPI } from "../api/studentAttendance.api";
+import { absenceReasonAPI } from "../api/absenceReason.api";
 
 // Components
 import SelectSearch from "@/shared/components/ui/select/SelectSearch";
@@ -35,6 +36,13 @@ const MarkStudentsPage = () => {
   });
   const classes = classesData || [];
   const selectedClassId = classId || classes[0]?._id || "";
+
+  // Barcha aktiv "Kelmaslik sabablari" (jadvalda rol bo'yicha filtrlanadi)
+  const { data: reasonsData } = useQuery({
+    queryKey: ["absenceReasons", "active"],
+    queryFn: () => absenceReasonAPI.getActive().then((r) => r.data.data),
+  });
+  const reasons = reasonsData || [];
 
   const { data, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ["studentAttendance", "mark", selectedClassId, date],
@@ -59,13 +67,15 @@ const MarkStudentsPage = () => {
       id: student._id,
       name: `${student.lastName} ${student.firstName}`,
       subtitle: null,
+      role: "student",
       originalStatus: attendance?.status || null,
       defaultStatus: attendance?.status || "present", // belgilanmagan -> "Keldi"
-      originalReason: attendance?.excuseReason || "",
+      originalReasonId: attendance?.absenceReason || null,
+      originalNote: attendance?.excuseReason || "",
     }));
 
   const syncKey = data ? dataUpdatedAt : null;
-  const { marks, setStatus, setReason, setAll, dirty, counts } =
+  const { marks, setStatus, setReason, setNote, setAll, dirty, counts } =
     useMarkAttendance(people, syncKey);
 
   const { mutate: save, isPending } = useMutation({
@@ -80,17 +90,29 @@ const MarkStudentsPage = () => {
 
   const handleSave = () => {
     if (!selectedClassId || dirty.length === 0) return;
+
+    // "Sababli" uchun sabab majburiy
+    const missing = dirty.find(
+      (p) => marks[p.id].status === "excused" && !marks[p.id].absenceReasonId,
+    );
+    if (missing) {
+      toast.warning("'Sababli' belgilangan o'quvchi uchun sabab tanlang");
+      return;
+    }
+
     save({
       classId: selectedClassId,
       date,
-      records: dirty.map((p) => ({
-        studentId: p.id,
-        status: marks[p.id].status,
-        excuseReason:
-          marks[p.id].status === "excused"
-            ? marks[p.id].excuseReason
-            : undefined,
-      })),
+      records: dirty.map((p) => {
+        const m = marks[p.id];
+        const excused = m.status === "excused";
+        return {
+          studentId: p.id,
+          status: m.status,
+          absenceReason: excused ? m.absenceReasonId : undefined,
+          excuseReason: excused ? m.note : undefined,
+        };
+      }),
     });
   };
 
@@ -140,8 +162,10 @@ const MarkStudentsPage = () => {
         <AttendanceMarkTable
           people={people}
           marks={marks}
+          reasons={reasons}
           onStatusChange={setStatus}
           onReasonChange={setReason}
+          onNoteChange={setNote}
         />
       )}
     </div>

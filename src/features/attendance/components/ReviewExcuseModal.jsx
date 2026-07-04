@@ -68,8 +68,17 @@ const Content = ({ close, isLoading, setIsLoading, ...excuse }) => {
 
         <p>
           <span className="text-gray-500">Sabab:</span>{" "}
-          <span>{excuse.reason}</span>
+          <span className="font-medium">
+            {excuse.absenceReason?.title || "-"}
+          </span>
         </p>
+
+        {excuse.reason && (
+          <p>
+            <span className="text-gray-500">Izoh:</span>{" "}
+            <span>{excuse.reason}</span>
+          </p>
+        )}
       </div>
 
       <SelectField
