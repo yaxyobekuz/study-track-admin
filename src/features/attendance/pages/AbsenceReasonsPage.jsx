@@ -58,11 +58,7 @@ const AbsenceReasonsPage = () => {
   return (
     <div className="space-y-4">
       {/* Top */}
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-gray-500">
-          Davomatda kelmaslik uchun sabab kategoriyalari
-        </p>
-
+      <div className="flex items-center justify-end gap-3">
         <Button onClick={() => openModal("createAbsenceReason")}>
           <Plus />
           Yangi sabab
