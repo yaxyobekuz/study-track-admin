@@ -1,9 +1,9 @@
 // Recharts
 import {
   Bar,
-  Cell,
   XAxis,
   YAxis,
+  Legend,
   Tooltip,
   BarChart,
   CartesianGrid,
@@ -11,7 +11,7 @@ import {
 } from "recharts";
 
 // Data
-import { getPercentHex } from "../data/attendanceReports.data";
+import { DAILY_CHART_SERIES } from "../data/attendanceReports.data";
 
 // Grafik tooltipи: kun + foiz + statuslar kesimi
 const ChartTooltip = ({ active, payload }) => {
@@ -33,12 +33,16 @@ const ChartTooltip = ({ active, payload }) => {
 };
 
 /**
- * Oy ichida kun bo'yicha davomat foizi grafigi.
- * Har bir ustun rangi kun sifatiga qarab (yashil/sariq/qizil).
+ * Oy ichida kun bo'yicha davomat grafigi.
+ * Har bir kunda statuslar (Keldi / Kech keldi / Kelmadi / Sababli)
+ * yonma-yon alohida ustunlar sifatida ko'rsatiladi.
+ * Ma'lumoti yo'q kunlar bo'sh joy sifatida qoladi.
  * @param {Array} byDay - [{ date, day, percent, present, late, absent, excused, total }]
  */
 const DailyAttendanceChart = ({ byDay = [] }) => {
-  if (!byDay.length) {
+  const hasData = byDay.some((d) => d.total > 0);
+
+  if (!hasData) {
     return (
       <p className="text-sm text-gray-400 text-center py-8">
         Bu oy uchun ma&apos;lumot topilmadi
@@ -47,29 +51,42 @@ const DailyAttendanceChart = ({ byDay = [] }) => {
   }
 
   return (
-    <div className="h-56 sm:h-64">
+    <div className="h-64 sm:h-72">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={byDay} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <BarChart
+          data={byDay}
+          barGap={1}
+          barCategoryGap="18%"
+          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+        >
           <CartesianGrid vertical={false} stroke="#E5E7EB" strokeDasharray="3 3" />
           <XAxis
             dy={6}
             dataKey="day"
+            interval={0}
             axisLine={false}
             tickLine={false}
-            tick={{ fontSize: 11, fill: "#9CA3AF" }}
+            tick={{ fontSize: 10, fill: "#9CA3AF" }}
           />
           <YAxis
-            domain={[0, 100]}
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 11, fill: "#9CA3AF" }}
           />
           <Tooltip content={<ChartTooltip />} cursor={{ fill: "#F3F4F6" }} />
-          <Bar dataKey="percent" radius={[4, 4, 0, 0]} maxBarSize={22}>
-            {byDay.map((d) => (
-              <Cell key={d.date} fill={getPercentHex(d.percent)} />
-            ))}
-          </Bar>
+          <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }} />
+
+          {/* Har bir status - kun ichida yonma-yon alohida ustun */}
+          {DAILY_CHART_SERIES.map((series) => (
+            <Bar
+              key={series.key}
+              dataKey={series.key}
+              name={series.name}
+              fill={series.color}
+              maxBarSize={6}
+              radius={[2, 2, 0, 0]}
+            />
+          ))}
         </BarChart>
       </ResponsiveContainer>
     </div>

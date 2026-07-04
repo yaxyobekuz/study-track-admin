@@ -24,13 +24,13 @@ export const getPercentColor = (percent) => {
   return "bg-red-100 text-red-700";
 };
 
-// Grafik ustunlari uchun hex rang (recharts uchun)
-export const getPercentHex = (percent) => {
-  if (percent == null) return "#d1d5db";
-  if (percent >= 90) return "#22c55e";
-  if (percent >= 75) return "#eab308";
-  return "#ef4444";
-};
+// Kun bo'yicha grafik: har bir status uchun stack segmenti (recharts hex ranglar)
+export const DAILY_CHART_SERIES = [
+  { key: "present", name: "Keldi", color: "#22c55e" },
+  { key: "late", name: "Kech keldi", color: "#eab308" },
+  { key: "absent", name: "Kelmadi", color: "#ef4444" },
+  { key: "excused", name: "Sababli", color: "#3b82f6" },
+];
 
 // Reyting (1-3 o'rin) badge ranglari
 export const RANK_COLORS = {

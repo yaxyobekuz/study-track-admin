@@ -60,11 +60,28 @@ const StudentReportsPage = () => {
     };
   });
 
-  // Grafik uchun kun raqami
-  const byDay = (data.byDay || []).map((d) => ({
-    ...d,
-    day: parseInt(d.date.slice(8, 10), 10),
-  }));
+  // Grafik uchun oyning BARCHA kunlarini to'ldiramiz -
+  // yozuvi yo'q kunlar ham o'z o'rnida (bo'sh) ko'rinadi
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const byDayMap = Object.fromEntries(
+    (data.byDay || []).map((d) => [parseInt(d.date.slice(8, 10), 10), d]),
+  );
+  const byDay = Array.from({ length: daysInMonth }, (_, i) => {
+    const day = i + 1;
+    const d = byDayMap[day];
+    return d
+      ? { ...d, day }
+      : {
+          day,
+          date: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+          present: 0,
+          late: 0,
+          absent: 0,
+          excused: 0,
+          total: 0,
+          percent: null,
+        };
+  });
 
   const byClass = data.byClass || [];
   const riskGroup = data.riskGroup || [];
