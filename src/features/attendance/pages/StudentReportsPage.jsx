@@ -244,10 +244,6 @@ const StudentReportsPage = () => {
 
       {/* 6. Vaqt trendi */}
       <Card title="Hafta kunlari bo'yicha qoldirish" className="space-y-3">
-        <p className="text-xs text-gray-500">
-          Qaysi kunlarda dars qoldirish ko&apos;proq (foiz - o&apos;sha kundagi
-          qoldirish darajasi)
-        </p>
         <ReportBarList items={weekdayItems} barColor="bg-red-400" />
       </Card>
 
