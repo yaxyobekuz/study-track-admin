@@ -93,6 +93,7 @@ import AttendanceLayout from "@/features/attendance/layouts/AttendanceLayout";
 import DailyAttendanceLayout from "@/features/attendance/layouts/DailyAttendanceLayout";
 import MonthlyAttendanceLayout from "@/features/attendance/layouts/MonthlyAttendanceLayout";
 import MarkAttendanceLayout from "@/features/attendance/layouts/MarkAttendanceLayout";
+import ReportsLayout from "@/features/attendance/layouts/ReportsLayout";
 import StudentDailyPage from "@/features/attendance/pages/StudentDailyPage";
 import StaffDailyPage from "@/features/attendance/pages/StaffDailyPage";
 import StudentMonthlyPage from "@/features/attendance/pages/StudentMonthlyPage";
@@ -101,6 +102,8 @@ import MarkStudentsPage from "@/features/attendance/pages/MarkStudentsPage";
 import MarkStaffPage from "@/features/attendance/pages/MarkStaffPage";
 import ExcuseRequestsPage from "@/features/attendance/pages/ExcuseRequestsPage";
 import AbsenceReasonsPage from "@/features/attendance/pages/AbsenceReasonsPage";
+import StudentReportsPage from "@/features/attendance/pages/StudentReportsPage";
+import StaffReportsPage from "@/features/attendance/pages/StaffReportsPage";
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 
 // Pages - Leads
@@ -257,6 +260,16 @@ const Routes = () => {
               />
               <Route path="students" element={<MarkStudentsPage />} />
               <Route path="staff" element={<MarkStaffPage />} />
+            </Route>
+
+            {/* Hisobotlar (O'quvchilar / Xodimlar) */}
+            <Route path="reports" element={<ReportsLayout />}>
+              <Route
+                index
+                element={<Navigate to="/attendance/reports/students" replace />}
+              />
+              <Route path="students" element={<StudentReportsPage />} />
+              <Route path="staff" element={<StaffReportsPage />} />
             </Route>
 
             {/* Uzrli so'rovlar */}

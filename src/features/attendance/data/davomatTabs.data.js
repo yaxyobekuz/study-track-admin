@@ -21,6 +21,12 @@ export const ATTENDANCE_TABS = [
     exact: false,
   },
   {
+    to: "/attendance/reports",
+    label: "Hisobotlar",
+    title: "Davomat hisobotlari",
+    exact: false,
+  },
+  {
     to: "/attendance/excuses",
     label: "Uzrli so'rovlar",
     title: "Uzrli so'rovlar",
@@ -56,4 +62,10 @@ export const MONTHLY_SUBTABS = [
 export const MARK_SUBTABS = [
   { to: "/attendance/mark/students", label: "O'quvchilar" },
   { to: "/attendance/mark/staff", label: "Xodimlar" },
+];
+
+// Hisobotlar ichidagi sub-tablar
+export const REPORTS_SUBTABS = [
+  { to: "/attendance/reports/students", label: "O'quvchilar" },
+  { to: "/attendance/reports/staff", label: "Xodimlar" },
 ];
