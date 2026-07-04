@@ -113,7 +113,7 @@ const AttendanceMarkTable = ({
                     <span className="text-gray-300">-</span>
                   ) : reasonOptions.length === 0 ? (
                     <span className="text-xs text-red-500">
-                      Bu rol uchun sabab yo&apos;q — avval qo&apos;shing
+                      Bu rol uchun sabab yo&apos;q - avval qo&apos;shing
                     </span>
                   ) : (
                     <div className="space-y-1.5 min-w-[12rem]">
