@@ -1,2 +1,3 @@
-export { open, close, updateData, updateLoading } from "./store/modal.slice";
-export { default as modalReducer } from "./store/modal.slice";
+export { default as ModalProvider } from "./ModalProvider";
+export { ModalStateContext, ModalActionsContext } from "./modal.context";
+export { MODAL_NAMES } from "./modal.names";
