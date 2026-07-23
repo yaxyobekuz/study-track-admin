@@ -19,7 +19,7 @@ const DeleteSocialNetworkForm = ({
 
     try {
       onSuccess();
-      await socialNetworksAPI.delete(socialNetwork._id);
+      await socialNetworksAPI.delete(socialNetwork.id);
       toast.success("Ijtimoiy tarmoq o'chirildi");
       close();
     } catch (error) {

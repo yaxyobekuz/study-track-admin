@@ -127,7 +127,7 @@ const useObjectStore = (defaultCollectionName = "") => {
       entityId,
       itemId,
       itemData,
-      idField = "_id",
+      idField = "id",
       collectionName = defaultCollectionName
     ) => {
       dispatch(
@@ -148,7 +148,7 @@ const useObjectStore = (defaultCollectionName = "") => {
     (
       entityId,
       itemId,
-      idField = "_id",
+      idField = "id",
       collectionName = defaultCollectionName
     ) => {
       dispatch(

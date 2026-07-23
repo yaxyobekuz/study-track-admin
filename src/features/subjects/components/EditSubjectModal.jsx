@@ -32,7 +32,7 @@ const Content = ({ close, isLoading, setIsLoading, ...subject }) => {
     setIsLoading(true);
 
     subjectsAPI
-      .update(subject._id, state)
+      .update(subject.id, state)
       .then(() => {
         close();
         invalidateCache();

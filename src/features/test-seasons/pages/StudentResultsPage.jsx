@@ -78,8 +78,8 @@ const StudentResultsPage = () => {
         <div className="space-y-3">
           {results.map((r) => (
             <Link
-              key={r._id}
-              to={`/test-seasons/results/${r._id}`}
+              key={r.id}
+              to={`/test-seasons/results/${r.id}`}
               state={{ seasonId, studentName }}
             >
               <Card className="transition-shadow hover:shadow-md">

@@ -19,7 +19,7 @@ const StudentAttendanceMonthTable = ({ records, month, year }) => {
   // O'quvchi bo'yicha guruhlash: { [studentId]: { student, days: { [day]: rec } } }
   const byStudent = {};
   records.forEach((rec) => {
-    const sid = rec.student?._id || rec.student;
+    const sid = rec.student?.id || rec.student;
     if (!byStudent[sid]) {
       byStudent[sid] = { student: rec.student, days: {} };
     }
@@ -61,7 +61,7 @@ const StudentAttendanceMonthTable = ({ records, month, year }) => {
         {/* Tbody */}
         <tbody>
           {studentRows.map(({ student, days: studentDays }) => (
-            <tr key={student?._id}>
+            <tr key={student?.id}>
               {/* Full Name */}
               <td className="p-0">
                 <div className="flex items-center h-12 px-4">

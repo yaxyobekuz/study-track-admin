@@ -41,8 +41,8 @@ const Content = ({
 
   // Joriy sinfdan tashqari sinflar
   const options = classes
-    .filter((cls) => String(cls._id) !== String(classId))
-    .map((cls) => ({ value: cls._id, label: cls.name }));
+    .filter((cls) => String(cls.id) !== String(classId))
+    .map((cls) => ({ value: cls.id, label: cls.name }));
 
   const refetchClassStudents = () => {
     const collectionName = `class-students-${classId}`;

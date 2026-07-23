@@ -31,7 +31,7 @@ const Content = ({ close, isLoading, setIsLoading, ...excuse }) => {
 
     setIsLoading(true);
     attendanceAPI
-      .reviewExcuse(excuse._id, {
+      .reviewExcuse(excuse.id, {
         status: state.action,
         rejectionReason:
           state.action === "rejected" ? state.rejectionReason : undefined,

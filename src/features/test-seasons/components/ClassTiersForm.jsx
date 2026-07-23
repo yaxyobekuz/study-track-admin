@@ -31,7 +31,7 @@ const ClassTiersForm = ({ season }) => {
         }))
         .sort((a, b) => a.position - b.position),
     );
-  }, [season._id, season.classTiers]);
+  }, [season.id, season.classTiers]);
 
   const addTier = () => {
     const nextPos =
@@ -48,9 +48,9 @@ const ClassTiersForm = ({ season }) => {
   };
 
   const mutation = useMutation({
-    mutationFn: () => testSeasonsAPI.setClassTiers(season._id, tiers),
+    mutationFn: () => testSeasonsAPI.setClassTiers(season.id, tiers),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["test-season", season._id] });
+      queryClient.invalidateQueries({ queryKey: ["test-season", season.id] });
       toast.success("Sinf darajalari saqlandi");
     },
     onError: (e) => toast.error(e.response?.data?.message || "Saqlanmadi"),

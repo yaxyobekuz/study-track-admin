@@ -46,7 +46,7 @@ const Schedules = () => {
   // Redirect to the first class when no class is selected in the URL
   useEffect(() => {
     if (!classId && classes.length > 0) {
-      navigate(`/schedules/${classes[0]._id}`, { replace: true });
+      navigate(`/schedules/${classes[0].id}`, { replace: true });
     }
   }, [classId, classes, navigate]);
 
@@ -65,7 +65,7 @@ const Schedules = () => {
       link.href = url;
 
       const className =
-        classes.find((cls) => cls._id === classId)?.name || "sinf";
+        classes.find((cls) => cls.id === classId)?.name || "sinf";
       link.setAttribute(
         "download",
         `dars_jadvali_${className}_${new Date().toISOString().split("T")[0]}.xlsx`,
@@ -113,7 +113,7 @@ const Schedules = () => {
             onChange={(v) => v && navigate(`/schedules/${v}`)}
             options={classes.map((cls) => ({
               label: cls.name,
-              value: cls._id,
+              value: cls.id,
             }))}
           />
 

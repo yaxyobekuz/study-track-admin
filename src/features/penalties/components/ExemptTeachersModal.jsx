@@ -39,12 +39,12 @@ const Content = ({ close }) => {
 
   const teachers = allUsers.filter((u) => u.role === "teacher");
   const teacherOptions = teachers.map((u) => ({
-    value: u._id,
+    value: u.id,
     label: `${u.firstName} ${u.lastName || ""}`,
   }));
 
   const currentExemptIds = (settings?.exemptTeachers || []).map((t) =>
-    typeof t === "object" ? t._id : t,
+    typeof t === "object" ? t.id : t,
   );
 
   const saveMutation = useMutation({
@@ -81,7 +81,7 @@ const Content = ({ close }) => {
   const exemptTeachersList = (settings?.exemptTeachers || []).map((t) =>
     typeof t === "object"
       ? t
-      : teachers.find((u) => u._id === t),
+      : teachers.find((u) => u.id === t),
   ).filter(Boolean);
 
   const availableOptions = teacherOptions.filter(
@@ -108,13 +108,13 @@ const Content = ({ close }) => {
           <div className="flex flex-wrap gap-2">
             {exemptTeachersList.map((teacher) => (
               <span
-                key={teacher._id}
+                key={teacher.id}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm"
               >
                 {teacher.firstName} {teacher.lastName}
                 <button
                   type="button"
-                  onClick={() => removeTeacher(teacher._id)}
+                  onClick={() => removeTeacher(teacher.id)}
                   className="hover:text-blue-900 font-medium"
                   disabled={saveMutation.isPending}
                 >

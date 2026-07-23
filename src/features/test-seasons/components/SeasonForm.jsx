@@ -40,7 +40,7 @@ const SeasonForm = ({
   });
 
   useEffect(() => {
-    if (isEdit && season._id) {
+    if (isEdit && season.id) {
       setFields({
         name: season.name || "",
         description: season.description || "",
@@ -49,7 +49,7 @@ const SeasonForm = ({
         isActive: season.isActive ?? true,
       });
     }
-  }, [isEdit, season?._id]);
+  }, [isEdit, season?.id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -72,7 +72,7 @@ const SeasonForm = ({
 
       let response;
       if (isEdit) {
-        response = await testSeasonsAPI.update(season._id, payload);
+        response = await testSeasonsAPI.update(season.id, payload);
         toast.success("Mavsum yangilandi");
       } else {
         response = await testSeasonsAPI.create(payload);

@@ -32,7 +32,7 @@ const RolesPage = () => {
       {/* Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {roles.map((role) => (
-          <Card key={role._id}>
+          <Card key={role.id}>
             {/* Top */}
             <div className="flex justify-between items-start mb-4">
               <div>

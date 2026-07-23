@@ -150,7 +150,7 @@ const Grades = () => {
       link.href = url;
 
       const className =
-        classes.find((c) => c._id === filters.classId)?.name || "Sinf";
+        classes.find((c) => c.id === filters.classId)?.name || "Sinf";
       link.download = `${className}_baholar_${filters.date}.xlsx`;
 
       document.body.appendChild(link);
@@ -203,7 +203,7 @@ const Grades = () => {
           required
           value={filters.classId}
           onChange={(value) => setFilters({ ...filters, classId: value })}
-          options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
+          options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
         />
 
         <Select
@@ -212,7 +212,7 @@ const Grades = () => {
           onChange={(v) => setFilters({ ...filters, subjectId: v })}
           options={[
             { label: "Barcha fanlar", value: "all" },
-            ...subjects.map((s) => ({ label: s?.name, value: s?._id })),
+            ...subjects.map((s) => ({ label: s?.name, value: s?.id })),
           ]}
         />
 
@@ -279,7 +279,7 @@ const Grades = () => {
                   {filters.subjectId === "all" && (
                     <>
                       {todaySubjects.map((subject, index) => (
-                        <th key={`${subject.lessonOrder}-${subject._id}`}>
+                        <th key={`${subject.lessonOrder}-${subject.id}`}>
                           {index + 1}. {subject.name}
                         </th>
                       ))}
@@ -296,12 +296,12 @@ const Grades = () => {
                   const relevantGrades =
                     filters.subjectId !== "all"
                       ? studentData.grades.filter(
-                          (g) => g.subject._id === filters.subjectId,
+                          (g) => g.subject.id === filters.subjectId,
                         )
                       : studentData.grades;
 
                   return (
-                    <tr key={studentData.student._id}>
+                    <tr key={studentData.student.id}>
                       {/* Index */}
                       <td className="text-center text-sm text-gray-500">
                         {index + 1}
@@ -353,7 +353,7 @@ const Grades = () => {
                             const subjectOccurrences = {};
 
                             return todaySubjects.map((subject) => {
-                              const subjectIdStr = subject._id.toString();
+                              const subjectIdStr = subject.id.toString();
 
                               // Bu fanning nechanchi marta takrorlanishini hisoblash
                               if (!subjectOccurrences[subjectIdStr]) {
@@ -365,13 +365,13 @@ const Grades = () => {
 
                               const grade = getGradeForSubject(
                                 studentData.grades,
-                                subject._id,
+                                subject.id,
                                 occurrenceIndex,
                               );
 
                               return (
                                 <td
-                                  key={`${subject.lessonOrder}-${subject._id}`}
+                                  key={`${subject.lessonOrder}-${subject.id}`}
                                   className="px-4 py-4 whitespace-nowrap text-center"
                                 >
                                   {grade ? (

@@ -31,7 +31,7 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
     setIsLoading(true);
 
     rolesAPI
-      .delete(role._id)
+      .delete(role.id)
       .then(() => {
         close();
         invalidateCache();

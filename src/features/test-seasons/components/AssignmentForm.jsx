@@ -42,14 +42,14 @@ const AssignmentForm = ({
     });
 
   useEffect(() => {
-    if (isEdit && assignment._id) {
+    if (isEdit && assignment.id) {
       setFields({
-        class: assignment.class?._id || assignment.class || "",
-        subject: assignment.subject?._id || assignment.subject || "",
-        teacher: assignment.teacher?._id || assignment.teacher || "",
+        class: assignment.class?.id || assignment.class || "",
+        subject: assignment.subject?.id || assignment.subject || "",
+        teacher: assignment.teacher?.id || assignment.teacher || "",
       });
     }
-  }, [isEdit, assignment?._id]);
+  }, [isEdit, assignment?.id]);
 
   // Sinflar
   const { data: classes = [] } = useQuery({
@@ -70,12 +70,12 @@ const AssignmentForm = ({
   });
 
   const classOptions = useMemo(
-    () => classes.map((c) => ({ label: c.name, value: c._id })),
+    () => classes.map((c) => ({ label: c.name, value: c.id })),
     [classes],
   );
 
   const subjectOptions = useMemo(
-    () => subjects.map((s) => ({ label: s.name, value: s._id })),
+    () => subjects.map((s) => ({ label: s.name, value: s.id })),
     [subjects],
   );
 
@@ -85,7 +85,7 @@ const AssignmentForm = ({
         .filter((u) => u.role === "teacher")
         .map((u) => ({
           label: `${u.firstName || ""} ${u.lastName || ""}`.trim() || u.username,
-          value: u._id,
+          value: u.id,
         })),
     [usersShort],
   );
@@ -105,7 +105,7 @@ const AssignmentForm = ({
 
       let response;
       if (isEdit) {
-        response = await teacherAssignmentsAPI.update(assignment._id, payload);
+        response = await teacherAssignmentsAPI.update(assignment.id, payload);
         toast.success("Biriktiruv yangilandi");
       } else {
         response = await teacherAssignmentsAPI.create(payload);

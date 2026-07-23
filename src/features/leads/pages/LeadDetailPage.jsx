@@ -230,7 +230,7 @@ const LeadDetailPage = () => {
               ) : (
                 activities.map((activity) => (
                   <div
-                    key={activity._id}
+                    key={activity.id}
                     className="relative pl-4 pb-3 border-l-2 border-gray-200 last:border-l-0 last:pb-0"
                   >
                     <div className="absolute -left-[5px] top-1.5 size-2 rounded-full bg-gray-400" />

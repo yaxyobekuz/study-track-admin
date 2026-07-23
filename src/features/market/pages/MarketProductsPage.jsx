@@ -70,10 +70,10 @@ const MarketProductsPage = () => {
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (
             <MarketProductCard
-              key={product._id}
+              key={product.id}
               product={product}
               onDelete={(productId) =>
-                openModal("deleteMarketProduct", { _id: productId })
+                openModal("deleteMarketProduct", { id: productId })
               }
             />
           ))}

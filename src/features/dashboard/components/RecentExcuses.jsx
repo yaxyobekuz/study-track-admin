@@ -52,7 +52,7 @@ const RecentExcuses = () => {
 
         {items.map((ex) => (
           <div
-            key={ex._id}
+            key={ex.id}
             className="flex items-center justify-between gap-3 py-2"
           >
             <div className="min-w-0">

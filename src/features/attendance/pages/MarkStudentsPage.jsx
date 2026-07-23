@@ -35,7 +35,7 @@ const MarkStudentsPage = () => {
     queryFn: () => studentAttendanceAPI.getClasses().then((r) => r.data.data),
   });
   const classes = classesData || [];
-  const selectedClassId = classId || classes[0]?._id || "";
+  const selectedClassId = classId || classes[0]?.id || "";
 
   // Barcha aktiv "Kelmaslik sabablari" (jadvalda rol bo'yicha filtrlanadi)
   const { data: reasonsData } = useQuery({
@@ -64,7 +64,7 @@ const MarkStudentsPage = () => {
       return an.localeCompare(bn);
     })
     .map(({ student, attendance }) => ({
-      id: student._id,
+      id: student.id,
       name: `${student.lastName} ${student.firstName}`,
       subtitle: null,
       role: "student",
@@ -130,7 +130,7 @@ const MarkStudentsPage = () => {
             onChange={(v) => setClassId(v)}
             options={classes.map((cls) => ({
               label: cls.name,
-              value: cls._id,
+              value: cls.id,
             }))}
           />,
           filterSlot,

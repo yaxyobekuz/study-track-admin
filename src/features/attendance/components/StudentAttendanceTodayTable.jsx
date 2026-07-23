@@ -45,7 +45,7 @@ const StudentAttendanceTodayTable = ({ students, showClass = false }) => {
         </thead>
         <tbody>
           {sortedStudents.map(({ student, attendance }) => (
-            <tr key={student._id} className="border-t border-gray-100">
+            <tr key={student.id} className="border-t border-gray-100">
               <td className="px-4 py-3 font-medium text-gray-900">
                 {student.lastName} {student.firstName}
               </td>

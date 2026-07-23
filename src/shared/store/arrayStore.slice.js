@@ -325,7 +325,7 @@ export const arrayStoreSlice = createSlice({
         collectionName,
         itemId,
         itemData,
-        idField = "_id",
+        idField = "id",
       } = action.payload;
 
       const collection = state[collectionName];
@@ -369,7 +369,7 @@ export const arrayStoreSlice = createSlice({
         page,
         itemId,
         itemData,
-        idField = "_id",
+        idField = "id",
       } = action.payload;
 
       const collection = state[collectionName];
@@ -421,7 +421,7 @@ export const arrayStoreSlice = createSlice({
         collectionName,
         itemId,
         itemData,
-        idField = "_id",
+        idField = "id",
       } = action.payload;
 
       const collection = state[collectionName];
@@ -473,7 +473,7 @@ export const arrayStoreSlice = createSlice({
 
     // Remove item from non-paginated collection by ID
     removeItemFromCollection: (state, action) => {
-      const { collectionName, itemId, idField = "_id" } = action.payload;
+      const { collectionName, itemId, idField = "id" } = action.payload;
 
       const collection = state[collectionName];
 
@@ -507,7 +507,7 @@ export const arrayStoreSlice = createSlice({
 
     // Remove item from page by ID
     removeItemFromPage: (state, action) => {
-      const { collectionName, page, itemId, idField = "_id" } = action.payload;
+      const { collectionName, page, itemId, idField = "id" } = action.payload;
 
       const collection = state[collectionName];
 
@@ -550,7 +550,7 @@ export const arrayStoreSlice = createSlice({
 
     // Remove item by ID from all pages (searches through all pages)
     removeItemByIdFromPages: (state, action) => {
-      const { collectionName, itemId, idField = "_id" } = action.payload;
+      const { collectionName, itemId, idField = "id" } = action.payload;
 
       const collection = state[collectionName];
 

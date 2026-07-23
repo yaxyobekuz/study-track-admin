@@ -39,8 +39,8 @@ const createEmptyLesson = (order) => ({
 });
 
 const toLessonShape = (subj, index) => ({
-  subject: typeof subj.subject === "object" ? subj.subject?._id : subj.subject,
-  teacher: typeof subj.teacher === "object" ? subj.teacher?._id : subj.teacher,
+  subject: typeof subj.subject === "object" ? subj.subject?.id : subj.subject,
+  teacher: typeof subj.teacher === "object" ? subj.teacher?.id : subj.teacher,
   order: subj.order ?? index + 1,
   startTime: subj.startTime || "",
   endTime: subj.endTime || "",
@@ -234,7 +234,7 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
                       }
                       options={subjects.map((s) => ({
                         label: s?.name,
-                        value: s?._id,
+                        value: s?.id,
                       }))}
                     />
 
@@ -249,7 +249,7 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
                         updateLesson(day.value, index, "teacher", v)
                       }
                       options={teachers.map((t) => ({
-                        value: t?._id,
+                        value: t?.id,
                         label: t?.fullName,
                       }))}
                     />

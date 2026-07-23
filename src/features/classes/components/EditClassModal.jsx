@@ -31,7 +31,7 @@ const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
     setIsLoading(true);
 
     classesAPI
-      .update(classData._id, { name })
+      .update(classData.id, { name })
       .then(() => {
         close();
         invalidateCache();

@@ -29,7 +29,7 @@ const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
     setIsLoading(true);
 
     classesAPI
-      .delete(classData._id)
+      .delete(classData.id)
       .then(() => {
         close();
         invalidateCache();

@@ -99,7 +99,7 @@ const SocialNetworksPage = () => {
 
             <tbody>
               {socialNetworks.map((item, index) => (
-                <tr key={item._id}>
+                <tr key={item.id}>
                   <td className="text-center text-sm text-gray-500">
                     {index + 1}
                   </td>

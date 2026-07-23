@@ -16,7 +16,7 @@ const FinalizeSeasonForm = ({ onSuccess, close, isLoading, setIsLoading, ...seas
   const handleFinalize = async () => {
     setIsLoading(true);
     try {
-      const res = await testSeasonsAPI.finalize(season._id);
+      const res = await testSeasonsAPI.finalize(season.id);
       onSuccess?.(res.data.data);
       toast.success(res.data.message || "Mavsum yakunlandi");
       close();

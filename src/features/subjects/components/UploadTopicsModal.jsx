@@ -190,7 +190,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
           onChange={(value) => setField("subjectId", value)}
           options={subjects.map((subject) => ({
             label: subject.name,
-            value: subject._id,
+            value: subject.id,
           }))}
           required
         />

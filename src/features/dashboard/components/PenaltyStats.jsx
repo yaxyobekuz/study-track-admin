@@ -204,7 +204,7 @@ const TopTenList = ({ title, data, roles = [] }) => {
 
         {data.map((user, index) => (
           <div
-            key={user._id}
+            key={user.id}
             className={cn(
               "flex items-center justify-between py-2",
               index === 0 ? "sticky top-0 bg-white z-10" : "z-0",

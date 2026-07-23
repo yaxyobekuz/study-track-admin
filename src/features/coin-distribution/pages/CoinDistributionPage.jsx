@@ -72,7 +72,7 @@ const CoinDistributionPage = () => {
           value={filterValue}
           placeholder="Sinfni tanlang"
           onChange={(v) => setField("filterValue", v)}
-          options={classes.map((c) => ({ value: c._id, label: c.name }))}
+          options={classes.map((c) => ({ value: c.id, label: c.name }))}
         />
       );
     }

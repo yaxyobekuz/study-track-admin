@@ -153,7 +153,7 @@ const PremiumSubscriptionsPage = () => {
   };
 
   const handleRevoke = (sub) => {
-    const studentId = sub.student?._id;
+    const studentId = sub.student?.id;
     if (!studentId) return;
     if (!confirm("Ushbu o'quvchining premiumini bekor qilasizmi?")) return;
     revokeMutation.mutate(studentId);
@@ -289,7 +289,7 @@ const PremiumSubscriptionsPage = () => {
             </thead>
             <tbody>
               {subscriptions.map((sub) => (
-                <tr key={sub._id} className="border-b border-gray-50">
+                <tr key={sub.id} className="border-b border-gray-50">
                   <td className="py-2.5 px-3">
                     <p className="font-medium text-gray-800">
                       {formatName(sub.student)}

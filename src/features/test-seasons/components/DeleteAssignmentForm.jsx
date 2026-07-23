@@ -18,7 +18,7 @@ const DeleteAssignmentForm = ({
     setIsLoading(true);
 
     try {
-      await teacherAssignmentsAPI.delete(assignment._id);
+      await teacherAssignmentsAPI.delete(assignment.id);
       onSuccess();
       toast.success("Biriktiruv o'chirildi");
       close();

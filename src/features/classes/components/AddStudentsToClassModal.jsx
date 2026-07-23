@@ -60,7 +60,7 @@ const Content = ({
           if (!active) return;
           // Sinfda allaqachon mavjud o'quvchilarni chiqarib tashlash
           const list = (res.data.data || []).filter(
-            (s) => !existingSet.has(String(s._id)),
+            (s) => !existingSet.has(String(s.id)),
           );
           setResults(list);
         })
@@ -155,13 +155,13 @@ const Content = ({
 
         {!loadingResults &&
           results.map((student) => {
-            const isSelected = selected.includes(student._id);
+            const isSelected = selected.includes(student.id);
 
             return (
               <button
-                key={student._id}
+                key={student.id}
                 type="button"
-                onClick={() => toggleStudent(student._id)}
+                onClick={() => toggleStudent(student.id)}
                 className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left hover:bg-gray-50"
               >
                 <div>

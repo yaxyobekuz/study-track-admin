@@ -153,7 +153,7 @@ const SeasonAssignmentsPage = () => {
 
             <tbody>
               {assignments.map((a, index) => (
-                <tr key={a._id} className="hover:bg-gray-50">
+                <tr key={a.id} className="hover:bg-gray-50">
                   <td className="text-center text-sm text-gray-500">
                     {index + 1}
                   </td>

@@ -180,7 +180,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
           value={state.classes}
           placeholder="Sinflarni tanlang..."
           onChange={(v) => setField("classes", v)}
-          options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
+          options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
         />
       )}
 

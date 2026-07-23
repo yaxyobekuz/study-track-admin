@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usersAPI } from "@/features/users/api/users.api";
 
 const defaultFormatUserFunc = (user) => ({
-  value: user._id,
+  value: user.id,
   label: `${user.firstName} ${user.lastName || ""} (${user.role})`,
 });
 

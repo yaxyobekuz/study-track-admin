@@ -29,7 +29,7 @@ const Content = ({ close, isLoading, setIsLoading, ...subject }) => {
     setIsLoading(true);
 
     subjectsAPI
-      .delete(subject._id)
+      .delete(subject.id)
       .then(() => {
         close();
         invalidateCache();

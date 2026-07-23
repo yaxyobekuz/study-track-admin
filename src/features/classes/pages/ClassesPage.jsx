@@ -58,12 +58,12 @@ const Classes = () => {
       {/* Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {classes.map((classItem) => (
-          <Card key={classItem._id}>
+          <Card key={classItem.id}>
             {/* Top */}
             <div className="flex justify-between items-start mb-4">
               <h3>
                 <Link
-                  to={`/classes/${classItem._id}`}
+                  to={`/classes/${classItem.id}`}
                   className="flex items-center gap-1.5 text-lg font-semibold text-gray-900 transition-colors duration-200 hover:text-blue-600"
                 >
                   {classItem.name}

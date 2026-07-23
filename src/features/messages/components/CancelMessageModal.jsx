@@ -31,7 +31,7 @@ const Content = ({ close, isLoading, setIsLoading, ...message }) => {
     setIsLoading(true);
 
     messagesAPI
-      .cancel(message._id)
+      .cancel(message.id)
       .then((res) => {
         close();
         invalidateCache();

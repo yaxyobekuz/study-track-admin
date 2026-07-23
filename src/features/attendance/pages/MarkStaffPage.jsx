@@ -69,7 +69,7 @@ const MarkStaffPage = () => {
       // Xodimlarda belgilanmagan (not_marked) -> dastlab tanlanmagan
       const persisted = r.status && r.status !== "not_marked" ? r.status : null;
       return {
-        id: r.user._id,
+        id: r.user.id,
         name: `${r.user.firstName} ${r.user.lastName}`,
         subtitle: roleLabelMap[r.user.role] || r.user.role,
         role: r.user.role,

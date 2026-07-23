@@ -54,7 +54,7 @@ const Statistics = () => {
         if (res.data.success) {
           setClasses(res.data.data || []);
           if (res.data.data && res.data.data.length > 0) {
-            setSelectedClass(res.data.data[0]._id);
+            setSelectedClass(res.data.data[0].id);
           }
         }
       })
@@ -129,7 +129,7 @@ const Statistics = () => {
 
   // Sinf tanlash uchun options
   const classOptions = classes.map((c) => ({
-    value: c._id,
+    value: c.id,
     label: c.name,
   }));
 
@@ -249,7 +249,7 @@ const Statistics = () => {
               <tbody>
                 {rankings.map((item) => (
                   <tr
-                    key={item.student._id}
+                    key={item.student.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     {/* Rank */}
@@ -303,7 +303,7 @@ const Statistics = () => {
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => handleViewStudent(item.student._id)}
+                        onClick={() => handleViewStudent(item.student.id)}
                         className="flex items-center gap-2"
                       >
                         <Eye className="size-5" strokeWidth={1.5} />

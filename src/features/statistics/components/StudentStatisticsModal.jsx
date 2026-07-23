@@ -77,7 +77,7 @@ const Content = ({ studentId }) => {
               {classes && classes.length > 0 ? (
                 classes.map((cls) => (
                   <span
-                    key={cls._id}
+                    key={cls.id}
                     className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded"
                   >
                     {cls.name}
@@ -148,7 +148,7 @@ const Content = ({ studentId }) => {
             {/* Class Rankings */}
             {rankings.classRanks.map((classRank) => (
               <div
-                key={classRank.class._id}
+                key={classRank.class.id}
                 className="flex items-center justify-between p-4 rounded-lg border"
               >
                 <div className="flex items-center gap-2">

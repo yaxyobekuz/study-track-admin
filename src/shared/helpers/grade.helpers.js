@@ -24,8 +24,8 @@ export const getGradeForSubject = (
     .filter(
       (g) =>
         g.subject &&
-        g.subject._id &&
-        g.subject._id.toString() === subjectId.toString(),
+        g.subject.id &&
+        g.subject.id.toString() === subjectId.toString(),
     )
     .sort((a, b) => (a.lessonOrder || 0) - (b.lessonOrder || 0));
 

@@ -19,7 +19,7 @@ const DeleteHolidayForm = ({
 
     try {
       onSuccess();
-      await holidaysAPI.delete(holiday._id);
+      await holidaysAPI.delete(holiday.id);
       toast.success("Dam olish kuni o'chirildi");
       close();
     } catch (error) {

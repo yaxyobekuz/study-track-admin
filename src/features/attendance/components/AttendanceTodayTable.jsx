@@ -55,7 +55,7 @@ const AttendanceTodayTable = ({ rows }) => {
         </thead>
         <tbody>
           {sortedRows.map((row) => (
-            <tr key={row.user._id} className="border-t border-gray-100">
+            <tr key={row.user.id} className="border-t border-gray-100">
               <td className="px-4 py-3 font-medium text-gray-900">
                 {row.user.firstName} {row.user.lastName}
               </td>

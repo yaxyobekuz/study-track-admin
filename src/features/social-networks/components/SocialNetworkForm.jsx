@@ -37,7 +37,7 @@ const SocialNetworkForm = ({
     });
 
   useEffect(() => {
-    if (isEdit && socialNetwork._id) {
+    if (isEdit && socialNetwork.id) {
       setFields({
         name: socialNetwork.name || "",
         chatId: socialNetwork.chatId || "",
@@ -46,7 +46,7 @@ const SocialNetworkForm = ({
         isActive: socialNetwork.isActive ?? true,
       });
     }
-  }, [isEdit, socialNetwork?._id]);
+  }, [isEdit, socialNetwork?.id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,7 +56,7 @@ const SocialNetworkForm = ({
       const payload = { name, chatId, username, platform, isActive };
 
       if (isEdit) {
-        await socialNetworksAPI.update(socialNetwork._id, payload);
+        await socialNetworksAPI.update(socialNetwork.id, payload);
         toast.success("Ijtimoiy tarmoq yangilandi");
       } else {
         await socialNetworksAPI.create(payload);

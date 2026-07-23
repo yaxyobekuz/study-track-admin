@@ -87,7 +87,7 @@ const Topics = () => {
     if (!selectedSubject) return;
 
     const selectedSubjectName =
-      subjects.find((s) => s._id === selectedSubject)?.name || "Bu fan";
+      subjects.find((s) => s.id === selectedSubject)?.name || "Bu fan";
 
     const confirmed = window.confirm(
       `${selectedSubjectName} uchun barcha mavzular o'chiriladi. Davom etishni xohlaysizmi?`,
@@ -118,7 +118,7 @@ const Topics = () => {
               onChange={(value) => setSelectedSubject(value)}
               options={subjects.map((subject) => ({
                 label: subject.name,
-                value: subject._id,
+                value: subject.id,
               }))}
               placeholder="Fanni tanlang"
             />
@@ -199,7 +199,7 @@ const Topics = () => {
 
                 <tbody>
                   {topics.map((topic) => (
-                    <tr key={topic._id} className="hover:bg-gray-50">
+                    <tr key={topic.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {topic.order}
                       </td>

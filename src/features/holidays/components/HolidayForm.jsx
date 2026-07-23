@@ -65,7 +65,7 @@ const HolidayForm = ({
   });
 
   useEffect(() => {
-    if (isEdit && holiday._id) {
+    if (isEdit && holiday.id) {
       const hasRecurringRange =
         holiday.recurringStartDate?.month !== undefined &&
         holiday.recurringEndDate?.month !== undefined;
@@ -87,7 +87,7 @@ const HolidayForm = ({
         startDate: holiday.startDate ? holiday.startDate.split("T")[0] : "",
       });
     }
-  }, [isEdit, holiday?._id]);
+  }, [isEdit, holiday?.id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -121,7 +121,7 @@ const HolidayForm = ({
 
       let response;
       if (isEdit) {
-        response = await holidaysAPI.update(holiday._id, payload);
+        response = await holidaysAPI.update(holiday.id, payload);
         toast.success("Dam olish kuni yangilandi");
       } else {
         response = await holidaysAPI.create(payload);

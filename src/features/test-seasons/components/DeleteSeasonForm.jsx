@@ -18,7 +18,7 @@ const DeleteSeasonForm = ({
     setIsLoading(true);
 
     try {
-      await testSeasonsAPI.delete(season._id);
+      await testSeasonsAPI.delete(season.id);
       onSuccess();
       toast.success("Mavsum o'chirildi");
       close();

@@ -29,7 +29,7 @@ const EditSchedulePage = () => {
   const { getCollectionData } = useArrayStore();
   const classes = getCollectionData("classes");
 
-  const className = classes.find((cls) => cls._id === classId)?.name || "Sinf";
+  const className = classes.find((cls) => cls.id === classId)?.name || "Sinf";
 
   const { data: schedules, isLoading, isError } = useQuery({
     queryKey: ["schedules", "class", classId],

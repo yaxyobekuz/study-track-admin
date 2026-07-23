@@ -24,7 +24,7 @@ const AttendanceTable = ({ records, month, year }) => {
 
   const byUser = {};
   records.forEach((rec) => {
-    const uid = rec.user?._id || rec.user;
+    const uid = rec.user?.id || rec.user;
     if (!byUser[uid]) {
       byUser[uid] = { user: rec.user, days: {} };
     }
@@ -67,7 +67,7 @@ const AttendanceTable = ({ records, month, year }) => {
         {/* Tbody */}
         <tbody>
           {userRows.map(({ user, days: userDays }) => (
-            <tr key={user?._id}>
+            <tr key={user?.id}>
               {/* Full Name */}
               <td className="p-0">
                 <div className="flex flex-col justify-center h-12 px-4">

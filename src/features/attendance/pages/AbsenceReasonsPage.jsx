@@ -79,7 +79,7 @@ const AbsenceReasonsPage = () => {
           {reasons.map((reason) => {
             const scope = getReasonScope(reason, roles);
             return (
-              <Card key={reason._id} className="relative" title={reason.title}>
+              <Card key={reason.id} className="relative" title={reason.title}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     {reason.description && (
@@ -105,7 +105,7 @@ const AbsenceReasonsPage = () => {
                       <Edit className="size-3.5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(reason._id)}
+                      onClick={() => handleDelete(reason.id)}
                       className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"
                     >
                       <Trash2 className="size-3.5" />

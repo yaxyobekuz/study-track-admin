@@ -22,7 +22,7 @@ const AnnounceSeasonModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, isLoading, setIsLoading, _id, name }) => {
+const Content = ({ close, isLoading, setIsLoading, id, name }) => {
   const [classes, setClasses] = useState([]);
   const [loadingClasses, setLoadingClasses] = useState(true);
   const [excluded, setExcluded] = useState([]); // istisno qilingan sinf ID lari
@@ -31,13 +31,13 @@ const Content = ({ close, isLoading, setIsLoading, _id, name }) => {
 
   // Biriktirilgan sinflarni yuklash (modal har ochilganda Content qayta mount bo'ladi)
   useEffect(() => {
-    if (!_id) return;
+    if (!id) return;
     testSeasonsAPI
-      .getAnnounceClasses(_id)
+      .getAnnounceClasses(id)
       .then((res) => setClasses(res.data.data || []))
       .catch(() => toast.error("Sinflarni yuklashda xato"))
       .finally(() => setLoadingClasses(false));
-  }, [_id]);
+  }, [id]);
 
   const toggleClass = (classId) => {
     setExcluded((prev) =>
@@ -47,7 +47,7 @@ const Content = ({ close, isLoading, setIsLoading, _id, name }) => {
     );
   };
 
-  const includedClasses = classes.filter((c) => !excluded.includes(c._id));
+  const includedClasses = classes.filter((c) => !excluded.includes(c.id));
   const totalStudents = includedClasses.reduce(
     (sum, c) => sum + (c.studentCount || 0),
     0,
@@ -65,7 +65,7 @@ const Content = ({ close, isLoading, setIsLoading, _id, name }) => {
     setIsLoading(true);
 
     testSeasonsAPI
-      .announce(_id, { note: note.trim(), excludedClassIds: excluded })
+      .announce(id, { note: note.trim(), excludedClassIds: excluded })
       .then((res) => {
         close();
         toast.success(res.data?.message || "E'lon navbatga qo'shildi");
@@ -116,17 +116,17 @@ const Content = ({ close, isLoading, setIsLoading, _id, name }) => {
         ) : (
           <div className="space-y-1.5 max-h-56 overflow-y-auto">
             {classes.map((c) => {
-              const included = !excluded.includes(c._id);
+              const included = !excluded.includes(c.id);
               return (
                 <label
-                  key={c._id}
+                  key={c.id}
                   className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50"
                 >
                   <span className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       checked={included}
-                      onChange={() => toggleClass(c._id)}
+                      onChange={() => toggleClass(c.id)}
                       className="size-4 accent-blue-600"
                     />
                     <span className="text-sm text-gray-900">{c.name}</span>

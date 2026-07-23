@@ -31,7 +31,7 @@ const Content = ({ close, isLoading, setIsLoading, ...modalData }) => {
     setIsLoading(true);
 
     usersAPI
-      .getPassword(modalData._id)
+      .getPassword(modalData.id)
       .then((res) => {
         setPassword(res.data.data.password);
       })

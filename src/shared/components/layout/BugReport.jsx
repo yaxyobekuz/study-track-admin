@@ -100,7 +100,7 @@ const BugReportForm = ({ close, isLoading, setIsLoading }) => {
       const caption = `🔥 Yangi xatolik\n\n📝 Izoh: ${description.trim()}\n\n🔗 Sahifa: ${pathUrl}\n🕒 Sana: ${dateStr}\n\n${userInfo}`;
 
       const formData = new FormData();
-      formData.append("chat_id", chatId);
+      formData.append("chatid", chatId);
       formData.append("caption", caption);
 
       let apiUrl = `https://api.telegram.org/bot${token}/sendMessage`;

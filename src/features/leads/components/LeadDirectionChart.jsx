@@ -116,7 +116,7 @@ const LeadDirectionChart = ({ dateParams }) => {
               </thead>
               <tbody>
                 {items.map((item, idx) => (
-                  <tr key={item._id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                  <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                     <td className="py-2 px-2">
                       <div className="flex items-center gap-2">
                         <div

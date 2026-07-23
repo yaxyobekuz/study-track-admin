@@ -321,7 +321,7 @@ const TaskDetailPage = () => {
                     className="w-full text-sm"
                     onClick={() =>
                       openModal("reviewTask", {
-                        taskId: task._id,
+                        taskId: task.id,
                         dueDate: task.dueDate,
                       })
                     }
@@ -335,7 +335,7 @@ const TaskDetailPage = () => {
                   className="w-full text-sm"
                   onClick={() =>
                     openModal("extendDeadline", {
-                      taskId: task._id,
+                      taskId: task.id,
                       currentDueDate: task.dueDate,
                     })
                   }
@@ -348,7 +348,7 @@ const TaskDetailPage = () => {
                   className="w-full text-sm"
                   onClick={() =>
                     openModal("stopTask", {
-                      taskId: task._id,
+                      taskId: task.id,
                       defaultPenaltyPoints: task.penaltyPoints,
                     })
                   }

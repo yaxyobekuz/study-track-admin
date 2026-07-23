@@ -35,7 +35,7 @@ const TransactionsPage = () => {
   });
 
   const transactionItems = (data?.transactions ?? []).map((tx) => ({
-    key: tx._id,
+    key: tx.id,
     icon: ArrowDownLeft,
     title: tx.description,
     gradientTo: "to-green-700",

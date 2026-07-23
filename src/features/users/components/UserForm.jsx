@@ -47,7 +47,7 @@ const UserForm = ({ mode = "create", initialData = null }) => {
     password: "",
     role: initialData?.role || "student",
     gender: initialData?.gender || "male",
-    classes: initialData?.classes?.map((c) => (typeof c === "object" ? c._id : c)) || [],
+    classes: initialData?.classes?.map((c) => (typeof c === "object" ? c.id : c)) || [],
     workStartTime: initialData?.workStartTime || "",
     workEndTime: initialData?.workEndTime || "",
     workDays: initialData?.workDays || [1, 2, 3, 4, 5],
@@ -113,7 +113,7 @@ const UserForm = ({ mode = "create", initialData = null }) => {
 
     try {
       if (isEdit) {
-        await usersAPI.update(initialData._id, payload);
+        await usersAPI.update(initialData.id, payload);
         toast.success("Foydalanuvchi yangilandi");
       } else {
         await usersAPI.create(payload);
@@ -200,7 +200,7 @@ const UserForm = ({ mode = "create", initialData = null }) => {
           value={state.classes}
           placeholder="Sinflarni tanlang..."
           onChange={(v) => setField("classes", v)}
-          options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
+          options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
         />
       )}
 

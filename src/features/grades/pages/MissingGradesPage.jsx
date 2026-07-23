@@ -41,7 +41,7 @@ const MissingGrades = () => {
         // Barcha o'qituvchilarni ochiq qilish
         const expanded = {};
         res.data.data.byTeacher?.forEach((t) => {
-          expanded[t.teacher._id] = false;
+          expanded[t.teacher.id] = false;
         });
         setExpandedTeachers(expanded);
       })
@@ -235,12 +235,12 @@ const MissingGrades = () => {
       <div className="space-y-4">
         {data.byTeacher.map((teacherData) => (
           <Card
-            key={teacherData.teacher._id}
+            key={teacherData.teacher.id}
             className="p-0 overflow-hidden xs:p-0"
           >
             {/* Teacher Header */}
             <button
-              onClick={() => toggleTeacher(teacherData.teacher._id)}
+              onClick={() => toggleTeacher(teacherData.teacher.id)}
               className="w-full flex items-center justify-between p-4 bg-blue-500 text-white hover:bg-blue-600 transition-colors mb-0"
             >
               <div className="flex items-center gap-3">
@@ -262,7 +262,7 @@ const MissingGrades = () => {
                   </p>
                 </div>
               </div>
-              {expandedTeachers[teacherData.teacher._id] ? (
+              {expandedTeachers[teacherData.teacher.id] ? (
                 <ChevronUp className="size-5" />
               ) : (
                 <ChevronDown className="size-5" />
@@ -270,7 +270,7 @@ const MissingGrades = () => {
             </button>
 
             {/* Lessons */}
-            {expandedTeachers[teacherData.teacher._id] && (
+            {expandedTeachers[teacherData.teacher.id] && (
               <div className="p-5 space-y-4">
                 {teacherData.lessons.map((lesson, idx) => (
                   <div
@@ -310,7 +310,7 @@ const MissingGrades = () => {
                       <div className="flex flex-wrap gap-2">
                         {lesson.missingStudents.map((student) => (
                           <span
-                            key={student._id}
+                            key={student.id}
                             className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700"
                           >
                             {student.firstName} {student.lastName}

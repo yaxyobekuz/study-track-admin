@@ -19,11 +19,11 @@ const DeleteProductModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ _id, close }) => {
+const Content = ({ id, close }) => {
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: () => marketAPI.deleteProduct(_id),
+    mutationFn: () => marketAPI.deleteProduct(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["market", "admin", "products"] });
       toast.success("Mahsulot o'chirildi");

@@ -29,7 +29,7 @@ const EditAbsenceReasonModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, _id, ...data }) => {
+const Content = ({ close, id, ...data }) => {
   const queryClient = useQueryClient();
   const { getCollectionData } = useArrayStore();
   const roles = getCollectionData("roles") || [];
@@ -59,10 +59,10 @@ const Content = ({ close, _id, ...data }) => {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [_id]);
+  }, [id]);
 
   const updateMutation = useMutation({
-    mutationFn: (payload) => absenceReasonAPI.update(_id, payload),
+    mutationFn: (payload) => absenceReasonAPI.update(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["absenceReasons"] });
       close();

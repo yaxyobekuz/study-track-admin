@@ -126,10 +126,10 @@ const TestSeasonsPage = () => {
             <tbody>
               {seasons.map((season, index) => (
                 <tr
-                  key={season._id}
+                  key={season.id}
                   className="hover:bg-gray-50 cursor-pointer"
                   onClick={() =>
-                    navigate(`/test-seasons/${season._id}/rewards`)
+                    navigate(`/test-seasons/${season.id}/rewards`)
                   }
                 >
                   <td className="text-center text-sm text-gray-500">
@@ -179,7 +179,7 @@ const TestSeasonsPage = () => {
                         <DropdownMenuContent align="end" className="w-44">
                           <DropdownMenuItem asChild>
                             <Link
-                              to={`/test-seasons/${season._id}/assignments`}
+                              to={`/test-seasons/${season.id}/assignments`}
                             >
                               <UsersIcon />
                               Biriktiruvlar

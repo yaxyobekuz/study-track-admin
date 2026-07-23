@@ -109,7 +109,7 @@ const LeadsListPage = () => {
             onChange={(v) => setFields({ sourceFilter: v, page: 1 })}
             options={[
               { value: "all", label: "Barcha manbalar" },
-              ...sources.map((s) => ({ value: s._id, label: s.name })),
+              ...sources.map((s) => ({ value: s.id, label: s.name })),
             ]}
           />
         </InputGroup>
@@ -150,7 +150,7 @@ const LeadsListPage = () => {
             <tbody>
               {leads.map((lead) => (
                 <tr
-                  key={lead._id}
+                  key={lead.id}
                   className="border-b border-gray-50 hover:bg-gray-50/50"
                 >
                   <td className="py-2.5 px-3">
@@ -190,7 +190,7 @@ const LeadsListPage = () => {
 
                   <td className="py-2.5 px-3 text-center">
                     <Link
-                      to={`/leads/${lead._id}`}
+                      to={`/leads/${lead.id}`}
                       className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
                     >
                       <Eye size={13} />

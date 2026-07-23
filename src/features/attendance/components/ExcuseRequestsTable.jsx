@@ -40,7 +40,7 @@ const ExcuseRequestsTable = ({ excuses, isLoading }) => {
         {/* Tbody */}
         <tbody>
           {excuses.map((ex) => (
-            <tr key={ex._id} className="text-sm">
+            <tr key={ex.id} className="text-sm">
               <td className="px-4 py-3">
                 <p className="font-medium text-gray-900">
                   {ex.user?.firstName} {ex.user?.lastName}

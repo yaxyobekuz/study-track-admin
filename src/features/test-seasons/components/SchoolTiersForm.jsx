@@ -31,7 +31,7 @@ const SchoolTiersForm = ({ season }) => {
         }))
         .sort((a, b) => a.position - b.position),
     );
-  }, [season._id, season.schoolTiers]);
+  }, [season.id, season.schoolTiers]);
 
   const addTier = () => {
     const nextPos =
@@ -48,9 +48,9 @@ const SchoolTiersForm = ({ season }) => {
   };
 
   const mutation = useMutation({
-    mutationFn: () => testSeasonsAPI.setSchoolTiers(season._id, tiers),
+    mutationFn: () => testSeasonsAPI.setSchoolTiers(season.id, tiers),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["test-season", season._id] });
+      queryClient.invalidateQueries({ queryKey: ["test-season", season.id] });
       toast.success("Maktab darajalari saqlandi");
     },
     onError: (e) => toast.error(e.response?.data?.message || "Saqlanmadi"),

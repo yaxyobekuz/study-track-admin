@@ -56,7 +56,7 @@ const SubjectTopics = () => {
   };
 
   const handleEditClick = (item) => {
-    setEditingClassId(item.class._id);
+    setEditingClassId(item.class.id);
     setEditValue(String(item.currentTopicNumber));
   };
 
@@ -81,7 +81,7 @@ const SubjectTopics = () => {
     setSaving(true);
     try {
       await schedulesAPI.updateCurrentTopic(
-        item.class._id,
+        item.class.id,
         subjectId,
         newNumber,
       );
@@ -89,7 +89,7 @@ const SubjectTopics = () => {
       // Update local state
       setClassesData((prev) =>
         prev.map((c) =>
-          c.class._id === item.class._id
+          c.class.id === item.class.id
             ? { ...c, currentTopicNumber: newNumber }
             : c,
         ),
@@ -138,10 +138,10 @@ const SubjectTopics = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {classesData.map((item) => {
-            const isEditing = editingClassId === item.class._id;
+            const isEditing = editingClassId === item.class.id;
 
             return (
-              <Card key={item.class._id}>
+              <Card key={item.class.id}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     {/* Class Name */}

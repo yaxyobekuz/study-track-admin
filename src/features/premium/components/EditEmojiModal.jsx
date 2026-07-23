@@ -23,7 +23,7 @@ const EditEmojiModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, _id, ...data }) => {
+const Content = ({ close, id, ...data }) => {
   const queryClient = useQueryClient();
 
   const [name, setName] = useState("");
@@ -32,14 +32,14 @@ const Content = ({ close, _id, ...data }) => {
   useEffect(() => {
     if (data.name !== undefined) setName(data.name || "");
     setFile(null);
-  }, [_id]);
+  }, [id]);
 
   const updateMutation = useMutation({
     mutationFn: () => {
       const formData = new FormData();
       formData.append("name", name);
       if (file) formData.append("file", file);
-      return premiumAPI.updateEmoji(_id, formData);
+      return premiumAPI.updateEmoji(id, formData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["premium", "emojis"] });

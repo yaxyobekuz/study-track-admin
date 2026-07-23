@@ -97,7 +97,7 @@ const MarketOrdersPage = () => {
                     order.deliveryImage?.variants?.original?.url;
 
                   return (
-                    <tr key={order._id} className="hover:bg-gray-50 align-top">
+                    <tr key={order.id} className="hover:bg-gray-50 align-top">
                       <td className="px-4 py-3 text-sm">
                         <p className="font-medium">
                           {order.student?.firstName} {order.student?.lastName}
@@ -145,7 +145,7 @@ const MarketOrdersPage = () => {
                             onClick={() =>
                               openModal("updateMarketOrderStatus", {
                                 sessionId: Date.now(),
-                                orderId: order._id,
+                                orderId: order.id,
                                 orderStatus: order.status,
                               })
                             }
@@ -158,7 +158,7 @@ const MarketOrdersPage = () => {
                             onClick={() =>
                               openModal("addDeliveryImage", {
                                 sessionId: Date.now(),
-                                orderId: order._id,
+                                orderId: order.id,
                               })
                             }
                             title="Rasm qo'shish"

@@ -294,7 +294,7 @@ const useArrayStore = (defaultCollectionName = "") => {
     (
       itemId,
       itemData,
-      idField = "_id",
+      idField = "id",
       collectionName = defaultCollectionName
     ) => {
       dispatch(
@@ -310,7 +310,7 @@ const useArrayStore = (defaultCollectionName = "") => {
       page,
       itemId,
       itemData,
-      idField = "_id",
+      idField = "id",
       collectionName = defaultCollectionName
     ) => {
       dispatch(
@@ -331,7 +331,7 @@ const useArrayStore = (defaultCollectionName = "") => {
     (
       itemId,
       itemData,
-      idField = "_id",
+      idField = "id",
       collectionName = defaultCollectionName
     ) => {
       dispatch(
@@ -348,7 +348,7 @@ const useArrayStore = (defaultCollectionName = "") => {
 
   // Remove item from collection by ID
   const removeItem = useCallback(
-    (itemId, idField = "_id", collectionName = defaultCollectionName) => {
+    (itemId, idField = "id", collectionName = defaultCollectionName) => {
       dispatch(
         removeItemFromCollection({
           collectionName,
@@ -362,7 +362,7 @@ const useArrayStore = (defaultCollectionName = "") => {
 
   // Remove item from page by ID
   const removeItemFromPageData = useCallback(
-    (page, itemId, idField = "_id", collectionName = defaultCollectionName) => {
+    (page, itemId, idField = "id", collectionName = defaultCollectionName) => {
       dispatch(
         removeItemFromPage({
           collectionName,
@@ -377,7 +377,7 @@ const useArrayStore = (defaultCollectionName = "") => {
 
   // Remove item by ID from all pages
   const removeItemById = useCallback(
-    (itemId, idField = "_id", collectionName = defaultCollectionName) => {
+    (itemId, idField = "id", collectionName = defaultCollectionName) => {
       dispatch(
         removeItemByIdFromPages({
           itemId,

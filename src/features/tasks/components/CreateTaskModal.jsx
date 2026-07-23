@@ -60,7 +60,7 @@ const Content = ({ close }) => {
     .filter((u) => u.role !== "owner")
     .map((u) => ({
       label: `${u.firstName}${u.lastName ? ` ${u.lastName}` : ""} (${getRoleLabel(u.role, roles)})`,
-      value: u._id,
+      value: u.id,
     }));
 
   const createMutation = useMutation({

@@ -87,7 +87,7 @@ const StudentAttendanceSummary = ({ studentId }) => {
             <div className="divide-y divide-gray-100 rounded-lg border border-gray-100 overflow-hidden">
               {records.map((rec) => (
                 <div
-                  key={rec._id}
+                  key={rec.id}
                   className="flex items-center justify-between px-3 py-2.5 text-sm"
                 >
                   <span className="text-gray-600">{formatDateUZ(new Date(rec.date))}</span>

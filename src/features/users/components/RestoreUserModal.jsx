@@ -29,7 +29,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
     setIsLoading(true);
 
     usersAPI
-      .restore(user._id)
+      .restore(user.id)
       .then(() => {
         close();
         invalidateCache();

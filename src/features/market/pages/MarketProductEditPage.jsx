@@ -93,7 +93,7 @@ const MarketProductEditPage = () => {
     event.preventDefault();
 
     const keptCount = (product?.images || []).filter(
-      (img) => !removeImageIds.includes(img._id),
+      (img) => !removeImageIds.includes(img.id),
     ).length;
     const totalCount = keptCount + (newImages?.length || 0);
 
@@ -172,11 +172,11 @@ const MarketProductEditPage = () => {
               {(product.images || []).map((image) => {
                 const imageUrl =
                   image?.variants?.sm?.url || image?.variants?.original?.url;
-                const marked = removeImageIds.includes(image._id);
+                const marked = removeImageIds.includes(image.id);
 
                 return (
                   <label
-                    key={image._id}
+                    key={image.id}
                     className={`border rounded-lg p-2 space-y-2 cursor-pointer ${
                       marked ? "border-red-300 bg-red-50" : "border-gray-200"
                     }`}
@@ -192,10 +192,10 @@ const MarketProductEditPage = () => {
                         checked={marked}
                         onChange={(event) => {
                           if (event.target.checked) {
-                            setRemoveImageIds((prev) => [...prev, image._id]);
+                            setRemoveImageIds((prev) => [...prev, image.id]);
                           } else {
                             setRemoveImageIds((prev) =>
-                              prev.filter((id) => id !== image._id),
+                              prev.filter((id) => id !== image.id),
                             );
                           }
                         }}
@@ -316,7 +316,7 @@ const ProductOrdersSection = ({ productId }) => {
             </thead>
             <tbody>
               {orders.map((order) => (
-                <tr key={order._id} className="hover:bg-gray-50">
+                <tr key={order.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <p className="font-medium">
                       {order.student?.firstName} {order.student?.lastName}

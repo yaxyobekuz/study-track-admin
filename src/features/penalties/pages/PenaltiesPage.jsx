@@ -228,7 +228,7 @@ const PenaltiesPage = () => {
             {/* Tbody */}
             <tbody>
               {penalties.map((penalty) => (
-                <tr key={penalty._id}>
+                <tr key={penalty.id}>
                   <td className="py-2.5 px-3">
                     {formatUserName(penalty.user)}
                   </td>
@@ -278,7 +278,7 @@ const PenaltiesPage = () => {
                   <td className="py-2.5 px-3">
                     <div className="flex items-center gap-2">
                       <Link
-                        to={`/penalties/${penalty._id}`}
+                        to={`/penalties/${penalty.id}`}
                         className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                       >
                         Ba'tafsil

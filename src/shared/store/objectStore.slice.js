@@ -102,7 +102,7 @@ export const objectStoreSlice = createSlice({
         entityId,
         itemData,
         collectionName,
-        idField = "_id",
+        idField = "id",
       } = action.payload;
 
       const collection = state[collectionName];
@@ -156,7 +156,7 @@ export const objectStoreSlice = createSlice({
         itemId,
         entityId,
         collectionName,
-        idField = "_id",
+        idField = "id",
       } = action.payload;
 
       const collection = state[collectionName];

@@ -58,12 +58,12 @@ const Subjects = () => {
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {subjects.map((subject) => (
-          <Card key={subject._id}>
+          <Card key={subject.id}>
             {/* Top */}
             <div className="flex justify-between items-start mb-4">
               <h3>
                 <Link
-                  to={`/subjects/${subject._id}/topics`}
+                  to={`/subjects/${subject.id}/topics`}
                   className="flex items-center gap-1.5 text-lg font-semibold text-gray-900 transition-colors duration-200 hover:text-blue-600"
                 >
                   {subject.name}

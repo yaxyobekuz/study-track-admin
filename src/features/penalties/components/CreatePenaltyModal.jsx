@@ -66,7 +66,7 @@ const Content = ({ close }) => {
     .filter((u) => u.role !== "owner")
     .map((u) => ({
       label: `${u.firstName}${u.lastName ? ` ${u.lastName}` : ""} (${u.username}) - ${getRoleLabel(u.role, roles)}`,
-      value: u._id,
+      value: u.id,
       role: u.role,
     }));
 
@@ -83,7 +83,7 @@ const Content = ({ close }) => {
 
   const categories = (categoriesData || []).map((c) => ({
     label: `${c.title} (${c.points} ball)`,
-    value: c._id,
+    value: c.id,
     points: c.points,
     title: c.title,
     description: c.description,

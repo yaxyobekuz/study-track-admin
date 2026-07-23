@@ -67,7 +67,7 @@ const MarketProductCard = ({ product, onDelete }) => {
         {/* Action Buttons */}
         <div className="flex items-center gap-2 pt-1">
           <Button variant="outline" className="w-full px-0" asChild>
-            <Link to={`/market/products/${product._id}/edit`}>
+            <Link to={`/market/products/${product.id}/edit`}>
               <span className="hidden sm:inline">Tahrirlash</span>
               <Edit className="size-4" />
             </Link>
@@ -75,7 +75,7 @@ const MarketProductCard = ({ product, onDelete }) => {
 
           <Button
             variant="danger"
-            onClick={() => onDelete(product._id)}
+            onClick={() => onDelete(product.id)}
             className="shrink-0 aspect-square p-0"
           >
             <Trash2 className="size-4" />

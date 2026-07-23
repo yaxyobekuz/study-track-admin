@@ -96,7 +96,7 @@ const ClassDetail = () => {
   };
 
   // Ro'yxatda hozir mavjud bo'lgan tanlangan o'quvchilar (eskirgan ID larsiz)
-  const visibleIds = new Set(students.map((s) => s._id));
+  const visibleIds = new Set(students.map((s) => s.id));
   const selectedValid = selected.filter((id) => visibleIds.has(id));
 
   const toggleStudent = (id) => {
@@ -109,7 +109,7 @@ const ClassDetail = () => {
     students.length > 0 && selectedValid.length === students.length;
 
   const toggleAll = () => {
-    setSelected(allSelected ? [] : students.map((s) => s._id));
+    setSelected(allSelected ? [] : students.map((s) => s.id));
   };
 
   const handleExport = async () => {
@@ -167,7 +167,7 @@ const ClassDetail = () => {
             onClick={() =>
               openModal("addStudentsToClass", {
                 classId,
-                existingIds: students.map((s) => s._id),
+                existingIds: students.map((s) => s.id),
               })
             }
           >
@@ -283,11 +283,11 @@ const ClassDetail = () => {
               {/* Tbody */}
               <tbody>
                 {students.map((student, index) => {
-                  const isSelected = selected.includes(student._id);
+                  const isSelected = selected.includes(student.id);
 
                   return (
                     <tr
-                      key={student._id}
+                      key={student.id}
                       className={isSelected ? "bg-primary/5" : ""}
                     >
                       {/* Checkbox */}
@@ -296,7 +296,7 @@ const ClassDetail = () => {
                           type="checkbox"
                           className="size-4 rounded cursor-pointer"
                           checked={isSelected}
-                          onChange={() => toggleStudent(student._id)}
+                          onChange={() => toggleStudent(student.id)}
                         />
                       </td>
 

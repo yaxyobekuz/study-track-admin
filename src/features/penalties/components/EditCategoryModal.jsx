@@ -24,7 +24,7 @@ const EditCategoryModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, _id, ...data }) => {
+const Content = ({ close, id, ...data }) => {
   const queryClient = useQueryClient();
   const { title, description, points, setField, setFields } = useObjectState({
     title: "",
@@ -40,10 +40,10 @@ const Content = ({ close, _id, ...data }) => {
         points: data.points || "",
       });
     }
-  }, [_id]);
+  }, [id]);
 
   const updateMutation = useMutation({
-    mutationFn: (payload) => penaltiesAPI.updateCategory(_id, payload),
+    mutationFn: (payload) => penaltiesAPI.updateCategory(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["penalties", "categories"] });
       close();

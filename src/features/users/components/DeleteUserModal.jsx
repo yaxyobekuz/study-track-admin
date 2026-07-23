@@ -29,7 +29,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
     setIsLoading(true);
 
     usersAPI
-      .delete(user._id)
+      .delete(user.id)
       .then(() => {
         close();
         invalidateCache();

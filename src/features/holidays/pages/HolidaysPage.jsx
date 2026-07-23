@@ -105,7 +105,7 @@ const Holidays = () => {
               {/* Tbody */}
               <tbody>
                 {holidays.map((holiday, index) => (
-                  <tr key={holiday._id} className="hover:bg-gray-50">
+                  <tr key={holiday.id} className="hover:bg-gray-50">
                     <td className="text-center text-sm text-gray-500">
                       {index + 1}
                     </td>

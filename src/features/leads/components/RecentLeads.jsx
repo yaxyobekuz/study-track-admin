@@ -52,7 +52,7 @@ const RecentLeads = () => {
             <tbody>
               {leads.map((lead) => (
                 <tr
-                  key={lead._id}
+                  key={lead.id}
                   className="border-t border-gray-100 hover:bg-gray-50"
                 >
                   <td className="py-2.5 px-3 font-medium text-gray-800">
@@ -74,7 +74,7 @@ const RecentLeads = () => {
                   </td>
                   <td className="py-2.5 px-3 text-center">
                     <Link
-                      to={`/leads/${lead._id}`}
+                      to={`/leads/${lead.id}`}
                       className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                     >
                       Ko'rish

@@ -77,7 +77,7 @@ const PenaltyCategoriesPage = () => {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((cat) => (
-            <Card key={cat._id} className="relative" title={cat.title}>
+            <Card key={cat.id} className="relative" title={cat.title}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   {cat.description && (
@@ -104,7 +104,7 @@ const PenaltyCategoriesPage = () => {
                     <Edit className="size-3.5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(cat._id)}
+                    onClick={() => handleDelete(cat.id)}
                     className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"
                   >
                     <Trash2 className="size-3.5" />

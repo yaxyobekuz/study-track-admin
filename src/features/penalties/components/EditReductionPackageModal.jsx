@@ -24,7 +24,7 @@ const EditReductionPackageModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, _id, ...data }) => {
+const Content = ({ close, id, ...data }) => {
   const queryClient = useQueryClient();
 
   const { title, points, coinCost, order, isActive, setField, setFields } = useObjectState({
@@ -45,10 +45,10 @@ const Content = ({ close, _id, ...data }) => {
         isActive: data.isActive ?? true,
       });
     }
-  }, [_id]);
+  }, [id]);
 
   const updateMutation = useMutation({
-    mutationFn: (payload) => penaltiesAPI.updateReductionPackage(_id, payload),
+    mutationFn: (payload) => penaltiesAPI.updateReductionPackage(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["penalties", "reduction-packages"] });
       close();

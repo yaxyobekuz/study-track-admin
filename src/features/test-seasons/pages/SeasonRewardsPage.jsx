@@ -148,7 +148,7 @@ const StatsTab = ({ seasonId }) => {
   // Daraja tanlovi: "" = maktab (umumiy), aks holda sinf
   const levelOptions = [
     { value: "", label: "Maktab (umumiy)" },
-    ...classList.map((c) => ({ value: c._id, label: c.name })),
+    ...classList.map((c) => ({ value: c.id, label: c.name })),
   ];
 
   return (
@@ -190,12 +190,12 @@ const StatsTab = ({ seasonId }) => {
             <tbody>
               {stats.map((r) => (
                 <tr
-                  key={r.student._id}
+                  key={r.student.id}
                   className="border-b hover:bg-gray-50 cursor-pointer"
                   title="Test javoblarini ko'rish"
                   onClick={() =>
                     navigate(
-                      `/test-seasons/${seasonId}/students/${r.student._id}/results`,
+                      `/test-seasons/${seasonId}/students/${r.student.id}/results`,
                       {
                         state: {
                           studentName: `${r.student.firstName} ${r.student.lastName}`,
@@ -249,19 +249,19 @@ const DistributeTab = ({ season }) => {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const { data: preview, isLoading } = useQuery({
-    queryKey: ["season-distribute-preview", season._id],
+    queryKey: ["season-distribute-preview", season.id],
     queryFn: () =>
       testSeasonsAPI
-        .previewDistribution(season._id)
+        .previewDistribution(season.id)
         .then((res) => res.data.data),
   });
 
   const mutation = useMutation({
-    mutationFn: (force) => testSeasonsAPI.distributeCoins(season._id, force),
+    mutationFn: (force) => testSeasonsAPI.distributeCoins(season.id, force),
     onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ["test-season", season._id] });
+      queryClient.invalidateQueries({ queryKey: ["test-season", season.id] });
       queryClient.invalidateQueries({
-        queryKey: ["season-distribute-preview", season._id],
+        queryKey: ["season-distribute-preview", season.id],
       });
       toast.success(
         `Tarqatildi: ${res.data.data.distributed}, o'tkazildi: ${res.data.data.skipped}`,
@@ -316,7 +316,7 @@ const DistributeTab = ({ season }) => {
               </thead>
               <tbody>
                 {preview.students.map((s) => (
-                  <tr key={s.student._id} className="border-b hover:bg-gray-50">
+                  <tr key={s.student.id} className="border-b hover:bg-gray-50">
                     <td className="py-2.5 px-3 font-medium text-gray-900">
                       {s.student.firstName} {s.student.lastName}
                     </td>

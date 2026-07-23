@@ -107,7 +107,7 @@ const TasksPage = () => {
             value={assigneeId}
             onChange={(v) => handleFilterChange("assigneeId", v)}
             formatUsers={(user) => ({
-              value: user._id,
+              value: user.id,
               label: `${user.firstName} ${user.lastName?.[0] + "."} (${user.role})`,
             })}
           />
@@ -144,7 +144,7 @@ const TasksPage = () => {
             </thead>
             <tbody>
               {tasks.map((task) => (
-                <tr key={task._id} className="text-sm">
+                <tr key={task.id} className="text-sm">
                   <td className="py-2.5 px-3">
                     <p className="font-medium text-gray-800">
                       {formatUserName(task.assignee)}
@@ -186,7 +186,7 @@ const TasksPage = () => {
                   </td>
                   <td className="py-2.5 px-3 text-center">
                     <Link
-                      to={`/tasks/${task._id}`}
+                      to={`/tasks/${task.id}`}
                       className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                     >
                       Batafsil

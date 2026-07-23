@@ -56,7 +56,7 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
     setIsLoading(true);
 
     rolesAPI
-      .update(role._id, state)
+      .update(role.id, state)
       .then(() => {
         close();
         invalidateCache();

@@ -68,18 +68,18 @@ const CreateAssignmentsPage = () => {
   });
 
   const classOptions = useMemo(
-    () => classes.map((c) => ({ label: c.name, value: c._id })),
+    () => classes.map((c) => ({ label: c.name, value: c.id })),
     [classes],
   );
 
   const classNameById = useMemo(() => {
     const map = {};
-    classes.forEach((c) => (map[c._id] = c.name));
+    classes.forEach((c) => (map[c.id] = c.name));
     return map;
   }, [classes]);
 
   const subjectOptions = useMemo(
-    () => subjects.map((s) => ({ label: s.name, value: s._id })),
+    () => subjects.map((s) => ({ label: s.name, value: s.id })),
     [subjects],
   );
 
@@ -89,7 +89,7 @@ const CreateAssignmentsPage = () => {
         .filter((u) => u.role === "teacher")
         .map((u) => ({
           label: `${u.firstName || ""} ${u.lastName || ""}`.trim() || u.username,
-          value: u._id,
+          value: u.id,
         })),
     [usersShort],
   );
@@ -140,8 +140,8 @@ const CreateAssignmentsPage = () => {
     setRows(
       subjects.map((s) => ({
         id: rowIdRef.current++,
-        subject: s._id,
-        teacher: teacherBySubject[s._id] || "",
+        subject: s.id,
+        teacher: teacherBySubject[s.id] || "",
       })),
     );
   };

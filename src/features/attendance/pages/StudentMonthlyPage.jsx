@@ -39,7 +39,7 @@ const StudentMonthlyPage = () => {
   const classes = classesData || [];
 
   // Oylik davomat sinf bo'yicha ko'rsatiladi - bitta sinf tanlanadi (default - birinchisi)
-  const selectedClassId = classId || classes[0]?._id || "";
+  const selectedClassId = classId || classes[0]?.id || "";
 
   const { data, isLoading } = useQuery({
     queryKey: ["studentAttendance", "class-month", selectedClassId, month, year],
@@ -69,7 +69,7 @@ const StudentMonthlyPage = () => {
               onChange={(v) => setClassId(v)}
               options={classes.map((cls) => ({
                 label: cls.name,
-                value: cls._id,
+                value: cls.id,
               }))}
             />
 

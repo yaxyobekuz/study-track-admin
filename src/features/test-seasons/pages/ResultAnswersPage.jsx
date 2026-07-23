@@ -64,8 +64,8 @@ const ResultAnswersPage = () => {
   const extraSum =
     result.extraPoints?.reduce((s, e) => s + (e.amount || 0), 0) || 0;
 
-  const backHref = `/test-seasons/${result.season?._id || ""}/students/${
-    student._id || ""
+  const backHref = `/test-seasons/${result.season?.id || ""}/students/${
+    student.id || ""
   }/results`;
 
   return (

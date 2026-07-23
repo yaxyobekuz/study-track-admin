@@ -150,7 +150,7 @@ const TopTenCoinOwner = ({ stats }) => {
       <div className="max-h-72 overflow-y-auto hidden-scrollbar">
         {stats?.topEarners.map((student, index) => (
           <div
-            key={student._id}
+            key={student.id}
             className={cn(
               "flex items-center justify-between py-2",
               index === 0 ? "sticky top-0 bg-white" : "",

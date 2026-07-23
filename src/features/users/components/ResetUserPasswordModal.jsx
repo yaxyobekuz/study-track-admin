@@ -30,7 +30,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
     setIsLoading(true);
 
     usersAPI
-      .resetPassword(user._id, { newPassword: password?.trim() })
+      .resetPassword(user.id, { newPassword: password?.trim() })
       .then(() => {
         close();
         toast.success("Foydalanuvchining paroli yangilandi");

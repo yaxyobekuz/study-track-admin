@@ -275,7 +275,7 @@ const Users = () => {
             {/* Tbody */}
             <tbody>
               {users.map((user) => (
-                <tr key={user._id}>
+                <tr key={user.id}>
                   {/* Full Name */}
                   <td className="py-4 text-center text-sm font-medium text-gray-900">
                     {user.fullName}
@@ -333,7 +333,7 @@ const Users = () => {
                     <div className="flex justify-center space-x-2">
                       {/* Edit */}
                       <Link
-                        to={`/users/${user._id}/edit`}
+                        to={`/users/${user.id}/edit`}
                         className="text-blue-600 hover:text-blue-900"
                       >
                         <Edit className="size-5" strokeWidth={1.5} />

@@ -62,7 +62,7 @@ const Content = ({ close }) => {
         value={studentId}
         onChange={(v) => setField("studentId", v)}
         formatUsers={(user) => ({
-          value: user._id,
+          value: user.id,
           label: `${user.firstName} ${user.lastName || ""} (${user.username})`,
         })}
       />

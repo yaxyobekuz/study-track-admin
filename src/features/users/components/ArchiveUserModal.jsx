@@ -34,7 +34,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
     setIsLoading(true);
 
     usersAPI
-      .archive(user._id, { resetCoins, resetPenalties })
+      .archive(user.id, { resetCoins, resetPenalties })
       .then(() => {
         close();
         invalidateCache();

@@ -69,7 +69,7 @@ const PremiumEmojisPage = () => {
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {emojis.map((emoji) => (
-            <Card key={emoji._id} className="flex flex-col items-center gap-2">
+            <Card key={emoji.id} className="flex flex-col items-center gap-2">
               <EmojiPreview url={emoji.animationUrl} className="size-16" />
 
               <p className="text-sm font-medium text-gray-800 text-center truncate w-full">
@@ -84,7 +84,7 @@ const PremiumEmojisPage = () => {
                   <Edit className="size-3.5" />
                 </button>
                 <button
-                  onClick={() => handleDelete(emoji._id)}
+                  onClick={() => handleDelete(emoji.id)}
                   className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"
                 >
                   <Trash2 className="size-3.5" />

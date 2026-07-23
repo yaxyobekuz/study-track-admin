@@ -36,7 +36,7 @@ const StudentDailyPage = () => {
   });
 
   const classes = classesData || [];
-  const firstClassId = classes[0]?._id || "";
+  const firstClassId = classes[0]?.id || "";
   const isAll = classId === ALL_CLASSES;
   const perClassId = isAll ? "" : classId || firstClassId;
   const selectValue = classId || firstClassId; // SelectSearch ko'rsatadigan qiymat
@@ -91,7 +91,7 @@ const StudentDailyPage = () => {
 
   const classOptions = [
     { label: "Barcha sinflar", value: ALL_CLASSES },
-    ...classes.map((cls) => ({ label: cls.name, value: cls._id })),
+    ...classes.map((cls) => ({ label: cls.name, value: cls.id })),
   ];
 
   return (

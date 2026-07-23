@@ -40,7 +40,7 @@ const Content = ({ close }) => {
     .filter((u) => u.role !== "owner" && u.penaltyPoints > 0)
     .map((u) => ({
       label: `${u.firstName}${u.lastName ? ` ${u.lastName}` : ""} (${u.username}) - ${u.penaltyPoints} ball`,
-      value: u._id,
+      value: u.id,
       penaltyPoints: u.penaltyPoints,
     }));
 

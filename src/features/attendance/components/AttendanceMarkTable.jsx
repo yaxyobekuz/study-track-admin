@@ -62,7 +62,7 @@ const AttendanceMarkTable = ({
 
             // Shu foydalanuvchi roliga tegishli sabablar
             const reasonOptions = reasonsForRole(reasons, person.role).map(
-              (r) => ({ label: r.title, value: r._id }),
+              (r) => ({ label: r.title, value: r.id }),
             );
 
             return (

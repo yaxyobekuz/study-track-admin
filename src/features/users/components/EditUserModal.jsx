@@ -33,7 +33,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
   const hasCustomSchedule = !!(user.workStartTime && user.workEndTime);
 
   const { firstName, lastName, gender, state, setField } = useObjectState({
-    classes: user.classes?.map((c) => c._id) || [],
+    classes: user.classes?.map((c) => c.id) || [],
     lastName: user.lastName,
     firstName: user.firstName,
     gender: user.gender || "",
@@ -104,7 +104,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
     };
 
     usersAPI
-      .update(user._id, data)
+      .update(user.id, data)
       .then(() => {
         close();
         invalidateCache("users");
@@ -149,7 +149,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
           value={state.classes}
           placeholder="Sinflarni tanlang..."
           onChange={(v) => setField("classes", v)}
-          options={classes.map((cls) => ({ label: cls.name, value: cls._id }))}
+          options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
         />
       )}
 

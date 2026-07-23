@@ -20,12 +20,12 @@ const DeletePenaltyModal = ({ onSuccess } = {}) => (
   </ResponsiveModal>
 );
 
-const Content = ({ _id, onSuccess } = {}) => {
+const Content = ({ id, onSuccess } = {}) => {
   const { closeModal } = useModal();
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: () => penaltiesAPI.delete(_id),
+    mutationFn: () => penaltiesAPI.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["penalties", "list"] });
       toast.success("Jarima o'chirildi");

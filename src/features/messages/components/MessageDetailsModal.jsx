@@ -25,10 +25,10 @@ const Content = ({ close, ...data }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (data?._id) {
+    if (data?.id) {
       setIsLoading(true);
       messagesAPI
-        .getOne(data._id)
+        .getOne(data.id)
         .then((res) => {
           setMessageDetails(res.data.data);
         })
@@ -38,7 +38,7 @@ const Content = ({ close, ...data }) => {
         })
         .finally(() => setIsLoading(false));
     }
-  }, [data?._id]);
+  }, [data?.id]);
 
   if (isLoading || !messageDetails) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
