@@ -1,12 +1,9 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { classesAPI } from "@/features/classes/api/classes.api";
-
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useUpdateClass } from "@/features/classes/queries/classes.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -20,7 +17,7 @@ const EditClassModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
-  const { invalidateCache } = useArrayStore("classes");
+  const { mutate: updateClass } = useUpdateClass();
 
   const { name, setField } = useObjectState({
     name: classData.name || "",
@@ -30,17 +27,19 @@ const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
     e.preventDefault();
     setIsLoading(true);
 
-    classesAPI
-      .update(classData.id, { name })
-      .then(() => {
-        close();
-        invalidateCache();
-        toast.success("Sinf tahrirlandi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    updateClass(
+      { id: classData.id, data: { name } },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Sinf tahrirlandi");
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

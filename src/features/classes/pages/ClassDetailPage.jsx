@@ -2,11 +2,17 @@
 import { toast } from "sonner";
 
 // React
-import { useState, useEffect } from "react";
+import { useState } from "react";
+
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import {
+  classesQueries,
+  useClassStudents,
+} from "@/features/classes/queries/classes.queries";
 
 // Router
 import { useParams, useNavigate } from "react-router-dom";
@@ -26,7 +32,6 @@ import {
 } from "lucide-react";
 
 // API
-import { usersAPI } from "@/features/users/api/users.api";
 import { classesAPI } from "@/features/classes/api/classes.api";
 
 const ClassDetail = () => {
@@ -34,66 +39,18 @@ const ClassDetail = () => {
   const navigate = useNavigate();
   const { openModal } = useModal();
 
-  const {
-    initialize,
-    hasCollection,
-    setCollection,
-    getCollectionData,
-    isCollectionLoading,
-    setCollectionLoadingState,
-  } = useArrayStore();
-
-  const [classInfo, setClassInfo] = useState(null);
-  const [loadingClass, setLoadingClass] = useState(true);
   const [selected, setSelected] = useState([]);
 
-  // Students data
-  const studentsCollectionName = `class-students-${classId}`;
-  const students = getCollectionData(studentsCollectionName);
-  const isLoadingStudents = isCollectionLoading(studentsCollectionName);
+  // Class info
+  const {
+    data: classInfo,
+    isLoading: loadingClass,
+    isError: classError,
+  } = useQuery(classesQueries.detail(classId));
 
-  // Initialize collection for students
-  useEffect(() => {
-    if (!hasCollection(studentsCollectionName)) {
-      initialize(false, studentsCollectionName);
-    }
-  }, [studentsCollectionName, hasCollection, initialize]);
-
-  // Fetch class info
-  useEffect(() => {
-    if (classId) {
-      fetchClassInfo();
-      fetchStudentsByClass();
-    }
-  }, [classId]);
-
-  const fetchClassInfo = () => {
-    setLoadingClass(true);
-    classesAPI
-      .getOne(classId)
-      .then((response) => {
-        setClassInfo(response.data.data);
-        setLoadingClass(false);
-      })
-      .catch(() => {
-        toast.error("Sinf ma'lumotlarini yuklashda xatolik");
-        setLoadingClass(false);
-      });
-  };
-
-  const fetchStudentsByClass = () => {
-    setCollectionLoadingState(true, studentsCollectionName);
-
-    usersAPI
-      .getAll({ role: "student", class: classId, limit: 200 })
-      .then((response) => {
-        setCollection(response.data.data || [], null, studentsCollectionName);
-      })
-      .catch(() => {
-        toast.error("O'quvchilarni yuklashda xatolik");
-        setCollection([], true, studentsCollectionName);
-      });
-  };
+  // Students roster
+  const { data: students = [], isLoading: isLoadingStudents } =
+    useClassStudents(classId);
 
   // Ro'yxatda hozir mavjud bo'lgan tanlangan o'quvchilar (eskirgan ID larsiz)
   const visibleIds = new Set(students.map((s) => s.id));
@@ -140,7 +97,7 @@ const ClassDetail = () => {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
   }
 
-  if (!classInfo) {
+  if (classError || !classInfo) {
     return (
       <div className="text-center py-8">
         <p className="text-gray-500 mb-4">Sinf topilmadi</p>

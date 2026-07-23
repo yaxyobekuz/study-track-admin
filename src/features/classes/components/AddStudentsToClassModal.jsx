@@ -4,12 +4,12 @@ import { toast } from "sonner";
 // React
 import { useState, useEffect, useRef } from "react";
 
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-import { classesAPI } from "@/features/classes/api/classes.api";
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { classesQueries } from "@/features/classes/queries/classes.queries";
+import { useAddStudentsToClass } from "@/features/classes/queries/classes.mutations";
 
 // Components
 import Input from "@/shared/components/ui/input/Input";
@@ -36,59 +36,36 @@ const Content = ({
   classId,
   existingIds = [],
 }) => {
-  const { setCollection, setCollectionLoadingState, invalidateCache } =
-    useArrayStore();
+  const { mutate: addStudents } = useAddStudentsToClass();
 
   const [search, setSearch] = useState("");
-  const [results, setResults] = useState([]);
-  const [loadingResults, setLoadingResults] = useState(true);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selected, setSelected] = useState([]);
   const debounceRef = useRef(null);
 
   const existingSet = new Set(existingIds.map((id) => String(id)));
 
-  // Qidiruv natijalarini yuklash (debounce bilan)
+  // Qidiruv so'rovini debounce qilish
   useEffect(() => {
-    let active = true;
-
     debounceRef.current = setTimeout(() => {
-      setLoadingResults(true);
-
-      usersAPI
-        .getAll({ role: "student", search: search.trim(), limit: 50 })
-        .then((res) => {
-          if (!active) return;
-          // Sinfda allaqachon mavjud o'quvchilarni chiqarib tashlash
-          const list = (res.data.data || []).filter(
-            (s) => !existingSet.has(String(s.id)),
-          );
-          setResults(list);
-        })
-        .catch(() => active && toast.error("O'quvchilarni yuklashda xatolik"))
-        .finally(() => active && setLoadingResults(false));
+      setDebouncedSearch(search.trim());
     }, 300);
 
-    return () => {
-      active = false;
-      clearTimeout(debounceRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => clearTimeout(debounceRef.current);
   }, [search]);
+
+  // Qidiruv natijalari (TanStack keshlab, oldingi sahifani saqlab turadi)
+  const { data: allResults = [], isLoading: loadingResults } = useQuery(
+    classesQueries.studentSearch(debouncedSearch),
+  );
+
+  // Sinfda allaqachon mavjud o'quvchilarni chiqarib tashlash
+  const results = allResults.filter((s) => !existingSet.has(String(s.id)));
 
   const toggleStudent = (id) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
-  };
-
-  const refetchClassStudents = () => {
-    const collectionName = `class-students-${classId}`;
-    setCollectionLoadingState(true, collectionName);
-
-    usersAPI
-      .getAll({ role: "student", class: classId, limit: 200 })
-      .then((res) => setCollection(res.data.data || [], null, collectionName))
-      .catch(() => setCollection([], true, collectionName));
   };
 
   const handleAdd = (e) => {
@@ -100,18 +77,19 @@ const Content = ({
 
     setIsLoading(true);
 
-    classesAPI
-      .addStudents(classId, selected)
-      .then(() => {
-        close();
-        refetchClassStudents();
-        invalidateCache("users");
-        toast.success("O'quvchilar sinfga qo'shildi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    addStudents(
+      { classId, studentIds: selected },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("O'quvchilar sinfga qo'shildi");
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

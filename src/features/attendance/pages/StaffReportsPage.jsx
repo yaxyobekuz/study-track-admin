@@ -18,13 +18,13 @@ import AttendanceSummaryCards from "../components/AttendanceSummaryCards";
 // Data & hooks
 import { STAFF_SUMMARY_CARDS, buildRoleLabelMap } from "../data/attendance.data";
 import { getPercentColor, RANK_COLORS } from "../data/attendanceReports.data";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 
 const StaffReportsPage = () => {
   const { month, year } = useOutletContext();
 
-  const { getCollectionData } = useArrayStore("roles");
-  const roleLabelMap = buildRoleLabelMap(getCollectionData());
+  const { data: roles = [] } = useRoles();
+  const roleLabelMap = buildRoleLabelMap(roles);
   const roleLabel = (role) => roleLabelMap[role] || role;
 
   const { data, isLoading } = useQuery({

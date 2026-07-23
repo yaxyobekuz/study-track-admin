@@ -1,14 +1,14 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { messagesAPI } from "@/features/messages/api/messages.api";
+// Queries
+import { useMessage } from "@/features/messages/queries/messages.queries";
 
 // Components
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // React
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 // Icons
 import { CheckCircle, XCircle, Clock, Ban } from "lucide-react";
@@ -21,24 +21,19 @@ const MessageDetailsModal = () => (
 );
 
 const Content = ({ close, ...data }) => {
-  const [messageDetails, setMessageDetails] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    data: messageDetails,
+    isLoading,
+    isError,
+  } = useMessage(data?.id);
 
+  // Surface fetch failures the same way the old direct call did.
   useEffect(() => {
-    if (data?.id) {
-      setIsLoading(true);
-      messagesAPI
-        .getOne(data.id)
-        .then((res) => {
-          setMessageDetails(res.data.data);
-        })
-        .catch(() => {
-          toast.error("Xabar tafsilotlarini yuklashda xato");
-          close();
-        })
-        .finally(() => setIsLoading(false));
+    if (isError) {
+      toast.error("Xabar tafsilotlarini yuklashda xato");
+      close();
     }
-  }, [data?.id]);
+  }, [isError, close]);
 
   if (isLoading || !messageDetails) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;

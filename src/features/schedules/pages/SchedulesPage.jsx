@@ -7,9 +7,6 @@ import { useEffect } from "react";
 // Router
 import { useNavigate, useParams } from "react-router-dom";
 
-// Tanstack Query
-import { useQuery } from "@tanstack/react-query";
-
 // Store
 import useAuth from "@/shared/hooks/useAuth";
 
@@ -21,8 +18,9 @@ import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
 import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 
-// Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+// Queries
+import { useClassSchedule } from "@/features/schedules/queries/schedules.queries";
+import { useClasses } from "@/features/classes/queries/classes.queries";
 
 // Icons
 import { Edit, Calendar, Download } from "lucide-react";
@@ -33,15 +31,9 @@ const Schedules = () => {
   const { classId } = useParams();
   const isOwner = user?.role === "owner";
 
-  const { getCollectionData } = useArrayStore();
-  const classes = getCollectionData("classes");
+  const { data: classes = [] } = useClasses();
 
-  const { data: schedules = [], isLoading } = useQuery({
-    queryKey: ["schedules", "class", classId],
-    queryFn: () =>
-      schedulesAPI.getByClass(classId).then((res) => res.data.data),
-    enabled: !!classId,
-  });
+  const { data: schedules = [], isLoading } = useClassSchedule(classId);
 
   // Redirect to the first class when no class is selected in the URL
   useEffect(() => {

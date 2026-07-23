@@ -11,16 +11,17 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 // Icons
 import { Trash2, Plus } from "lucide-react";
 
-// Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+// Queries
+import { useSaveClassSchedule } from "@/features/schedules/queries/schedules.mutations";
+import { useSubjects } from "@/features/subjects/queries/subjects.queries";
+import { useTeachers } from "@/features/users/queries/users.queries";
 
 // API
-import { schedulesAPI } from "@/features/schedules/api/schedules.api";
 import { scheduleSettingsAPI } from "@/features/schedule-settings/api/scheduleSettings.api";
 
 // Components
@@ -54,10 +55,8 @@ const toLessonShape = (subj, index) => ({
  */
 const ScheduleForm = ({ classId, initialSchedules = [] }) => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { getCollectionData } = useArrayStore();
-  const subjects = getCollectionData("subjects");
-  const teachers = getCollectionData("teachers");
+  const { data: subjects = [] } = useSubjects();
+  const { data: teachers = [] } = useTeachers();
 
   // Dars tartibi -> standart { startTime, endTime } sozlamalari
   const { data: settingsData } = useQuery({
@@ -83,19 +82,7 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
     return initial;
   });
 
-  const saveMutation = useMutation({
-    mutationFn: (payload) => schedulesAPI.saveClassSchedule(classId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["schedules", "class", classId],
-      });
-      toast.success("Dars jadvali saqlandi");
-      navigate(`/schedules/${classId}`);
-    },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-    },
-  });
+  const saveMutation = useSaveClassSchedule();
 
   const addLesson = (day) => {
     setWeek((prev) => {
@@ -170,7 +157,18 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
       return toast.error("Kamida bitta kun uchun dars jadvali kiriting");
     }
 
-    saveMutation.mutate(payload);
+    saveMutation.mutate(
+      { classId, schedules: payload },
+      {
+        onSuccess: () => {
+          toast.success("Dars jadvali saqlandi");
+          navigate(`/schedules/${classId}`);
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+        },
+      },
+    );
   };
 
   return (

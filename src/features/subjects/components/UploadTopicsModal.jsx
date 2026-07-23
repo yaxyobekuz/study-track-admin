@@ -1,9 +1,6 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { topicsAPI } from "@/features/subjects/api/topics.api";
-
 // React
 import { useState, useRef } from "react";
 
@@ -16,8 +13,9 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import { X, FileSpreadsheet } from "lucide-react";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useSubjects } from "@/features/subjects/queries/subjects.queries";
+import { useUploadTopics } from "@/features/subjects/queries/topics.mutations";
 
 const UploadTopicsModal = () => (
   <ResponsiveModal name="uploadTopics" title="Mavzular yuklash">
@@ -26,8 +24,8 @@ const UploadTopicsModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading }) => {
-  const { data: subjects } = useArrayStore("subjects");
-  const { invalidateCache } = useArrayStore("topics");
+  const { data: subjects = [] } = useSubjects();
+  const { mutate: uploadTopics } = useUploadTopics();
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -108,7 +106,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
   };
 
   // Submit handler
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!selectedFile) {
@@ -123,49 +121,38 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
     setIsLoading(true);
 
-    try {
-      const subjectIdParam =
-        state.uploadMode === "single" ? state.subjectId : null;
-      const response = await topicsAPI.upload(selectedFile, subjectIdParam);
+    const subjectId = state.uploadMode === "single" ? state.subjectId : null;
 
-      toast.success(response.data.message);
+    uploadTopics(
+      { file: selectedFile, subjectId },
+      {
+        onSuccess: (data) => {
+          toast.success(data.message);
 
-      // Show warnings if any
-      if (response.data.data?.errors && response.data.data.errors.length > 0) {
-        response.data.data.errors.forEach((error, index) => {
-          if (index < 3) {
-            // Show only first 3 errors
-            toast.warning(error);
+          // Show warnings if any (only first 3)
+          if (data.data?.errors?.length > 0) {
+            data.data.errors.slice(0, 3).forEach((error) => {
+              toast.warning(error);
+            });
           }
-        });
-      }
 
-      // Invalidate cache
-      invalidateCache();
+          close();
+        },
+        onError: (error) => {
+          toast.error(
+            error.response?.data?.message || "Mavzularni yuklashda xatolik",
+          );
 
-      // Close modal and notify listeners
-      close({
-        uploadedAt: Date.now(),
-        uploadMode: state.uploadMode,
-        subjectId: subjectIdParam,
-      });
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Mavzularni yuklashda xatolik";
-      toast.error(errorMessage);
-
-      // Show detailed errors if available
-      if (error.response?.data?.errors) {
-        error.response.data.errors.forEach((err, index) => {
-          if (index < 3) {
-            // Show only first 3 errors
-            toast.error(err);
+          // Show detailed errors if available (only first 3)
+          if (error.response?.data?.errors) {
+            error.response.data.errors.slice(0, 3).forEach((err) => {
+              toast.error(err);
+            });
           }
-        });
-      }
-    } finally {
-      setIsLoading(false);
-    }
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

@@ -4,12 +4,14 @@ import { toast } from "sonner";
 // Router
 import { useNavigate } from "react-router-dom";
 
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+import { useClasses } from "@/features/classes/queries/classes.queries";
+import {
+  useCreateUser,
+  useUpdateUser,
+} from "@/features/users/queries/users.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -29,11 +31,12 @@ import { WORK_DAYS_OPTIONS } from "@/features/attendance/data/attendance.data";
  */
 const UserForm = ({ mode = "create", initialData = null }) => {
   const navigate = useNavigate();
-  const { getCollectionData, invalidateCache } = useArrayStore("classes");
-  const classes = getCollectionData();
+  const { data: classes = [] } = useClasses();
+  const { data: rolesData = [] } = useRoles();
+  const roles = rolesData.filter((r) => r.value !== "owner");
 
-  const { getCollectionData: getRolesData } = useArrayStore("roles");
-  const roles = getRolesData().filter((r) => r.value !== "owner");
+  const { mutateAsync: createUser } = useCreateUser();
+  const { mutateAsync: updateUser } = useUpdateUser();
 
   const isEdit = mode === "edit";
 
@@ -113,13 +116,12 @@ const UserForm = ({ mode = "create", initialData = null }) => {
 
     try {
       if (isEdit) {
-        await usersAPI.update(initialData.id, payload);
+        await updateUser({ id: initialData.id, data: payload });
         toast.success("Foydalanuvchi yangilandi");
       } else {
-        await usersAPI.create(payload);
+        await createUser(payload);
         toast.success("Foydalanuvchi yaratildi");
       }
-      invalidateCache("users");
       navigate("/users");
     } catch (err) {
       toast.error(err.response?.data?.message || "Xatolik yuz berdi");

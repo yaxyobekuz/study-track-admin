@@ -15,35 +15,34 @@ import Field, { FieldLabel } from "@/shared/components/ui/field/Field";
 import ExemptTeachersModal from "@/features/penalties/components/ExemptTeachersModal";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useModal from "@/shared/hooks/useModal";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import InputField from "@/shared/components/ui/input/InputField";
 
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
+// Queries
+import { penaltiesQueries } from "@/features/penalties/queries/penalties.queries";
+import {
+  useUpdatePenaltySettings,
+  useUpdateGradePenaltySettings,
+} from "@/features/penalties/queries/penalties.mutations";
 
 // Static data
 import { GRADE_PENALTY_DEFAULTS } from "./PenaltySettingsPage.data";
 
 // Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 const PenaltySettingsPage = () => {
-  const queryClient = useQueryClient();
   const { openModal } = useModal("exemptTeachersModal");
-  const { getCollectionData } = useArrayStore();
-  const roles = getCollectionData("roles") || [];
+  const { data: roles = [] } = useRoles();
 
   // Owner va developer'dan tashqari rollar
   const fineRoles = roles.filter(
     (r) => r.value !== "owner" && r.value !== "developer",
   );
 
-  const { data: settings, isLoading } = useQuery({
-    queryKey: ["penalties", "settings"],
-    queryFn: () => penaltiesAPI.getSettings().then((res) => res.data.data),
-  });
+  const { data: settings, isLoading } = useQuery(penaltiesQueries.settings());
 
   // fineAmounts: { student: N, teacher: N, ... }
   const [fineAmounts, setFineAmounts] = useState({});
@@ -61,26 +60,25 @@ const PenaltySettingsPage = () => {
     }
   }, [settings, roles.length]);
 
-  const saveMutation = useMutation({
-    mutationFn: () =>
-      penaltiesAPI.updateSettings({
+  const { mutate: saveSettings, isPending: isSaving } =
+    useUpdatePenaltySettings();
+
+  const handleSaveSettings = () => {
+    saveSettings(
+      {
         fineAmounts,
         premiumReductionDiscountPercent: Number(premiumDiscountPercent),
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["penalties", "settings"] });
-      toast.success("Sozlamalar saqlandi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Saqlashda xatolik"),
-  });
+      },
+      {
+        onSuccess: () => toast.success("Sozlamalar saqlandi"),
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Saqlashda xatolik"),
+      },
+    );
+  };
 
   // ─── Baho qo'ymaslik jarima sozlamalari ───────────────────────────
-  const { data: gradeSettings } = useQuery({
-    queryKey: ["penalties", "grade-settings"],
-    queryFn: () =>
-      penaltiesAPI.getGradePenaltySettings().then((res) => res.data.data),
-  });
+  const { data: gradeSettings } = useQuery(penaltiesQueries.gradeSettings());
 
   const [gradeForm, setGradeForm] = useState({
     isEnabled: GRADE_PENALTY_DEFAULTS.isEnabled,
@@ -99,15 +97,16 @@ const PenaltySettingsPage = () => {
     });
   }, [gradeSettings]);
 
-  const gradeSettingsMutation = useMutation({
-    mutationFn: () => penaltiesAPI.updateGradePenaltySettings(gradeForm),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["penalties", "grade-settings"] });
-      toast.success("Baho jarima sozlamalari saqlandi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Saqlashda xatolik"),
-  });
+  const { mutate: saveGradeSettings, isPending: isSavingGrade } =
+    useUpdateGradePenaltySettings();
+
+  const handleSaveGradeSettings = () => {
+    saveGradeSettings(gradeForm, {
+      onSuccess: () => toast.success("Baho jarima sozlamalari saqlandi"),
+      onError: (err) =>
+        toast.error(err.response?.data?.message || "Saqlashda xatolik"),
+    });
+  };
 
   const formatAmount = (amount) => {
     return new Intl.NumberFormat("uz-UZ").format(amount);
@@ -175,10 +174,10 @@ const PenaltySettingsPage = () => {
 
       {/* Submit button */}
       <Button
-        onClick={() => saveMutation.mutate()}
-        disabled={saveMutation.isPending || fineRoles.length === 0}
+        onClick={handleSaveSettings}
+        disabled={isSaving || fineRoles.length === 0}
       >
-        Saqlash{saveMutation.isPending && "..."}
+        Saqlash{isSaving && "..."}
       </Button>
 
       {/* Info Alert */}
@@ -247,10 +246,10 @@ const PenaltySettingsPage = () => {
 
       <div className="flex gap-3 flex-wrap">
         <Button
-          onClick={() => gradeSettingsMutation.mutate()}
-          disabled={gradeSettingsMutation.isPending}
+          onClick={handleSaveGradeSettings}
+          disabled={isSavingGrade}
         >
-          Saqlash{gradeSettingsMutation.isPending && "..."}
+          Saqlash{isSavingGrade && "..."}
         </Button>
 
         <Button

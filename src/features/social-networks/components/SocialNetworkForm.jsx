@@ -6,6 +6,10 @@ import { useEffect } from "react";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import {
+  useCreateSocialNetwork,
+  useUpdateSocialNetwork,
+} from "../queries/social-networks.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -16,17 +20,16 @@ import SelectField from "@/shared/components/ui/select/SelectField";
 // Data
 import { platformOptions } from "@/features/social-networks/data/social-networks.data";
 
-// API
-import { socialNetworksAPI } from "@/features/social-networks/api/social-networks.api";
-
 const SocialNetworkForm = ({
   close,
   isLoading,
-  onSuccess,
   setIsLoading,
   isEdit = false,
   ...socialNetwork
 }) => {
+  const { mutate: createSocialNetwork } = useCreateSocialNetwork();
+  const { mutate: updateSocialNetwork } = useUpdateSocialNetwork();
+
   const { name, chatId, username, platform, isActive, setField, setFields } =
     useObjectState({
       name: "",
@@ -48,27 +51,28 @@ const SocialNetworkForm = ({
     }
   }, [isEdit, socialNetwork?.id]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      const payload = { name, chatId, username, platform, isActive };
+    const payload = { name, chatId, username, platform, isActive };
 
-      if (isEdit) {
-        await socialNetworksAPI.update(socialNetwork.id, payload);
-        toast.success("Ijtimoiy tarmoq yangilandi");
-      } else {
-        await socialNetworksAPI.create(payload);
-        toast.success("Ijtimoiy tarmoq yaratildi");
-      }
+    const handlers = {
+      onSuccess: () => {
+        close();
+        toast.success(
+          isEdit ? "Ijtimoiy tarmoq yangilandi" : "Ijtimoiy tarmoq yaratildi"
+        );
+      },
+      onError: (error) =>
+        toast.error(error.response?.data?.message || "Xatolik yuz berdi"),
+      onSettled: () => setIsLoading(false),
+    };
 
-      onSuccess();
-      close();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
-    } finally {
-      setIsLoading(false);
+    if (isEdit) {
+      updateSocialNetwork({ id: socialNetwork.id, data: payload }, handlers);
+    } else {
+      createSocialNetwork(payload, handlers);
     }
   };
 

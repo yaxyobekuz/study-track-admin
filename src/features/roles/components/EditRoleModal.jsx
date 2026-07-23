@@ -1,12 +1,9 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { rolesAPI } from "@/features/roles/api/roles.api";
-
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useUpdateRole } from "@/features/roles/queries/roles.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -25,7 +22,7 @@ const EditRoleModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...role }) => {
-  const { invalidateCache } = useArrayStore("roles");
+  const { mutate: updateRole } = useUpdateRole();
 
   const hasUsers = role.usersCount > 0;
   const isSystem = !!role.isSystem;
@@ -55,17 +52,19 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
     e.preventDefault();
     setIsLoading(true);
 
-    rolesAPI
-      .update(role.id, state)
-      .then(() => {
-        close();
-        invalidateCache();
-        toast.success("Rol yangilandi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    updateRole(
+      { id: role.id, data: state },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Rol yangilandi");
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

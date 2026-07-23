@@ -7,8 +7,8 @@ import { ChevronLeft } from "lucide-react";
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
-// API
-import { usersAPI } from "../api/users.api";
+// Queries
+import { usersQueries } from "../queries/users.queries";
 
 // Components
 import UserForm from "../components/UserForm";
@@ -17,10 +17,7 @@ import StudentAttendanceSummary from "@/features/attendance/components/StudentAt
 const EditUserPage = () => {
   const { userId } = useParams();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["users", userId],
-    queryFn: () => usersAPI.getById(userId).then((r) => r.data.data),
-  });
+  const { data, isLoading } = useQuery(usersQueries.detail(userId));
 
   return (
     <div className="space-y-4">

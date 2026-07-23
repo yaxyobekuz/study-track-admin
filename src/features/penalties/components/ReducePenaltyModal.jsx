@@ -3,10 +3,10 @@ import { toast } from "sonner";
 
 // API
 import { usersAPI } from "@/features/users/api/users.api";
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useReducePenalty } from "../queries/penalties.mutations";
 
 // Components
 import Combobox from "@/shared/components/form/combobox";
@@ -15,7 +15,7 @@ import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 const ReducePenaltyModal = () => (
   <ResponsiveModal
@@ -27,8 +27,8 @@ const ReducePenaltyModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close }) => {
-  const queryClient = useQueryClient();
+const Content = ({ close, isLoading, setIsLoading }) => {
+  const { mutate: reducePenalty } = useReducePenalty();
 
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["users", "all"],
@@ -52,20 +52,21 @@ const Content = ({ close }) => {
 
   const selectedUser = users.find((u) => u.value === userId) || null;
 
-  const reduceMutation = useMutation({
-    mutationFn: (data) => penaltiesAPI.reduce(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["penalties", "list"] });
-      close();
-      toast.success("Kamaytirish so'rovi yuborildi.");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    reduceMutation.mutate({ userId, points: Number(points), reason });
+    setIsLoading(true);
+    reducePenalty(
+      { userId, points: Number(points), reason },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Kamaytirish so'rovi yuborildi.");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (
@@ -108,10 +109,8 @@ const Content = ({ close }) => {
         onChange={(e) => setField("reason", e.target.value)}
       />
 
-      <Button
-        disabled={reduceMutation.isPending || !userId || !points || !reason}
-      >
-        Kamaytirish{reduceMutation.isPending && "..."}
+      <Button disabled={isLoading || !userId || !points || !reason}>
+        Kamaytirish{isLoading && "..."}
       </Button>
     </form>
   );

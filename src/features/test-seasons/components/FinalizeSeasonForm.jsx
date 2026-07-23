@@ -1,8 +1,8 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { testSeasonsAPI } from "../api/testSeasons.api";
+// Hooks
+import { useFinalizeSeason } from "../queries/test-seasons.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -12,19 +12,21 @@ import Button from "@/shared/components/ui/button/Button";
  * Yakunlashda mukofot tangalari tarqatiladi va o'quvchilarga bot orqali
  * batafsil natija yuboriladi. Bu amalni orqaga qaytarib bo'lmaydi.
  */
-const FinalizeSeasonForm = ({ onSuccess, close, isLoading, setIsLoading, ...season }) => {
-  const handleFinalize = async () => {
+const FinalizeSeasonForm = ({ close, isLoading, setIsLoading, ...season }) => {
+  const { mutate: finalizeSeason } = useFinalizeSeason();
+
+  const handleFinalize = () => {
     setIsLoading(true);
-    try {
-      const res = await testSeasonsAPI.finalize(season.id);
-      onSuccess?.(res.data.data);
-      toast.success(res.data.message || "Mavsum yakunlandi");
-      close();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Yakunlashda xatolik");
-    } finally {
-      setIsLoading(false);
-    }
+
+    finalizeSeason(season.id, {
+      onSuccess: (res) => {
+        toast.success(res.message || "Mavsum yakunlandi");
+        close();
+      },
+      onError: (error) =>
+        toast.error(error.response?.data?.message || "Yakunlashda xatolik"),
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

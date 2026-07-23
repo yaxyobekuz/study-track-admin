@@ -10,7 +10,7 @@ import {
 } from "../data/attendance.data";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 
 const formatTime = (iso) => {
   if (!iso) return "-";
@@ -21,8 +21,8 @@ const formatTime = (iso) => {
 };
 
 const AttendanceTodayTable = ({ rows }) => {
-  const { getCollectionData } = useArrayStore("roles");
-  const roleLabelMap = buildRoleLabelMap(getCollectionData());
+  const { data: roles = [] } = useRoles();
+  const roleLabelMap = buildRoleLabelMap(roles);
 
   if (!rows || rows.length === 0) {
     return (

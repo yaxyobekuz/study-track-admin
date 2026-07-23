@@ -10,8 +10,8 @@ import { useSearchParams, Link } from "react-router-dom";
 // Icons
 import { Plus, Minus, Trash2 } from "lucide-react";
 
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
+// Queries
+import { penaltiesQueries } from "../queries/penalties.queries";
 
 // Data
 import {
@@ -33,7 +33,7 @@ import SelectField from "@/shared/components/ui/select/SelectField";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Modals
 import CreatePenaltyModal from "../components/CreatePenaltyModal";
@@ -42,8 +42,7 @@ import DeletePenaltyModal from "../components/DeletePenaltyModal";
 
 const PenaltiesPage = () => {
   const { openModal } = useModal();
-  const { getCollectionData: getRolesData } = useArrayStore("roles");
-  const roles = getRolesData();
+  const { data: roles = [] } = useRoles();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
@@ -53,27 +52,18 @@ const PenaltiesPage = () => {
   const searchQuery = searchParams.get("search") || "";
   const [searchInput, setSearchInput] = useState(searchQuery);
 
-  const { data, isLoading } = useQuery({
-    queryKey: [
-      "penalties",
-      "list",
-      currentPage,
-      statusFilter,
-      startDate,
-      endDate,
-      searchQuery,
-    ],
-    queryFn: () => {
-      const params = { page: currentPage, limit: 20 };
-      if (statusFilter && statusFilter !== "all") params.status = statusFilter;
-      if (startDate) params.startDate = startDate;
-      if (endDate) params.endDate = endDate;
-      if (searchQuery) params.search = searchQuery;
-      return penaltiesAPI.getAll(params).then((res) => res.data);
-    },
-  });
+  const { data, isLoading } = useQuery(
+    penaltiesQueries.list({
+      page: currentPage,
+      limit: 20,
+      ...(statusFilter && statusFilter !== "all" && { status: statusFilter }),
+      ...(startDate && { startDate }),
+      ...(endDate && { endDate }),
+      ...(searchQuery && { search: searchQuery }),
+    }),
+  );
 
-  const penalties = data?.data || [];
+  const penalties = data?.data ?? [];
   const pagination = data?.pagination;
 
   const handleStatusChange = (value) => {

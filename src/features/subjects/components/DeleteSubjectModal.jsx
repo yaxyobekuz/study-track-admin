@@ -1,15 +1,12 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { subjectsAPI } from "@/features/subjects/api/subjects.api";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useDeleteSubject } from "@/features/subjects/queries/subjects.mutations";
 
 const DeleteSubjectModal = () => (
   <ResponsiveModal
@@ -22,23 +19,22 @@ const DeleteSubjectModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...subject }) => {
-  const { invalidateCache } = useArrayStore("subjects");
+  const { mutate: deleteSubject } = useDeleteSubject();
 
   const handleDeleteSubject = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    subjectsAPI
-      .delete(subject.id)
-      .then(() => {
+    deleteSubject(subject.id, {
+      onSuccess: () => {
         close();
-        invalidateCache();
         toast.success("Fan o'chirildi");
-      })
-      .catch((err) => {
+      },
+      onError: (err) => {
         toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+      },
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

@@ -13,11 +13,11 @@ import {
 } from "../data/attendance.data";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 
 const AttendanceTable = ({ records, month, year }) => {
-  const { getCollectionData } = useArrayStore("roles");
-  const roleLabelMap = buildRoleLabelMap(getCollectionData());
+  const { data: roles = [] } = useRoles();
+  const roleLabelMap = buildRoleLabelMap(roles);
 
   const daysInMonth = new Date(year, month, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);

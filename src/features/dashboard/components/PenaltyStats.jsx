@@ -28,20 +28,20 @@ import Card from "@/shared/components/ui/Card";
 import Counter from "@/shared/components/ui/Counter";
 import Button from "@/shared/components/ui/button/Button";
 
-// Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+// Queries
+import { penaltiesKeys } from "@/features/penalties/queries/penalties.queries";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Helpers
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
 
 const PenaltyStats = () => {
   const { data: stats } = useQuery({
-    queryKey: ["penalties", "stats"],
+    queryKey: [...penaltiesKeys.all, "stats"],
     queryFn: () => penaltiesAPI.getStats().then((res) => res.data.data),
   });
 
-  const { getCollectionData } = useArrayStore();
-  const roles = getCollectionData("roles") || [];
+  const { data: roles = [] } = useRoles();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">

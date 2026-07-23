@@ -1,32 +1,31 @@
 // Toast
 import { toast } from "sonner";
 
+// Hooks
+import { useDeleteSocialNetwork } from "../queries/social-networks.mutations";
+
 // Components
 import Button from "@/shared/components/ui/button/Button";
 
-// API
-import { socialNetworksAPI } from "@/features/social-networks/api/social-networks.api";
-
 const DeleteSocialNetworkForm = ({
-  onSuccess,
   close,
   isLoading,
   setIsLoading,
   ...socialNetwork
 }) => {
-  const handleDelete = async () => {
+  const { mutate: deleteSocialNetwork } = useDeleteSocialNetwork();
+
+  const handleDelete = () => {
     setIsLoading(true);
 
-    try {
-      onSuccess();
-      await socialNetworksAPI.delete(socialNetwork.id);
-      toast.success("Ijtimoiy tarmoq o'chirildi");
-      close();
-    } catch (error) {
-      toast.error("O'chirishda xatolik");
-    } finally {
-      setIsLoading(false);
-    }
+    deleteSocialNetwork(socialNetwork.id, {
+      onSuccess: () => {
+        close();
+        toast.success("Ijtimoiy tarmoq o'chirildi");
+      },
+      onError: () => toast.error("O'chirishda xatolik"),
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

@@ -10,12 +10,12 @@ import { Plus, Edit, Trash2, Download, ChevronRight } from "lucide-react";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 import { Link } from "react-router-dom";
 
 const Subjects = () => {
   const { openModal } = useModal();
-  const { data: subjects, isLoading } = useArrayStore("subjects");
+  const { data: subjects = [], isLoading } = useSubjects();
 
   // Excel yuklab olish
   const handleExport = async () => {

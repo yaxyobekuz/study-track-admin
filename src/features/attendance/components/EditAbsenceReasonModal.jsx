@@ -4,12 +4,6 @@ import { toast } from "sonner";
 // React
 import { useEffect } from "react";
 
-// Tanstack Query
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { absenceReasonAPI } from "../api/absenceReason.api";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
@@ -18,7 +12,8 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+import { useUpdateAbsenceReason } from "../queries/attendance.mutations";
 
 // Helpers
 import { getAllRoles } from "@/shared/helpers/role.helpers";
@@ -29,10 +24,8 @@ const EditAbsenceReasonModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, id, ...data }) => {
-  const queryClient = useQueryClient();
-  const { getCollectionData } = useArrayStore();
-  const roles = getCollectionData("roles") || [];
+const Content = ({ close, isLoading, setIsLoading, id, ...data }) => {
+  const { data: roles = [] } = useRoles();
   const roleOptions = getAllRoles(roles).filter((r) => r.value !== "developer");
 
   const {
@@ -61,26 +54,32 @@ const Content = ({ close, id, ...data }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const updateMutation = useMutation({
-    mutationFn: (payload) => absenceReasonAPI.update(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["absenceReasons"] });
-      close();
-      toast.success("Sabab yangilandi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
+  const { mutate: updateReason } = useUpdateAbsenceReason();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) return toast.error("Sarlavha majburiy");
-    updateMutation.mutate({
-      title,
-      description,
-      appliesToAll,
-      roles: appliesToAll ? [] : selectedRoles,
-    });
+    setIsLoading(true);
+    updateReason(
+      {
+        id,
+        data: {
+          title,
+          description,
+          appliesToAll,
+          roles: appliesToAll ? [] : selectedRoles,
+        },
+      },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Sabab yangilandi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (
@@ -119,9 +118,7 @@ const Content = ({ close, id, ...data }) => {
         />
       )}
 
-      <Button disabled={updateMutation.isPending}>
-        Saqlash{updateMutation.isPending && "..."}
-      </Button>
+      <Button disabled={isLoading}>Saqlash{isLoading && "..."}</Button>
     </form>
   );
 };

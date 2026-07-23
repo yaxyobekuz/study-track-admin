@@ -1,11 +1,8 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { topicsAPI } from "@/features/subjects/api/topics.api";
-
 // React
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Components
@@ -15,7 +12,9 @@ import Button from "@/shared/components/ui/button/Button";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useSubjects } from "@/features/subjects/queries/subjects.queries";
+import { useSubjectTopics } from "@/features/subjects/queries/topics.queries";
+import { useDeleteSubjectTopics } from "@/features/subjects/queries/topics.mutations";
 
 // Icons
 import { Upload, Trash2, BookOpen, Users } from "lucide-react";
@@ -23,20 +22,18 @@ import { Upload, Trash2, BookOpen, Users } from "lucide-react";
 const Topics = () => {
   const navigate = useNavigate();
   const { openModal } = useModal();
-  const { data: uploadTopicsData } = useModal("uploadTopics");
-  const { data: subjects } = useArrayStore("subjects");
+  const { data: subjects = [] } = useSubjects();
 
-  const [selectedSubject, setSelectedSubject] = useState("");
-  const [topics, setTopics] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const lastUploadHandledAt = useRef(null);
+  const [selectedSubject, setSelectedSubject] = useState(
+    () => localStorage.getItem("topics_selectedSubject") || "",
+  );
 
-  useEffect(() => {
-    const savedSubjectId = localStorage.getItem("topics_selectedSubject");
-    if (savedSubjectId) {
-      setSelectedSubject(savedSubjectId);
-    }
-  }, []);
+  // Topics for the selected subject. The upload mutation invalidates the topics
+  // cache, so newly uploaded topics show up here without any manual listener.
+  const { data: topics = [], isLoading: loading } =
+    useSubjectTopics(selectedSubject);
+
+  const { mutate: deleteSubjectTopics } = useDeleteSubjectTopics();
 
   useEffect(() => {
     if (selectedSubject) {
@@ -46,44 +43,7 @@ const Topics = () => {
     }
   }, [selectedSubject]);
 
-  // Load topics when subject changes
-  useEffect(() => {
-    if (selectedSubject) {
-      fetchTopics();
-    } else {
-      setTopics([]);
-    }
-  }, [selectedSubject]);
-
-  useEffect(() => {
-    const uploadedAt = uploadTopicsData?.uploadedAt;
-    if (!uploadedAt || uploadedAt === lastUploadHandledAt.current) return;
-    lastUploadHandledAt.current = uploadedAt;
-
-    if (!selectedSubject) return;
-
-    const uploadMode = uploadTopicsData?.uploadMode;
-    const uploadSubjectId = uploadTopicsData?.subjectId;
-
-    if (uploadMode === "all" || uploadSubjectId === selectedSubject) {
-      fetchTopics();
-    }
-  }, [uploadTopicsData, selectedSubject]);
-
-  const fetchTopics = async () => {
-    setLoading(true);
-    try {
-      const response = await topicsAPI.getBySubject(selectedSubject);
-      setTopics(response.data.data || []);
-    } catch (error) {
-      toast.error("Mavzularni yuklashda xatolik");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteAllTopics = async () => {
+  const handleDeleteAllTopics = () => {
     if (!selectedSubject) return;
 
     const selectedSubjectName =
@@ -95,15 +55,13 @@ const Topics = () => {
 
     if (!confirmed) return;
 
-    try {
-      const response = await topicsAPI.deleteBySubject(selectedSubject);
-      toast.success(response.data.message);
-      setTopics([]);
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Mavzularni o'chirishda xatolik",
-      );
-    }
+    deleteSubjectTopics(selectedSubject, {
+      onSuccess: (res) => toast.success(res.message),
+      onError: (error) =>
+        toast.error(
+          error.response?.data?.message || "Mavzularni o'chirishda xatolik",
+        ),
+    });
   };
 
   return (

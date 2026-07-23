@@ -7,8 +7,8 @@ import { useSearchParams, Link } from "react-router-dom";
 // Icons
 import { Plus } from "lucide-react";
 
-// API
-import { tasksAPI } from "@/features/tasks/api/tasks.api";
+// Queries
+import { tasksQueries } from "../queries/tasks.queries";
 
 // Data
 import {
@@ -29,7 +29,7 @@ import Pagination from "@/shared/components/ui/Pagination";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Modals
 import CreateTaskModal from "../components/CreateTaskModal";
@@ -37,23 +37,21 @@ import SelectAllUsers from "@/shared/components/ui/select/SelectAllUsers";
 
 const TasksPage = () => {
   const { openModal } = useModal();
-  const { getCollectionData: getRolesData } = useArrayStore("roles");
-  const roles = getRolesData();
+  const { data: roles = [] } = useRoles();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const statusFilter = searchParams.get("status") || "all";
   const assigneeId = searchParams.get("assigneeId") || "all";
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["tasks", "list", currentPage, statusFilter, assigneeId],
-    queryFn: () => {
-      const params = { page: currentPage, limit: 20 };
-      if (statusFilter && statusFilter !== "all") params.status = statusFilter;
-      if (assigneeId && assigneeId !== "all") params.assigneeId = assigneeId;
-      return tasksAPI.getAll(params).then((res) => res.data);
-    },
-  });
+  const { data, isLoading } = useQuery(
+    tasksQueries.list({
+      page: currentPage,
+      limit: 20,
+      ...(statusFilter !== "all" && { status: statusFilter }),
+      ...(assigneeId !== "all" && { assigneeId }),
+    }),
+  );
 
   const tasks = data?.data || [];
   const pagination = data?.pagination;

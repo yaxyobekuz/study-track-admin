@@ -4,17 +4,18 @@ import { toast } from "sonner";
 // React
 import { useEffect, useMemo } from "react";
 
-// Tanstack Query
+// TanStack Query
 import { useQuery } from "@tanstack/react-query";
-
-// API
-import { teacherAssignmentsAPI } from "../api/teacherAssignments.api";
-import { classesAPI } from "@/features/classes/api/classes.api";
-import { subjectsAPI } from "@/features/subjects/api/subjects.api";
-import { usersAPI } from "@/features/users/api/users.api";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useClasses } from "@/features/classes/queries/classes.queries";
+import { useSubjects } from "@/features/subjects/queries/subjects.queries";
+import { usersQueries } from "@/features/users/queries/users.queries";
+import {
+  useCreateAssignment,
+  useEditAssignment,
+} from "../queries/test-seasons.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -28,12 +29,14 @@ import SelectField from "@/shared/components/ui/select/SelectField";
 const AssignmentForm = ({
   close,
   isLoading,
-  onSuccess,
   setIsLoading,
   isEdit = false,
   seasonId,
   ...assignment
 }) => {
+  const { mutate: createAssignment } = useCreateAssignment();
+  const { mutate: editAssignment } = useEditAssignment();
+
   const { class: classId, subject, teacher, setField, setFields } =
     useObjectState({
       class: "",
@@ -51,23 +54,11 @@ const AssignmentForm = ({
     }
   }, [isEdit, assignment?.id]);
 
-  // Sinflar
-  const { data: classes = [] } = useQuery({
-    queryKey: ["classes"],
-    queryFn: () => classesAPI.getAll().then((res) => res.data.data),
-  });
-
-  // Fanlar
-  const { data: subjects = [] } = useQuery({
-    queryKey: ["subjects"],
-    queryFn: () => subjectsAPI.getAll().then((res) => res.data.data),
-  });
-
-  // O'qituvchilar (qisqartirilgan ro'yxat - userlardan teacher roli)
-  const { data: usersShort = [] } = useQuery({
-    queryKey: ["users", "all-short"],
-    queryFn: () => usersAPI.getAllShort().then((res) => res.data.data),
-  });
+  // Reference ma'lumotlar (deduped, cached)
+  const { data: classes = [] } = useClasses();
+  const { data: subjects = [] } = useSubjects();
+  const { data: usersShort = [] } = useQuery(usersQueries.allShort());
+  const teachers = usersShort.filter((u) => u.role === "teacher");
 
   const classOptions = useMemo(
     () => classes.map((c) => ({ label: c.name, value: c.id })),
@@ -81,16 +72,17 @@ const AssignmentForm = ({
 
   const teacherOptions = useMemo(
     () =>
-      usersShort
-        .filter((u) => u.role === "teacher")
-        .map((u) => ({
-          label: `${u.firstName || ""} ${u.lastName || ""}`.trim() || u.username,
-          value: u.id,
-        })),
-    [usersShort],
+      teachers.map((t) => ({
+        label:
+          t.fullName ||
+          `${t.firstName || ""} ${t.lastName || ""}`.trim() ||
+          t.username,
+        value: t.id,
+      })),
+    [teachers],
   );
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!classId || !subject || !teacher) {
@@ -100,24 +92,22 @@ const AssignmentForm = ({
 
     setIsLoading(true);
 
-    try {
-      const payload = { season: seasonId, class: classId, subject, teacher };
+    const payload = { season: seasonId, class: classId, subject, teacher };
 
-      let response;
-      if (isEdit) {
-        response = await teacherAssignmentsAPI.update(assignment.id, payload);
-        toast.success("Biriktiruv yangilandi");
-      } else {
-        response = await teacherAssignmentsAPI.create(payload);
-        toast.success("Biriktiruv yaratildi");
-      }
+    const handlers = {
+      onSuccess: () => {
+        toast.success(isEdit ? "Biriktiruv yangilandi" : "Biriktiruv yaratildi");
+        close();
+      },
+      onError: (error) =>
+        toast.error(error.response?.data?.message || "Xatolik yuz berdi"),
+      onSettled: () => setIsLoading(false),
+    };
 
-      onSuccess(response.data.data);
-      close();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
-    } finally {
-      setIsLoading(false);
+    if (isEdit) {
+      editAssignment({ id: assignment.id, data: payload }, handlers);
+    } else {
+      createAssignment(payload, handlers);
     }
   };
 

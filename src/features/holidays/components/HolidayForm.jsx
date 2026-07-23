@@ -7,11 +7,12 @@ import { useEffect } from "react";
 // Utils
 import { months } from "@/shared/utils/date.utils";
 
-// API
-import { holidaysAPI } from "@/features/holidays/api/holidays.api";
-
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import {
+  useCreateHoliday,
+  useEditHoliday,
+} from "@/features/holidays/queries/holidays.mutations";
 
 // Data
 import { holidayTypes } from "@/shared/data/holidayTypes.data";
@@ -25,11 +26,13 @@ import SelectField from "@/shared/components/ui/select/SelectField";
 const HolidayForm = ({
   close,
   isLoading,
-  onSuccess,
   setIsLoading,
   isEdit = false,
   ...holiday
 }) => {
+  const { mutate: createHoliday } = useCreateHoliday();
+  const { mutate: editHoliday } = useEditHoliday();
+
   const {
     name,
     type,
@@ -89,51 +92,52 @@ const HolidayForm = ({
     }
   }, [isEdit, holiday?.id]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      const payload = { name, description, type, isActive };
+    const payload = { name, description, type, isActive };
 
-      if (type === "single") {
-        payload.date = date;
-      } else if (type === "range") {
-        payload.startDate = startDate;
-        payload.endDate = endDate;
-      } else if (type === "recurring") {
-        if (recurringType === "single") {
-          payload.recurringDate = {
-            month: parseInt(recurringMonth),
-            day: parseInt(recurringDay),
-          };
-        } else {
-          payload.recurringStartDate = {
-            month: parseInt(recurringStartMonth),
-            day: parseInt(recurringStartDay),
-          };
-          payload.recurringEndDate = {
-            month: parseInt(recurringEndMonth),
-            day: parseInt(recurringEndDay),
-          };
-        }
-      }
-
-      let response;
-      if (isEdit) {
-        response = await holidaysAPI.update(holiday.id, payload);
-        toast.success("Dam olish kuni yangilandi");
+    if (type === "single") {
+      payload.date = date;
+    } else if (type === "range") {
+      payload.startDate = startDate;
+      payload.endDate = endDate;
+    } else if (type === "recurring") {
+      if (recurringType === "single") {
+        payload.recurringDate = {
+          month: parseInt(recurringMonth),
+          day: parseInt(recurringDay),
+        };
       } else {
-        response = await holidaysAPI.create(payload);
-        toast.success("Dam olish kuni yaratildi");
+        payload.recurringStartDate = {
+          month: parseInt(recurringStartMonth),
+          day: parseInt(recurringStartDay),
+        };
+        payload.recurringEndDate = {
+          month: parseInt(recurringEndMonth),
+          day: parseInt(recurringEndDay),
+        };
       }
+    }
 
-      onSuccess(response.data.data);
-      close();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
-    } finally {
-      setIsLoading(false);
+    const options = {
+      onSuccess: () => {
+        toast.success(
+          isEdit ? "Dam olish kuni yangilandi" : "Dam olish kuni yaratildi"
+        );
+        close();
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || "Xatolik yuz berdi");
+      },
+      onSettled: () => setIsLoading(false),
+    };
+
+    if (isEdit) {
+      editHoliday({ id: holiday.id, data: payload }, options);
+    } else {
+      createHoliday(payload, options);
     }
   };
 

@@ -4,20 +4,15 @@ import { useEffect } from "react";
 // Router
 import { Link, useParams, useNavigate } from "react-router-dom";
 
-// Tanstack Query
-import { useQuery } from "@tanstack/react-query";
-
 // Toast
 import { toast } from "sonner";
 
 // Icons
 import { ChevronLeft } from "lucide-react";
 
-// Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
-
-// API
-import { schedulesAPI } from "@/features/schedules/api/schedules.api";
+// Queries
+import { useClassSchedule } from "@/features/schedules/queries/schedules.queries";
+import { useClasses } from "@/features/classes/queries/classes.queries";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -26,17 +21,11 @@ import ScheduleForm from "../components/ScheduleForm";
 const EditSchedulePage = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
-  const { getCollectionData } = useArrayStore();
-  const classes = getCollectionData("classes");
+  const { data: classes = [] } = useClasses();
 
   const className = classes.find((cls) => cls.id === classId)?.name || "Sinf";
 
-  const { data: schedules, isLoading, isError } = useQuery({
-    queryKey: ["schedules", "class", classId],
-    queryFn: () =>
-      schedulesAPI.getByClass(classId).then((res) => res.data.data),
-    enabled: !!classId,
-  });
+  const { data: schedules, isLoading, isError } = useClassSchedule(classId);
 
   useEffect(() => {
     if (isError) {

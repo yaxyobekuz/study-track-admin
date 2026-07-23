@@ -10,12 +10,12 @@ import { Plus, Edit, Trash2, ChevronRight, Download } from "lucide-react";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useClasses } from "@/features/classes/queries/classes.queries";
 import { Link } from "react-router-dom";
 
 const Classes = () => {
   const { openModal } = useModal();
-  const { data: classes, isLoading } = useArrayStore("classes");
+  const { data: classes = [], isLoading } = useClasses();
 
   // Excel yuklab olish
   const handleExport = async () => {

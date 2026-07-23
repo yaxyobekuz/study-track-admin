@@ -1,9 +1,6 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-
 // Components
 import Input from "@/shared/components/ui/input/Input";
 import Button from "@/shared/components/ui/button/Button";
@@ -12,6 +9,7 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 import InputField from "@/shared/components/ui/input/InputField";
+import { useResetUserPassword } from "@/features/users/queries/users.mutations";
 
 const ResetUserPasswordModal = () => (
   <ResponsiveModal
@@ -24,21 +22,25 @@ const ResetUserPasswordModal = () => (
 
 const Content = ({ close, isLoading, setIsLoading, ...user }) => {
   const { password, setField } = useObjectState({ password: "" });
+  const { mutate: resetPassword } = useResetUserPassword();
 
   const handleEditUser = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    usersAPI
-      .resetPassword(user.id, { newPassword: password?.trim() })
-      .then(() => {
-        close();
-        toast.success("Foydalanuvchining paroli yangilandi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    resetPassword(
+      { id: user.id, newPassword: password?.trim() },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Foydalanuvchining paroli yangilandi");
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

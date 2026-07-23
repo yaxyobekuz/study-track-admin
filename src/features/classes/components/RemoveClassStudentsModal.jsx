@@ -1,12 +1,8 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-import { classesAPI } from "@/features/classes/api/classes.api";
-
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRemoveClassStudents } from "@/features/classes/queries/classes.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -26,18 +22,7 @@ const Content = ({
   studentIds = [],
   all = false,
 }) => {
-  const { setCollection, setCollectionLoadingState, invalidateCache } =
-    useArrayStore();
-
-  const refetchClassStudents = () => {
-    const collectionName = `class-students-${classId}`;
-    setCollectionLoadingState(true, collectionName);
-
-    usersAPI
-      .getAll({ role: "student", class: classId, limit: 200 })
-      .then((res) => setCollection(res.data.data || [], null, collectionName))
-      .catch(() => setCollection([], true, collectionName));
-  };
+  const { mutate: removeStudents } = useRemoveClassStudents();
 
   const handleRemove = (e) => {
     e.preventDefault();
@@ -45,18 +30,19 @@ const Content = ({
 
     const payload = all ? { all: true } : { studentIds };
 
-    classesAPI
-      .removeStudents(classId, payload)
-      .then(() => {
-        close();
-        refetchClassStudents();
-        invalidateCache("users");
-        toast.success("O'quvchilar sinfdan chiqarildi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    removeStudents(
+      { classId, payload },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("O'quvchilar sinfdan chiqarildi");
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

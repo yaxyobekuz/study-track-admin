@@ -4,12 +4,6 @@ import { toast } from "sonner";
 // React
 import { useEffect } from "react";
 
-// Tanstack Query
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
@@ -17,6 +11,7 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useEditPenaltyCategory } from "../queries/penalties.mutations";
 
 const EditCategoryModal = () => (
   <ResponsiveModal name="editPenaltyCategory" title="Kategoriyani tahrirlash">
@@ -24,8 +19,8 @@ const EditCategoryModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, id, ...data }) => {
-  const queryClient = useQueryClient();
+const Content = ({ close, isLoading, setIsLoading, id, ...data }) => {
+  const { mutate: editCategory } = useEditPenaltyCategory();
   const { title, description, points, setField, setFields } = useObjectState({
     title: "",
     description: "",
@@ -42,20 +37,21 @@ const Content = ({ close, id, ...data }) => {
     }
   }, [id]);
 
-  const updateMutation = useMutation({
-    mutationFn: (payload) => penaltiesAPI.updateCategory(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["penalties", "categories"] });
-      close();
-      toast.success("Kategoriya yangilandi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    updateMutation.mutate({ title, description, points: Number(points) });
+    setIsLoading(true);
+    editCategory(
+      { id, data: { title, description, points: Number(points) } },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Kategoriya yangilandi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (
@@ -83,9 +79,7 @@ const Content = ({ close, id, ...data }) => {
         onChange={(e) => setField("points", e.target.value)}
       />
 
-      <Button disabled={updateMutation.isPending}>
-        Saqlash{updateMutation.isPending && "..."}
-      </Button>
+      <Button disabled={isLoading}>Saqlash{isLoading && "..."}</Button>
     </form>
   );
 };

@@ -6,14 +6,17 @@ import { useState, useEffect } from "react";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+import { useCreatePenalty } from "../queries/penalties.mutations";
 
 // Helpers
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
 
 // API
 import { usersAPI } from "@/features/users/api/users.api";
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
+
+// Queries
+import { penaltyCategoriesQueries } from "../queries/penalties.queries";
 
 // Components
 import Combobox from "@/shared/components/form/combobox";
@@ -23,7 +26,7 @@ import SelectField from "@/shared/components/ui/select/SelectField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 const CreatePenaltyModal = () => (
   <ResponsiveModal name="createPenalty" title="Jarima yozish">
@@ -31,10 +34,9 @@ const CreatePenaltyModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close }) => {
-  const queryClient = useQueryClient();
-  const { getCollectionData } = useArrayStore();
-  const roles = getCollectionData("roles") || [];
+const Content = ({ close, isLoading, setIsLoading }) => {
+  const { data: roles = [] } = useRoles();
+  const { mutate: createPenalty } = useCreatePenalty();
 
   const {
     userId,
@@ -73,11 +75,7 @@ const Content = ({ close }) => {
   const selectedUserRole = users.find((u) => u.value === userId)?.role;
 
   const { data: categoriesData } = useQuery({
-    queryKey: ["penalties", "categories", selectedUserRole],
-    queryFn: () =>
-      penaltiesAPI
-        .getCategories({ targetRole: selectedUserRole })
-        .then((res) => res.data.data || []),
+    ...penaltyCategoriesQueries.list({ targetRole: selectedUserRole }),
     enabled: !!selectedUserRole,
   });
 
@@ -100,17 +98,6 @@ const Content = ({ close }) => {
     }
   }, [categoryId]);
 
-  const createMutation = useMutation({
-    mutationFn: (formData) => penaltiesAPI.create(formData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["penalties", "list"] });
-      close();
-      toast.success("Jarima yozildi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -126,7 +113,17 @@ const Content = ({ close }) => {
     if (files) {
       for (const file of files) formData.append("files", file);
     }
-    createMutation.mutate(formData);
+
+    setIsLoading(true);
+    createPenalty(formData, {
+      onSuccess: () => {
+        close();
+        toast.success("Jarima yozildi");
+      },
+      onError: (err) =>
+        toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (
@@ -204,8 +201,8 @@ const Content = ({ close }) => {
         />
       )}
 
-      <Button variant="danger" disabled={createMutation.isPending || !userId}>
-        Yozish{createMutation.isPending && "..."}
+      <Button variant="danger" disabled={isLoading || !userId}>
+        Yozish{isLoading && "..."}
       </Button>
     </form>
   );

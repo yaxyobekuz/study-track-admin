@@ -6,23 +6,20 @@ import { useState } from "react";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+
+// Queries
+import { useTaskAssignees } from "../queries/tasks.queries";
+import { useCreateTask } from "../queries/tasks.mutations";
 
 // Helpers
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
-
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-import { tasksAPI } from "@/features/tasks/api/tasks.api";
 
 // Components
 import MultiSelect from "@/shared/components/form/multi-select";
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
-
-// Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const CreateTaskModal = () => (
   <ResponsiveModal
@@ -34,10 +31,9 @@ const CreateTaskModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close }) => {
-  const queryClient = useQueryClient();
-  const { getCollectionData } = useArrayStore();
-  const roles = getCollectionData("roles") || [];
+const Content = ({ close, isLoading, setIsLoading }) => {
+  const { data: roles = [] } = useRoles();
+  const { mutate: createTask } = useCreateTask();
 
   const { title, description, dueDate, penaltyPoints, setField } =
     useObjectState({
@@ -50,30 +46,14 @@ const Content = ({ close }) => {
   const [assigneeIds, setAssigneeIds] = useState([]);
   const [files, setFiles] = useState(null);
 
-  const { data: usersData, isLoading: usersLoading } = useQuery({
-    queryKey: ["users", "all"],
-    queryFn: () =>
-      usersAPI.getAll({ limit: 500 }).then((res) => res.data.data || []),
-  });
+  const { data: usersData = [], isLoading: usersLoading } = useTaskAssignees();
 
-  const userOptions = (usersData || [])
+  const userOptions = usersData
     .filter((u) => u.role !== "owner")
     .map((u) => ({
       label: `${u.firstName}${u.lastName ? ` ${u.lastName}` : ""} (${getRoleLabel(u.role, roles)})`,
       value: u.id,
     }));
-
-  const createMutation = useMutation({
-    mutationFn: (formData) => tasksAPI.create(formData),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ["tasks", "list"] });
-      close();
-      const count = res.data?.data?.length || 1;
-      toast.success(`${count} ta topshiriq yaratildi`);
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -94,7 +74,17 @@ const Content = ({ close }) => {
       for (const file of files) formData.append("files", file);
     }
 
-    createMutation.mutate(formData);
+    setIsLoading(true);
+    createTask(formData, {
+      onSuccess: (res) => {
+        close();
+        const count = res?.data?.length || 1;
+        toast.success(`${count} ta topshiriq yaratildi`);
+      },
+      onError: (err) =>
+        toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (
@@ -154,15 +144,8 @@ const Content = ({ close }) => {
         accept="image/*,video/mp4,video/webm,application/pdf"
       />
 
-      <Button
-        disabled={
-          createMutation.isPending ||
-          assigneeIds.length === 0 ||
-          !title ||
-          !dueDate
-        }
-      >
-        Yaratish{createMutation.isPending && "..."}
+      <Button disabled={isLoading || assigneeIds.length === 0 || !title || !dueDate}>
+        Yaratish{isLoading && "..."}
       </Button>
     </form>
   );

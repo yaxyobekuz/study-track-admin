@@ -1,18 +1,16 @@
-// Toast
-import { toast } from "sonner";
-
 // Store
 import useAuth from "@/shared/hooks/useAuth";
 
 // Router
 import { useSearchParams, Link } from "react-router-dom";
 
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
+
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
-
-// API
-import { usersAPI } from "@/features/users/api/users.api";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+import { usersQueries } from "@/features/users/queries/users.queries";
 
 // Components
 import Tabs from "@/shared/components/ui/Tabs";
@@ -48,8 +46,7 @@ const TAB_ITEMS = [
 const Users = () => {
   const { user: currentUser } = useAuth();
   const { openModal } = useModal();
-  const { getCollectionData: getRolesData } = useArrayStore("roles");
-  const roles = getRolesData();
+  const { data: roles = [] } = useRoles();
 
   // Role options for filter (dynamic, excluding owner)
   const roleOptions = [
@@ -125,15 +122,6 @@ const Users = () => {
     [searchParams, setSearchParams],
   );
 
-  // Clear search
-  const clearSearch = useCallback(() => {
-    setSearchInput("");
-    const params = new URLSearchParams(searchParams);
-    params.delete("search");
-    params.set("page", "1");
-    setSearchParams(params);
-  }, [searchParams, setSearchParams]);
-
   // Cleanup debounce on unmount
   useEffect(() => {
     return () => {
@@ -141,52 +129,20 @@ const Users = () => {
     };
   }, []);
 
-  const {
-    setPage,
-    initialize,
-    getMetadata,
-    getPageData,
-    hasCollection,
-    setPageErrorState,
-    setPageLoadingState,
-  } = useArrayStore("users");
-
-  // Initialize collection on mount/type change
-  useEffect(() => {
-    if (!hasCollection()) initialize(true); // pagination = true
-  }, [hasCollection, initialize]);
-
-  const metadata = getMetadata();
-  const pageData = getPageData(currentPage);
-
-  const users = pageData?.data || [];
-  const hasError = pageData?.error || null;
-  const isLoading = pageData?.isLoading || false;
-  const hasNextPage = pageData?.hasNextPage ?? false;
-  const hasPrevPage = pageData?.hasPrevPage ?? false;
-
-  // Load templates for current page & type
-  const fetchUsers = useCallback(
-    (page, search, role, archived) => {
-      setPageLoadingState(page, true);
-      const params = { page, limit: 32 };
-      if (search) params.search = search;
-      if (role) params.role = role;
-      if (archived) params.archived = true;
-
-      usersAPI
-        .getAll(params)
-        .then((res) => {
-          const { data, pagination } = res.data;
-          setPage(page, data, null, pagination);
-        })
-        .catch(({ message }) => {
-          toast.error(message || "Nimadir xato ketdi");
-          setPageErrorState(page, message || "Nimadir xato ketdi");
-        });
-    },
-    [setPageLoadingState, setPage, setPageErrorState],
+  // Users list (server-paginated). TanStack keeps the previous page's rows
+  // on screen while the next page loads (placeholderData: keepPreviousData).
+  const { data, isLoading, isError } = useQuery(
+    usersQueries.list({
+      page: currentPage,
+      limit: 32,
+      ...(searchQuery && { search: searchQuery }),
+      ...(roleFilter && { role: roleFilter }),
+      ...(isArchivedTab && { archived: true }),
+    }),
   );
+
+  const users = data?.data ?? [];
+  const pagination = data?.pagination;
 
   // Navigate to page
   const goToPage = useCallback(
@@ -198,11 +154,6 @@ const Users = () => {
     },
     [searchParams, setSearchParams],
   );
-
-  // Load users when page or search changes
-  useEffect(() => {
-    fetchUsers(currentPage, searchQuery, roleFilter, isArchivedTab);
-  }, [currentPage, searchQuery, roleFilter, isArchivedTab, users?.length]);
 
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
@@ -399,32 +350,32 @@ const Users = () => {
         </div>
 
         {/* Desktop Pagination Controls */}
-        {!isLoading && !hasError && users.length > 0 && (
+        {!isLoading && !isError && users.length > 0 && (
           <Pagination
             maxPageButtons={5}
             showPageNumbers={true}
             onPageChange={goToPage}
             currentPage={currentPage}
-            hasNextPage={hasNextPage}
-            hasPrevPage={hasPrevPage}
+            hasNextPage={pagination?.hasNextPage}
+            hasPrevPage={pagination?.hasPrevPage}
             className="pt-6 max-md:hidden"
-            totalPages={metadata?.totalPages || 1}
+            totalPages={pagination?.totalPages || 1}
           />
         )}
       </div>
 
       {/* Mobile Pagination Controls */}
-      {!isLoading && !hasError && users.length > 0 && (
+      {!isLoading && !isError && users.length > 0 && (
         <div className="overflow-x-auto pb-1.5">
           <Pagination
             maxPageButtons={5}
             showPageNumbers={true}
             onPageChange={goToPage}
             currentPage={currentPage}
-            hasNextPage={hasNextPage}
-            hasPrevPage={hasPrevPage}
+            hasNextPage={pagination?.hasNextPage}
+            hasPrevPage={pagination?.hasPrevPage}
             className="pt-6 min-w-max md:hidden"
-            totalPages={metadata?.totalPages || 1}
+            totalPages={pagination?.totalPages || 1}
           />
         </div>
       )}

@@ -15,37 +15,29 @@ import useModal from "@/shared/hooks/useModal";
 import CreateReductionPackageModal from "../components/CreateReductionPackageModal";
 import EditReductionPackageModal from "../components/EditReductionPackageModal";
 
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
+// Queries
+import { reductionPackagesQueries } from "../queries/penalties.queries";
+import { useDeleteReductionPackage } from "../queries/penalties.mutations";
 
 // Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 const ReductionPackagesPage = () => {
-  const queryClient = useQueryClient();
   const { openModal } = useModal();
 
-  const { data: packages = [], isLoading } = useQuery({
-    queryKey: ["penalties", "reduction-packages"],
-    queryFn: () =>
-      penaltiesAPI.getReductionPackages().then((res) => res.data.data),
-  });
+  const { data: packages = [], isLoading } = useQuery(
+    reductionPackagesQueries.list(),
+  );
 
-  const deleteMutation = useMutation({
-    mutationFn: (id) => penaltiesAPI.deleteReductionPackage(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["penalties", "reduction-packages"],
-      });
-      toast.success("Paket o'chirildi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
+  const { mutate: deletePackage } = useDeleteReductionPackage();
 
   const handleDelete = (id) => {
     if (!confirm("Paketni o'chirishni tasdiqlaysizmi?")) return;
-    deleteMutation.mutate(id);
+    deletePackage(id, {
+      onSuccess: () => toast.success("Paket o'chirildi"),
+      onError: (err) =>
+        toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+    });
   };
 
   return (

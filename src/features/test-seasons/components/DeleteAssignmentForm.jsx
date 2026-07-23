@@ -1,32 +1,32 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { teacherAssignmentsAPI } from "../api/teacherAssignments.api";
+// Hooks
+import { useDeleteAssignment } from "../queries/test-seasons.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
 
 const DeleteAssignmentForm = ({
-  onSuccess,
   close,
   isLoading,
   setIsLoading,
   ...assignment
 }) => {
-  const handleDelete = async () => {
+  const { mutate: deleteAssignment } = useDeleteAssignment();
+
+  const handleDelete = () => {
     setIsLoading(true);
 
-    try {
-      await teacherAssignmentsAPI.delete(assignment.id);
-      onSuccess();
-      toast.success("Biriktiruv o'chirildi");
-      close();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "O'chirishda xatolik");
-    } finally {
-      setIsLoading(false);
-    }
+    deleteAssignment(assignment.id, {
+      onSuccess: () => {
+        toast.success("Biriktiruv o'chirildi");
+        close();
+      },
+      onError: (error) =>
+        toast.error(error.response?.data?.message || "O'chirishda xatolik"),
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

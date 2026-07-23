@@ -1,10 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // API
 import { schedulesAPI } from "@/features/schedules/api/schedules.api";
-import { topicsAPI } from "@/features/subjects/api/topics.api";
+
+// Queries
+import {
+  useSubjectTopics,
+  topicsKeys,
+} from "@/features/subjects/queries/topics.queries";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -15,40 +21,31 @@ import { ArrowLeft, Edit2, Check, X } from "lucide-react";
 const SubjectTopics = () => {
   const { subjectId } = useParams();
   const navigate = useNavigate();
+  const qc = useQueryClient();
 
-  const [loading, setLoading] = useState(true);
-  const [subject, setSubject] = useState(null);
-  const [classesData, setClassesData] = useState([]);
-  const [topics, setTopics] = useState([]);
+  // Topics come from the shared subjects-feature cache.
+  const { data: topics = [], isLoading: topicsLoading } =
+    useSubjectTopics(subjectId);
+
+  // Classes for this subject come from the schedules endpoint. Schedules has no
+  // query module yet, so we read it here with an inline queryFn keyed under the
+  // topics namespace, and patch the cache directly after editing a topic number.
+  const schedulesKey = [...topicsKeys.all, "subject", subjectId, "classes"];
+  const { data: schedules, isLoading: schedulesLoading } = useQuery({
+    queryKey: schedulesKey,
+    queryFn: () => schedulesAPI.getBySubject(subjectId).then((r) => r.data),
+    enabled: Boolean(subjectId),
+  });
+
+  const subject = schedules?.subject;
+  const classesData = schedules?.data ?? [];
+
+  const loading = topicsLoading || schedulesLoading;
 
   // Edit state
   const [editingClassId, setEditingClassId] = useState(null);
   const [editValue, setEditValue] = useState("");
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    fetchData();
-  }, [subjectId]);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      // Fetch classes by subject and topics in parallel
-      const [schedulesRes, topicsRes] = await Promise.all([
-        schedulesAPI.getBySubject(subjectId),
-        topicsAPI.getBySubject(subjectId),
-      ]);
-
-      setSubject(schedulesRes.data.subject);
-      setClassesData(schedulesRes.data.data);
-      setTopics(topicsRes.data.data || []);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      toast.error("Ma'lumotlarni yuklashda xatolik");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getTopicName = (topicNumber) => {
     const topic = topics.find((t) => t.order === topicNumber);
@@ -86,13 +83,18 @@ const SubjectTopics = () => {
         newNumber,
       );
 
-      // Update local state
-      setClassesData((prev) =>
-        prev.map((c) =>
-          c.class.id === item.class.id
-            ? { ...c, currentTopicNumber: newNumber }
-            : c,
-        ),
+      // Patch the cached classes for this subject with the new topic number.
+      qc.setQueryData(schedulesKey, (prev) =>
+        prev
+          ? {
+              ...prev,
+              data: prev.data.map((c) =>
+                c.class.id === item.class.id
+                  ? { ...c, currentTopicNumber: newNumber }
+                  : c,
+              ),
+            }
+          : prev,
       );
 
       toast.success("Mavzu raqami yangilandi");

@@ -4,12 +4,9 @@ import { toast } from "sonner";
 // React
 import { useState } from "react";
 
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-import { classesAPI } from "@/features/classes/api/classes.api";
-
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useClasses } from "@/features/classes/queries/classes.queries";
+import { useMoveClassStudents } from "@/features/classes/queries/classes.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -29,30 +26,15 @@ const Content = ({
   classId,
   studentIds = [],
 }) => {
-  const {
-    getCollectionData,
-    setCollection,
-    setCollectionLoadingState,
-    invalidateCache,
-  } = useArrayStore();
+  const { data: classes = [] } = useClasses();
+  const { mutate: moveStudents } = useMoveClassStudents();
 
-  const classes = getCollectionData("classes");
   const [targetClassId, setTargetClassId] = useState("");
 
   // Joriy sinfdan tashqari sinflar
   const options = classes
     .filter((cls) => String(cls.id) !== String(classId))
     .map((cls) => ({ value: cls.id, label: cls.name }));
-
-  const refetchClassStudents = () => {
-    const collectionName = `class-students-${classId}`;
-    setCollectionLoadingState(true, collectionName);
-
-    usersAPI
-      .getAll({ role: "student", class: classId, limit: 200 })
-      .then((res) => setCollection(res.data.data || [], null, collectionName))
-      .catch(() => setCollection([], true, collectionName));
-  };
 
   const handleMove = (e) => {
     e.preventDefault();
@@ -63,18 +45,19 @@ const Content = ({
 
     setIsLoading(true);
 
-    classesAPI
-      .moveStudents(classId, studentIds, targetClassId)
-      .then(() => {
-        close();
-        refetchClassStudents();
-        invalidateCache("users");
-        toast.success("O'quvchilar boshqa sinfga ko'chirildi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    moveStudents(
+      { classId, studentIds, targetClassId },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("O'quvchilar boshqa sinfga ko'chirildi");
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

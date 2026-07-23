@@ -1,9 +1,3 @@
-// Toast
-import { toast } from "sonner";
-
-// React
-import { useEffect } from "react";
-
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
@@ -11,12 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
 // API
-import { teacherAssignmentsAPI } from "../api/teacherAssignments.api";
 import { testSeasonsAPI } from "../api/testSeasons.api";
+
+// Queries
+import { seasonAssignmentsQueries } from "../queries/test-seasons.queries";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // Utils
 import { formatDateUZ } from "@/shared/utils/date.utils";
@@ -41,20 +36,11 @@ import {
 const SeasonAssignmentsPage = () => {
   const { id: seasonId } = useParams();
   const { openModal } = useModal();
-  const collectionName = `seasonAssignments-${seasonId}`;
 
-  // Biriktiruvlar ro'yxati (holidays pattern)
-  const {
-    initialize,
-    hasCollection,
-    setCollection,
-    getCollectionData,
-    isCollectionLoading,
-    setCollectionLoadingState,
-  } = useArrayStore();
-
-  const assignments = getCollectionData(collectionName);
-  const isLoading = isCollectionLoading(collectionName);
+  // Biriktiruvlar ro'yxati
+  const { data: assignments = [], isLoading } = useQuery(
+    seasonAssignmentsQueries.list(seasonId, { limit: 200 }),
+  );
 
   // Mavsum ma'lumotlari (TanStack Query - admin CLAUDE.md tavsiya etadi)
   const { data: season, isLoading: seasonLoading } = useQuery({
@@ -62,26 +48,6 @@ const SeasonAssignmentsPage = () => {
     queryFn: () =>
       testSeasonsAPI.getOne(seasonId).then((res) => res.data.data),
   });
-
-  useEffect(() => {
-    if (!hasCollection(collectionName)) initialize(false, collectionName);
-    fetchAssignments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seasonId]);
-
-  const fetchAssignments = async () => {
-    try {
-      setCollectionLoadingState(true, collectionName);
-      const res = await teacherAssignmentsAPI.getAll({
-        season: seasonId,
-        limit: 200,
-      });
-      setCollection(res.data.data, null, collectionName);
-    } catch (error) {
-      toast.error("Biriktiruvlarni yuklashda xatolik");
-      setCollection([], true, collectionName);
-    }
-  };
 
   return (
     <div>
@@ -204,7 +170,7 @@ const SeasonAssignmentsPage = () => {
 
       {/* Modals */}
       <ResponsiveModal name="editAssignment" title="Biriktiruvni tahrirlash">
-        <AssignmentForm isEdit onSuccess={fetchAssignments} />
+        <AssignmentForm isEdit />
       </ResponsiveModal>
 
       <ResponsiveModal
@@ -212,7 +178,7 @@ const SeasonAssignmentsPage = () => {
         title="Biriktiruvni o'chirish"
         description="Haqiqatdan ham biriktiruvni o'chirmoqchimisiz?"
       >
-        <DeleteAssignmentForm onSuccess={fetchAssignments} />
+        <DeleteAssignmentForm />
       </ResponsiveModal>
     </div>
   );

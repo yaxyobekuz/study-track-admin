@@ -1,18 +1,14 @@
-// Toast
-import { toast } from "sonner";
-
-// React
-import { useEffect } from "react";
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
 
 // Router
 import { Link, useNavigate } from "react-router-dom";
 
-// API
-import { testSeasonsAPI } from "../api/testSeasons.api";
+// Queries
+import { testSeasonsQueries } from "../queries/test-seasons.queries";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // Utils
 import { formatDateUZ } from "@/shared/utils/date.utils";
@@ -53,37 +49,12 @@ import {
 } from "../data/seasonStatuses.data";
 
 const TestSeasonsPage = () => {
-  const {
-    initialize,
-    hasCollection,
-    setCollection,
-    getCollectionData,
-    isCollectionLoading,
-    setCollectionLoadingState,
-  } = useArrayStore();
-
   const { openModal } = useModal();
   const navigate = useNavigate();
-  const seasons = getCollectionData("testSeasons");
-  const isLoading = isCollectionLoading("testSeasons");
 
-  useEffect(() => {
-    if (!hasCollection("testSeasons")) {
-      initialize(false, "testSeasons");
-    }
-    if (!seasons?.length) fetchSeasons();
-  }, []);
-
-  const fetchSeasons = async () => {
-    try {
-      setCollectionLoadingState(true, "testSeasons");
-      const response = await testSeasonsAPI.getAll({ limit: 100 });
-      setCollection(response.data.data, null, "testSeasons");
-    } catch (error) {
-      toast.error("Mavsumlarni yuklashda xatolik");
-      setCollection([], true, "testSeasons");
-    }
-  };
+  const { data: seasons = [], isLoading } = useQuery(
+    testSeasonsQueries.list({ limit: 100 }),
+  );
 
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
@@ -234,12 +205,12 @@ const TestSeasonsPage = () => {
 
       {/* Create Modal */}
       <ResponsiveModal name="createSeason" title="Yangi test mavsumi">
-        <SeasonForm onSuccess={fetchSeasons} />
+        <SeasonForm />
       </ResponsiveModal>
 
       {/* Edit Modal */}
       <ResponsiveModal name="editSeason" title="Test mavsumini tahrirlash">
-        <SeasonForm isEdit onSuccess={fetchSeasons} />
+        <SeasonForm isEdit />
       </ResponsiveModal>
 
       {/* Delete Modal */}
@@ -248,7 +219,7 @@ const TestSeasonsPage = () => {
         title="Test mavsumini o'chirish"
         description="Haqiqatdan ham mavsumni o'chirmoqchimisiz?"
       >
-        <DeleteSeasonForm onSuccess={fetchSeasons} />
+        <DeleteSeasonForm />
       </ResponsiveModal>
 
       {/* Finalize Modal */}
@@ -256,7 +227,7 @@ const TestSeasonsPage = () => {
         name="finalizeSeason"
         title="Testni to'liq yakunlash"
       >
-        <FinalizeSeasonForm onSuccess={fetchSeasons} />
+        <FinalizeSeasonForm />
       </ResponsiveModal>
 
       {/* Announce Modal */}

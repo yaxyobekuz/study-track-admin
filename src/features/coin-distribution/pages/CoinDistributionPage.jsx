@@ -3,8 +3,8 @@ import { useEffect } from "react";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useClasses } from "@/features/classes/queries/classes.queries";
 
 // Data
 import { genderOptions } from "@/features/users/data/users.data";
@@ -25,8 +25,7 @@ import ConfirmDistributionModal from "../components/ConfirmDistributionModal";
 
 const CoinDistributionPage = () => {
   const { openModal } = useModal();
-  const { getCollectionData } = useArrayStore("classes");
-  const classes = getCollectionData();
+  const { data: classes = [] } = useClasses();
 
   const {
     action,

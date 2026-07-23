@@ -1,9 +1,6 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import MultiSelect from "@/shared/components/form/multi-select";
@@ -17,8 +14,9 @@ import { genderOptions } from "../data/users.data";
 import { WORK_DAYS_OPTIONS } from "@/features/attendance/data/attendance.data";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useClasses } from "@/features/classes/queries/classes.queries";
+import { useUpdateUser } from "@/features/users/queries/users.mutations";
 
 const EditUserModal = () => (
   <ResponsiveModal name="editUser" title="Foydalanuvchini tahrirlash">
@@ -27,8 +25,8 @@ const EditUserModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...user }) => {
-  const { getCollectionData, invalidateCache } = useArrayStore("classes");
-  const classes = getCollectionData();
+  const { data: classes = [] } = useClasses();
+  const { mutate: updateUser } = useUpdateUser();
 
   const hasCustomSchedule = !!(user.workStartTime && user.workEndTime);
 
@@ -103,17 +101,19 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
       hasCustomSchedule: undefined,
     };
 
-    usersAPI
-      .update(user.id, data)
-      .then(() => {
-        close();
-        invalidateCache("users");
-        toast.success("Foydalanuvchi tahrirlandi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    updateUser(
+      { id: user.id, data },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Foydalanuvchi tahrirlandi");
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

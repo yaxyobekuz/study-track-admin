@@ -1,15 +1,12 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useDeleteUser } from "@/features/users/queries/users.mutations";
 
 const DeleteUserModal = () => (
   <ResponsiveModal
@@ -22,23 +19,22 @@ const DeleteUserModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...user }) => {
-  const { invalidateCache } = useArrayStore("users");
+  const { mutate: deleteUser } = useDeleteUser();
 
   const handleDeleteUser = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    usersAPI
-      .delete(user.id)
-      .then(() => {
+    deleteUser(user.id, {
+      onSuccess: () => {
         close();
-        invalidateCache();
         toast.success("Foydalanuvchi o'chirildi");
-      })
-      .catch((err) => {
+      },
+      onError: (err) => {
         toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+      },
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

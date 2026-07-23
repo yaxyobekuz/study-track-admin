@@ -1,17 +1,14 @@
-// React
-import { useEffect } from "react";
-
 // Icons
 import { BookOpen } from "lucide-react";
 
 // Router
 import { Link } from "react-router-dom";
 
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
+
 // Store
 import useAuth from "@/shared/hooks/useAuth";
-
-// Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // API
 import { schedulesAPI } from "@/features/schedules/api/schedules.api";
@@ -28,40 +25,17 @@ const AllSchedulesToday = () => {
   const today = new Date();
   const { user } = useAuth();
   const dayName = getDayOfWeekUZ(today);
+  const isOwner = user?.role === "owner";
 
-  const {
-    initialize,
-    hasCollection,
-    setCollection,
-    getCollectionData,
-    isCollectionLoading,
-    setCollectionErrorState,
-    setCollectionLoadingState,
-  } = useArrayStore("schedules-all-today");
+  // Schedules module is owned by another feature, so this dashboard-local read
+  // stays an inline useQuery (no schedules query module is created here).
+  const { data: schedules = [], isLoading: loading } = useQuery({
+    queryKey: ["schedules", "all-today"],
+    queryFn: () => schedulesAPI.getAllToday().then((res) => res.data.data),
+    enabled: isOwner,
+  });
 
-  const schedules = getCollectionData() || [];
-  const loading = isCollectionLoading();
-
-  function fetchAllTodaySchedules() {
-    setCollectionLoadingState(true);
-
-    schedulesAPI
-      .getAllToday()
-      .then((res) => setCollection(res.data.data, null))
-      .catch(() => setCollectionErrorState(true));
-  }
-
-  useEffect(() => {
-    if (!hasCollection()) initialize(false);
-  }, [initialize, hasCollection]);
-
-  useEffect(() => {
-    if (user?.role === "owner" && !schedules.length) {
-      fetchAllTodaySchedules();
-    }
-  }, [user, schedules.length]);
-
-  if (user?.role !== "owner" || dayName === "yakshanba") {
+  if (!isOwner || dayName === "yakshanba") {
     return null;
   }
 

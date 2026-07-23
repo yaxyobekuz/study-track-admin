@@ -4,11 +4,12 @@ import { toast } from "sonner";
 // React
 import { useEffect } from "react";
 
-// API
-import { testSeasonsAPI } from "../api/testSeasons.api";
-
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import {
+  useCreateSeason,
+  useEditSeason,
+} from "../queries/test-seasons.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -18,11 +19,13 @@ import InputGroup from "@/shared/components/ui/input/InputGroup";
 const SeasonForm = ({
   close,
   isLoading,
-  onSuccess,
   setIsLoading,
   isEdit = false,
   ...season
 }) => {
+  const { mutate: createSeason } = useCreateSeason();
+  const { mutate: editSeason } = useEditSeason();
+
   const {
     name,
     description,
@@ -51,7 +54,7 @@ const SeasonForm = ({
     }
   }, [isEdit, season?.id]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (new Date(endDate) <= new Date(startDate)) {
@@ -61,37 +64,28 @@ const SeasonForm = ({
 
     setIsLoading(true);
 
-    try {
-      const payload = {
-        name,
-        description,
-        startDate,
-        endDate,
-        isActive,
-      };
+    const payload = { name, description, startDate, endDate, isActive };
 
-      let response;
-      if (isEdit) {
-        response = await testSeasonsAPI.update(season.id, payload);
-        toast.success("Mavsum yangilandi");
-      } else {
-        response = await testSeasonsAPI.create(payload);
-        toast.success("Mavsum yaratildi");
-      }
+    const handlers = {
+      onSuccess: (res) => {
+        // Ustma-ust mavsumlar ogohlantirishi
+        if (res.overlapping?.length > 0) {
+          toast.warning(
+            `Diqqat: ${res.overlapping.length} ta boshqa mavsum bilan sana ustma-ust keladi`,
+          );
+        }
+        toast.success(isEdit ? "Mavsum yangilandi" : "Mavsum yaratildi");
+        close();
+      },
+      onError: (error) =>
+        toast.error(error.response?.data?.message || "Xatolik yuz berdi"),
+      onSettled: () => setIsLoading(false),
+    };
 
-      // Ustma-ust mavsumlar ogohlantirishi
-      if (response.data.overlapping?.length > 0) {
-        toast.warning(
-          `Diqqat: ${response.data.overlapping.length} ta boshqa mavsum bilan sana ustma-ust keladi`,
-        );
-      }
-
-      onSuccess(response.data.data);
-      close();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
-    } finally {
-      setIsLoading(false);
+    if (isEdit) {
+      editSeason({ id: season.id, data: payload }, handlers);
+    } else {
+      createSeason(payload, handlers);
     }
   };
 

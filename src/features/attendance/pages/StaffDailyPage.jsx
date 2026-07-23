@@ -24,15 +24,15 @@ import {
 } from "../data/attendance.data";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 
 const StaffDailyPage = () => {
   const { date, filterSlot } = useOutletContext();
   const [role, setRole] = useState("");
   const [status, setStatus] = useState("");
 
-  const { getCollectionData } = useArrayStore("roles");
-  const roles = getCollectionData().filter(
+  const { data: allRoles = [] } = useRoles();
+  const roles = allRoles.filter(
     (r) => r.value !== "owner" && r.value !== "student",
   );
   const roleOptions = buildRoleOptions(roles);

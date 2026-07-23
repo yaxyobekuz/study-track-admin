@@ -1,12 +1,6 @@
-// Toast
-import { toast } from "sonner";
-
-// React
-import { useEffect } from "react";
-
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useSocialNetworks } from "../queries/social-networks.queries";
 
 // Icons
 import { Plus, Trash2, Edit, Share2 } from "lucide-react";
@@ -21,41 +15,9 @@ import DeleteSocialNetworkForm from "../components/DeleteSocialNetworkForm";
 // Data
 import { platformLabels } from "@/features/social-networks/data/social-networks.data";
 
-// API
-import { socialNetworksAPI } from "@/features/social-networks/api/social-networks.api";
-
 const SocialNetworksPage = () => {
-  const {
-    initialize,
-    hasCollection,
-    setCollection,
-    getCollectionData,
-    isCollectionLoading,
-    setCollectionLoadingState,
-  } = useArrayStore();
-
   const { openModal } = useModal();
-  const socialNetworks = getCollectionData("socialNetworks");
-  const isLoading = isCollectionLoading("socialNetworks");
-
-  useEffect(() => {
-    if (!hasCollection("socialNetworks")) {
-      initialize(false, "socialNetworks");
-    }
-
-    if (!socialNetworks?.length) fetchSocialNetworks();
-  }, []);
-
-  const fetchSocialNetworks = async () => {
-    try {
-      setCollectionLoadingState(true, "socialNetworks");
-      const response = await socialNetworksAPI.getAll();
-      setCollection(response.data.data, null, "socialNetworks");
-    } catch (error) {
-      toast.error("Ijtimoiy tarmoqlarni yuklashda xatolik");
-      setCollection([], true, "socialNetworks");
-    }
-  };
+  const { data: socialNetworks = [], isLoading } = useSocialNetworks();
 
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
@@ -157,7 +119,7 @@ const SocialNetworksPage = () => {
 
       {/* Create Modal */}
       <ResponsiveModal name="createSocialNetwork" title="Yangi ijtimoiy tarmoq">
-        <SocialNetworkForm onSuccess={fetchSocialNetworks} />
+        <SocialNetworkForm />
       </ResponsiveModal>
 
       {/* Edit Modal */}
@@ -165,7 +127,7 @@ const SocialNetworksPage = () => {
         name="editSocialNetwork"
         title="Ijtimoiy tarmoqni tahrirlash"
       >
-        <SocialNetworkForm isEdit onSuccess={fetchSocialNetworks} />
+        <SocialNetworkForm isEdit />
       </ResponsiveModal>
 
       {/* Delete Modal */}
@@ -174,7 +136,7 @@ const SocialNetworksPage = () => {
         title="Ijtimoiy tarmoqni o'chirish"
         description="Haqiqatdan ham ijtimoiy tarmoqni o'chirmoqchimisiz?"
       >
-        <DeleteSocialNetworkForm onSuccess={fetchSocialNetworks} />
+        <DeleteSocialNetworkForm />
       </ResponsiveModal>
     </div>
   );

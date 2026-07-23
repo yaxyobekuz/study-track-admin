@@ -13,7 +13,6 @@ import { toast } from "sonner";
 
 // API
 import { attendanceAPI } from "../api/attendance.api";
-import { absenceReasonAPI } from "../api/absenceReason.api";
 
 // Components
 import Select from "@/shared/components/ui/select/Select";
@@ -25,15 +24,15 @@ import MarkToolbar from "../components/MarkToolbar";
 import { SUMMARY_CARDS } from "../data/studentAttendance.data";
 import { buildRoleOptions, buildRoleLabelMap } from "../data/attendance.data";
 import useMarkAttendance from "../hooks/useMarkAttendance";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+import { attendanceKeys, attendanceQueries } from "../queries/attendance.queries";
 
 const MarkStaffPage = () => {
   const { date, filterSlot } = useOutletContext();
   const [role, setRole] = useState("");
   const queryClient = useQueryClient();
 
-  const { getCollectionData } = useArrayStore("roles");
-  const allRoles = getCollectionData();
+  const { data: allRoles = [] } = useRoles();
   const roles = allRoles.filter(
     (r) => r.value !== "owner" && r.value !== "student",
   );
@@ -41,11 +40,9 @@ const MarkStaffPage = () => {
   const roleLabelMap = buildRoleLabelMap(allRoles);
 
   // Barcha aktiv "Kelmaslik sabablari" (jadvalda rol bo'yicha filtrlanadi)
-  const { data: reasonsData } = useQuery({
-    queryKey: ["absenceReasons", "active"],
-    queryFn: () => absenceReasonAPI.getActive().then((r) => r.data.data),
-  });
-  const reasons = reasonsData || [];
+  const { data: reasons = [] } = useQuery(
+    attendanceQueries.activeAbsenceReasons(),
+  );
 
   const { data, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ["attendance", "mark-staff", { role, date }],
@@ -88,7 +85,7 @@ const MarkStaffPage = () => {
     mutationFn: (payload) => attendanceAPI.markStaff(payload),
     onSuccess: () => {
       toast.success("Xodimlar davomati saqlandi");
-      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      queryClient.invalidateQueries({ queryKey: attendanceKeys.all });
     },
     onError: (err) =>
       toast.error(err.response?.data?.message || "Xatolik yuz berdi"),

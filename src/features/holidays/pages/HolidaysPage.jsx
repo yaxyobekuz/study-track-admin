@@ -1,15 +1,6 @@
-// Toast
-import { toast } from "sonner";
-
-// React
-import { useEffect } from "react";
-
-// API
-import { holidaysAPI } from "@/features/holidays/api/holidays.api";
-
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useHolidays } from "../queries/holidays.queries";
 
 // Utils
 import { formatHolidayDate } from "@/shared/utils/date.utils";
@@ -28,37 +19,8 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import { getHolidayTypeLabel } from "@/shared/data/holidayTypes.data";
 
 const Holidays = () => {
-  const {
-    initialize,
-    hasCollection,
-    setCollection,
-    getCollectionData,
-    isCollectionLoading,
-    setCollectionLoadingState,
-  } = useArrayStore();
-
   const { openModal } = useModal();
-  const holidays = getCollectionData("holidays");
-  const isLoading = isCollectionLoading("holidays");
-
-  useEffect(() => {
-    if (!hasCollection("holidays")) {
-      initialize(false, "holidays"); // pagination = false
-    }
-
-    if (!holidays?.length) fetchHolidays();
-  }, []);
-
-  const fetchHolidays = async () => {
-    try {
-      setCollectionLoadingState(true, "holidays");
-      const response = await holidaysAPI.getAll();
-      setCollection(response.data.data, null, "holidays");
-    } catch (error) {
-      toast.error("Dam olish kunlarini yuklashda xatolik");
-      setCollection([], true, "holidays");
-    }
-  };
+  const { data: holidays = [], isLoading } = useHolidays();
 
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
@@ -160,12 +122,12 @@ const Holidays = () => {
 
       {/* Create Modal */}
       <ResponsiveModal name="createHoliday" title="Yangi dam olish kuni">
-        <HolidayForm onSuccess={fetchHolidays} />
+        <HolidayForm />
       </ResponsiveModal>
 
       {/* Edit Modal */}
       <ResponsiveModal name="editHoliday" title="Dam olish kunini tahrirlash">
-        <HolidayForm isEdit onSuccess={fetchHolidays} />
+        <HolidayForm isEdit />
       </ResponsiveModal>
 
       {/* Delete Modal */}
@@ -174,7 +136,7 @@ const Holidays = () => {
         title="Dam olish kunini o'chirish"
         description="Haqiqatdan ham dam olish kunini o'chirmoqchimisiz?"
       >
-        <DeleteHolidayForm onSuccess={fetchHolidays} />
+        <DeleteHolidayForm />
       </ResponsiveModal>
     </div>
   );

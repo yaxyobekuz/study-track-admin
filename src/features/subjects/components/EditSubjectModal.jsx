@@ -1,17 +1,14 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { subjectsAPI } from "@/features/subjects/api/subjects.api";
-
 // Components
 import Input from "@/shared/components/ui/input/Input";
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useUpdateSubject } from "@/features/subjects/queries/subjects.mutations";
 
 const EditSubjectModal = () => (
   <ResponsiveModal name="editSubject" title="Fanni tahrirlash">
@@ -20,7 +17,7 @@ const EditSubjectModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...subject }) => {
-  const { invalidateCache } = useArrayStore("subjects");
+  const { mutate: updateSubject } = useUpdateSubject();
 
   const { name, description, state, setField } = useObjectState({
     name: subject.name,
@@ -31,17 +28,19 @@ const Content = ({ close, isLoading, setIsLoading, ...subject }) => {
     e.preventDefault();
     setIsLoading(true);
 
-    subjectsAPI
-      .update(subject.id, state)
-      .then(() => {
-        close();
-        invalidateCache();
-        toast.success("Fan tahrirlandi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    updateSubject(
+      { id: subject.id, data: state },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Fan tahrirlandi");
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

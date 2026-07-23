@@ -5,12 +5,12 @@ import { PartyPopper } from "lucide-react";
 import Card from "@/shared/components/ui/Card";
 
 // Hooks
-import useObjectStore from "@/shared/hooks/useObjectStore";
+import { useTodayHoliday } from "@/features/holidays/queries/holidays.queries";
 
 const HolidayInfo = () => {
   // Holiday Info
-  const { getEntity } = useObjectStore("holidayCheck");
-  const holidayInfo = getEntity("today") || { isHoliday: false, holiday: null };
+  const { data } = useTodayHoliday();
+  const holidayInfo = data || { isHoliday: false, holiday: null };
 
   if (!holidayInfo.isHoliday) return;
 

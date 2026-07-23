@@ -1,12 +1,6 @@
 // Toast
 import { toast } from "sonner";
 
-// Tanstack Query
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { absenceReasonAPI } from "../api/absenceReason.api";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
@@ -15,7 +9,8 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+import { useCreateAbsenceReason } from "../queries/attendance.mutations";
 
 // Helpers
 import { getAllRoles } from "@/shared/helpers/role.helpers";
@@ -26,10 +21,8 @@ const CreateAbsenceReasonModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close }) => {
-  const queryClient = useQueryClient();
-  const { getCollectionData } = useArrayStore();
-  const roles = getCollectionData("roles") || [];
+const Content = ({ close, isLoading, setIsLoading }) => {
+  const { data: roles = [] } = useRoles();
   const roleOptions = getAllRoles(roles).filter((r) => r.value !== "developer");
 
   const {
@@ -45,26 +38,29 @@ const Content = ({ close }) => {
     appliesToAll: false,
   });
 
-  const createMutation = useMutation({
-    mutationFn: (data) => absenceReasonAPI.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["absenceReasons"] });
-      close();
-      toast.success("Sabab yaratildi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
+  const { mutate: createReason } = useCreateAbsenceReason();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) return toast.error("Sarlavha majburiy");
-    createMutation.mutate({
-      title,
-      description,
-      appliesToAll,
-      roles: appliesToAll ? [] : selectedRoles,
-    });
+    setIsLoading(true);
+    createReason(
+      {
+        title,
+        description,
+        appliesToAll,
+        roles: appliesToAll ? [] : selectedRoles,
+      },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Sabab yaratildi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (
@@ -104,9 +100,7 @@ const Content = ({ close }) => {
         />
       )}
 
-      <Button disabled={createMutation.isPending}>
-        Yaratish{createMutation.isPending && "..."}
-      </Button>
+      <Button disabled={isLoading}>Yaratish{isLoading && "..."}</Button>
     </form>
   );
 };

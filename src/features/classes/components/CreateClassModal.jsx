@@ -1,12 +1,9 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { classesAPI } from "@/features/classes/api/classes.api";
-
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useCreateClass } from "@/features/classes/queries/classes.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -20,7 +17,7 @@ const CreateClassModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading }) => {
-  const { invalidateCache } = useArrayStore("classes");
+  const { mutate: createClass } = useCreateClass();
 
   const { name, setField } = useObjectState({
     name: "",
@@ -28,20 +25,21 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
   const handleCreateClass = (e) => {
     e.preventDefault();
-
     setIsLoading(true);
 
-    classesAPI
-      .create({ name })
-      .then(() => {
-        close();
-        invalidateCache();
-        toast.success("Sinf yaratildi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    createClass(
+      { name },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Sinf yaratildi");
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

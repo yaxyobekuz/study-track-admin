@@ -14,11 +14,13 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Plus, Trash2, X } from "lucide-react";
 
 // API
-import { teacherAssignmentsAPI } from "../api/teacherAssignments.api";
 import { testSeasonsAPI } from "../api/testSeasons.api";
-import { classesAPI } from "@/features/classes/api/classes.api";
-import { subjectsAPI } from "@/features/subjects/api/subjects.api";
-import { usersAPI } from "@/features/users/api/users.api";
+
+// Hooks
+import { useClasses } from "@/features/classes/queries/classes.queries";
+import { useSubjects } from "@/features/subjects/queries/subjects.queries";
+import { usersQueries } from "@/features/users/queries/users.queries";
+import { useBulkCreateAssignment } from "../queries/test-seasons.mutations";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -43,29 +45,19 @@ const CreateAssignmentsPage = () => {
   const [rows, setRows] = useState([createEmptyRow(0)]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const { mutate: bulkCreateAssignment } = useBulkCreateAssignment();
+
   // Mavsum (sarlavha uchun)
   const { data: season } = useQuery({
     queryKey: ["test-season", seasonId],
     queryFn: () => testSeasonsAPI.getOne(seasonId).then((res) => res.data.data),
   });
 
-  // Sinflar
-  const { data: classes = [] } = useQuery({
-    queryKey: ["classes"],
-    queryFn: () => classesAPI.getAll().then((res) => res.data.data),
-  });
-
-  // Fanlar
-  const { data: subjects = [] } = useQuery({
-    queryKey: ["subjects"],
-    queryFn: () => subjectsAPI.getAll().then((res) => res.data.data),
-  });
-
-  // O'qituvchilar (qisqartirilgan ro'yxat)
-  const { data: usersShort = [] } = useQuery({
-    queryKey: ["users", "all-short"],
-    queryFn: () => usersAPI.getAllShort().then((res) => res.data.data),
-  });
+  // Reference ma'lumotlar (deduped, cached)
+  const { data: classes = [] } = useClasses();
+  const { data: subjects = [] } = useSubjects();
+  const { data: usersShort = [] } = useQuery(usersQueries.allShort());
+  const teachers = usersShort.filter((u) => u.role === "teacher");
 
   const classOptions = useMemo(
     () => classes.map((c) => ({ label: c.name, value: c.id })),
@@ -85,13 +77,14 @@ const CreateAssignmentsPage = () => {
 
   const teacherOptions = useMemo(
     () =>
-      usersShort
-        .filter((u) => u.role === "teacher")
-        .map((u) => ({
-          label: `${u.firstName || ""} ${u.lastName || ""}`.trim() || u.username,
-          value: u.id,
-        })),
-    [usersShort],
+      teachers.map((t) => ({
+        label:
+          t.fullName ||
+          `${t.firstName || ""} ${t.lastName || ""}`.trim() ||
+          t.username,
+        value: t.id,
+      })),
+    [teachers],
   );
 
   // Hali tanlanmagan sinflar (chip sifatida qo'shilgach ro'yxatdan chiqadi)
@@ -147,7 +140,7 @@ const CreateAssignmentsPage = () => {
   };
 
   // ── Saqlash ──────────────────────────────────────────────────────────────────
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (selectedClasses.length === 0) {
       toast.error("Kamida bitta sinf tanlang");
       return;
@@ -165,28 +158,31 @@ const CreateAssignmentsPage = () => {
     });
 
     setIsLoading(true);
-    try {
-      const res = await teacherAssignmentsAPI.bulkCreate({
-        season: seasonId,
-        items,
-      });
-      const { createdCount = 0, skippedCount = 0 } = res.data.data || {};
 
-      if (createdCount > 0) {
-        toast.success(
-          skippedCount > 0
-            ? `${createdCount} ta biriktiruv qo'shildi, ${skippedCount} ta o'tkazib yuborildi (mavjud)`
-            : `${createdCount} ta biriktiruv qo'shildi`,
-        );
-        navigate(backTo);
-      } else {
-        toast.warning("Yangi biriktiruv qo'shilmadi (barchasi allaqachon mavjud)");
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Xatolik yuz berdi");
-    } finally {
-      setIsLoading(false);
-    }
+    bulkCreateAssignment(
+      { season: seasonId, items },
+      {
+        onSuccess: (res) => {
+          const { createdCount = 0, skippedCount = 0 } = res.data || {};
+
+          if (createdCount > 0) {
+            toast.success(
+              skippedCount > 0
+                ? `${createdCount} ta biriktiruv qo'shildi, ${skippedCount} ta o'tkazib yuborildi (mavjud)`
+                : `${createdCount} ta biriktiruv qo'shildi`,
+            );
+            navigate(backTo);
+          } else {
+            toast.warning(
+              "Yangi biriktiruv qo'shilmadi (barchasi allaqachon mavjud)",
+            );
+          }
+        },
+        onError: (error) =>
+          toast.error(error.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

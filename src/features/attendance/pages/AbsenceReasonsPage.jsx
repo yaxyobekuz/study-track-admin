@@ -1,17 +1,14 @@
-// React
-import { useState } from "react";
-
 // Toast
 import { toast } from "sonner";
 
 // Icons
 import { Plus, Edit, Trash2 } from "lucide-react";
 
-// Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+// Router
+import { useSearchParams } from "react-router-dom";
 
-// API
-import { absenceReasonAPI } from "../api/absenceReason.api";
+// Tanstack Query
+import { useQuery } from "@tanstack/react-query";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -23,36 +20,38 @@ import EditAbsenceReasonModal from "../components/EditAbsenceReasonModal";
 // Data & hooks
 import { getReasonScope } from "../data/absenceReason.data";
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+import { attendanceQueries } from "../queries/attendance.queries";
+import { useDeleteAbsenceReason } from "../queries/attendance.mutations";
 
 const AbsenceReasonsPage = () => {
-  const queryClient = useQueryClient();
   const { openModal } = useModal();
-  const { getCollectionData } = useArrayStore();
-  const roles = getCollectionData("roles") || [];
-  const [page, setPage] = useState(1);
+  const { data: roles = [] } = useRoles();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["absenceReasons", "list", page],
-    queryFn: () => absenceReasonAPI.getAll({ page, limit: 24 }).then((r) => r.data),
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Number(searchParams.get("page")) || 1;
+  const setPage = (next) =>
+    setSearchParams((prev) => {
+      prev.set("page", String(next));
+      return prev;
+    });
 
-  const reasons = data?.data || [];
+  const { data, isLoading } = useQuery(
+    attendanceQueries.absenceReasonsList({ page, limit: 24 }),
+  );
+
+  const reasons = data?.data ?? [];
   const pagination = data?.pagination;
 
-  const deleteMutation = useMutation({
-    mutationFn: (id) => absenceReasonAPI.remove(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["absenceReasons"] });
-      toast.success("Sabab o'chirildi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
+  const { mutate: deleteReason } = useDeleteAbsenceReason();
 
   const handleDelete = (id) => {
     if (!confirm("Sababni o'chirishni tasdiqlaysizmi?")) return;
-    deleteMutation.mutate(id);
+    deleteReason(id, {
+      onSuccess: () => toast.success("Sabab o'chirildi"),
+      onError: (err) =>
+        toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+    });
   };
 
   return (

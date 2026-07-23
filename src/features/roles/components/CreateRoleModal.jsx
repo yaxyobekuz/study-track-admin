@@ -1,12 +1,9 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { rolesAPI } from "@/features/roles/api/roles.api";
-
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useCreateRole } from "@/features/roles/queries/roles.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -24,7 +21,7 @@ const CreateRoleModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading }) => {
-  const { invalidateCache } = useArrayStore("roles");
+  const { mutate: createRole } = useCreateRole();
 
   const { name, value, state, setField } = useObjectState({
     name: "",
@@ -46,17 +43,16 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     e.preventDefault();
     setIsLoading(true);
 
-    rolesAPI
-      .create(state)
-      .then(() => {
+    createRole(state, {
+      onSuccess: () => {
         close();
-        invalidateCache();
         toast.success("Rol yaratildi");
-      })
-      .catch((err) => {
+      },
+      onError: (err) => {
         toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+      },
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

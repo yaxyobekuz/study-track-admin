@@ -4,14 +4,14 @@ import Button from "@/shared/components/ui/button/Button";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Icons
 import { Plus, Edit, Trash2, Lock, Users } from "lucide-react";
 
 const RolesPage = () => {
   const { openModal } = useModal();
-  const { data: roles, isLoading } = useArrayStore("roles");
+  const { data: roles = [], isLoading } = useRoles();
 
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;

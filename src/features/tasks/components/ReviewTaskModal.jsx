@@ -4,11 +4,8 @@ import { toast } from "sonner";
 // React
 import { useState } from "react";
 
-// Tanstack Query
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { tasksAPI } from "@/features/tasks/api/tasks.api";
+// Queries
+import { useReviewTask } from "../queries/tasks.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -21,30 +18,13 @@ const ReviewTaskModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, taskId, dueDate }) => {
-  const queryClient = useQueryClient();
+const Content = ({ close, isLoading, setIsLoading, taskId, dueDate }) => {
+  const { mutate: reviewTask } = useReviewTask();
   const [action, setAction] = useState("approve");
   const [reason, setReason] = useState("");
   const [newDueDate, setNewDueDate] = useState("");
 
   const isOverdue = dueDate && new Date(dueDate) < new Date();
-
-  const mutation = useMutation({
-    mutationFn: (data) =>
-      action === "approve"
-        ? tasksAPI.approve(taskId, data)
-        : tasksAPI.reject(taskId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks", "detail", taskId] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", "list"] });
-      close();
-      toast.success(
-        action === "approve" ? "Topshiriq tasdiqlandi" : "Topshiriq rad etildi",
-      );
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -59,7 +39,24 @@ const Content = ({ close, taskId, dueDate }) => {
 
     const data = { reason };
     if (action === "reject" && newDueDate) data.newDueDate = newDueDate;
-    mutation.mutate(data);
+
+    setIsLoading(true);
+    reviewTask(
+      { id: taskId, action, data },
+      {
+        onSuccess: () => {
+          close();
+          toast.success(
+            action === "approve"
+              ? "Topshiriq tasdiqlandi"
+              : "Topshiriq rad etildi",
+          );
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (
@@ -120,10 +117,10 @@ const Content = ({ close, taskId, dueDate }) => {
 
       <Button
         className="w-full"
-        disabled={mutation.isPending || !reason.trim()}
+        disabled={isLoading || !reason.trim()}
         variant={action === "approve" ? "default" : "danger"}
       >
-        {mutation.isPending
+        {isLoading
           ? "Saqlanmoqda..."
           : action === "approve"
             ? "Tasdiqlash"

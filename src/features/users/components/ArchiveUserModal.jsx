@@ -4,15 +4,12 @@ import { toast } from "sonner";
 // React
 import { useState } from "react";
 
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useArchiveUser } from "@/features/users/queries/users.mutations";
 
 const ArchiveUserModal = () => (
   <ResponsiveModal
@@ -25,7 +22,7 @@ const ArchiveUserModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...user }) => {
-  const { invalidateCache } = useArrayStore("users");
+  const { mutate: archiveUser } = useArchiveUser();
   const [resetCoins, setResetCoins] = useState(false);
   const [resetPenalties, setResetPenalties] = useState(false);
 
@@ -33,17 +30,19 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
     e.preventDefault();
     setIsLoading(true);
 
-    usersAPI
-      .archive(user.id, { resetCoins, resetPenalties })
-      .then(() => {
-        close();
-        invalidateCache();
-        toast.success("O'quvchi arxivlandi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    archiveUser(
+      { id: user.id, data: { resetCoins, resetPenalties } },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("O'quvchi arxivlandi");
+        },
+        onError: (err) => {
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (

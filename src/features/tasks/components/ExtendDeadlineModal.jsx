@@ -4,11 +4,8 @@ import { toast } from "sonner";
 // React
 import { useState } from "react";
 
-// Tanstack Query
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { tasksAPI } from "@/features/tasks/api/tasks.api";
+// Queries
+import { useExtendDeadline } from "../queries/tasks.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -21,8 +18,8 @@ const ExtendDeadlineModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, taskId, currentDueDate }) => {
-  const queryClient = useQueryClient();
+const Content = ({ close, isLoading, setIsLoading, taskId, currentDueDate }) => {
+  const { mutate: extendDeadline } = useExtendDeadline();
   const [newDueDate, setNewDueDate] = useState("");
   const [reason, setReason] = useState("");
   const [withPenalty, setWithPenalty] = useState(false);
@@ -34,18 +31,6 @@ const Content = ({ close, taskId, currentDueDate }) => {
         .toISOString()
         .slice(0, 16)
     : undefined;
-
-  const mutation = useMutation({
-    mutationFn: (data) => tasksAPI.extend(taskId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks", "detail", taskId] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", "list"] });
-      close();
-      toast.success("Ijro muddati uzaytirildi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -64,7 +49,20 @@ const Content = ({ close, taskId, currentDueDate }) => {
 
     const data = { newDueDate, reason, withPenalty };
     if (withPenalty) data.penaltyPoints = Number(penaltyPoints);
-    mutation.mutate(data);
+
+    setIsLoading(true);
+    extendDeadline(
+      { id: taskId, data },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Ijro muddati uzaytirildi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (
@@ -109,10 +107,10 @@ const Content = ({ close, taskId, currentDueDate }) => {
       )}
 
       <Button
-        disabled={mutation.isPending || !newDueDate || !reason.trim()}
+        disabled={isLoading || !newDueDate || !reason.trim()}
         className="w-full"
       >
-        O'zgartirish{mutation.isPending && "..."}
+        O'zgartirish{isLoading && "..."}
       </Button>
     </form>
   );

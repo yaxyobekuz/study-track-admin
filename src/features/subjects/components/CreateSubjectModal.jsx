@@ -1,17 +1,14 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { subjectsAPI } from "@/features/subjects/api/subjects.api";
-
 // Components
 import Input from "@/shared/components/ui/input/Input";
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useCreateSubject } from "@/features/subjects/queries/subjects.mutations";
 
 const CreateSubjectModal = () => (
   <ResponsiveModal name="createSubject" title="Yangi fan">
@@ -20,7 +17,7 @@ const CreateSubjectModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading }) => {
-  const { invalidateCache } = useArrayStore("subjects");
+  const { mutate: createSubject } = useCreateSubject();
 
   const { name, description, state, setField } = useObjectState({
     name: "",
@@ -31,17 +28,16 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     e.preventDefault();
     setIsLoading(true);
 
-    subjectsAPI
-      .create(state)
-      .then(() => {
+    createSubject(state, {
+      onSuccess: () => {
         close();
-        invalidateCache();
         toast.success("Fan yaratildi");
-      })
-      .catch((err) => {
+      },
+      onError: (err) => {
         toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+      },
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

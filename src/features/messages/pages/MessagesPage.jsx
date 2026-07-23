@@ -1,20 +1,20 @@
-// Toast
-import { toast } from "sonner";
-
-// API
-import { messagesAPI } from "@/features/messages/api/messages.api";
-import { usersAPI } from "@/features/users/api/users.api";
-import { classesAPI } from "@/features/classes/api/classes.api";
-
 // Router
 import { useSearchParams } from "react-router-dom";
+
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
+
+// Queries
+import { messagesQueries } from "@/features/messages/queries/messages.queries";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+import { useClasses } from "@/features/classes/queries/classes.queries";
+import { useTeachers } from "@/features/users/queries/users.queries";
 
 // Helpers
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -22,7 +22,7 @@ import Select from "@/shared/components/ui/select/Select";
 import Pagination from "@/shared/components/ui/Pagination";
 
 // React
-import { useEffect, useCallback, useState } from "react";
+import { useCallback } from "react";
 
 // Icons
 import { Plus, Eye, Ban } from "lucide-react";
@@ -45,9 +45,10 @@ const Messages = () => {
   const sentByFilter = searchParams.get("sentBy") || "";
   const classIdFilter = searchParams.get("classId") || "";
 
-  // State for filters
-  const [teachers, setTeachers] = useState([]);
-  const [classes, setClasses] = useState([]);
+  // Reference data (deduped/cached app-wide)
+  const { data: roles = [] } = useRoles();
+  const { data: teachers = [] } = useTeachers();
+  const { data: classes = [] } = useClasses();
 
   // Handle recipient type filter change
   const handleRecipientTypeChange = useCallback(
@@ -94,55 +95,20 @@ const Messages = () => {
     [searchParams, setSearchParams],
   );
 
-  const {
-    setPage,
-    initialize,
-    getMetadata,
-    getPageData,
-    hasCollection,
-    setPageErrorState,
-    setPageLoadingState,
-  } = useArrayStore("messages");
-
-  const { getCollectionData: getRolesData } = useArrayStore("roles");
-  const roles = getRolesData();
-
-  // Initialize collection on mount
-  useEffect(() => {
-    if (!hasCollection()) initialize(true); // pagination = true
-  }, [hasCollection, initialize]);
-
-  const metadata = getMetadata();
-  const pageData = getPageData(currentPage);
-
-  const messages = pageData?.data || [];
-  const hasError = pageData?.error || null;
-  const isLoading = pageData?.isLoading || false;
-  const hasNextPage = pageData?.hasNextPage ?? false;
-  const hasPrevPage = pageData?.hasPrevPage ?? false;
-
-  // Load messages for current page
-  const fetchMessages = useCallback(
-    (page, recipientType, sentBy, classId) => {
-      setPageLoadingState(page, true);
-      const params = { page, limit: 20 };
-      if (recipientType) params.recipientType = recipientType;
-      if (sentBy) params.sentBy = sentBy;
-      if (classId) params.classId = classId;
-
-      messagesAPI
-        .getAll(params)
-        .then((res) => {
-          const { data, pagination } = res.data;
-          setPage(page, data, null, pagination);
-        })
-        .catch(({ message }) => {
-          toast.error(message || "Nimadir xato ketdi");
-          setPageErrorState(page, message || "Nimadir xato ketdi");
-        });
-    },
-    [setPageLoadingState, setPage, setPageErrorState],
+  // Messages list (server-paginated). TanStack keeps the previous page's rows
+  // on screen while the next page loads (placeholderData: keepPreviousData).
+  const { data, isLoading, isError } = useQuery(
+    messagesQueries.list({
+      page: currentPage,
+      limit: 20,
+      ...(recipientTypeFilter && { recipientType: recipientTypeFilter }),
+      ...(sentByFilter && { sentBy: sentByFilter }),
+      ...(classIdFilter && { classId: classIdFilter }),
+    }),
   );
+
+  const messages = data?.data ?? [];
+  const pagination = data?.pagination;
 
   // Navigate to page
   const goToPage = useCallback(
@@ -154,44 +120,6 @@ const Messages = () => {
     },
     [searchParams, setSearchParams],
   );
-
-  // Load messages when page or filters change
-  useEffect(() => {
-    fetchMessages(
-      currentPage,
-      recipientTypeFilter,
-      sentByFilter,
-      classIdFilter,
-    );
-  }, [
-    currentPage,
-    recipientTypeFilter,
-    sentByFilter,
-    classIdFilter,
-    messages?.length,
-  ]);
-
-  useEffect(() => {
-    // Load teachers
-    usersAPI
-      .getAll({ role: "teacher", limit: 200 })
-      .then((res) => {
-        setTeachers(res.data.data || []);
-      })
-      .catch(() => {
-        toast.error("O'qituvchilarni yuklashda xato");
-      });
-
-    // Load classes
-    classesAPI
-      .getAll()
-      .then((res) => {
-        setClasses(res.data.data || []);
-      })
-      .catch(() => {
-        toast.error("Sinflarni yuklashda xato");
-      });
-  }, []);
 
   // Get recipient type label
   const getRecipientTypeLabel = (type) => {
@@ -399,32 +327,32 @@ const Messages = () => {
         </div>
 
         {/* Desktop Pagination Controls */}
-        {!isLoading && !hasError && messages.length > 0 && (
+        {!isLoading && !isError && messages.length > 0 && (
           <Pagination
             maxPageButtons={5}
             showPageNumbers={true}
             onPageChange={goToPage}
             currentPage={currentPage}
-            hasNextPage={hasNextPage}
-            hasPrevPage={hasPrevPage}
+            hasNextPage={pagination?.hasNextPage}
+            hasPrevPage={pagination?.hasPrevPage}
             className="pt-6 max-md:hidden"
-            totalPages={metadata?.totalPages || 1}
+            totalPages={pagination?.totalPages || 1}
           />
         )}
       </div>
 
       {/* Mobile Pagination Controls */}
-      {!isLoading && !hasError && messages.length > 0 && (
+      {!isLoading && !isError && messages.length > 0 && (
         <div className="overflow-x-auto pb-1.5">
           <Pagination
             maxPageButtons={5}
             showPageNumbers={true}
             onPageChange={goToPage}
             currentPage={currentPage}
-            hasNextPage={hasNextPage}
-            hasPrevPage={hasPrevPage}
+            hasNextPage={pagination?.hasNextPage}
+            hasPrevPage={pagination?.hasPrevPage}
             className="pt-6 min-w-max md:hidden"
-            totalPages={metadata?.totalPages || 1}
+            totalPages={pagination?.totalPages || 1}
           />
         </div>
       )}

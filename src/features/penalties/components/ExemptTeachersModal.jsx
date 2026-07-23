@@ -2,11 +2,14 @@
 import { toast } from "sonner";
 
 // TanStack Query
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 // API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
 import { usersAPI } from "@/features/users/api/users.api";
+
+// Queries
+import { penaltiesQueries } from "../queries/penalties.queries";
+import { useUpdateGradePenaltySettings } from "../queries/penalties.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -24,13 +27,8 @@ const ExemptTeachersModal = () => (
 );
 
 const Content = ({ close }) => {
-  const queryClient = useQueryClient();
-
-  const { data: settings, isLoading: isLoadingSettings } = useQuery({
-    queryKey: ["penalties", "grade-settings"],
-    queryFn: () =>
-      penaltiesAPI.getGradePenaltySettings().then((res) => res.data.data),
-  });
+  const { data: settings, isLoading: isLoadingSettings } =
+    useQuery(penaltiesQueries.gradeSettings());
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ["users", "all-users-short"],
@@ -47,27 +45,32 @@ const Content = ({ close }) => {
     typeof t === "object" ? t.id : t,
   );
 
-  const saveMutation = useMutation({
-    mutationFn: (ids) =>
-      penaltiesAPI.updateGradePenaltySettings({ exemptTeachers: ids }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["penalties", "grade-settings"] });
-      close();
-      toast.success("Istisno ustozlar saqlandi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
+  const { mutate: saveExemptTeachers, isPending: isSaving } =
+    useUpdateGradePenaltySettings();
+
+  const save = (ids) => {
+    saveExemptTeachers(
+      { exemptTeachers: ids },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Istisno ustozlar saqlandi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      },
+    );
+  };
 
   const toggleTeacher = (id) => {
     const updated = currentExemptIds.includes(id)
       ? currentExemptIds.filter((tid) => tid !== id)
       : [...currentExemptIds, id];
-    saveMutation.mutate(updated);
+    save(updated);
   };
 
   const removeTeacher = (id) => {
-    saveMutation.mutate(currentExemptIds.filter((tid) => tid !== id));
+    save(currentExemptIds.filter((tid) => tid !== id));
   };
 
   if (isLoadingSettings) {
@@ -116,7 +119,7 @@ const Content = ({ close }) => {
                   type="button"
                   onClick={() => removeTeacher(teacher.id)}
                   className="hover:text-blue-900 font-medium"
-                  disabled={saveMutation.isPending}
+                  disabled={isSaving}
                 >
                   ×
                 </button>

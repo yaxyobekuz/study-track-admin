@@ -4,12 +4,6 @@ import { toast } from "sonner";
 // React
 import { useEffect } from "react";
 
-// Tanstack Query
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
@@ -17,6 +11,7 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useEditReductionPackage } from "../queries/penalties.mutations";
 
 const EditReductionPackageModal = () => (
   <ResponsiveModal name="editReductionPackage" title="Paketni tahrirlash">
@@ -24,8 +19,8 @@ const EditReductionPackageModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, id, ...data }) => {
-  const queryClient = useQueryClient();
+const Content = ({ close, isLoading, setIsLoading, id, ...data }) => {
+  const { mutate: editPackage } = useEditReductionPackage();
 
   const { title, points, coinCost, order, isActive, setField, setFields } = useObjectState({
     title: "",
@@ -47,26 +42,30 @@ const Content = ({ close, id, ...data }) => {
     }
   }, [id]);
 
-  const updateMutation = useMutation({
-    mutationFn: (payload) => penaltiesAPI.updateReductionPackage(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["penalties", "reduction-packages"] });
-      close();
-      toast.success("Paket yangilandi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    updateMutation.mutate({
-      title,
-      points: Number(points),
-      coinCost: Number(coinCost),
-      order: Number(order),
-      isActive,
-    });
+    setIsLoading(true);
+    editPackage(
+      {
+        id,
+        data: {
+          title,
+          points: Number(points),
+          coinCost: Number(coinCost),
+          order: Number(order),
+          isActive,
+        },
+      },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Paket yangilandi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (
@@ -114,9 +113,7 @@ const Content = ({ close, id, ...data }) => {
         <span>Faol (o'quvchilarga ko'rinadi)</span>
       </label>
 
-      <Button disabled={updateMutation.isPending}>
-        Saqlash{updateMutation.isPending && "..."}
-      </Button>
+      <Button disabled={isLoading}>Saqlash{isLoading && "..."}</Button>
     </form>
   );
 };

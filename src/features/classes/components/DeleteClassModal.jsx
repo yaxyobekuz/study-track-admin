@@ -1,11 +1,8 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { classesAPI } from "@/features/classes/api/classes.api";
-
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useDeleteClass } from "@/features/classes/queries/classes.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -22,23 +19,22 @@ const DeleteClassModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
-  const { invalidateCache } = useArrayStore("classes");
+  const { mutate: deleteClass } = useDeleteClass();
 
   const handleDeleteClass = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    classesAPI
-      .delete(classData.id)
-      .then(() => {
+    deleteClass(classData.id, {
+      onSuccess: () => {
         close();
-        invalidateCache();
         toast.success("Sinf o'chirildi");
-      })
-      .catch((err) => {
+      },
+      onError: (err) => {
         toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+      },
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

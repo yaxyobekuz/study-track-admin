@@ -1,32 +1,27 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { testSeasonsAPI } from "../api/testSeasons.api";
+// Hooks
+import { useDeleteSeason } from "../queries/test-seasons.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
 
-const DeleteSeasonForm = ({
-  onSuccess,
-  close,
-  isLoading,
-  setIsLoading,
-  ...season
-}) => {
-  const handleDelete = async () => {
+const DeleteSeasonForm = ({ close, isLoading, setIsLoading, ...season }) => {
+  const { mutate: deleteSeason } = useDeleteSeason();
+
+  const handleDelete = () => {
     setIsLoading(true);
 
-    try {
-      await testSeasonsAPI.delete(season.id);
-      onSuccess();
-      toast.success("Mavsum o'chirildi");
-      close();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "O'chirishda xatolik");
-    } finally {
-      setIsLoading(false);
-    }
+    deleteSeason(season.id, {
+      onSuccess: () => {
+        toast.success("Mavsum o'chirildi");
+        close();
+      },
+      onError: (error) =>
+        toast.error(error.response?.data?.message || "O'chirishda xatolik"),
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

@@ -12,13 +12,18 @@ import {
 import { useState, useEffect } from "react";
 
 // Router
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 // Icons
 import { Eye, Calendar, Download } from "lucide-react";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useClasses } from "@/features/classes/queries/classes.queries";
+import { useSubjects } from "@/features/subjects/queries/subjects.queries";
+import {
+  useTodaySubjects,
+  useGradesByClassAndDate,
+} from "../queries/grades.queries";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -26,12 +31,8 @@ import Input from "@/shared/components/ui/input/Input";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 
-// Utils
-import { getDayOfWeekUZ } from "@/shared/utils/date.utils";
-
 // API
 import { gradesAPI } from "@/features/grades/api/grades.api";
-import { schedulesAPI } from "@/features/schedules/api/schedules.api";
 
 const Grades = () => {
   // Load saved filters from localStorage
@@ -47,26 +48,21 @@ const Grades = () => {
     };
   };
 
-  const {
-    initialize,
-    hasCollection,
-    setCollection,
-    getCollectionData,
-    isCollectionLoading,
-    setCollectionLoadingState,
-  } = useArrayStore();
   const [filters, setFilters] = useState(getSavedFilters());
 
-  // Classes and subjects data
-  const classes = getCollectionData("classes");
-  const subjects = getCollectionData("subjects");
-  // Students data
-  const studentsCollectionName = `students-${filters.classId}-${filters.date}`;
-  const students = getCollectionData(studentsCollectionName);
-  const isLoading = isCollectionLoading(studentsCollectionName);
-  // Today's subjects data
-  const todaySubjectsCollectionName = `subjects-${filters.classId}-${filters.date}`;
-  const todaySubjects = getCollectionData(todaySubjectsCollectionName);
+  // Reference data
+  const { data: classes = [] } = useClasses();
+  const { data: subjects = [] } = useSubjects();
+
+  // Students with grades + scheduled subjects for the selected class/date
+  const { data: students = [], isLoading } = useGradesByClassAndDate(
+    filters.classId,
+    filters.date,
+  );
+  const { data: todaySubjects = [] } = useTodaySubjects(
+    filters.classId,
+    filters.date,
+  );
 
   // Save filters to localStorage whenever they change
   useEffect(() => {
@@ -74,66 +70,6 @@ const Grades = () => {
     localStorage.setItem("grades_subjectId", filters.subjectId);
     localStorage.setItem("grades_date", filters.date);
   }, [filters]);
-
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Initialize collections (pagination = false)
-    if (!hasCollection(studentsCollectionName))
-      initialize(false, studentsCollectionName);
-    if (!hasCollection(todaySubjectsCollectionName))
-      initialize(false, todaySubjectsCollectionName);
-
-    // Fetch grades and today's subjects
-    if (
-      filters.classId &&
-      filters.date &&
-      !students?.length &&
-      !todaySubjects?.length
-    ) {
-      fetchGradesByClass();
-      fetchTodaySubjects();
-    }
-  }, [filters.classId, filters.date]);
-
-  const fetchTodaySubjects = () => {
-    const dayName = getDayOfWeekUZ(filters.date);
-    if (dayName === "yakshanba") {
-      return setCollection([], null, todaySubjectsCollectionName);
-    }
-
-    schedulesAPI
-      .getByDay(filters.classId, dayName)
-      .then((response) => {
-        if (response.data.data && response.data.data.subjects) {
-          // Include all subjects with their order (even if fan bir necha marta bo'lsa)
-          const scheduleSubjects = response.data.data.subjects
-            .filter((s) => s.subject)
-            .map((s) => ({ ...s.subject, lessonOrder: s.order }))
-            .sort((a, b) => a.lessonOrder - b.lessonOrder);
-
-          setCollection(scheduleSubjects, null, todaySubjectsCollectionName);
-        } else {
-          setCollection([], null, todaySubjectsCollectionName);
-        }
-      })
-      .catch(() => setCollection([], true, todaySubjectsCollectionName));
-  };
-
-  const fetchGradesByClass = () => {
-    setCollectionLoadingState(true, studentsCollectionName);
-
-    gradesAPI
-      .getByClassAndDate(filters.classId, filters.date)
-      .then((response) => {
-        const studentsWithGrades = response.data.data || [];
-        setCollection(studentsWithGrades, null, studentsCollectionName);
-      })
-      .catch(() => {
-        toast.error("Baholarni yuklashda xatolik");
-        setCollection([], true, studentsCollectionName);
-      });
-  };
 
   const handleExport = async () => {
     try {

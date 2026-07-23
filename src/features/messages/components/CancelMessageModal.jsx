@@ -1,11 +1,8 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { messagesAPI } from "@/features/messages/api/messages.api";
-
-// Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+// Queries
+import { useCancelMessage } from "@/features/messages/queries/messages.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -22,26 +19,22 @@ const CancelMessageModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...message }) => {
-  const { invalidateCache } = useArrayStore("messages");
-  const { invalidateCache: invalidateTeacherMessages } =
-    useArrayStore("teacherMessages");
+  const { mutate: cancelMessage } = useCancelMessage();
 
   const handleCancelMessage = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    messagesAPI
-      .cancel(message.id)
-      .then((res) => {
+    cancelMessage(message.id, {
+      onSuccess: (res) => {
         close();
-        invalidateCache();
-        invalidateTeacherMessages();
-        toast.success(res.data?.message || "Xabar to'xtatildi");
-      })
-      .catch((err) => {
+        toast.success(res?.message || "Xabar to'xtatildi");
+      },
+      onError: (err) => {
         toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+      },
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

@@ -1,32 +1,26 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { holidaysAPI } from "@/features/holidays/api/holidays.api";
+// Hooks
+import { useDeleteHoliday } from "@/features/holidays/queries/holidays.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
 
-const DeleteHolidayForm = ({
-  onSuccess,
-  close,
-  isLoading,
-  setIsLoading,
-  ...holiday
-}) => {
-  const handleDelete = async () => {
+const DeleteHolidayForm = ({ close, isLoading, setIsLoading, ...holiday }) => {
+  const { mutate: deleteHoliday } = useDeleteHoliday();
+
+  const handleDelete = () => {
     setIsLoading(true);
 
-    try {
-      onSuccess();
-      await holidaysAPI.delete(holiday.id);
-      toast.success("Dam olish kuni o'chirildi");
-      close();
-    } catch (error) {
-      toast.error("O'chirishda xatolik");
-    } finally {
-      setIsLoading(false);
-    }
+    deleteHoliday(holiday.id, {
+      onSuccess: () => {
+        toast.success("Dam olish kuni o'chirildi");
+        close();
+      },
+      onError: () => toast.error("O'chirishda xatolik"),
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

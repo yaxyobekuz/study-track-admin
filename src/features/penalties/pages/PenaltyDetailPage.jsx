@@ -17,8 +17,12 @@ import { useParams, useNavigate } from "react-router-dom";
 // Modals
 import DeletePenaltyModal from "../components/DeletePenaltyModal";
 
+// Queries
+import { penaltiesQueries } from "../queries/penalties.queries";
+import { useReviewPenalty } from "../queries/penalties.mutations";
+
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Utils & Helpers
 import { cn } from "@/shared/utils/cn";
@@ -34,51 +38,26 @@ import SelectField from "@/shared/components/ui/select/SelectField";
 // Icons
 import { Trash2 } from "lucide-react";
 
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
-
 // Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
 
 const PenaltyDetailPage = () => {
-  const { getCollectionData: getRolesData } = useArrayStore("roles");
-  const roles = getRolesData();
+  const { data: roles = [] } = useRoles();
   const { penaltyId } = useParams();
   const navigate = useNavigate();
   const { openModal } = useModal();
 
-  const queryClient = useQueryClient();
-
   const [rejectionReason, setRejectionReason] = useState("");
   const [reviewStatus, setReviewStatus] = useState("approved");
 
-  const { data: penalty, isLoading: loading } = useQuery({
-    queryKey: ["penalties", "detail", penaltyId],
-    queryFn: () => penaltiesAPI.getById(penaltyId).then((res) => res.data.data),
-  });
+  const { data: penalty, isLoading: loading } = useQuery(
+    penaltiesQueries.detail(penaltyId),
+  );
 
-  const reviewMutation = useMutation({
-    mutationFn: (body) => penaltiesAPI.review(penaltyId, body),
-    onSuccess: (res) => {
-      queryClient.setQueryData(
-        ["penalties", "detail", penaltyId],
-        res.data.data,
-      );
-      queryClient.invalidateQueries({ queryKey: ["penalties", "list"] });
-      toast.success(
-        reviewStatus === "approved"
-          ? "Jarima tasdiqlandi"
-          : "Jarima rad etildi",
-      );
-      setReviewStatus("");
-      setRejectionReason("");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
+  const { mutate: reviewPenalty, isPending: isReviewing } = useReviewPenalty();
 
   const handleReview = () => {
     if (!reviewStatus) return;
@@ -88,7 +67,23 @@ const PenaltyDetailPage = () => {
     }
     const body = { status: reviewStatus };
     if (reviewStatus === "rejected") body.rejectionReason = rejectionReason;
-    reviewMutation.mutate(body);
+
+    reviewPenalty(
+      { id: penaltyId, data: body },
+      {
+        onSuccess: () => {
+          toast.success(
+            reviewStatus === "approved"
+              ? "Jarima tasdiqlandi"
+              : "Jarima rad etildi",
+          );
+          setReviewStatus("");
+          setRejectionReason("");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      },
+    );
   };
 
   if (loading) {
@@ -289,11 +284,11 @@ const PenaltyDetailPage = () => {
                   onClick={handleReview}
                   variant={reviewStatus === "approved" ? "default" : "danger"}
                   disabled={
-                    reviewMutation.isPending ||
+                    isReviewing ||
                     (reviewStatus === "rejected" && !rejectionReason.trim())
                   }
                 >
-                  O'zgartirish{reviewMutation.isPending && "..."}
+                  O'zgartirish{isReviewing && "..."}
                 </Button>
               )}
             </Card>

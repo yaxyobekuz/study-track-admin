@@ -1,12 +1,6 @@
 // Toast
 import { toast } from "sonner";
 
-// Tanstack Query
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
@@ -15,7 +9,8 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+import { useCreatePenaltyCategory } from "../queries/penalties.mutations";
 
 // Helpers
 import { getAllRoles } from "@/shared/helpers/role.helpers";
@@ -26,10 +21,9 @@ const CreateCategoryModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close }) => {
-  const queryClient = useQueryClient();
-  const { getCollectionData } = useArrayStore();
-  const roles = getCollectionData("roles") || [];
+const Content = ({ close, isLoading, setIsLoading }) => {
+  const { data: roles = [] } = useRoles();
+  const { mutate: createCategory } = useCreatePenaltyCategory();
 
   // Owner va developer'dan tashqari barcha rollar
   const roleOptions = getAllRoles(roles).filter((r) => r.value !== "developer");
@@ -41,26 +35,27 @@ const Content = ({ close }) => {
     targetRole: roleOptions[0]?.value || "",
   });
 
-  const createMutation = useMutation({
-    mutationFn: (data) => penaltiesAPI.createPenaltyCategory(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["penalties", "categories"] });
-      close();
-      toast.success("Kategoriya yaratildi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!targetRole) return toast.error("Rol tanlanmagan");
-    createMutation.mutate({
-      title,
-      description,
-      points: Number(points),
-      targetRole,
-    });
+    setIsLoading(true);
+    createCategory(
+      {
+        title,
+        description,
+        points: Number(points),
+        targetRole,
+      },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Kategoriya yaratildi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (
@@ -96,9 +91,7 @@ const Content = ({ close }) => {
         onChange={(e) => setField("points", e.target.value)}
       />
 
-      <Button disabled={createMutation.isPending}>
-        Yaratish{createMutation.isPending && "..."}
-      </Button>
+      <Button disabled={isLoading}>Yaratish{isLoading && "..."}</Button>
     </form>
   );
 };

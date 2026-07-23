@@ -1,12 +1,12 @@
 // Toast
 import { toast } from "sonner";
 
+// Hooks
+import { useDistributeCoins } from "../queries/coin-distribution.mutations";
+
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
-
-// API
-import { coinDistributionAPI } from "@/features/coin-distribution/api/coin-distribution.api";
 
 const ConfirmDistributionModal = () => (
   <ResponsiveModal
@@ -29,28 +29,32 @@ const Content = ({
   filterValue,
   setIsLoading,
 }) => {
+  const { mutate: distributeCoins } = useDistributeCoins();
+
   const actionLabel = action === "give" ? "beriladi" : "olinadi";
 
   const handleConfirm = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    coinDistributionAPI
-      .distribute({ action, amount, reason, filterType, filterValue })
-      .then((res) => {
-        const { data } = res.data;
-        let message = `${data.successCount} ta foydalanuvchiga tanga ${actionLabel}`;
-        if (data.skippedCount > 0) {
-          message += `. ${data.skippedCount} ta o'tkazib yuborildi (balans yetarli emas)`;
-        }
-        toast.success(message);
-        close();
-        onSuccess?.();
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    distributeCoins(
+      { action, amount, reason, filterType, filterValue },
+      {
+        onSuccess: (res) => {
+          const { data } = res;
+          let message = `${data.successCount} ta foydalanuvchiga tanga ${actionLabel}`;
+          if (data.skippedCount > 0) {
+            message += `. ${data.skippedCount} ta o'tkazib yuborildi (balans yetarli emas)`;
+          }
+          toast.success(message);
+          close();
+          onSuccess?.();
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      }
+    );
   };
 
   return (

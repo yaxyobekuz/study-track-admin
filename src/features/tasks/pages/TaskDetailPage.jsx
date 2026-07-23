@@ -8,10 +8,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ClipboardList } from "lucide-react";
 
 // Tanstack Query
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
-// API
-import { tasksAPI } from "@/features/tasks/api/tasks.api";
+// Queries
+import { tasksQueries } from "../queries/tasks.queries";
 
 // Data
 import {
@@ -25,7 +25,7 @@ import { getRoleLabel } from "@/shared/helpers/role.helpers";
 import { formatDateUZ } from "@/shared/utils/date.utils";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 import useModal from "@/shared/hooks/useModal";
 
 // Components
@@ -38,17 +38,12 @@ import ExtendDeadlineModal from "../components/ExtendDeadlineModal";
 import StopTaskModal from "../components/StopTaskModal";
 
 const TaskDetailPage = () => {
-  const { getCollectionData: getRolesData } = useArrayStore("roles");
-  const roles = getRolesData();
+  const { data: roles = [] } = useRoles();
   const { taskId } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { openModal } = useModal();
 
-  const { data: task, isLoading } = useQuery({
-    queryKey: ["tasks", "detail", taskId],
-    queryFn: () => tasksAPI.getById(taskId).then((res) => res.data.data),
-  });
+  const { data: task, isLoading } = useQuery(tasksQueries.detail(taskId));
 
   if (isLoading) {
     return (

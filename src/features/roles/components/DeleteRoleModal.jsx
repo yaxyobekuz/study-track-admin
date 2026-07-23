@@ -2,10 +2,7 @@
 import { toast } from "sonner";
 
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
-
-// API
-import { rolesAPI } from "@/features/roles/api/roles.api";
+import { useDeleteRole } from "@/features/roles/queries/roles.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -22,7 +19,7 @@ const DeleteRoleModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...role }) => {
-  const { invalidateCache } = useArrayStore("roles");
+  const { mutate: deleteRole } = useDeleteRole();
 
   const hasUsers = role.usersCount > 0;
 
@@ -30,17 +27,16 @@ const Content = ({ close, isLoading, setIsLoading, ...role }) => {
     e.preventDefault();
     setIsLoading(true);
 
-    rolesAPI
-      .delete(role.id)
-      .then(() => {
+    deleteRole(role.id, {
+      onSuccess: () => {
         close();
-        invalidateCache();
         toast.success("Rol o'chirildi");
-      })
-      .catch((err) => {
+      },
+      onError: (err) => {
         toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+      },
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (

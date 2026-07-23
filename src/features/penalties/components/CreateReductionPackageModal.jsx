@@ -1,12 +1,6 @@
 // Toast
 import { toast } from "sonner";
 
-// Tanstack Query
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
-
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
@@ -14,6 +8,7 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useCreateReductionPackage } from "../queries/penalties.mutations";
 
 const CreateReductionPackageModal = () => (
   <ResponsiveModal name="createReductionPackage" title="Yangi kamaytirish paketi">
@@ -21,8 +16,8 @@ const CreateReductionPackageModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close }) => {
-  const queryClient = useQueryClient();
+const Content = ({ close, isLoading, setIsLoading }) => {
+  const { mutate: createPackage } = useCreateReductionPackage();
 
   const { title, points, coinCost, order, setField } = useObjectState({
     title: "",
@@ -31,25 +26,26 @@ const Content = ({ close }) => {
     order: "0",
   });
 
-  const createMutation = useMutation({
-    mutationFn: (data) => penaltiesAPI.createReductionPackage(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["penalties", "reduction-packages"] });
-      close();
-      toast.success("Paket yaratildi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    createMutation.mutate({
-      title,
-      points: Number(points),
-      coinCost: Number(coinCost),
-      order: Number(order),
-    });
+    setIsLoading(true);
+    createPackage(
+      {
+        title,
+        points: Number(points),
+        coinCost: Number(coinCost),
+        order: Number(order),
+      },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Paket yaratildi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (
@@ -89,9 +85,7 @@ const Content = ({ close }) => {
         onChange={(e) => setField("order", e.target.value)}
       />
 
-      <Button disabled={createMutation.isPending}>
-        Yaratish{createMutation.isPending && "..."}
-      </Button>
+      <Button disabled={isLoading}>Yaratish{isLoading && "..."}</Button>
     </form>
   );
 };

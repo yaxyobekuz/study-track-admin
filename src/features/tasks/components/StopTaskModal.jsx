@@ -4,11 +4,8 @@ import { toast } from "sonner";
 // React
 import { useState } from "react";
 
-// Tanstack Query
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
-import { tasksAPI } from "@/features/tasks/api/tasks.api";
+// Queries
+import { useStopTask } from "../queries/tasks.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -21,25 +18,13 @@ const StopTaskModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, taskId, defaultPenaltyPoints }) => {
-  const queryClient = useQueryClient();
+const Content = ({ close, isLoading, setIsLoading, taskId, defaultPenaltyPoints }) => {
+  const { mutate: stopTask } = useStopTask();
   const [reason, setReason] = useState("");
   const [withPenalty, setWithPenalty] = useState(false);
   const [penaltyPoints, setPenaltyPoints] = useState(
     String(defaultPenaltyPoints || 1),
   );
-
-  const mutation = useMutation({
-    mutationFn: (data) => tasksAPI.stop(taskId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks", "detail", taskId] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", "list"] });
-      close();
-      toast.success("Topshiriq to'xtatildi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -54,7 +39,20 @@ const Content = ({ close, taskId, defaultPenaltyPoints }) => {
 
     const data = { reason, withPenalty };
     if (withPenalty) data.penaltyPoints = Number(penaltyPoints);
-    mutation.mutate(data);
+
+    setIsLoading(true);
+    stopTask(
+      { id: taskId, data },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Topshiriq to'xtatildi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
   };
 
   return (
@@ -92,10 +90,10 @@ const Content = ({ close, taskId, defaultPenaltyPoints }) => {
       <Button
         type="submit"
         variant="danger"
-        disabled={mutation.isPending || !reason.trim()}
+        disabled={isLoading || !reason.trim()}
         className="w-full"
       >
-        {mutation.isPending ? "Saqlanmoqda..." : "To'xtatish"}
+        {isLoading ? "Saqlanmoqda..." : "To'xtatish"}
       </Button>
     </form>
   );

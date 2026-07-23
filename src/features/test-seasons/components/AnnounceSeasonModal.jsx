@@ -7,6 +7,9 @@ import { useEffect, useRef, useState } from "react";
 // API
 import { testSeasonsAPI } from "../api/testSeasons.api";
 
+// Hooks
+import { useAnnounceSeason } from "../queries/test-seasons.mutations";
+
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
@@ -28,6 +31,7 @@ const Content = ({ close, isLoading, setIsLoading, id, name }) => {
   const [excluded, setExcluded] = useState([]); // istisno qilingan sinf ID lari
   const [note, setNote] = useState("");
   const isSubmittingRef = useRef(false);
+  const { mutate: announceSeason } = useAnnounceSeason();
 
   // Biriktirilgan sinflarni yuklash (modal har ochilganda Content qayta mount bo'ladi)
   useEffect(() => {
@@ -64,19 +68,21 @@ const Content = ({ close, isLoading, setIsLoading, id, name }) => {
     isSubmittingRef.current = true;
     setIsLoading(true);
 
-    testSeasonsAPI
-      .announce(id, { note: note.trim(), excludedClassIds: excluded })
-      .then((res) => {
-        close();
-        toast.success(res.data?.message || "E'lon navbatga qo'shildi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => {
-        isSubmittingRef.current = false;
-        setIsLoading(false);
-      });
+    announceSeason(
+      { id, data: { note: note.trim(), excludedClassIds: excluded } },
+      {
+        onSuccess: (res) => {
+          close();
+          toast.success(res?.message || "E'lon navbatga qo'shildi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => {
+          isSubmittingRef.current = false;
+          setIsLoading(false);
+        },
+      },
+    );
   };
 
   return (

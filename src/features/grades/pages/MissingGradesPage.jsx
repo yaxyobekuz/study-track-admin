@@ -13,49 +13,32 @@ import {
 } from "lucide-react";
 
 // React
-import { useState, useEffect } from "react";
+import { useState } from "react";
+
+// Router
+import { useNavigate } from "react-router-dom";
+
+// Hooks
+import { useMissingGradesToday } from "../queries/grades.queries";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-
-// API
-import { gradesAPI } from "@/features/grades/api/grades.api";
 import Button from "@/shared/components/ui/button/Button";
-import { useNavigate } from "react-router-dom";
 
 const MissingGrades = () => {
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [expandedTeachers, setExpandedTeachers] = useState({});
 
-  const fetchData = () => {
-    setLoading(true);
-    setError(null);
+  const {
+    data,
+    isLoading: loading,
+    error,
+    refetch,
+  } = useMissingGradesToday();
 
-    gradesAPI
-      .getMissingToday()
-      .then((res) => {
-        setData(res.data.data);
-        // Barcha o'qituvchilarni ochiq qilish
-        const expanded = {};
-        res.data.data.byTeacher?.forEach((t) => {
-          expanded[t.teacher.id] = false;
-        });
-        setExpandedTeachers(expanded);
-      })
-      .catch((err) => {
-        setError(
-          err.response?.data?.message || "Ma'lumotlarni yuklashda xatolik",
-        );
-      })
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const errorMessage = error
+    ? error.response?.data?.message || "Ma'lumotlarni yuklashda xatolik"
+    : null;
 
   const toggleTeacher = (teacherId) => {
     setExpandedTeachers((prev) => ({
@@ -86,7 +69,7 @@ const MissingGrades = () => {
   }
 
   // Error
-  if (error) {
+  if (errorMessage) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-1.5">
@@ -99,7 +82,7 @@ const MissingGrades = () => {
         <Card className="bg-red-50 border-red-200">
           <div className="flex items-center gap-3 text-red-700">
             <AlertTriangle className="size-6" />
-            <p>{error}</p>
+            <p>{errorMessage}</p>
           </div>
         </Card>
       </div>
@@ -140,7 +123,7 @@ const MissingGrades = () => {
             <h1 className="page-title">Qo'yilmagan baholar</h1>
           </div>
           <button
-            onClick={fetchData}
+            onClick={() => refetch()}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             <RefreshCw className="size-4" />
@@ -178,7 +161,7 @@ const MissingGrades = () => {
         </div>
 
         <button
-          onClick={fetchData}
+          onClick={() => refetch()}
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
         >
           <RefreshCw className="size-4" />

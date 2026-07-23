@@ -10,7 +10,7 @@ import Button from "@/shared/components/ui/button/Button";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useArrayStore from "@/shared/hooks/useArrayStore";
+import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Helpers
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
@@ -19,36 +19,30 @@ import { getRoleLabel } from "@/shared/helpers/role.helpers";
 import EditCategoryModal from "../components/EditCategoryModal";
 import CreateCategoryModal from "../components/CreateCategoryModal";
 
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
+// Queries
+import { penaltyCategoriesQueries } from "../queries/penalties.queries";
+import { useDeletePenaltyCategory } from "../queries/penalties.mutations";
 
 // Tanstack Query
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 const PenaltyCategoriesPage = () => {
-  const queryClient = useQueryClient();
   const { openModal } = useModal();
-  const { getCollectionData } = useArrayStore();
-  const roles = getCollectionData("roles") || [];
+  const { data: roles = [] } = useRoles();
 
-  const { data: categories = [], isLoading } = useQuery({
-    queryKey: ["penalties", "categories"],
-    queryFn: () => penaltiesAPI.getCategories().then((res) => res.data.data),
-  });
+  const { data: categories = [], isLoading } = useQuery(
+    penaltyCategoriesQueries.list(),
+  );
 
-  const deleteMutation = useMutation({
-    mutationFn: (id) => penaltiesAPI.deleteCategory(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["penalties", "categories"] });
-      toast.success("Kategoriya o'chirildi");
-    },
-    onError: (err) =>
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-  });
+  const { mutate: deleteCategory } = useDeletePenaltyCategory();
 
   const handleDelete = (id) => {
     if (!confirm("Kategoriyani o'chirishni tasdiqlaysizmi?")) return;
-    deleteMutation.mutate(id);
+    deleteCategory(id, {
+      onSuccess: () => toast.success("Kategoriya o'chirildi"),
+      onError: (err) =>
+        toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+    });
   };
 
   return (

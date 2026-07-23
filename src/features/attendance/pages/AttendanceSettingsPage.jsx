@@ -4,15 +4,14 @@ import { toast } from "sonner";
 // React
 import { useState, useEffect } from "react";
 
-// API
-import { attendanceAPI } from "../api/attendance.api";
-
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+import { attendanceQueries } from "../queries/attendance.queries";
+import { useUpdateAttendanceSettings } from "../queries/attendance.mutations";
 
 // Tanstack Query
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -22,16 +21,16 @@ import InputField from "@/shared/components/ui/input/InputField";
 import Field, { FieldLabel } from "@/shared/components/ui/field/Field";
 
 const AttendanceSettingsPage = () => {
-  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data: settings, isLoading: isFetching } = useQuery({
-    queryKey: ["attendance", "settings"],
-    queryFn: () => attendanceAPI.getSettings().then((r) => r.data.data),
-  });
+  const { data: settings, isLoading: isFetching } = useQuery(
+    attendanceQueries.settings(),
+  );
 
-  const { getCollectionData: getRoles } = useArrayStore("roles");
-  const roles = getRoles().filter(
+  const { mutate: saveSettings } = useUpdateAttendanceSettings();
+
+  const { data: allRoles = [] } = useRoles();
+  const roles = allRoles.filter(
     (r) => r.value !== "owner" && r.value !== "student",
   );
 
@@ -96,16 +95,12 @@ const AttendanceSettingsPage = () => {
       pausedUsers: state.pausedUsers,
     };
 
-    attendanceAPI
-      .updateSettings(data)
-      .then(() => {
-        queryClient.invalidateQueries({ queryKey: ["attendance", "settings"] });
-        toast.success("Sozlamalar saqlandi");
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+    saveSettings(data, {
+      onSuccess: () => toast.success("Sozlamalar saqlandi"),
+      onError: (err) =>
+        toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   if (isFetching) {

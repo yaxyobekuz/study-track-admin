@@ -1,12 +1,11 @@
 // Toast
 import { toast } from "sonner";
 
-// API
-import { usersAPI } from "@/features/users/api/users.api";
-
 // Hooks
-import useArrayStore from "@/shared/hooks/useArrayStore";
 import useObjectState from "@/shared/hooks/useObjectState";
+import { useRoles } from "@/features/roles/queries/roles.queries";
+import { useClasses } from "@/features/classes/queries/classes.queries";
+import { useCreateUser } from "@/features/users/queries/users.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -27,11 +26,11 @@ const CreateUserModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading }) => {
-  const { getCollectionData, invalidateCache } = useArrayStore("classes");
-  const classes = getCollectionData();
+  const { data: classes = [] } = useClasses();
+  const { data: rolesData = [] } = useRoles();
+  const roles = rolesData.filter((r) => r.value !== "owner");
 
-  const { getCollectionData: getRolesData } = useArrayStore("roles");
-  const roles = getRolesData().filter((r) => r.value !== "owner");
+  const { mutate: createUser } = useCreateUser();
 
   const {
     role,
@@ -99,17 +98,16 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       hasCustomSchedule: undefined,
     };
 
-    usersAPI
-      .create(data)
-      .then(() => {
+    createUser(data, {
+      onSuccess: () => {
         close();
-        invalidateCache("users");
         toast.success("Foydalanuvchi yaratildi");
-      })
-      .catch((err) => {
+      },
+      onError: (err) => {
         toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-      })
-      .finally(() => setIsLoading(false));
+      },
+      onSettled: () => setIsLoading(false),
+    });
   };
 
   return (
