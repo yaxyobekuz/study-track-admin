@@ -22,6 +22,9 @@ import EditUserPage from "@/features/users/pages/EditUserPage";
 // Pages - Roles
 import RolesPage from "@/features/roles/pages/RolesPage";
 
+// Pages - Permissions
+import PermissionsPage from "@/features/permissions/pages/PermissionsPage";
+
 // Pages - Classes
 import ClassesPage from "@/features/classes/pages/ClassesPage";
 import ClassDetailPage from "@/features/classes/pages/ClassDetailPage";
@@ -145,6 +148,9 @@ const Routes = () => {
 
           {/* Roles */}
           <Route path="/roles" element={<RolesPage />} />
+
+          {/* Permissions */}
+          <Route path="/permissions" element={<PermissionsPage />} />
 
           {/* Classes */}
           <Route path="/classes" element={<ClassesPage />} />

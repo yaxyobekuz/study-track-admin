@@ -67,6 +67,10 @@ import { authAPI } from "@/features/auth/api/auth.api";
 
 // Hooks
 import { useIsMobile } from "@/shared/hooks/useMobile";
+import usePermissions from "@/shared/hooks/usePermissions";
+
+// Permissions
+import { permissionForPath } from "@/features/permissions/data/permissions.data";
 
 // Navigation items
 const navItems = [
@@ -228,6 +232,10 @@ const navItems = [
         url: "/roles",
       },
       {
+        title: "Ruxsatlar",
+        url: "/permissions",
+      },
+      {
         title: "Dam olish kunlari",
         url: "/holidays",
       },
@@ -331,13 +339,22 @@ const Header = () => {
 const Main = () => {
   const isMobile = useIsMobile();
   const { toggleSidebar } = useSidebar();
+  const { can } = usePermissions();
+
+  // Ruxsati bo'lmagan sahifalarni yashiramiz; bo'lim bo'sh qolsa — butun bo'limni.
+  const visibleNavItems = navItems
+    .map((item) => ({
+      ...item,
+      items: (item.items || []).filter((sub) => can(permissionForPath(sub.url))),
+    }))
+    .filter((item) => item.items.length > 0);
 
   return (
     <SidebarContent>
       <SidebarGroup>
         <SidebarGroupLabel>Platforma</SidebarGroupLabel>
         <SidebarMenu>
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <Collapsible
               asChild
               key={item.title}

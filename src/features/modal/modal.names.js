@@ -71,6 +71,9 @@ export const MODAL_NAMES = [
   "editRole",
   "deleteRole",
 
+  // Permissions
+  "manageUserPermissions",
+
   // Coin Distribution
   "confirmDistribution",
 

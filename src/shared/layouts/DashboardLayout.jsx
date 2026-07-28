@@ -8,6 +8,7 @@ import {
 } from "@/shared/components/shadcn/sidebar";
 import AppHeader from "@/shared/components/layout/AppHeader";
 import AppSidebar from "@/shared/components/layout/AppSidebar";
+import PermissionGuard from "@/shared/components/guards/PermissionGuard";
 import MainBackgroundPatterns from "../components/bg/MainBackgroundPatterns";
 
 // Modals
@@ -37,6 +38,7 @@ import StudentStatisticsModal from "@/features/statistics/components/StudentStat
 import CreateRoleModal from "@/features/roles/components/CreateRoleModal";
 import EditRoleModal from "@/features/roles/components/EditRoleModal";
 import DeleteRoleModal from "@/features/roles/components/DeleteRoleModal";
+import ManageUserPermissionsModal from "@/features/permissions/components/ManageUserPermissionsModal";
 import ReviewExcuseModal from "@/features/attendance/components/ReviewExcuseModal";
 import BugReport from "../components/layout/BugReport";
 
@@ -49,7 +51,9 @@ const DashboardLayout = () => {
         <SidebarInset>
           <AppHeader />
           <div className="flex flex-1 flex-col gap-4 p-4 md:py-2">
-            <Outlet />
+            <PermissionGuard>
+              <Outlet />
+            </PermissionGuard>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -98,6 +102,9 @@ const DashboardLayout = () => {
       <CreateRoleModal />
       <EditRoleModal />
       <DeleteRoleModal />
+
+      {/* Permissions */}
+      <ManageUserPermissionsModal />
 
       {/* Attendance */}
       <ReviewExcuseModal />
