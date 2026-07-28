@@ -1,73 +1,341 @@
 // ─────────────────────────────────────────────
-// RUXSATLAR KATALOGI (bo'lim darajasi)
+// RUXSATLAR KATALOGI (bo'lim + amal darajasi)
 // ─────────────────────────────────────────────
-// Kalitlar server `server/src/utils/permissions.js` bilan bir xil bo'lishi
+// Ruxsat kaliti — `<bo'lim>.<amal>` (masalan "users.create").
+// Katalog server `server/src/utils/permissions.js` bilan bir xil bo'lishi
 // SHART (ikki alohida repo — qo'lda sinxron saqlanadi).
 
-/** Grant qilinadigan ruxsatlar — modal checkbox'lari shu ro'yxatdan chiziladi. */
-export const PERMISSION_CATALOG = [
-  { key: "users", label: "Foydalanuvchilar", group: "Asosiy" },
-  { key: "statistics", label: "Statistika", group: "Asosiy" },
-  { key: "attendance", label: "Davomat", group: "Ta'lim" },
-  { key: "grades", label: "Baholar jurnali", group: "Ta'lim" },
-  { key: "schedules", label: "Dars jadvali", group: "Ta'lim" },
-  { key: "topics", label: "Dars mavzulari", group: "Ta'lim" },
-  { key: "classes", label: "Sinflar", group: "Ta'lim" },
-  { key: "subjects", label: "Fanlar", group: "Ta'lim" },
-  { key: "tests", label: "Testlar", group: "Ta'lim" },
-  { key: "market", label: "Do'kon", group: "Do'kon" },
-  { key: "tasks", label: "Topshiriqlar", group: "Topshiriqlar" },
-  { key: "penalties", label: "Jarimalar", group: "Jarimalar" },
-  { key: "premium", label: "MBSI Premium", group: "Premium" },
-  { key: "coins", label: "Tangalar", group: "Tangalar" },
-  { key: "holidays", label: "Dam olish kunlari", group: "Boshqaruv" },
-  { key: "monitors", label: "Monitorlar", group: "Boshqaruv" },
-  { key: "messages", label: "Xabarlar", group: "Ijtimoiy" },
-  { key: "social", label: "Ijtimoiy tarmoqlar", group: "Ijtimoiy" },
-  { key: "leads", label: "Sotuvlar", group: "Sotuvlar" },
+/** Bo'lim kalitlari. */
+export const SECTIONS = {
+  USERS: "users",
+  STATISTICS: "statistics",
+  ATTENDANCE: "attendance",
+  GRADES: "grades",
+  SCHEDULES: "schedules",
+  TOPICS: "topics",
+  CLASSES: "classes",
+  SUBJECTS: "subjects",
+  TESTS: "tests",
+  MARKET: "market",
+  TASKS: "tasks",
+  PENALTIES: "penalties",
+  PREMIUM: "premium",
+  COINS: "coins",
+  HOLIDAYS: "holidays",
+  MONITORS: "monitors",
+  MESSAGES: "messages",
+  SOCIAL: "social",
+  LEADS: "leads",
+};
+
+// Tez-tez takrorlanadigan amal nomlari
+const A = {
+  view: { key: "view", label: "Ko'rish" },
+  create: { key: "create", label: "Qo'shish" },
+  update: { key: "update", label: "Tahrirlash" },
+  delete: { key: "delete", label: "O'chirish" },
+  export: { key: "export", label: "Eksport qilish" },
+  settings: { key: "settings", label: "Sozlamalar" },
+};
+
+/** Bo'lim → amallar. Modal checkbox'lari shu ro'yxatdan chiziladi. */
+export const PERMISSION_SECTIONS = [
+  {
+    key: SECTIONS.USERS,
+    label: "Foydalanuvchilar",
+    group: "Asosiy",
+    actions: [
+      A.view,
+      A.create,
+      A.update,
+      A.delete,
+      { key: "archive", label: "Arxivlash" },
+      { key: "restore", label: "Arxivdan qaytarish" },
+      { key: "password", label: "Parolni ko'rish / tiklash" },
+      A.export,
+    ],
+  },
+  {
+    key: SECTIONS.STATISTICS,
+    label: "Statistika",
+    group: "Asosiy",
+    actions: [A.view, A.export],
+  },
+  {
+    key: SECTIONS.ATTENDANCE,
+    label: "Davomat",
+    group: "Ta'lim",
+    actions: [
+      A.view,
+      { key: "mark", label: "Davomat belgilash" },
+      A.update,
+      { key: "review", label: "Sababnomalarni ko'rib chiqish" },
+      { key: "reasons", label: "Sabab turlarini boshqarish" },
+      { key: "reports", label: "Hisobotlar" },
+      A.settings,
+    ],
+  },
+  {
+    key: SECTIONS.GRADES,
+    label: "Baholar jurnali",
+    group: "Ta'lim",
+    actions: [A.view, A.create, A.update, A.delete, A.export],
+  },
+  {
+    key: SECTIONS.SCHEDULES,
+    label: "Dars jadvali",
+    group: "Ta'lim",
+    actions: [A.view, A.create, A.update, A.delete, A.export, A.settings],
+  },
+  {
+    key: SECTIONS.TOPICS,
+    label: "Dars mavzulari",
+    group: "Ta'lim",
+    actions: [A.view, { key: "import", label: "Fayldan yuklash" }, A.delete],
+  },
+  {
+    key: SECTIONS.CLASSES,
+    label: "Sinflar",
+    group: "Ta'lim",
+    actions: [
+      A.view,
+      A.create,
+      A.update,
+      A.delete,
+      { key: "students", label: "O'quvchi qo'shish / chiqarish" },
+      { key: "transfer", label: "O'quvchilarni ko'chirish" },
+      A.export,
+    ],
+  },
+  {
+    key: SECTIONS.SUBJECTS,
+    label: "Fanlar",
+    group: "Ta'lim",
+    actions: [A.view, A.create, A.update, A.delete, A.export],
+  },
+  {
+    key: SECTIONS.TESTS,
+    label: "Testlar",
+    group: "Ta'lim",
+    actions: [
+      A.view,
+      A.create,
+      A.update,
+      A.delete,
+      { key: "announce", label: "E'lon qilish" },
+      { key: "distribute", label: "Tanga taqsimlash" },
+      { key: "finalize", label: "Mavsumni yakunlash" },
+      A.settings,
+    ],
+  },
+  {
+    key: SECTIONS.MARKET,
+    label: "Do'kon",
+    group: "Do'kon",
+    actions: [
+      A.view,
+      A.create,
+      A.update,
+      A.delete,
+      { key: "orders", label: "Buyurtmalarni ko'rish" },
+      { key: "fulfill", label: "Buyurtma holatini o'zgartirish" },
+    ],
+  },
+  {
+    key: SECTIONS.TASKS,
+    label: "Topshiriqlar",
+    group: "Topshiriqlar",
+    actions: [
+      A.view,
+      A.create,
+      { key: "review", label: "Tasdiqlash / rad etish" },
+      { key: "stop", label: "To'xtatish" },
+      { key: "extend", label: "Muddatni uzaytirish" },
+    ],
+  },
+  {
+    key: SECTIONS.PENALTIES,
+    label: "Jarimalar",
+    group: "Jarimalar",
+    actions: [
+      A.view,
+      A.create,
+      { key: "review", label: "Ko'rib chiqish" },
+      A.delete,
+      { key: "reduce", label: "Jarimani kamaytirish" },
+      { key: "categories", label: "Kategoriyalarni boshqarish" },
+      { key: "packages", label: "Kamaytirish paketlari" },
+      A.settings,
+    ],
+  },
+  {
+    key: SECTIONS.PREMIUM,
+    label: "MBSI Premium",
+    group: "Premium",
+    actions: [
+      A.view,
+      { key: "grant", label: "Premium berish" },
+      { key: "revoke", label: "Premiumni bekor qilish" },
+      { key: "emojis", label: "Emojilarni boshqarish" },
+      A.export,
+      A.settings,
+    ],
+  },
+  {
+    key: SECTIONS.COINS,
+    label: "Tangalar",
+    group: "Tangalar",
+    actions: [A.view, { key: "distribute", label: "Tanga taqsimlash" }, A.settings],
+  },
+  {
+    key: SECTIONS.HOLIDAYS,
+    label: "Dam olish kunlari",
+    group: "Boshqaruv",
+    actions: [A.view, A.create, A.update, A.delete],
+  },
+  {
+    key: SECTIONS.MONITORS,
+    label: "Monitorlar",
+    group: "Boshqaruv",
+    actions: [A.view, A.update],
+  },
+  {
+    key: SECTIONS.MESSAGES,
+    label: "Xabarlar",
+    group: "Ijtimoiy",
+    actions: [
+      A.view,
+      { key: "create", label: "Xabar yuborish" },
+      { key: "cancel", label: "Yuborishni bekor qilish" },
+    ],
+  },
+  {
+    key: SECTIONS.SOCIAL,
+    label: "Ijtimoiy tarmoqlar",
+    group: "Ijtimoiy",
+    actions: [A.view, A.create, A.update, A.delete],
+  },
+  {
+    key: SECTIONS.LEADS,
+    label: "Sotuvlar",
+    group: "Sotuvlar",
+    actions: [
+      A.view,
+      A.create,
+      A.update,
+      A.delete,
+      { key: "status", label: "Holatni o'zgartirish" },
+      { key: "activities", label: "Faoliyatlar" },
+      { key: "analytics", label: "Analitika" },
+      { key: "taxonomy", label: "Manba / yo'nalish / kategoriya" },
+    ],
+  },
 ];
 
-export const PERMISSION_KEYS = PERMISSION_CATALOG.map((p) => p.key);
-
-/** `{ [group]: [{ key, label, group }] }` — modal UI ni guruhlab chizish uchun. */
-export const PERMISSION_CATALOG_BY_GROUP = PERMISSION_CATALOG.reduce(
-  (acc, item) => {
-    (acc[item.group] ||= []).push(item);
-    return acc;
-  },
-  {},
+/** Barcha ruxsat kalitlari: ["users.view", "users.create", ...] */
+export const PERMISSION_KEYS = PERMISSION_SECTIONS.flatMap((s) =>
+  s.actions.map((a) => `${s.key}.${a.key}`),
 );
 
-/** Ruxsat kaliti bo'yicha label. */
-export const permissionLabel = (key) =>
-  PERMISSION_CATALOG.find((p) => p.key === key)?.label || key;
+/** Bo'lim kaliti → o'sha bo'limning barcha kalitlari. */
+export const KEYS_BY_SECTION = PERMISSION_SECTIONS.reduce((acc, s) => {
+  acc[s.key] = s.actions.map((a) => `${s.key}.${a.key}`);
+  return acc;
+}, {});
 
-// Route prefiks → ruxsat kaliti. Sidebar filtri va route guard shu jadvaldan
-// foydalanadi. `/roles` va `/permissions` grant qilinmaydi — kalitlari katalogda
-// yo'q, shuning uchun can() ular uchun faqat owner'ga true qaytaradi (owner-only).
+const SECTION_BY_KEY = PERMISSION_SECTIONS.reduce((acc, s) => {
+  acc[s.key] = s;
+  return acc;
+}, {});
+
+/** `{ [group]: [section, ...] }` — modal UI ni guruhlab chizish uchun. */
+export const SECTIONS_BY_GROUP = PERMISSION_SECTIONS.reduce((acc, s) => {
+  (acc[s.group] ||= []).push(s);
+  return acc;
+}, {});
+
+/** Bo'lim kaliti bo'yicha label: "users" → "Foydalanuvchilar". */
+export const sectionLabel = (section) => SECTION_BY_KEY[section]?.label || section;
+
+/** Amal kaliti bo'yicha label: "users.create" → "Qo'shish". */
+export const actionLabel = (key = "") => {
+  const [section, action] = key.split(".");
+  const found = SECTION_BY_KEY[section]?.actions.find((a) => a.key === action);
+  return found?.label || action || key;
+};
+
+/** To'liq label: "users.create" → "Foydalanuvchilar → Qo'shish". */
+export const permissionLabel = (key = "") => {
+  const [section, action] = key.split(".");
+  if (!action) return sectionLabel(section);
+  return `${sectionLabel(section)} → ${actionLabel(key)}`;
+};
+
+/**
+ * Foydalanuvchida berilgan ruxsat bormi? (server `hasPermission` bilan bir xil)
+ * Eski, amalga bo'linmagan bo'lim kaliti ham qabul qilinadi.
+ */
+export const hasPermission = (permissions = [], key) => {
+  if (!key) return true;
+  if (permissions.includes(key)) return true;
+  return permissions.includes(key.split(".")[0]);
+};
+
+/** Bo'limda hech bo'lmasa bitta amal bormi? */
+export const hasSection = (permissions = [], section) => {
+  if (!section) return true;
+  if (permissions.includes(section)) return true;
+  return permissions.some((p) => p.startsWith(`${section}.`));
+};
+
+/** Eski bare bo'lim kalitlarini barcha amallariga yoyadi. */
+export const expandLegacyKeys = (keys = []) => [
+  ...new Set(keys.flatMap((k) => KEYS_BY_SECTION[k] || [k])),
+];
+
+/**
+ * Dedupe + har bir bo'lim uchun `.view` ni avtomatik qo'shadi (bo'limda biror
+ * amal bo'lsa, uni ko'ra olishi ham kerak). Natija katalog tartibida qaytadi.
+ */
+export const normalizePermissions = (keys = []) => {
+  const set = new Set(keys);
+
+  for (const section of Object.keys(KEYS_BY_SECTION)) {
+    if ([...set].some((k) => k.startsWith(`${section}.`))) {
+      set.add(`${section}.view`);
+    }
+  }
+
+  return PERMISSION_KEYS.filter((k) => set.has(k));
+};
+
+// Route prefiks → talab qilinadigan ruxsat kaliti. Sidebar filtri va route
+// guard shu jadvaldan foydalanadi — sahifaga kirish uchun `.view` yetarli.
+// `/roles` va `/permissions` grant qilinmaydi — kalitlari katalogda yo'q,
+// shuning uchun can() ular uchun faqat owner'ga true qaytaradi (owner-only).
 const ROUTE_PERMISSIONS = [
-  { prefix: "/users", key: "users" },
-  { prefix: "/statistics", key: "statistics" },
-  { prefix: "/attendance", key: "attendance" },
-  { prefix: "/grades", key: "grades" },
-  { prefix: "/schedules", key: "schedules" },
-  { prefix: "/schedule-settings", key: "schedules" },
-  { prefix: "/topics", key: "topics" },
-  { prefix: "/classes", key: "classes" },
-  { prefix: "/subjects", key: "subjects" },
-  { prefix: "/test-seasons", key: "tests" },
-  { prefix: "/test-settings", key: "tests" },
-  { prefix: "/market", key: "market" },
-  { prefix: "/tasks", key: "tasks" },
-  { prefix: "/penalties", key: "penalties" },
-  { prefix: "/premium", key: "premium" },
-  { prefix: "/coin-distribution", key: "coins" },
-  { prefix: "/coin-settings", key: "coins" },
-  { prefix: "/holidays", key: "holidays" },
-  { prefix: "/monitors", key: "monitors" },
-  { prefix: "/messages", key: "messages" },
-  { prefix: "/social-networks", key: "social" },
-  { prefix: "/leads", key: "leads" },
+  { prefix: "/users", key: "users.view" },
+  { prefix: "/statistics", key: "statistics.view" },
+  { prefix: "/attendance", key: "attendance.view" },
+  { prefix: "/grades", key: "grades.view" },
+  { prefix: "/schedules", key: "schedules.view" },
+  { prefix: "/schedule-settings", key: "schedules.view" },
+  { prefix: "/topics", key: "topics.view" },
+  { prefix: "/classes", key: "classes.view" },
+  { prefix: "/subjects", key: "subjects.view" },
+  { prefix: "/test-seasons", key: "tests.view" },
+  { prefix: "/test-settings", key: "tests.view" },
+  { prefix: "/market", key: "market.view" },
+  { prefix: "/tasks", key: "tasks.view" },
+  { prefix: "/penalties", key: "penalties.view" },
+  { prefix: "/premium", key: "premium.view" },
+  { prefix: "/coin-distribution", key: "coins.view" },
+  { prefix: "/coin-settings", key: "coins.view" },
+  { prefix: "/holidays", key: "holidays.view" },
+  { prefix: "/monitors", key: "monitors.view" },
+  { prefix: "/messages", key: "messages.view" },
+  { prefix: "/social-networks", key: "social.view" },
+  { prefix: "/leads", key: "leads.view" },
   { prefix: "/roles", key: "roles" },
   { prefix: "/permissions", key: "permissions" },
 ];
