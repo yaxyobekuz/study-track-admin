@@ -9,7 +9,29 @@ import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Helpers & data
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
-import { permissionLabel } from "@/features/permissions/data/permissions.data";
+import {
+  PERMISSION_SECTIONS,
+  KEYS_BY_SECTION,
+  expandLegacyKeys,
+} from "@/features/permissions/data/permissions.data";
+
+/**
+ * Foydalanuvchi ruxsatlarini bo'limlar bo'yicha guruhlaydi:
+ * `[{ key, label, chosen, total }]` — faqat biror amali borlari.
+ */
+const groupBySection = (permissions = []) => {
+  const granted = new Set(expandLegacyKeys(permissions));
+
+  return PERMISSION_SECTIONS.map((section) => {
+    const keys = KEYS_BY_SECTION[section.key];
+    return {
+      key: section.key,
+      label: section.label,
+      chosen: keys.filter((k) => granted.has(k)).length,
+      total: keys.length,
+    };
+  }).filter((s) => s.chosen > 0);
+};
 
 // Icons
 import { ShieldCheck, SlidersHorizontal } from "lucide-react";
@@ -30,15 +52,11 @@ const PermissionsPage = () => {
         <h1 className="page-title">Ruxsatlar</h1>
       </div>
 
-      <p className="text-sm text-gray-500 mb-4">
-        Xodimlarga admin paneldagi bo'limlar bo'yicha ruxsat bering yoki olib
-        qo'ying. Owner har doim barcha bo'limlarga ega.
-      </p>
-
       {/* Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {staff.map((user) => {
-          const perms = user.permissions || [];
+          const sections = groupBySection(user.permissions);
+          const actionCount = sections.reduce((sum, s) => sum + s.chosen, 0);
 
           return (
             <Card key={user.id}>
@@ -66,17 +84,18 @@ const PermissionsPage = () => {
               <div className="pt-4 border-t">
                 <div className="flex items-center gap-1.5 mb-2 text-sm text-gray-600">
                   <ShieldCheck className="size-4" strokeWidth={1.5} />
-                  {perms.length} ta ruxsat
+                  {sections.length} ta bo'lim · {actionCount} ta amal
                 </div>
 
-                {perms.length > 0 ? (
+                {sections.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
-                    {perms.map((key) => (
+                    {sections.map(({ key, label, chosen, total }) => (
                       <span
                         key={key}
                         className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700"
+                        title={`${chosen} / ${total} ta amal`}
                       >
-                        {permissionLabel(key)}
+                        {label} · {chosen}/{total}
                       </span>
                     ))}
                   </div>
