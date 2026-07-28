@@ -1,6 +1,3 @@
-// Store
-import useAuth from "@/shared/hooks/useAuth";
-
 // Router
 import { useSearchParams, Link } from "react-router-dom";
 
@@ -18,6 +15,7 @@ import Input from "@/shared/components/ui/input/Input";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
+import Can from "@/shared/components/guards/Can";
 
 // Helpers
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
@@ -44,7 +42,6 @@ const TAB_ITEMS = [
 ];
 
 const Users = () => {
-  const { user: currentUser } = useAuth();
   const { openModal } = useModal();
   const { data: roles = [] } = useRoles();
 
@@ -172,12 +169,14 @@ const Users = () => {
       {/* Header */}
       <div className="flex flex-col gap-4 mb-4 sm:flex-row">
         {/* Create New Btn */}
-        <Button asChild>
-          <Link to="/users/new">
-            <Plus />
-            Yangi foydalanuvchi
-          </Link>
-        </Button>
+        <Can do="users.create">
+          <Button asChild>
+            <Link to="/users/new">
+              <Plus />
+              Yangi foydalanuvchi
+            </Link>
+          </Button>
+        </Can>
 
         {/* Search Input */}
         <Input
@@ -198,10 +197,12 @@ const Users = () => {
         />
 
         {/* Download Data */}
-        <Button onClick={() => openModal("exportUsers")}>
-          <Download />
-          <span className="sm:hidden">Foydalanuvchilarni yuklash</span>
-        </Button>
+        <Can do="users.export">
+          <Button onClick={() => openModal("exportUsers")}>
+            <Download />
+            <span className="sm:hidden">Foydalanuvchilarni yuklash</span>
+          </Button>
+        </Can>
       </div>
 
       {/* Table Wrapper */}
@@ -283,15 +284,17 @@ const Users = () => {
                   <td className="text-center text-sm font-medium">
                     <div className="flex justify-center space-x-2">
                       {/* Edit */}
-                      <Link
-                        to={`/users/${user.id}/edit`}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        <Edit className="size-5" strokeWidth={1.5} />
-                      </Link>
+                      <Can do="users.update">
+                        <Link
+                          to={`/users/${user.id}/edit`}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          <Edit className="size-5" strokeWidth={1.5} />
+                        </Link>
+                      </Can>
 
-                      {/*View Password (Owner only) */}
-                      {currentUser?.role === "owner" && (
+                      {/* View Password */}
+                      <Can do="users.password">
                         <button
                           onClick={() => openModal("viewUserPassword", user)}
                           className="text-purple-600 hover:text-purple-900"
@@ -299,47 +302,55 @@ const Users = () => {
                         >
                           <Eye className="size-5" strokeWidth={1.5} />
                         </button>
-                      )}
+                      </Can>
 
-                      {/*
                       {/* Reset Password */}
-                      <button
-                        onClick={() => openModal("resetUserPassword", user)}
-                        className="text-orange-600 hover:text-orange-900"
-                      >
-                        <Key className="size-5" strokeWidth={1.5} />
-                      </button>
+                      <Can do="users.password">
+                        <button
+                          onClick={() => openModal("resetUserPassword", user)}
+                          className="text-orange-600 hover:text-orange-900"
+                          title="Parolni tiklash"
+                        >
+                          <Key className="size-5" strokeWidth={1.5} />
+                        </button>
+                      </Can>
 
                       {/* Archive / Restore (students) or Delete (others) */}
                       {user.role === "student" ? (
                         isArchivedTab ? (
-                          <button
-                            onClick={() => openModal("restoreUser", user)}
-                            className="text-green-600 hover:text-green-900"
-                            title="Arxivdan qaytarish"
-                          >
-                            <ArchiveRestore
-                              className="size-5"
-                              strokeWidth={1.5}
-                            />
-                          </button>
+                          <Can do="users.restore">
+                            <button
+                              onClick={() => openModal("restoreUser", user)}
+                              className="text-green-600 hover:text-green-900"
+                              title="Arxivdan qaytarish"
+                            >
+                              <ArchiveRestore
+                                className="size-5"
+                                strokeWidth={1.5}
+                              />
+                            </button>
+                          </Can>
                         ) : (
-                          <button
-                            onClick={() => openModal("archiveUser", user)}
-                            className="text-amber-600 hover:text-amber-900"
-                            title="Arxivlash"
-                          >
-                            <Archive className="size-5" strokeWidth={1.5} />
-                          </button>
+                          <Can do="users.archive">
+                            <button
+                              onClick={() => openModal("archiveUser", user)}
+                              className="text-amber-600 hover:text-amber-900"
+                              title="Arxivlash"
+                            >
+                              <Archive className="size-5" strokeWidth={1.5} />
+                            </button>
+                          </Can>
                         )
                       ) : (
-                        <button
-                          onClick={() => openModal("deleteUser", user)}
-                          className="text-red-600 hover:text-red-900"
-                          title="O'chirish"
-                        >
-                          <Trash2 className="size-5" strokeWidth={1.5} />
-                        </button>
+                        <Can do="users.delete">
+                          <button
+                            onClick={() => openModal("deleteUser", user)}
+                            className="text-red-600 hover:text-red-900"
+                            title="O'chirish"
+                          >
+                            <Trash2 className="size-5" strokeWidth={1.5} />
+                          </button>
+                        </Can>
                       )}
                     </div>
                   </td>
