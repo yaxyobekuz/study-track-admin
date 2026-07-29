@@ -36,7 +36,6 @@ import UpdateOrderStatusModal from "@/features/market/components/UpdateOrderStat
 import AddDeliveryImageModal from "@/features/market/components/AddDeliveryImageModal";
 import StudentStatisticsModal from "@/features/statistics/components/StudentStatisticsModal";
 import CreateRoleModal from "@/features/roles/components/CreateRoleModal";
-import EditRoleModal from "@/features/roles/components/EditRoleModal";
 import DeleteRoleModal from "@/features/roles/components/DeleteRoleModal";
 import ReviewExcuseModal from "@/features/attendance/components/ReviewExcuseModal";
 import BugReport from "../components/layout/BugReport";
@@ -99,7 +98,6 @@ const DashboardLayout = () => {
 
       {/* Roles */}
       <CreateRoleModal />
-      <EditRoleModal />
       <DeleteRoleModal />
 
       {/* Attendance */}

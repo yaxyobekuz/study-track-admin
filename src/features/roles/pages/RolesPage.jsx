@@ -1,17 +1,52 @@
+// React
+import { useState } from "react";
+
+// Toast
+import { toast } from "sonner";
+
+// Icons
+import { Plus } from "lucide-react";
+
 // Components
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
+import RolesList from "@/features/roles/components/RolesList";
+import RoleDetailsPanel from "@/features/roles/components/RoleDetailsPanel";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 
-// Icons
-import { Plus, Edit, Trash2, Lock, Users } from "lucide-react";
-
 const RolesPage = () => {
   const { openModal } = useModal();
+
+  const [selectedId, setSelectedId] = useState(null);
+  const [isDirty, setIsDirty] = useState(false);
+
   const { data: roles = [], isLoading } = useRoles();
+
+  // Tanlanmagan bo'lsa (yoki tanlangan rol o'chirilsa) — birinchisi
+  const selected = roles.find((role) => role.id === selectedId) || roles[0];
+
+  // Saqlanmagan o'zgarish bo'lsa — boshqa rolga o'tishni tasdiqlatamiz
+  const handleSelect = (id) => {
+    if (id === selected?.id) return;
+
+    if (isDirty) {
+      return toast.warning("Saqlanmagan o'zgarishlar bor", {
+        description: "Boshqa rolga o'tsangiz, ular bekor qilinadi.",
+        action: {
+          label: "O'tish",
+          onClick: () => {
+            setIsDirty(false);
+            setSelectedId(id);
+          },
+        },
+      });
+    }
+
+    setSelectedId(id);
+  };
 
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
@@ -19,7 +54,7 @@ const RolesPage = () => {
 
   return (
     <div>
-      {/* Action Buttons */}
+      {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-4">
         <h1 className="page-title">Rollar</h1>
 
@@ -29,62 +64,26 @@ const RolesPage = () => {
         </Button>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {roles.map((role) => (
-          <Card key={role.id}>
-            {/* Top */}
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {role.name}
-                </h3>
-                <p className="text-sm text-gray-500">{role.value}</p>
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex items-center gap-3.5">
-                {role.isSystem && (
-                  <span className="flex items-center gap-1 text-xs text-gray-400">
-                    <Lock className="size-3.5" strokeWidth={1.5} />
-                    Tizim roli
-                  </span>
-                )}
-
-                {/* Edit (ish vaqti) - barcha rollar uchun */}
-                <button
-                  onClick={() => openModal("editRole", role)}
-                  className="text-blue-600 hover:text-blue-900"
-                >
-                  <Edit className="size-5" strokeWidth={1.5} />
-                </button>
-
-                {/* Delete - faqat tizimga tegishli bo'lmagan rollar */}
-                {!role.isSystem && (
-                  <button
-                    className="text-red-600 hover:text-red-900"
-                    onClick={() => openModal("deleteRole", role)}
-                  >
-                    <Trash2 className="size-5" strokeWidth={1.5} />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Bottom */}
-            <div className="flex items-center pt-4 border-t">
-              <span className="flex items-center gap-1.5 text-sm text-gray-600">
-                <Users className="size-4" strokeWidth={1.5} />
-                {role.usersCount} ta foydalanuvchi
-              </span>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {roles.length === 0 && (
-        <div className="text-center py-12">
+      {!selected ? (
+        <Card className="py-12 text-center">
           <p className="text-gray-500">Hozircha rollar yo'q</p>
+        </Card>
+      ) : (
+        /* 1-panel — 1/3, 2-panel — 2/3 */
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+          <RolesList
+            roles={roles}
+            selectedId={selected.id}
+            onSelect={handleSelect}
+            className="lg:col-span-1"
+          />
+
+          <RoleDetailsPanel
+            key={selected.id}
+            role={selected}
+            onDirtyChange={setIsDirty}
+            className="lg:col-span-2"
+          />
         </div>
       )}
     </div>

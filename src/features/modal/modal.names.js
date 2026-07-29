@@ -68,7 +68,6 @@ export const MODAL_NAMES = [
 
   // Roles
   "createRole",
-  "editRole",
   "deleteRole",
 
   // Coin Distribution
