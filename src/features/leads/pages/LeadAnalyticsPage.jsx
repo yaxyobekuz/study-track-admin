@@ -10,6 +10,7 @@ import {
 // Components
 import SelectField from "@/shared/components/ui/select/SelectField";
 import InputField from "@/shared/components/ui/input/InputField";
+import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 import LeadOverviewStats from "@/features/leads/components/LeadOverviewStats";
 import LeadTrendChart from "@/features/leads/components/LeadTrendChart";
 import LeadSourceChart from "@/features/leads/components/LeadSourceChart";
@@ -23,7 +24,6 @@ const LeadAnalyticsPage = () => {
   const [period, setPeriod] = useState("30");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
-  const [activeTab, setActiveTab] = useState("overview");
 
   const isCustom = period === "custom";
 
@@ -31,6 +31,30 @@ const LeadAnalyticsPage = () => {
   const dateParams = isCustom
     ? { startDate: customStart, endDate: customEnd }
     : { period };
+
+  // Tab kaliti → kontent. Faqat aktiv tab mount bo'ladi, shuning uchun
+  // ko'rinmayotgan chartlar so'rov yubormaydi.
+  const contentByTab = {
+    overview: (
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <LeadTrendChart dateParams={dateParams} />
+          <LeadStatusDistribution dateParams={dateParams} />
+        </div>
+        <RecentLeads />
+      </div>
+    ),
+    funnel: <LeadConversionFunnel dateParams={dateParams} />,
+    sources: <LeadSourceChart dateParams={dateParams} />,
+    directions: <LeadDirectionChart dateParams={dateParams} />,
+    categories: <LeadCategoryChart dateParams={dateParams} />,
+    trends: <LeadTrendChart dateParams={dateParams} expanded />,
+  };
+
+  const tabItems = analyticsTabOptions.map((tab) => ({
+    ...tab,
+    content: contentByTab[tab.value],
+  }));
 
   return (
     <div className="pb-28 space-y-4">
@@ -73,53 +97,13 @@ const LeadAnalyticsPage = () => {
       {/* Overview Stats - always visible */}
       <LeadOverviewStats dateParams={dateParams} />
 
-      {/* Tab navigation */}
-      <div className="flex gap-1 overflow-x-auto pb-1">
-        {analyticsTabOptions.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setActiveTab(tab.value)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
-              activeTab === tab.value
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      {activeTab === "overview" && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <LeadTrendChart dateParams={dateParams} />
-            <LeadStatusDistribution dateParams={dateParams} />
-          </div>
-          <RecentLeads />
-        </div>
-      )}
-
-      {activeTab === "funnel" && (
-        <LeadConversionFunnel dateParams={dateParams} />
-      )}
-
-      {activeTab === "sources" && (
-        <LeadSourceChart dateParams={dateParams} />
-      )}
-
-      {activeTab === "directions" && (
-        <LeadDirectionChart dateParams={dateParams} />
-      )}
-
-      {activeTab === "categories" && (
-        <LeadCategoryChart dateParams={dateParams} />
-      )}
-
-      {activeTab === "trends" && (
-        <LeadTrendChart dateParams={dateParams} expanded />
-      )}
+      {/* Tablar + kontent — 6 ta, tor ekranga sig'masa gorizontal scroll bo'ladi */}
+      <TabsButtons
+        items={tabItems}
+        contentClassName="mt-4"
+        triggerClassName="shrink-0"
+        listClassName="max-w-full justify-start overflow-x-auto overflow-y-hidden hidden-scrollbar"
+      />
     </div>
   );
 };
