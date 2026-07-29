@@ -1,45 +1,47 @@
+// React
+import { useState } from "react";
+
+// Toast
+import { toast } from "sonner";
+
 // Components
 import Card from "@/shared/components/ui/Card";
-import Button from "@/shared/components/ui/button/Button";
+import StaffPermissionsList from "@/features/permissions/components/StaffPermissionsList";
+import UserPermissionsPanel from "@/features/permissions/components/UserPermissionsPanel";
 
 // Hooks
-import useModal from "@/shared/hooks/useModal";
 import { useStaff } from "@/features/permissions/queries/permissions.queries";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 
-// Helpers & data
-import { getRoleLabel } from "@/shared/helpers/role.helpers";
-import {
-  PERMISSION_SECTIONS,
-  KEYS_BY_SECTION,
-  expandLegacyKeys,
-} from "@/features/permissions/data/permissions.data";
-
-/**
- * Foydalanuvchi ruxsatlarini bo'limlar bo'yicha guruhlaydi:
- * `[{ key, label, chosen, total }]` — faqat biror amali borlari.
- */
-const groupBySection = (permissions = []) => {
-  const granted = new Set(expandLegacyKeys(permissions));
-
-  return PERMISSION_SECTIONS.map((section) => {
-    const keys = KEYS_BY_SECTION[section.key];
-    return {
-      key: section.key,
-      label: section.label,
-      chosen: keys.filter((k) => granted.has(k)).length,
-      total: keys.length,
-    };
-  }).filter((s) => s.chosen > 0);
-};
-
-// Icons
-import { ShieldCheck, SlidersHorizontal } from "lucide-react";
-
 const PermissionsPage = () => {
-  const { openModal } = useModal();
+  const [selectedId, setSelectedId] = useState(null);
+  const [isDirty, setIsDirty] = useState(false);
+
   const { data: staff = [], isLoading } = useStaff();
   const { data: roles = [] } = useRoles();
+
+  // Tanlanmagan bo'lsa (yoki tanlangan xodim ro'yxatdan chiqib ketsa) — birinchisi
+  const selected = staff.find((user) => user.id === selectedId) || staff[0];
+
+  // Saqlanmagan o'zgarish bo'lsa — boshqa xodimga o'tishni tasdiqlatamiz
+  const handleSelect = (id) => {
+    if (id === selected?.id) return;
+
+    if (isDirty) {
+      return toast.warning("Saqlanmagan o'zgarishlar bor", {
+        description: "Boshqa xodimga o'tsangiz, ular bekor qilinadi.",
+        action: {
+          label: "O'tish",
+          onClick: () => {
+            setIsDirty(false);
+            setSelectedId(id);
+          },
+        },
+      });
+    }
+
+    setSelectedId(id);
+  };
 
   if (isLoading) {
     return <div className="text-center py-8">Yuklanmoqda...</div>;
@@ -52,73 +54,28 @@ const PermissionsPage = () => {
         <h1 className="page-title">Ruxsatlar</h1>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {staff.map((user) => {
-          const sections = groupBySection(user.permissions);
-          const actionCount = sections.reduce((sum, s) => sum + s.chosen, 0);
-
-          return (
-            <Card key={user.id}>
-              {/* Top */}
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {user.fullName || user.firstName}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {user.username} · {getRoleLabel(user.role, roles)}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => openModal("manageUserPermissions", user)}
-                  className="text-blue-600 hover:text-blue-900"
-                  title="Ruxsatlarni boshqarish"
-                >
-                  <SlidersHorizontal className="size-5" strokeWidth={1.5} />
-                </button>
-              </div>
-
-              {/* Granted permissions */}
-              <div className="pt-4 border-t">
-                <div className="flex items-center gap-1.5 mb-2 text-sm text-gray-600">
-                  <ShieldCheck className="size-4" strokeWidth={1.5} />
-                  {sections.length} ta bo'lim · {actionCount} ta amal
-                </div>
-
-                {sections.length > 0 ? (
-                  <div className="flex flex-wrap gap-1.5">
-                    {sections.map(({ key, label, chosen, total }) => (
-                      <span
-                        key={key}
-                        className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700"
-                        title={`${chosen} / ${total} ta amal`}
-                      >
-                        {label} · {chosen}/{total}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-400">Ruxsatlar berilmagan</p>
-                )}
-              </div>
-
-              <Button
-                variant="secondary"
-                className="mt-4 w-full"
-                onClick={() => openModal("manageUserPermissions", user)}
-              >
-                Boshqarish
-              </Button>
-            </Card>
-          );
-        })}
-      </div>
-
-      {staff.length === 0 && (
-        <div className="text-center py-12">
+      {!selected ? (
+        <Card className="py-12 text-center">
           <p className="text-gray-500">Ruxsat berish mumkin bo'lgan xodimlar yo'q</p>
+        </Card>
+      ) : (
+        /* 1-panel — 1/3, 2-panel — 2/3 */
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+          <StaffPermissionsList
+            staff={staff}
+            roles={roles}
+            selectedId={selected.id}
+            onSelect={handleSelect}
+            className="lg:col-span-1"
+          />
+
+          <UserPermissionsPanel
+            key={selected.id}
+            user={selected}
+            roles={roles}
+            onDirtyChange={setIsDirty}
+            className="lg:col-span-2"
+          />
         </div>
       )}
     </div>
