@@ -10,7 +10,7 @@ import { useRoles } from "@/features/roles/queries/roles.queries";
 import { usersQueries } from "@/features/users/queries/users.queries";
 
 // Components
-import Tabs from "@/shared/components/ui/Tabs";
+import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 import Input from "@/shared/components/ui/input/Input";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
@@ -159,10 +159,10 @@ const Users = () => {
   return (
     <div>
       {/* Tabs: Asosiy / Arxivlangan */}
-      <Tabs
+      <TabsButtons
         items={TAB_ITEMS}
         value={activeTab}
-        onValueChange={handleTabChange}
+        onChange={handleTabChange}
         className="mb-4"
       />
 

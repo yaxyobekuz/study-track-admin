@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
 // Components
-import { TabsLinks } from "@/shared/components/tabs/Tabs";
+import { TabsLinks } from "@/shared/components/ui/tabs/Tabs";
 
 // Data
 import { MARK_SUBTABS } from "../data/davomatTabs.data";

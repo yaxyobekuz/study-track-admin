@@ -2,7 +2,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 
 // Components
-import { TabsLinks } from "@/shared/components/tabs/Tabs";
+import { TabsLinks } from "@/shared/components/ui/tabs/Tabs";
 
 // Data
 import { ATTENDANCE_TABS } from "../data/davomatTabs.data";
@@ -31,8 +31,13 @@ const AttendanceLayout = () => {
         )}
       </div>
 
-      {/* Asosiy tablar */}
-      <TabsLinks items={ATTENDANCE_TABS} className="max-w-full" />
+      {/* Asosiy tablar — 7 ta, tor ekranga sig'masa gorizontal scroll bo'ladi
+          (TabsLinks standart ko'rinishida scroll yo'q, shuning uchun shu yerda) */}
+      <TabsLinks
+        items={ATTENDANCE_TABS}
+        itemClassName="shrink-0"
+        className="max-w-full justify-start overflow-x-auto overflow-y-hidden hidden-scrollbar"
+      />
 
       {/* Tab sahifasi */}
       <Outlet />
