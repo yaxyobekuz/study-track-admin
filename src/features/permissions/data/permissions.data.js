@@ -237,6 +237,9 @@ export const PERMISSION_KEYS = PERMISSION_SECTIONS.flatMap((s) =>
   s.actions.map((a) => `${s.key}.${a.key}`),
 );
 
+/** Tez tekshirish uchun (ro'yxatdagi har bir xodim uchun qayta hisoblanadi). */
+const PERMISSION_KEY_SET = new Set(PERMISSION_KEYS);
+
 /** Bo'lim kaliti → o'sha bo'limning barcha kalitlari. */
 export const KEYS_BY_SECTION = PERMISSION_SECTIONS.reduce((acc, s) => {
   acc[s.key] = s.actions.map((a) => `${s.key}.${a.key}`);
@@ -292,6 +295,13 @@ export const hasSection = (permissions = [], section) => {
 export const expandLegacyKeys = (keys = []) => [
   ...new Set(keys.flatMap((k) => KEYS_BY_SECTION[k] || [k])),
 ];
+
+/**
+ * Berilgan amallar soni — eski bo'lim kalitlari yoyiladi, katalogda yo'qlari
+ * hisobga olinmaydi.
+ */
+export const countGranted = (permissions = []) =>
+  new Set(expandLegacyKeys(permissions).filter((k) => PERMISSION_KEY_SET.has(k))).size;
 
 /**
  * Dedupe + har bir bo'lim uchun `.view` ni avtomatik qo'shadi (bo'limda biror
