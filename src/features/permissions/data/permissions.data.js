@@ -319,6 +319,14 @@ export const normalizePermissions = (keys = []) => {
   return PERMISSION_KEYS.filter((k) => set.has(k));
 };
 
+/**
+ * Tahrirlash uchun kalitlar to'plami: eski bo'lim kalitlari yoyiladi, katalogda
+ * yo'qlari tashlanadi, har bir bo'limga `.view` qo'shiladi. Ya'ni to'plam aynan
+ * saqlanadigan ko'rinishda va katalog tartibida bo'ladi.
+ */
+export const toPermissionSet = (permissions = []) =>
+  new Set(normalizePermissions(expandLegacyKeys(permissions)));
+
 // Route prefiks → talab qilinadigan ruxsat kaliti. Sidebar filtri va route
 // guard shu jadvaldan foydalanadi — sahifaga kirish uchun `.view` yetarli.
 // `/roles` va `/permissions` grant qilinmaydi — kalitlari katalogda yo'q,
