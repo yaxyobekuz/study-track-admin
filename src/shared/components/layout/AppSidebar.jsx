@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   BadgeDollarSign,
   Crown,
+  Wallet,
 } from "lucide-react";
 
 // Router
@@ -218,6 +219,17 @@ const navItems = [
       {
         title: "Sozlamalar",
         url: "/coin-settings",
+      },
+    ],
+  },
+  {
+    title: "Moliya",
+    icon: Wallet,
+    isActive: false,
+    items: [
+      {
+        title: "Tariflar",
+        url: "/finance/tariffs",
       },
     ],
   },

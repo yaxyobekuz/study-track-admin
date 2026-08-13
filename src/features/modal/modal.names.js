@@ -93,6 +93,13 @@ export const MODAL_NAMES = [
   "createAbsenceReason",
   "editAbsenceReason",
 
+  // Moliya - tariflar
+  "createTariff",
+  "editTariff",
+  "addTariffVersion",
+  "assignTariff",
+  "changeStudentTariff",
+
   // Premium
   "grantPremium",
   "createEmoji",

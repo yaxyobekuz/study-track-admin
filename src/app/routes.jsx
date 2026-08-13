@@ -109,6 +109,11 @@ import StudentReportsPage from "@/features/attendance/pages/StudentReportsPage";
 import StaffReportsPage from "@/features/attendance/pages/StaffReportsPage";
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 
+// Moliya (Finance) - layout & route-level pages
+import FinanceLayout from "@/features/finance/layouts/FinanceLayout";
+import TariffsPage from "@/features/finance/pages/TariffsPage";
+import TariffDetailPage from "@/features/finance/pages/TariffDetailPage";
+
 // Pages - Leads
 import LeadDetailPage from "@/features/leads/pages/LeadDetailPage";
 import LeadsListPage from "@/features/leads/pages/LeadsListPage";
@@ -301,6 +306,15 @@ const Routes = () => {
             path="/student-attendance/today"
             element={<Navigate to="/attendance/daily/students" replace />}
           />
+
+          {/* Moliya - asosiy sahifa (tablar) */}
+          <Route path="/finance" element={<FinanceLayout />}>
+            <Route index element={<Navigate to="/finance/tariffs" replace />} />
+            <Route path="tariffs" element={<TariffsPage />} />
+          </Route>
+
+          {/* Tarif detali - layoutdan tashqarida: contentga to'liq egalik qiladi */}
+          <Route path="/finance/tariffs/:id" element={<TariffDetailPage />} />
 
           {/* Leads */}
           <Route path="/leads" element={<LeadsListPage />} />
