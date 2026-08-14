@@ -13,6 +13,7 @@ import { usersQueries } from "../queries/users.queries";
 // Components
 import UserForm from "../components/UserForm";
 import StudentAttendanceSummary from "@/features/attendance/components/StudentAttendanceSummary";
+import StudentFinanceSection from "@/features/finance/components/StudentFinanceSection";
 
 const EditUserPage = () => {
   const { userId } = useParams();
@@ -39,9 +40,16 @@ const EditUserPage = () => {
         <>
           <UserForm mode="edit" initialData={data} />
           {data.role === "student" && (
-            <div className="mt-6 border border-gray-100 rounded-xl p-4">
-              <StudentAttendanceSummary studentId={userId} />
-            </div>
+            <>
+              <div className="mt-6 border border-gray-100 rounded-xl p-4">
+                <StudentAttendanceSummary studentId={userId} />
+              </div>
+
+              {/* Moliya bo'limi — finance feature'iga tegishli, o'zi fetch qiladi */}
+              <div className="mt-6 border border-gray-100 rounded-xl p-4">
+                <StudentFinanceSection studentId={userId} />
+              </div>
+            </>
           )}
         </>
       ) : (
