@@ -22,6 +22,7 @@ export const SECTIONS = {
   PREMIUM: "premium",
   COINS: "coins",
   TARIFFS: "tariffs",
+  FINANCE: "finance",
   HOLIDAYS: "holidays",
   MONITORS: "monitors",
   MESSAGES: "messages",
@@ -201,6 +202,23 @@ export const PERMISSION_SECTIONS = [
       { key: "assign", label: "O'quvchiga biriktirish" },
       { key: "adjust", label: "Amaldagi yozuvni to'g'rilash" },
       A.export,
+    ],
+  },
+  {
+    // Tariflardan alohida: narxlarni ko'rish huquqi butun qarzdorlik registrini
+    // ochib bermasligi kerak.
+    key: SECTIONS.FINANCE,
+    label: "Hisob-fakturalar va to'lovlar",
+    group: "Moliya",
+    actions: [
+      A.view,
+      { key: "generate", label: "Hisob-faktura shakllantirish" },
+      { key: "pay", label: "To'lov qabul qilish" },
+      { key: "status", label: "O'quvchi moliyaviy holati" },
+      { key: "cancel", label: "Hisob-fakturani bekor qilish" },
+      { key: "adjust", label: "Amaldagi yozuvni to'g'rilash" },
+      A.export,
+      A.settings,
     ],
   },
   {
