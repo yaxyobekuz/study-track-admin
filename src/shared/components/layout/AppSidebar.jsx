@@ -228,8 +228,8 @@ const navItems = [
     isActive: false,
     items: [
       {
-        title: "Tariflar",
-        url: "/finance/tariffs",
+        title: "Asosiy",
+        url: "/finance",
       },
     ],
   },
