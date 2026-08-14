@@ -100,6 +100,9 @@ export const MODAL_NAMES = [
   "editTariffVersion",
   "assignTariff",
   "changeStudentTariff",
+  "generateInvoices",
+  "recordPayment",
+  "editStudentFinanceStatus",
 
   // Premium
   "grantPremium",

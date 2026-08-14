@@ -77,13 +77,7 @@ export const TARIFF_TABLE_COLUMNS = [
 ];
 
 /** Narx tarixi jadvalining sarlavhalari. */
-export const VERSION_TABLE_COLUMNS = [
-  "Davr",
-  "Oylik summa",
-  "Izoh",
-  "Holat",
-  "",
-];
+export const VERSION_TABLE_COLUMNS = ["Davr", "Oylik summa", "Holat", ""];
 
 /** Tarif detalidagi biriktirilgan o'quvchilar jadvali. */
 export const ASSIGNED_STUDENT_TABLE_COLUMNS = [
@@ -92,4 +86,77 @@ export const ASSIGNED_STUDENT_TABLE_COLUMNS = [
   "Joriy oydagi summa",
   "Holat",
   "",
+];
+
+// ── Hisob-fakturalar ─────────────────────────
+
+/** Majburiyat holati uchun badge. */
+export const INVOICE_STATUS_META = {
+  unpaid: { label: "To'lanmagan", className: "bg-red-100 text-red-700" },
+  partial: { label: "Qisman to'langan", className: "bg-amber-100 text-amber-700" },
+  paid: { label: "To'langan", className: "bg-green-100 text-green-700" },
+  cancelled: { label: "Bekor qilingan", className: "bg-gray-100 text-gray-600" },
+};
+
+export const INVOICE_STATUS_OPTIONS = [
+  { label: "Barchasi", value: "all" },
+  { label: "To'lanmagan", value: "unpaid" },
+  { label: "Qisman to'langan", value: "partial" },
+  { label: "To'langan", value: "paid" },
+  { label: "Bekor qilingan", value: "cancelled" },
+];
+
+export const INVOICE_TABLE_COLUMNS = [
+  "O'quvchi",
+  "Tarif",
+  "Summa",
+  "To'langan",
+  "Qarz",
+  "Holat",
+  "",
+];
+
+/** To'lov usullari. */
+export const PAYMENT_METHOD_OPTIONS = [
+  { label: "Naqd", value: "cash" },
+  { label: "Plastik", value: "card" },
+  { label: "O'tkazma", value: "transfer" },
+  { label: "Boshqa", value: "other" },
+];
+
+// ── O'quvchi moliyaviy holati ────────────────
+
+/** Faol / Muzlatilgan / Chetlatilgan uchun badge. */
+export const FINANCE_STATUS_META = {
+  active: { label: "Faol", className: "bg-green-100 text-green-700" },
+  frozen: { label: "Muzlatilgan", className: "bg-blue-100 text-blue-700" },
+  expelled: { label: "Chetlatilgan", className: "bg-red-100 text-red-700" },
+};
+
+export const FINANCE_STATUS_OPTIONS = [
+  { label: "Faol", value: "active" },
+  { label: "Muzlatilgan", value: "frozen" },
+  { label: "Chetlatilgan", value: "expelled" },
+];
+
+/** O'quv yili boshlanish oyi (sozlamalar sahifasi uchun). */
+export const MONTH_OF_YEAR_OPTIONS = [
+  "Yanvar",
+  "Fevral",
+  "Mart",
+  "Aprel",
+  "May",
+  "Iyun",
+  "Iyul",
+  "Avgust",
+  "Sentabr",
+  "Oktabr",
+  "Noyabr",
+  "Dekabr",
+].map((label, index) => ({ label, value: String(index + 1) }));
+
+/** O'quv yili davomiyligi — serverda faqat shu ikkisi qabul qilinadi. */
+export const ACADEMIC_MONTH_COUNT_OPTIONS = [
+  { label: "9 oy", value: "9" },
+  { label: "11 oy", value: "11" },
 ];

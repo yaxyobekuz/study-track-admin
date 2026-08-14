@@ -113,6 +113,8 @@ import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettin
 import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
 import TariffsPage from "@/features/finance/pages/TariffsPage";
 import TariffDetailPage from "@/features/finance/pages/TariffDetailPage";
+import InvoicesPage from "@/features/finance/pages/InvoicesPage";
+import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
 
 // Pages - Leads
 import LeadDetailPage from "@/features/leads/pages/LeadDetailPage";
@@ -317,6 +319,8 @@ const Routes = () => {
               element={<Navigate to="/finance/main/tariffs" replace />}
             />
             <Route path="tariffs" element={<TariffsPage />} />
+            <Route path="invoices" element={<InvoicesPage />} />
+            <Route path="settings" element={<FinanceSettingsPage />} />
           </Route>
 
           {/* Tarif detali - layoutdan tashqarida: contentga to'liq egalik qiladi */}

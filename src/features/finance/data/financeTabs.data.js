@@ -15,4 +15,18 @@ export const MAIN_TABS = [
     description: "Tariflar va oylik narxlar",
     exact: false,
   },
+  {
+    to: "/finance/main/invoices",
+    label: "Hisob-fakturalar",
+    title: "Moliya",
+    description: "Oylik to'lov majburiyatlari va to'lovlar",
+    exact: false,
+  },
+  {
+    to: "/finance/main/settings",
+    label: "Sozlamalar",
+    title: "Moliya",
+    description: "O'quv yili va hisob-faktura shakllantirish qoidalari",
+    exact: false,
+  },
 ];
