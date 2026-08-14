@@ -40,13 +40,11 @@ const Content = ({ close, isLoading, setIsLoading, tariffId, version }) => {
   const { can } = usePermissions();
   const { mutate: updateVersion } = useUpdateTariffVersion();
 
-  const { startMonth, endMonth, monthlyAmount, note, setField } =
-    useObjectState({
-      startMonth: monthKeyToInputValue(version?.startMonth),
-      endMonth: monthKeyToInputValue(version?.endMonth),
-      monthlyAmount: version?.monthlyAmount ?? "",
-      note: version?.note ?? "",
-    });
+  const { startMonth, endMonth, monthlyAmount, setField } = useObjectState({
+    startMonth: monthKeyToInputValue(version?.startMonth),
+    endMonth: monthKeyToInputValue(version?.endMonth),
+    monthlyAmount: version?.monthlyAmount ?? "",
+  });
 
   const now = currentMonthKey();
   const isInEffect = version != null && version.startMonth <= now;
@@ -68,7 +66,6 @@ const Content = ({ close, isLoading, setIsLoading, tariffId, version }) => {
           startMonth: inputValueToMonthKey(startMonth),
           endMonth: inputValueToMonthKey(endMonth),
           monthlyAmount: String(monthlyAmount),
-          note,
         },
       },
       {
@@ -127,15 +124,6 @@ const Content = ({ close, isLoading, setIsLoading, tariffId, version }) => {
         value={monthlyAmount}
         disabled={blocked}
         onChange={(e) => setField("monthlyAmount", e.target.value)}
-      />
-
-      <InputField
-        name="note"
-        value={note}
-        label="Izoh"
-        placeholder="Ixtiyoriy"
-        disabled={blocked}
-        onChange={(e) => setField("note", e.target.value)}
       />
 
       <p className="text-xs text-gray-500">

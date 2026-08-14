@@ -88,10 +88,6 @@ const TariffVersionsTable = ({ tariffId, versions = [] }) => {
                   {formatMoney(version.monthlyAmount)}
                 </td>
 
-                <td className="px-4 py-3 text-gray-500">
-                  {version.note || "—"}
-                </td>
-
                 <td className="px-4 py-3 whitespace-nowrap">
                   {isCurrent && (
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-green-100 text-green-700">

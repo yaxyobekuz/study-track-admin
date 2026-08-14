@@ -41,14 +41,12 @@ const AddTariffVersionModal = () => (
 const Content = ({ close, isLoading, setIsLoading, tariff }) => {
   const { mutate: addVersion } = useAddTariffVersion();
 
-  const { startMonth, endMonth, monthlyAmount, note, setField } =
-    useObjectState({
-      startMonth: monthKeyToInputValue(nextMonthKey(currentMonthKey())),
-      // Bo'sh = keyingi versiyagacha (yoki muddatsiz)
-      endMonth: "",
-      monthlyAmount: "",
-      note: "",
-    });
+  const { startMonth, endMonth, monthlyAmount, setField } = useObjectState({
+    startMonth: monthKeyToInputValue(nextMonthKey(currentMonthKey())),
+    // Bo'sh = keyingi versiyagacha (yoki muddatsiz)
+    endMonth: "",
+    monthlyAmount: "",
+  });
 
   const startMonthKey = inputValueToMonthKey(startMonth);
   const now = currentMonthKey();
@@ -70,7 +68,6 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
           startMonth: startMonthKey,
           endMonth: inputValueToMonthKey(endMonth),
           monthlyAmount: String(monthlyAmount),
-          note,
         },
       },
       {
@@ -125,14 +122,6 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
         value={monthlyAmount}
         placeholder="600000"
         onChange={(e) => setField("monthlyAmount", e.target.value)}
-      />
-
-      <InputField
-        name="note"
-        value={note}
-        label="Izoh"
-        placeholder="Masalan: 2026 yil uchun ko'tarildi"
-        onChange={(e) => setField("note", e.target.value)}
       />
 
       {startMonthKey && (
