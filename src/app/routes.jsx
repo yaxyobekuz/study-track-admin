@@ -15,9 +15,11 @@ import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import ProfilePage from "@/features/profile/pages/ProfilePage";
 
 // Pages - Users
-import UsersPage from "@/features/users/pages/UsersPage";
+import UsersLayout from "@/features/users/layouts/UsersLayout";
+import StaffPage from "@/features/users/pages/StaffPage";
+import StudentsPage from "@/features/users/pages/StudentsPage";
 import CreateUserPage from "@/features/users/pages/CreateUserPage";
-import EditUserPage from "@/features/users/pages/EditUserPage";
+import UserDetailPage from "@/features/users/pages/UserDetailPage";
 
 // Pages - Roles
 import RolesPage from "@/features/roles/pages/RolesPage";
@@ -148,10 +150,23 @@ const Routes = () => {
           {/* Profile */}
           <Route path="/profile" element={<ProfilePage />} />
 
-          {/* Users */}
-          <Route path="/users" element={<UsersPage />} />
+          {/* Foydalanuvchilar - Xodimlar va O'quvchilar */}
+          <Route path="/users" element={<UsersLayout />}>
+            <Route index element={<Navigate to="/users/staff" replace />} />
+            <Route path="staff" element={<StaffPage />} />
+            <Route path="students" element={<StudentsPage />} />
+          </Route>
+
+          {/* Yaratish va detal - layoutdan tashqarida: contentga to'liq
+              egalik qiladi (tablar detal sahifasining o'zida) */}
           <Route path="/users/new" element={<CreateUserPage />} />
-          <Route path="/users/:userId/edit" element={<EditUserPage />} />
+          <Route path="/users/:userId" element={<UserDetailPage />} />
+
+          {/* Eski yo'l (backward-compat) */}
+          <Route
+            path="/users/:userId/edit"
+            element={<Navigate to=".." relative="path" replace />}
+          />
 
           {/* Roles */}
           <Route path="/roles" element={<RolesPage />} />

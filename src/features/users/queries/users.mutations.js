@@ -32,11 +32,13 @@ export const useDeleteUser = () => {
   });
 };
 
+// Arxivlash/qaytarish detal sahifasidan ham chaqiriladi — u yerdagi holat
+// badge'i yangilanishi uchun detal so'rovi ham eskiradi.
 export const useArchiveUser = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }) => usersAPI.archive(id, data).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.lists() }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
   });
 };
 
@@ -44,7 +46,7 @@ export const useRestoreUser = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id) => usersAPI.restore(id).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.lists() }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
   });
 };
 

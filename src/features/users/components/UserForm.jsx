@@ -28,8 +28,17 @@ import { WORK_DAYS_OPTIONS } from "@/features/attendance/data/attendance.data";
 /**
  * mode: "create" | "edit"
  * initialData: existing user object (edit mode only)
+ * defaultRole: yangi foydalanuvchi uchun boshlang'ich rol (create mode)
+ *
+ * Yaratishdan keyin mos ro'yxatga qaytariladi (xodim → Xodimlar, o'quvchi →
+ * O'quvchilar). Tahrirlashda esa sahifa almashmaydi: forma detal sahifaning
+ * bir tabi ichida turadi, saqlagandan keyin undan uchib ketish noqulay.
  */
-const UserForm = ({ mode = "create", initialData = null }) => {
+const UserForm = ({
+  mode = "create",
+  initialData = null,
+  defaultRole = "student",
+}) => {
   const navigate = useNavigate();
   const { data: classes = [] } = useClasses();
   const { data: rolesData = [] } = useRoles();
@@ -48,7 +57,7 @@ const UserForm = ({ mode = "create", initialData = null }) => {
     lastName: initialData?.lastName || "",
     username: initialData?.username || "",
     password: "",
-    role: initialData?.role || "student",
+    role: initialData?.role || defaultRole,
     gender: initialData?.gender || "male",
     classes: initialData?.classes?.map((c) => (typeof c === "object" ? c.id : c)) || [],
     workStartTime: initialData?.workStartTime || "",
@@ -87,6 +96,9 @@ const UserForm = ({ mode = "create", initialData = null }) => {
 
   const showScheduleSection = state.role !== "student" && state.role !== "owner";
 
+  // Qaysi ro'yxatga qaytish kerakligi rolga bog'liq
+  const listPath = state.role === "student" ? "/users/students" : "/users/staff";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -117,12 +129,12 @@ const UserForm = ({ mode = "create", initialData = null }) => {
     try {
       if (isEdit) {
         await updateUser({ id: initialData.id, data: payload });
-        toast.success("Foydalanuvchi yangilandi");
+        toast.success("Ma'lumotlar saqlandi");
       } else {
         await createUser(payload);
         toast.success("Foydalanuvchi yaratildi");
+        navigate(listPath);
       }
-      navigate("/users");
     } catch (err) {
       toast.error(err.response?.data?.message || "Xatolik yuz berdi");
     } finally {
@@ -279,13 +291,18 @@ const UserForm = ({ mode = "create", initialData = null }) => {
       )}
 
       <div className="flex gap-3 pt-2">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => navigate("/users")}
-        >
-          Bekor qilish
-        </Button>
+        {/* Tahrirlashda "Bekor qilish" yo'q — forma detal sahifaning tabi
+            ichida, undan chiqish uchun sarlavhadagi orqaga havolasi bor */}
+        {!isEdit && (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => navigate(listPath)}
+          >
+            Bekor qilish
+          </Button>
+        )}
+
         <Button disabled={state.isLoading}>
           {isEdit ? "Saqlash" : "Yaratish"}
           {state.isLoading && "..."}

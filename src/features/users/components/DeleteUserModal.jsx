@@ -1,6 +1,9 @@
 // Toast
 import { toast } from "sonner";
 
+// Router
+import { useNavigate } from "react-router-dom";
+
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
@@ -18,7 +21,13 @@ const DeleteUserModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, isLoading, setIsLoading, ...user }) => {
+/**
+ * `redirectTo` — o'chirilgandan keyin qayerga qaytish (detal sahifasidan
+ * o'chirilsa, o'sha sahifada qolish mumkin emas: foydalanuvchi endi yo'q).
+ * Ro'yxatdan o'chirilganda berilmaydi — sahifa o'z joyida qoladi.
+ */
+const Content = ({ close, isLoading, setIsLoading, redirectTo, ...user }) => {
+  const navigate = useNavigate();
   const { mutate: deleteUser } = useDeleteUser();
 
   const handleDeleteUser = (e) => {
@@ -29,6 +38,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
       onSuccess: () => {
         close();
         toast.success("Foydalanuvchi o'chirildi");
+        if (redirectTo) navigate(redirectTo, { replace: true });
       },
       onError: (err) => {
         toast.error(err.response?.data?.message || "Xatolik yuz berdi");
