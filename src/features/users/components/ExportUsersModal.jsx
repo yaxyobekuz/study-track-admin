@@ -12,12 +12,8 @@ import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
-// Export type options
-const exportOptions = [
-  { value: "all", label: "Barcha foydalanuvchilar" },
-  { value: "teacher", label: "Faqat o'qituvchilar" },
-  { value: "student", label: "Faqat o'quvchilar" },
-];
+// Data
+import { EXPORT_ROLE_OPTIONS } from "../data/users.data";
 
 const ExportUsersModal = () => (
   <ResponsiveModal name="exportUsers" title="Foydalanuvchilarni yuklash">
@@ -42,10 +38,10 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
       // Generate filename
       const today = new Date().toISOString().split("T")[0];
-      let filename = "users";
-      if (exportType === "teacher") filename = "teachers";
-      else if (exportType === "student") filename = "students";
-      link.download = `${filename}_${today}.xlsx`;
+      const fileName =
+        EXPORT_ROLE_OPTIONS.find((option) => option.value === exportType)
+          ?.fileName ?? "users";
+      link.download = `${fileName}_${today}.xlsx`;
 
       document.body.appendChild(link);
       link.click();
@@ -68,7 +64,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         size="lg"
         required
         value={exportType}
-        options={exportOptions}
+        options={EXPORT_ROLE_OPTIONS}
         disabled={isLoading}
         onChange={setExportType}
         label="Yuklab olish turi"
