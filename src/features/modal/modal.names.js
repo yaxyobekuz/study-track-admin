@@ -97,6 +97,7 @@ export const MODAL_NAMES = [
   "createTariff",
   "editTariff",
   "addTariffVersion",
+  "editTariffVersion",
   "assignTariff",
   "changeStudentTariff",
 

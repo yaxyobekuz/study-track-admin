@@ -15,6 +15,7 @@ import Pagination from "@/shared/components/ui/Pagination";
 import TariffVersionsTable from "../components/TariffVersionsTable";
 import AssignedStudentsTable from "../components/AssignedStudentsTable";
 import AddTariffVersionModal from "../components/AddTariffVersionModal";
+import EditTariffVersionModal from "../components/EditTariffVersionModal";
 import AssignTariffModal from "../components/AssignTariffModal";
 import ChangeStudentTariffModal from "../components/ChangeStudentTariffModal";
 import EditTariffModal from "../components/EditTariffModal";
@@ -33,8 +34,9 @@ import { financeQueries } from "../queries/finance.queries";
 /**
  * Tarif detali — to'liq sahifa.
  *
- * Moliya bo'limining tablari bu yerda ko'rsatilmaydi (route `FinanceLayout`
- * dan tashqarida): detal sahifa contentga to'liq egalik qiladi.
+ * Asosiy sahifaning tablari bu yerda ko'rsatilmaydi (route
+ * `FinanceMainLayout` dan tashqarida): detal sahifa contentga to'liq
+ * egalik qiladi.
  */
 const TariffDetailPage = () => {
   const { id } = useParams();
@@ -73,7 +75,7 @@ const TariffDetailPage = () => {
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div className="flex items-start gap-2">
           <Link
-            to="/finance/tariffs"
+            to="/finance/main/tariffs"
             className="flex items-center justify-center size-9 rounded-lg hover:bg-gray-100"
           >
             <ArrowLeft strokeWidth={1.5} className="size-5" />
@@ -120,7 +122,7 @@ const TariffDetailPage = () => {
           <Can do="tariffs.versions">
             <Button onClick={() => openModal("addTariffVersion", { tariff })}>
               <Plus />
-              Narxni o'zgartirish
+              Narx qo'shish
             </Button>
           </Can>
         </div>
@@ -214,6 +216,7 @@ const TariffDetailPage = () => {
       {/* Modals */}
       <EditTariffModal />
       <AddTariffVersionModal />
+      <EditTariffVersionModal />
       <AssignTariffModal />
       <ChangeStudentTariffModal />
     </div>

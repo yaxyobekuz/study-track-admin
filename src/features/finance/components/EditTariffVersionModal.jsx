@@ -1,9 +1,13 @@
 // Toast
 import { toast } from "sonner";
 
+// Icons
+import { TriangleAlert } from "lucide-react";
+
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
-import { useAddTariffVersion } from "../queries/finance.mutations";
+import usePermissions from "@/shared/hooks/usePermissions";
+import { useUpdateTariffVersion } from "../queries/finance.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -11,63 +15,57 @@ import InputField from "@/shared/components/ui/input/InputField";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
-// Utils & helpers
-import { formatMoney } from "@/shared/utils/formatMoney";
+// Helpers
 import {
   currentMonthKey,
-  formatMonthKey,
   inputValueToMonthKey,
   monthKeyToInputValue,
-  nextMonthKey,
-  prevMonthKey,
 } from "@/shared/helpers/month.helpers";
 
 /**
- * Narx qo'shish / o'zgartirish = yangi versiya.
+ * Mavjud narx versiyasini tahrirlash.
  *
- * Ikki ssenariy bir xil forma bilan hal bo'ladi:
- *  - narxni ko'tarish (keyingi oydan) — eski ochiq versiya avtomatik yopiladi;
- *  - o'tgan davr narxini kiritish — tugash oyi berilmasa, server uni keyingi
- *    versiya boshlanishidan bir oy oldin qilib hisoblaydi.
- *
- * O'quvchilarning biriktirishlariga tegilmaydi: ular narxni saqlamaydi.
+ * Hali boshlanmagan versiya erkin tahrirlanadi. Amaldagi yoki o'tgan
+ * versiyani o'zgartirish esa allaqachon hisoblangan oylarga ta'sir qiladi,
+ * shuning uchun u `force` bilan yuboriladi: alohida `tariflar.adjust`
+ * ruxsatini talab qiladi va server logga yozadi.
  */
-const AddTariffVersionModal = () => (
-  <ResponsiveModal name="addTariffVersion" title="Narx qo'shish">
+const EditTariffVersionModal = () => (
+  <ResponsiveModal name="editTariffVersion" title="Narxni tahrirlash">
     <Content />
   </ResponsiveModal>
 );
 
-const Content = ({ close, isLoading, setIsLoading, tariff }) => {
-  const { mutate: addVersion } = useAddTariffVersion();
+const Content = ({ close, isLoading, setIsLoading, tariffId, version }) => {
+  const { can } = usePermissions();
+  const { mutate: updateVersion } = useUpdateTariffVersion();
 
   const { startMonth, endMonth, monthlyAmount, note, setField } =
     useObjectState({
-      startMonth: monthKeyToInputValue(nextMonthKey(currentMonthKey())),
-      // Bo'sh = keyingi versiyagacha (yoki muddatsiz)
-      endMonth: "",
-      monthlyAmount: "",
-      note: "",
+      startMonth: monthKeyToInputValue(version?.startMonth),
+      endMonth: monthKeyToInputValue(version?.endMonth),
+      monthlyAmount: version?.monthlyAmount ?? "",
+      note: version?.note ?? "",
     });
 
-  const startMonthKey = inputValueToMonthKey(startMonth);
   const now = currentMonthKey();
-  const current = tariff?.currentVersion;
-
-  // Boshlanish oyi joriy oydan oldin bo'lsa — o'tgan davr narxi kiritilyapti
-  const isBackfill = startMonthKey != null && startMonthKey < now;
+  const isInEffect = version != null && version.startMonth <= now;
+  const canAdjust = can("tariffs.adjust");
+  const blocked = isInEffect && !canAdjust;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!tariff) return;
+    if (!version) return;
 
     setIsLoading(true);
 
-    addVersion(
+    updateVersion(
       {
-        id: tariff.id,
+        id: tariffId,
+        versionId: version.id,
+        force: isInEffect,
         data: {
-          startMonth: startMonthKey,
+          startMonth: inputValueToMonthKey(startMonth),
           endMonth: inputValueToMonthKey(endMonth),
           monthlyAmount: String(monthlyAmount),
           note,
@@ -76,7 +74,7 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
       {
         onSuccess: () => {
           close();
-          toast.success("Narx qo'shildi");
+          toast.success("Narx yangilandi");
         },
         onError: (err) =>
           toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
@@ -87,11 +85,13 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
 
   return (
     <InputGroup onSubmit={handleSubmit} as="form">
-      {current && (
-        <div className="rounded-xl bg-gray-50 p-3 text-sm">
-          <p className="text-gray-500">Joriy narx</p>
-          <p className="font-medium text-gray-900">
-            {formatMoney(current.monthlyAmount)}
+      {isInEffect && (
+        <div className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
+          <TriangleAlert className="size-4 shrink-0 mt-0.5" />
+          <p>
+            {blocked
+              ? "Amaldagi yoki o'tgan narxni to'g'rilash uchun sizda ruxsat yo'q."
+              : "Bu narx allaqachon amalda. O'zgartirish o'tgan oylar hisob-kitobiga ta'sir qiladi va jurnalga yoziladi."}
           </p>
         </div>
       )}
@@ -103,6 +103,7 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
           name="startMonth"
           label="Qaysi oydan"
           value={startMonth}
+          disabled={blocked}
           onChange={(e) => setField("startMonth", e.target.value)}
         />
 
@@ -111,6 +112,7 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
           name="endMonth"
           label="Qaysi oygacha"
           value={endMonth}
+          disabled={blocked}
           onChange={(e) => setField("endMonth", e.target.value)}
         />
       </div>
@@ -123,7 +125,7 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
         name="monthlyAmount"
         label="Oylik summa (so'm)"
         value={monthlyAmount}
-        placeholder="600000"
+        disabled={blocked}
         onChange={(e) => setField("monthlyAmount", e.target.value)}
       />
 
@@ -131,28 +133,15 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
         name="note"
         value={note}
         label="Izoh"
-        placeholder="Masalan: 2026 yil uchun ko'tarildi"
+        placeholder="Ixtiyoriy"
+        disabled={blocked}
         onChange={(e) => setField("note", e.target.value)}
       />
 
-      {startMonthKey && (
-        <p className="text-xs text-gray-500">
-          {isBackfill ? (
-            <>
-              O'tgan davr narxi kiritilyapti. "Qaysi oygacha" bo'sh qolsa,
-              keyingi narx boshlanishidan bir oy oldin avtomatik yopiladi.
-            </>
-          ) : (
-            <>
-              {current
-                ? `Joriy narx ${formatMonthKey(prevMonthKey(startMonthKey))} oyida yopiladi. `
-                : ""}
-              Yangi narx {formatMonthKey(startMonthKey)} oyidan boshlab
-              biriktirilgan barcha o'quvchilarga avtomatik qo'llanadi.
-            </>
-          )}
-        </p>
-      )}
+      <p className="text-xs text-gray-500">
+        "Qaysi oygacha" bo'sh qolsa, narx muddatsiz — keyingi narx qo'shilguncha
+        amal qiladi.
+      </p>
 
       <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
         <Button
@@ -164,7 +153,11 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
           Bekor qilish
         </Button>
 
-        <Button autoFocus className="w-full xs:w-32" disabled={isLoading}>
+        <Button
+          autoFocus
+          className="w-full xs:w-32"
+          disabled={isLoading || blocked}
+        >
           Saqlash
           {isLoading && "..."}
         </Button>
@@ -173,4 +166,4 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
   );
 };
 
-export default AddTariffVersionModal;
+export default EditTariffVersionModal;

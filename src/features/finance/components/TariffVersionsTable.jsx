@@ -2,10 +2,13 @@
 import { toast } from "sonner";
 
 // Icons
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 // Components
 import Can from "@/shared/components/guards/Can";
+
+// Hooks
+import useModal from "@/shared/hooks/useModal";
 
 // Utils & helpers
 import { formatMoney } from "@/shared/utils/formatMoney";
@@ -28,6 +31,7 @@ import { useDeleteTariffVersion } from "../queries/finance.mutations";
  */
 const TariffVersionsTable = ({ tariffId, versions = [] }) => {
   const now = currentMonthKey();
+  const { openModal } = useModal();
   const { mutate: deleteVersion } = useDeleteTariffVersion();
 
   const handleDelete = (versionId) => {
@@ -107,7 +111,20 @@ const TariffVersionsTable = ({ tariffId, versions = [] }) => {
                 </td>
 
                 <td className="px-4 py-3">
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-end gap-1">
+                    <Can do="tariffs.versions">
+                      <button
+                        title="Tahrirlash"
+                        onClick={() =>
+                          openModal("editTariffVersion", { tariffId, version })
+                        }
+                        className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                    </Can>
+
+                    {/* O'tgan/amaldagi narxni o'chirib bo'lmaydi — u tarix */}
                     {isFuture && (
                       <Can do="tariffs.versions">
                         <button
