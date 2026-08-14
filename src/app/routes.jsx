@@ -110,7 +110,7 @@ import StaffReportsPage from "@/features/attendance/pages/StaffReportsPage";
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 
 // Moliya (Finance) - layout & route-level pages
-import FinanceLayout from "@/features/finance/layouts/FinanceLayout";
+import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
 import TariffsPage from "@/features/finance/pages/TariffsPage";
 import TariffDetailPage from "@/features/finance/pages/TariffDetailPage";
 
@@ -307,14 +307,23 @@ const Routes = () => {
             element={<Navigate to="/attendance/daily/students" replace />}
           />
 
-          {/* Moliya - asosiy sahifa (tablar) */}
-          <Route path="/finance" element={<FinanceLayout />}>
-            <Route index element={<Navigate to="/finance/tariffs" replace />} />
+          {/* Moliya bo'limi - hozircha bitta sahifa: "Asosiy" */}
+          <Route path="/finance" element={<Navigate to="/finance/main" replace />} />
+
+          {/* Asosiy sahifa + uning tablari */}
+          <Route path="/finance/main" element={<FinanceMainLayout />}>
+            <Route
+              index
+              element={<Navigate to="/finance/main/tariffs" replace />}
+            />
             <Route path="tariffs" element={<TariffsPage />} />
           </Route>
 
           {/* Tarif detali - layoutdan tashqarida: contentga to'liq egalik qiladi */}
-          <Route path="/finance/tariffs/:id" element={<TariffDetailPage />} />
+          <Route
+            path="/finance/main/tariffs/:id"
+            element={<TariffDetailPage />}
+          />
 
           {/* Leads */}
           <Route path="/leads" element={<LeadsListPage />} />

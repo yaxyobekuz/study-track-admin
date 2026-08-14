@@ -5,18 +5,18 @@ import { Outlet, useLocation } from "react-router-dom";
 import { TabsLinks } from "@/shared/components/ui/tabs/Tabs";
 
 // Data
-import { FINANCE_TABS } from "../data/financeTabs.data";
+import { MAIN_TABS } from "../data/financeTabs.data";
 
 /**
- * Moliya bo'limining yagona layouti (Davomat bo'limi bilan bir xil skelet).
- * Moslashuvchan sarlavha (aktiv tabga qarab o'zgaradi) + asosiy tablar + Outlet.
+ * Moliya bo'limining ASOSIY SAHIFASI (/finance/main).
+ * Moslashuvchan sarlavha (aktiv tabga qarab o'zgaradi) + tablar + Outlet.
  */
-const FinanceLayout = () => {
+const FinanceMainLayout = () => {
   const { pathname } = useLocation();
 
-  // Aktiv asosiy tab (sarlavha shu asosida o'zgaradi)
+  // Aktiv tab (sarlavha shu asosida o'zgaradi)
   const activeTab =
-    FINANCE_TABS.find((tab) => pathname.startsWith(tab.to)) ?? FINANCE_TABS[0];
+    MAIN_TABS.find((tab) => pathname.startsWith(tab.to)) ?? MAIN_TABS[0];
 
   return (
     <div className="space-y-4">
@@ -30,9 +30,9 @@ const FinanceLayout = () => {
         )}
       </div>
 
-      {/* Asosiy tablar — tor ekranga sig'masa gorizontal scroll bo'ladi */}
+      {/* Tablar — tor ekranga sig'masa gorizontal scroll bo'ladi */}
       <TabsLinks
-        items={FINANCE_TABS}
+        items={MAIN_TABS}
         itemClassName="shrink-0"
         className="max-w-full justify-start overflow-x-auto overflow-y-hidden hidden-scrollbar"
       />
@@ -43,4 +43,4 @@ const FinanceLayout = () => {
   );
 };
 
-export default FinanceLayout;
+export default FinanceMainLayout;

@@ -143,7 +143,7 @@ const TariffsPage = () => {
                 return (
                   <tr
                     key={tariff.id}
-                    onClick={() => navigate(`/finance/tariffs/${tariff.id}`)}
+                    onClick={() => navigate(`/finance/main/tariffs/${tariff.id}`)}
                     className="border-t border-gray-100 cursor-pointer hover:bg-gray-50"
                   >
                     <td className="px-4 py-3">

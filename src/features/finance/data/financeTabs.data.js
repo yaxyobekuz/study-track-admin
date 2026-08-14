@@ -1,12 +1,15 @@
-// Moliya bo'limining asosiy sahifasidagi tablar.
-// `to` - route path, `label` - tabdagi matn, `title`/`description` - layout sarlavhasi.
-// `exact: false` - ichki sahifalarda ham tab aktiv bo'lishi uchun.
+// Moliya bo'limining ASOSIY SAHIFASIDAGI tablar.
 //
-// Hozircha bitta tab. Keyingi bosqichlar (To'lovlar, Qarzdorlik, Hisobotlar)
-// shu massivga bitta yozuv qo'shish bilan paydo bo'ladi.
-export const FINANCE_TABS = [
+// Iyerarxiya: /finance (bo'lim) → /finance/main (asosiy sahifa) →
+// /finance/main/tariffs (tab). Tab asosiy sahifaga tegishli, bo'limga emas —
+// shuning uchun keyingi sahifalar (/finance/payments va h.k.) o'z tablariga
+// ega bo'ladi.
+//
+// `to` - route path, `label` - tabdagi matn, `title`/`description` - sarlavha.
+// `exact: false` - ichki sahifalarda ham tab aktiv bo'lishi uchun.
+export const MAIN_TABS = [
   {
-    to: "/finance/tariffs",
+    to: "/finance/main/tariffs",
     label: "Tariflar",
     title: "Moliya",
     description: "Tariflar va oylik narxlar",

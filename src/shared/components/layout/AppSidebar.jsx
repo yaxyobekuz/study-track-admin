@@ -229,7 +229,7 @@ const navItems = [
     items: [
       {
         title: "Asosiy",
-        url: "/finance",
+        url: "/finance/main",
       },
     ],
   },
