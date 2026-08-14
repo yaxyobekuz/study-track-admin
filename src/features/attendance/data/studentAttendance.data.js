@@ -43,6 +43,14 @@ export const SUMMARY_CARDS = [
   { key: "unmarked", label: "Belgilanmagan", color: "bg-gray-100 text-gray-500" },
 ];
 
+/**
+ * Bitta foydalanuvchining oylik yig'masi uchun kartalar.
+ * "Belgilanmagan" bu yerda yo'q — u sinf/ro'yxat kesimida ma'noga ega.
+ */
+export const USER_SUMMARY_ITEMS = SUMMARY_CARDS.filter(
+  (card) => card.key !== "unmarked",
+);
+
 // Yil filtri optionlari (joriy yil va oldingi 2 yil)
 export const YEAR_OPTIONS = (() => {
   const current = new Date().getFullYear();

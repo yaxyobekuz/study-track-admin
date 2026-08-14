@@ -24,6 +24,19 @@ export const penaltiesQueries = {
       placeholderData: keepPreviousData,
     }),
 
+  /**
+   * Bitta foydalanuvchining jarimalari → `{ data, pagination }`.
+   * Foydalanuvchi detal sahifasidagi "Jarimalar" tabi shundan o'qiydi.
+   */
+  byUser: (userId, params) =>
+    queryOptions({
+      queryKey: [...penaltiesKeys.all, "by-user", userId, params],
+      queryFn: () =>
+        penaltiesAPI.getUserPenalties(userId, params).then((r) => r.data),
+      enabled: Boolean(userId),
+      placeholderData: keepPreviousData,
+    }),
+
   /** Single penalty by id → the penalty object. */
   detail: (id) =>
     queryOptions({
