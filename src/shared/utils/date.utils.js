@@ -63,6 +63,23 @@ export const formatDateUZAlt = (date) => {
 };
 
 /**
+ * Vaqtni "09:05" ko'rinishida formatlaydi (sana qismisiz).
+ * @param {string | Date | null} value - ISO sana yoki Date
+ * @param {string} [fallback="—"] - qiymat bo'lmasa ko'rsatiladigan matn
+ * @returns {string}
+ */
+export const formatTimeUZ = (value, fallback = "—") => {
+  if (!value) return fallback;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return fallback;
+
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+};
+
+/**
  * Daqiqalarni "8 soat 36 daqiqa" ko'rinishida formatlaydi.
  * Masalan: 516 -> "8 soat 36 daqiqa", 60 -> "1 soat", 45 -> "45 daqiqa"
  * @param {number} totalMinutes - Jami daqiqalar
