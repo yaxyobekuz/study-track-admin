@@ -23,6 +23,13 @@ export const MAIN_TABS = [
     exact: false,
   },
   {
+    to: "/finance/main/income",
+    label: "Kirim",
+    title: "Moliya",
+    description: "Yig'ilgan to'lovlar, kirim trendi va kirim qo'shish",
+    exact: false,
+  },
+  {
     to: "/finance/main/settings",
     label: "Sozlamalar",
     title: "Moliya",

@@ -116,6 +116,7 @@ import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
 import TariffsPage from "@/features/finance/pages/TariffsPage";
 import TariffDetailPage from "@/features/finance/pages/TariffDetailPage";
 import InvoicesPage from "@/features/finance/pages/InvoicesPage";
+import IncomePage from "@/features/finance/pages/IncomePage";
 import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
 
 // Pages - Leads
@@ -335,6 +336,7 @@ const Routes = () => {
             />
             <Route path="tariffs" element={<TariffsPage />} />
             <Route path="invoices" element={<InvoicesPage />} />
+            <Route path="income" element={<IncomePage />} />
             <Route path="settings" element={<FinanceSettingsPage />} />
           </Route>
 

@@ -3,6 +3,7 @@ import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 
 // Shared
 import { createQueryKeys } from "@/shared/lib/query";
+import { prevMonthKey, formatMonthKey } from "@/shared/helpers/month.helpers";
 
 // API
 import { tariffsAPI, studentTariffsAPI } from "../api/finance.api";
@@ -114,6 +115,53 @@ export const financeQueries = {
       queryKey: [...financeKeys.all, "payments", params],
       queryFn: () => invoicePaymentsAPI.getAll(params).then((r) => r.data),
       placeholderData: keepPreviousData,
+    }),
+
+  // ── Kirim (income) ─────────────────────────
+
+  /**
+   * Kirim trendi — oxirgi N oy uchun oylik yig'malardan tuziladi.
+   * Backend'da alohida endpoint yo'q, shuning uchun har oy `summary`
+   * chaqirilib client tomonda birlashtiriladi (N ta so'rov, cheklangan).
+   * Grafik uchun summalar `Number` ga o'giriladi.
+   */
+  incomeTrend: (anchorMonth, monthsBack = 6) =>
+    queryOptions({
+      queryKey: [...invoicesKey, "income-trend", anchorMonth, monthsBack],
+      queryFn: async () => {
+        const months = [];
+        let m = anchorMonth;
+        for (let i = 0; i < monthsBack; i += 1) {
+          months.unshift(m);
+          m = prevMonthKey(m);
+        }
+        const summaries = await Promise.all(
+          months.map((month) =>
+            invoicesAPI.getSummary({ month }).then((r) => r.data.data),
+          ),
+        );
+        return summaries.map((s) => ({
+          month: s.month,
+          label: formatMonthKey(s.month),
+          collected: Number(s.totals?.paid ?? 0),
+          expected: Number(s.totals?.amount ?? 0),
+          debt: Number(s.totals?.debt ?? 0),
+        }));
+      },
+      placeholderData: keepPreviousData,
+    }),
+
+  /**
+   * Qarzdor majburiyatlar (kirim qo'shish modalida tanlash uchun).
+   * `debtOnly` — faqat to'lanmagan/qisman to'langanlar.
+   */
+  debtorInvoices: (params) =>
+    queryOptions({
+      queryKey: [...invoicesKey, "debtors", params],
+      queryFn: () =>
+        invoicesAPI
+          .getAll({ debtOnly: "true", limit: 200, ...params })
+          .then((r) => r.data.data ?? []),
     }),
 
   // ── Moliyaviy holat ────────────────────────

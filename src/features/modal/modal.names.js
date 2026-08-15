@@ -102,6 +102,7 @@ export const MODAL_NAMES = [
   "changeStudentTariff",
   "generateInvoices",
   "recordPayment",
+  "addIncome",
   "editStudentFinanceStatus",
 
   // Premium
