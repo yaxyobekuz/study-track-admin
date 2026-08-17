@@ -95,6 +95,25 @@ export const formatDurationUZ = (totalMinutes) => {
   return `${minutes} daqiqa`;
 };
 
+/**
+ * Daqiqalarni ixcham "8s 57d" ko'rinishida formatlaydi (jadval ustuni uchun —
+ * to'liq `formatDurationUZ` u yerga sig'maydi).
+ * @param {number|null} totalMinutes
+ * @param {string} [fallback="—"]
+ * @returns {string}
+ */
+export const formatDurationShortUZ = (totalMinutes, fallback = "—") => {
+  if (totalMinutes == null) return fallback;
+
+  const mins = Math.max(0, Math.round(Number(totalMinutes) || 0));
+  const hours = Math.floor(mins / 60);
+  const minutes = mins % 60;
+
+  if (hours && minutes) return `${hours}s ${minutes}d`;
+  if (hours) return `${hours}s`;
+  return `${minutes}d`;
+};
+
 export const getDayOfWeekUZ = (date) => {
   const dateObj = new Date(date);
   const daysUz = [
