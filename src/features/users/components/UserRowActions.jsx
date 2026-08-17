@@ -103,27 +103,32 @@ const UserRowActions = ({
             <>
               <DropdownMenuSeparator />
 
-              {isStudent ? (
-                isArchived ? (
-                  <Can do="users.restore">
-                    <DropdownMenuItem
-                      onSelect={() => openModal("restoreUser", user)}
-                    >
-                      <ArchiveRestore />
-                      Arxivdan qaytarish
-                    </DropdownMenuItem>
-                  </Can>
-                ) : (
-                  <Can do="users.archive">
-                    <DropdownMenuItem
-                      onSelect={() => openModal("archiveUser", user)}
-                    >
-                      <Archive />
-                      Arxivlash
-                    </DropdownMenuItem>
-                  </Can>
-                )
+              {/* Arxivlash — xodimda ham, o'quvchida ham bor. Arxivlangan
+                  foydalanuvchi tizimga kira olmaydi, lekin uning davomati va
+                  tarixi hisobotlarda qolaveradi. */}
+              {isArchived ? (
+                <Can do="users.restore">
+                  <DropdownMenuItem
+                    onSelect={() => openModal("restoreUser", user)}
+                  >
+                    <ArchiveRestore />
+                    Arxivdan qaytarish
+                  </DropdownMenuItem>
+                </Can>
               ) : (
+                <Can do="users.archive">
+                  <DropdownMenuItem
+                    onSelect={() => openModal("archiveUser", user)}
+                  >
+                    <Archive />
+                    Arxivlash
+                  </DropdownMenuItem>
+                </Can>
+              )}
+
+              {/* Butunlay o'chirish faqat xodimda: o'quvchining ma'lumotlari
+                  boshqa bo'limlarga bog'liq, server ham uni rad etadi */}
+              {!isStudent && (
                 <Can do="users.delete">
                   <DropdownMenuItem
                     onSelect={() =>

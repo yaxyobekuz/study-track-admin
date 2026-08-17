@@ -14,8 +14,8 @@ import { useArchiveUser } from "@/features/users/queries/users.mutations";
 const ArchiveUserModal = () => (
   <ResponsiveModal
     name="archiveUser"
-    title="O'quvchini arxivlash"
-    description="O'quvchi arxivlanadi va asosiy ro'yxatdan yashiriladi. Keyinchalik qaytarish mumkin."
+    title="Arxivlash"
+    description="Foydalanuvchi asosiy ro'yxatdan yashiriladi va tizimga kira olmaydi. Ma'lumotlari o'chmaydi — keyinchalik qaytarish mumkin."
   >
     <Content />
   </ResponsiveModal>
@@ -26,6 +26,8 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
   const [resetCoins, setResetCoins] = useState(false);
   const [resetPenalties, setResetPenalties] = useState(false);
 
+  const isStudent = user.role === "student";
+
   const handleArchiveUser = (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -35,7 +37,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
       {
         onSuccess: () => {
           close();
-          toast.success("O'quvchi arxivlandi");
+          toast.success("Foydalanuvchi arxivlandi");
         },
         onError: (err) => {
           toast.error(err.response?.data?.message || "Xatolik yuz berdi");
@@ -47,6 +49,13 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
 
   return (
     <form onSubmit={handleArchiveUser} className="flex flex-col gap-4">
+      {isStudent && (
+        <p className="text-sm text-gray-500">
+          O'quvchi barcha sinflardan chiqariladi. Qaytarilganda sinflar qo'lda
+          belgilanadi.
+        </p>
+      )}
+
       {/* Reset options */}
       <div className="flex flex-col gap-2.5">
         <label className="flex items-center gap-2 text-sm cursor-pointer">

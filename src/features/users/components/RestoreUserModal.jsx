@@ -11,8 +11,8 @@ import { useRestoreUser } from "@/features/users/queries/users.mutations";
 const RestoreUserModal = () => (
   <ResponsiveModal
     name="restoreUser"
-    title="O'quvchini qaytarish"
-    description="O'quvchi arxivdan qaytariladi va asosiy ro'yxatda ko'rinadi. Tangalar va jarimalar 0 holatda qoladi."
+    title="Arxivdan qaytarish"
+    description="Foydalanuvchi asosiy ro'yxatga qaytadi va tizimga kira oladi. Arxivlashda 0 ga tushirilgan tanga va jarimalar tiklanmaydi."
   >
     <Content />
   </ResponsiveModal>
@@ -28,7 +28,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
     restoreUser(user.id, {
       onSuccess: () => {
         close();
-        toast.success("O'quvchi qaytarildi");
+        toast.success("Foydalanuvchi qaytarildi");
       },
       onError: (err) => {
         toast.error(err.response?.data?.message || "Xatolik yuz berdi");
