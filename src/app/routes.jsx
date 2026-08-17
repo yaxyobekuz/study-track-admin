@@ -76,6 +76,9 @@ import SocialNetworksPage from "@/features/social-networks/pages/SocialNetworksP
 // Pages - Monitors
 import MonitorsPage from "@/features/monitors/pages/MonitorsPage";
 
+// Pages - Changelog
+import ChangelogPage from "@/features/changelog/pages/ChangelogPage";
+
 // Pages - Tasks
 import TasksPage from "@/features/tasks/pages/TasksPage";
 import TaskDetailPage from "@/features/tasks/pages/TaskDetailPage";
@@ -229,6 +232,9 @@ const Routes = () => {
 
           {/* Monitors */}
           <Route path="/monitors" element={<MonitorsPage />} />
+
+          {/* Changelog */}
+          <Route path="/changelog" element={<ChangelogPage />} />
 
           {/* Tasks */}
           <Route path="/tasks" element={<TasksPage />} />

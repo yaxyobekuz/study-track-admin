@@ -259,6 +259,10 @@ const navItems = [
         title: "Monitorlar",
         url: "/monitors",
       },
+      {
+        title: "O'zgarishlar tarixi",
+        url: "/changelog",
+      },
     ],
   },
   {

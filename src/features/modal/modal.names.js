@@ -121,4 +121,9 @@ export const MODAL_NAMES = [
   "createAssignment",
   "editAssignment",
   "deleteAssignment",
+
+  // Changelog
+  "createChangelog",
+  "editChangelog",
+  "deleteChangelog",
 ];
