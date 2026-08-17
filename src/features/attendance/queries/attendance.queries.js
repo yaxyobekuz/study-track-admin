@@ -7,10 +7,37 @@ import { createQueryKeys } from "@/shared/lib/query";
 // API
 import { absenceReasonAPI } from "../api/absenceReason.api";
 import { attendanceAPI } from "../api/attendance.api";
+import { studentAttendanceAPI } from "../api/studentAttendance.api";
 
 export const attendanceKeys = createQueryKeys("attendance");
 
 export const attendanceQueries = {
+  /**
+   * Bitta xodimning oylik davomati → `{ user, records, summary }`.
+   * Oy almashganda eski ma'lumot ekranda qoladi (keepPreviousData), shuning
+   * uchun ‹ › tugmalari bosilganda panel "sakramaydi".
+   */
+  userMonth: (userId, month, year) =>
+    queryOptions({
+      queryKey: [...attendanceKeys.all, "user", userId, month, year],
+      queryFn: () =>
+        attendanceAPI.getUserMonthRecords(userId, month, year).then((r) => r.data),
+      enabled: Boolean(userId),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Bitta o'quvchining oylik davomati → `{ student, records, summary }`. */
+  studentMonth: (studentId, month, year) =>
+    queryOptions({
+      queryKey: [...attendanceKeys.all, "student", studentId, month, year],
+      queryFn: () =>
+        studentAttendanceAPI
+          .getStudentMonthRecords(studentId, month, year)
+          .then((r) => r.data),
+      enabled: Boolean(studentId),
+      placeholderData: keepPreviousData,
+    }),
+
   /** Paginated absence reasons (owner management) → `{ data, pagination }`. */
   absenceReasonsList: (params) =>
     queryOptions({
