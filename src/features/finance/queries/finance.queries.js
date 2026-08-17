@@ -8,7 +8,11 @@ import { createQueryKeys } from "@/shared/lib/query";
 import { tariffsAPI, studentTariffsAPI } from "../api/finance.api";
 import {
   invoicesAPI,
-  invoicePaymentsAPI,
+  paymentsAPI,
+  paymentAccountsAPI,
+  studentAccountsAPI,
+  discountsAPI,
+  vacationMonthsAPI,
   financeStatusAPI,
   financeSettingsAPI,
 } from "../api/invoices.api";
@@ -21,6 +25,11 @@ export const financeKeys = createQueryKeys("finance");
 const tariffsKey = [...financeKeys.all, "tariffs"];
 const assignmentsKey = [...financeKeys.all, "student-tariffs"];
 const invoicesKey = [...financeKeys.all, "invoices"];
+const paymentsKey = [...financeKeys.all, "payments"];
+const accountsKey = [...financeKeys.all, "accounts"];
+const depositsKey = [...financeKeys.all, "deposits"];
+const discountsKey = [...financeKeys.all, "discounts"];
+const vacationsKey = [...financeKeys.all, "vacations"];
 const statusesKey = [...financeKeys.all, "statuses"];
 const settingsKey = [...financeKeys.all, "settings"];
 
@@ -99,6 +108,14 @@ export const financeQueries = {
       enabled: Boolean(id),
     }),
 
+  /** Kassirning asosiy ekrani → `{ data, pagination, totals, month }`. */
+  studentRegistry: (params) =>
+    queryOptions({
+      queryKey: [...invoicesKey, "registry", params],
+      queryFn: () => invoicesAPI.getStudentRegistry(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
   /** O'quvchining o'quv yili bo'yicha majburiyatlari va qarzi. */
   studentInvoices: (studentId, params) =>
     queryOptions({
@@ -108,11 +125,148 @@ export const financeQueries = {
       enabled: Boolean(studentId),
     }),
 
-  /** To'lovlar registri. */
+  /** Hisob-fakturaga tushgan to'lovlar (chek raqami bilan). */
+  invoicePayments: (id) =>
+    queryOptions({
+      queryKey: [...invoicesKey, "payments", id],
+      queryFn: () => invoicesAPI.getPayments(id).then((r) => r.data.data),
+      enabled: Boolean(id),
+    }),
+
+  // ── To'lovlar (kassa cheklari) ─────────────
+
+  /** To'lovlar registri → `{ data, pagination, totals }`. */
   paymentList: (params) =>
     queryOptions({
-      queryKey: [...financeKeys.all, "payments", params],
-      queryFn: () => invoicePaymentsAPI.getAll(params).then((r) => r.data),
+      queryKey: [...paymentsKey, "list", params],
+      queryFn: () => paymentsAPI.getAll(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Bitta chek — taqsimotlari bilan. */
+  paymentDetail: (id) =>
+    queryOptions({
+      queryKey: [...paymentsKey, "detail", id],
+      queryFn: () => paymentsAPI.getById(id).then((r) => r.data.data),
+      enabled: Boolean(id),
+    }),
+
+  /** Bitta o'quvchining to'lov tarixi. */
+  studentPayments: (studentId) =>
+    queryOptions({
+      queryKey: [...paymentsKey, "student", studentId],
+      queryFn: () => paymentsAPI.getForStudent(studentId).then((r) => r.data.data),
+      enabled: Boolean(studentId),
+    }),
+
+  // ── Kassalar ───────────────────────────────
+
+  /** Hisoblar ro'yxati (sahifalanmaydi) → `{ items, totals }`. */
+  accountList: (params) =>
+    queryOptions({
+      queryKey: [...accountsKey, "list", params],
+      queryFn: () => paymentAccountsAPI.getAll(params).then((r) => r.data),
+    }),
+
+  /** To'lov qabul qilish uchun faol hisoblar (modal select). */
+  activeAccounts: () =>
+    queryOptions({
+      queryKey: [...accountsKey, "active"],
+      queryFn: () =>
+        paymentAccountsAPI
+          .getAll({ status: "active" })
+          .then((r) => r.data.items ?? []),
+      staleTime: 10 * 60 * 1000,
+    }),
+
+  /** Kassa hisoboti — "qaysi hisobga qancha tushdi". */
+  accountReport: (params) =>
+    queryOptions({
+      queryKey: [...accountsKey, "report", params],
+      queryFn: () => paymentAccountsAPI.getReport(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Bitta hisobning daftari (seq bo'yicha, balanceAfter ustuni bilan). */
+  accountEntries: (id, params) =>
+    queryOptions({
+      queryKey: [...accountsKey, "entries", id, params],
+      queryFn: () => paymentAccountsAPI.getEntries(id, params).then((r) => r.data),
+      enabled: Boolean(id),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Hisoblar orasidagi o'tkazmalar. */
+  transferList: (params) =>
+    queryOptions({
+      queryKey: [...accountsKey, "transfers", params],
+      queryFn: () => paymentAccountsAPI.getTransfers(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  // ── Depozit ────────────────────────────────
+
+  /** O'quvchining qoldig'i va joriy qarzi. */
+  studentAccount: (studentId) =>
+    queryOptions({
+      queryKey: [...depositsKey, "account", studentId],
+      queryFn: () => studentAccountsAPI.get(studentId).then((r) => r.data.data),
+      enabled: Boolean(studentId),
+    }),
+
+  /** Depozit harakatlari (hosila — alohida jadval yo'q). */
+  studentMovements: (studentId) =>
+    queryOptions({
+      queryKey: [...depositsKey, "movements", studentId],
+      queryFn: () =>
+        studentAccountsAPI.getMovements(studentId).then((r) => r.data.data),
+      enabled: Boolean(studentId),
+    }),
+
+  // ── Chegirmalar ────────────────────────────
+
+  /** Chegirma katalogi → `{ data, pagination }`. */
+  discountList: (params) =>
+    queryOptions({
+      queryKey: [...discountsKey, "list", params],
+      queryFn: () => discountsAPI.getAll(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Biriktirilishi mumkin bo'lgan chegirmalar (modal select). */
+  assignableDiscounts: () =>
+    queryOptions({
+      queryKey: [...discountsKey, "assignable"],
+      queryFn: () =>
+        discountsAPI
+          .getAll({ status: "active", limit: 200 })
+          .then((r) => r.data.data ?? []),
+      staleTime: 10 * 60 * 1000,
+    }),
+
+  /** Chegirma biriktirishlari → `{ data, pagination, month }`. */
+  discountAssignments: (params) =>
+    queryOptions({
+      queryKey: [...discountsKey, "assignments", params],
+      queryFn: () => discountsAPI.getAssignments(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Bitta o'quvchining chegirmalari (joriy + tarix). */
+  studentDiscounts: (studentId) =>
+    queryOptions({
+      queryKey: [...discountsKey, "student", studentId],
+      queryFn: () => discountsAPI.getForStudent(studentId).then((r) => r.data.data),
+      enabled: Boolean(studentId),
+    }),
+
+  // ── Ta'til oylari ──────────────────────────
+
+  /** O'quv yili oylari, har biri ta'til bayrog'i bilan. */
+  vacationMonths: (params) =>
+    queryOptions({
+      queryKey: [...vacationsKey, params],
+      queryFn: () => vacationMonthsAPI.getAll(params).then((r) => r.data.data),
       placeholderData: keepPreviousData,
     }),
 
@@ -144,4 +298,15 @@ export const financeQueries = {
     }),
 };
 
-export { tariffsKey, assignmentsKey, invoicesKey, statusesKey, settingsKey };
+export {
+  tariffsKey,
+  assignmentsKey,
+  invoicesKey,
+  paymentsKey,
+  accountsKey,
+  depositsKey,
+  discountsKey,
+  vacationsKey,
+  statusesKey,
+  settingsKey,
+};

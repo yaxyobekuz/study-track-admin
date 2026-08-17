@@ -5,7 +5,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { tariffsAPI, studentTariffsAPI } from "../api/finance.api";
 import {
   invoicesAPI,
-  invoicePaymentsAPI,
+  paymentsAPI,
+  paymentAccountsAPI,
+  studentAccountsAPI,
+  discountsAPI,
+  vacationMonthsAPI,
   financeStatusAPI,
   financeSettingsAPI,
 } from "../api/invoices.api";
@@ -184,23 +188,225 @@ export const useRestoreInvoice = () => {
   });
 };
 
-// ── To'lovlar ────────────────────────────────
-
-export const useCreatePayment = () => {
+/** Bekor qilib qayta yaratish — kech qo'shilgan chegirma/xato narx uchun. */
+export const useRegenerateInvoice = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }) =>
-      invoicesAPI.createPayment(id, data).then((r) => r.data.data),
+    mutationFn: ({ id, reason }) =>
+      invoicesAPI.regenerate(id, reason).then((r) => r.data.data),
     onSuccess: () => invalidateFinance(qc),
   });
 };
 
-/** Soft void — moliyaviy yozuv bazadan chiqmaydi, `finance.adjust` talab qiladi. */
+// ── To'lovlar (kassa cheki) ──────────────────
+
+/**
+ * Taqsimot oldindan ko'rinishi — hech narsa yozmaydi, shuning uchun
+ * `useQuery` emas `useMutation`: kassir summani kiritib bo'lgach ATAYLAB
+ * chaqiriladi, har harf bosilganda emas.
+ */
+export const usePreviewPayment = () =>
+  useMutation({
+    mutationFn: (data) => paymentsAPI.preview(data).then((r) => r.data.data),
+  });
+
+/** To'lov o'quvchiga kiritiladi — server oylarga o'zi taqsimlaydi. */
+export const useCreatePayment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => paymentsAPI.create(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+/** Soft void — moliyaviy yozuv bazadan chiqmaydi, `finance.void` talab qiladi. */
 export const useVoidPayment = () => {
   const qc = useQueryClient();
   return useMutation({
+    mutationFn: ({ id, reason }) => paymentsAPI.void(id, reason).then((r) => r.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useUpdatePaymentNote = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, note }) =>
+      paymentsAPI.updateNote(id, note).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+// ── Kassalar ─────────────────────────────────
+
+export const useCreateAccount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => paymentAccountsAPI.create(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useUpdateAccount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      paymentAccountsAPI.update(id, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useArchiveAccount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isArchived }) =>
+      paymentAccountsAPI.archive(id, isArchived).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+/** Sanoq farqi — sabab majburiy, serverda `logger.warn` ga tushadi. */
+export const useAdjustAccount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      paymentAccountsAPI.adjust(id, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useCreateTransfer = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) =>
+      paymentAccountsAPI.createTransfer(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useVoidTransfer = () => {
+  const qc = useQueryClient();
+  return useMutation({
     mutationFn: ({ id, reason }) =>
-      invoicePaymentsAPI.void(id, reason).then((r) => r.data.data),
+      paymentAccountsAPI.voidTransfer(id, reason).then((r) => r.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+// ── Depozit ──────────────────────────────────
+
+/** Qoldiqni ochiq hisob-fakturalarga qo'llash (idempotent). */
+export const useApplyDeposit = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (studentId) =>
+      studentAccountsAPI.apply(studentId).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useRefundDeposit = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ studentId, data }) =>
+      studentAccountsAPI.refund(studentId, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useAdjustStudentBalance = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ studentId, data }) =>
+      studentAccountsAPI.adjust(studentId, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+// ── Chegirmalar ──────────────────────────────
+
+export const useCreateDiscount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => discountsAPI.create(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useUpdateDiscount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      discountsAPI.update(id, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useArchiveDiscount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isArchived }) =>
+      discountsAPI.archive(id, isArchived).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useDeleteDiscount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => discountsAPI.delete(id).then((r) => r.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useAssignDiscount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => discountsAPI.assign(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useBulkAssignDiscount = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => discountsAPI.bulkAssign(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useCloseDiscountAssignment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, endMonth }) =>
+      discountsAPI.closeAssignment(id, endMonth).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useDeleteDiscountAssignment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => discountsAPI.deleteAssignment(id).then((r) => r.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+// ── Ta'til oylari ────────────────────────────
+
+export const useCreateVacationMonth = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    // Serverdan `warnings` ham keladi — o'sha oyga hisob-faktura chiqarilgan bo'lsa
+    mutationFn: (data) => vacationMonthsAPI.create(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useDeleteVacationMonth = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => vacationMonthsAPI.delete(id).then((r) => r.data),
     onSuccess: () => invalidateFinance(qc),
   });
 };

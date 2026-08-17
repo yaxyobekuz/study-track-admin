@@ -116,13 +116,148 @@ export const INVOICE_TABLE_COLUMNS = [
   "",
 ];
 
-/** To'lov usullari. */
-export const PAYMENT_METHOD_OPTIONS = [
+/** Nima uchun shu oyga hisob-faktura shakllantirib bo'lmaydi. */
+export const GENERATE_BLOCKED_LABELS = {
+  not_academic: "Bu oy o'quv yiliga kirmaydi",
+  vacation: "Bu oy ta'til deb belgilangan",
+  future: "Kelajakdagi oy uchun shakllantirilmaydi",
+  before_first_invoice_month: "Bu oy tizimga o'tishdan oldingi davrga tegishli",
+};
+
+// ── Chegirmalar ──────────────────────────────
+
+export const DISCOUNT_TYPE_OPTIONS = [
+  { label: "Foiz (%)", value: "percent" },
+  { label: "Qat'iy summa", value: "fixed" },
+];
+
+export const DISCOUNT_TYPE_LABELS = {
+  percent: "Foiz",
+  fixed: "Qat'iy summa",
+};
+
+export const DISCOUNT_STATUS_OPTIONS = [
+  { label: "Faol", value: "active" },
+  { label: "Nofaol", value: "inactive" },
+  { label: "Arxivlangan", value: "archived" },
+];
+
+export const DISCOUNT_TABLE_COLUMNS = [
+  "Chegirma",
+  "Turi",
+  "Miqdori",
+  "O'quvchilar",
+  "Holat",
+  "",
+];
+
+export const DISCOUNT_ASSIGNMENT_TABLE_COLUMNS = [
+  "O'quvchi",
+  "Chegirma",
+  "Miqdori",
+  "Davr",
+  "Holat",
+  "",
+];
+
+/**
+ * Chegirma hisoblash qoidasi — modalda ko'rsatiladi.
+ * Server bilan bir xil (server/src/helpers/discount.helpers.js).
+ */
+export const DISCOUNT_RULES_HINT =
+  "Bir nechta chegirma bir vaqtda amal qilsa, foizlar qo'shiladi (20% + 15% = 35%) " +
+  "va qat'iy summalardan oldin qo'llanadi. Summa hech qachon manfiy bo'lmaydi.";
+
+// ── Kassalar ─────────────────────────────────
+
+export const ACCOUNT_TYPE_OPTIONS = [
   { label: "Naqd", value: "cash" },
-  { label: "Plastik", value: "card" },
-  { label: "O'tkazma", value: "transfer" },
+  { label: "Plastik / terminal", value: "card" },
+  { label: "Bank hisob-raqami", value: "bank" },
+  { label: "Onlayn to'lov", value: "online" },
   { label: "Boshqa", value: "other" },
 ];
+
+export const ACCOUNT_TYPE_LABELS = {
+  cash: "Naqd",
+  card: "Plastik / terminal",
+  bank: "Bank hisob-raqami",
+  online: "Onlayn to'lov",
+  other: "Boshqa",
+};
+
+/** Kassa daftaridagi harakat turlari. */
+export const ENTRY_TYPE_META = {
+  payment: { label: "To'lov", className: "bg-green-100 text-green-700" },
+  payment_void: { label: "To'lov bekor qilindi", className: "bg-red-100 text-red-700" },
+  transfer_in: { label: "O'tkazma (kirim)", className: "bg-blue-100 text-blue-700" },
+  transfer_out: { label: "O'tkazma (chiqim)", className: "bg-blue-100 text-blue-700" },
+  refund: { label: "Qaytarildi", className: "bg-orange-100 text-orange-700" },
+  refund_void: { label: "Qaytarish bekor qilindi", className: "bg-gray-100 text-gray-600" },
+  adjustment: { label: "Qo'lda to'g'rilash", className: "bg-amber-100 text-amber-700" },
+};
+
+export const ENTRY_TYPE_OPTIONS = [
+  { label: "Barchasi", value: "all" },
+  ...Object.entries(ENTRY_TYPE_META).map(([value, meta]) => ({
+    label: meta.label,
+    value,
+  })),
+];
+
+export const ACCOUNT_ENTRY_TABLE_COLUMNS = [
+  "Sana",
+  "Turi",
+  "Izoh",
+  "Summa",
+  "Qoldiq",
+];
+
+export const TRANSFER_TABLE_COLUMNS = [
+  "Sana",
+  "Qayerdan",
+  "Qayerga",
+  "Summa",
+  "Komissiya",
+  "",
+];
+
+// ── To'lovlar ────────────────────────────────
+
+export const PAYMENT_TABLE_COLUMNS = [
+  "Chek",
+  "Sana",
+  "O'quvchi",
+  "Summa",
+  "Taqsimlandi",
+  "Hisob",
+  "",
+];
+
+/** Taqsimot manbai — kassir to'lovimi yoki depozitdanmi. */
+export const ALLOCATION_SOURCE_META = {
+  payment: { label: "To'lovdan", className: "bg-gray-100 text-gray-600" },
+  deposit: { label: "Depozitdan", className: "bg-blue-100 text-blue-700" },
+};
+
+/** O'quvchilar registri — kassirning asosiy ekrani. */
+export const STUDENT_FINANCE_TABLE_COLUMNS = [
+  "O'quvchi",
+  "Tarif",
+  "Chegirma",
+  "Oylik",
+  "Depozit",
+  "Qarz",
+  "",
+];
+
+/** Depozit harakatlari. */
+export const MOVEMENT_TYPE_META = {
+  payment: { label: "To'lov qabul qilindi", className: "text-green-700" },
+  allocation: { label: "Hisob-fakturaga yechildi", className: "text-gray-600" },
+  refund: { label: "Qaytarildi", className: "text-orange-700" },
+  adjustment: { label: "Qo'lda to'g'rilash", className: "text-amber-700" },
+};
 
 // ── O'quvchi moliyaviy holati ────────────────
 
