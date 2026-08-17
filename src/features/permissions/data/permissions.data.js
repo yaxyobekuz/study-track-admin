@@ -22,6 +22,7 @@ export const SECTIONS = {
   PREMIUM: "premium",
   COINS: "coins",
   TARIFFS: "tariffs",
+  DISCOUNTS: "discounts",
   FINANCE: "finance",
   HOLIDAYS: "holidays",
   MONITORS: "monitors",
@@ -206,8 +207,26 @@ export const PERMISSION_SECTIONS = [
     ],
   },
   {
+    // Chegirmalar tariflardan alohida: narx katalogini boshqaradigan xodim
+    // "kimga qancha chegirma" qarorini ham qabul qila olmasligi kerak.
+    key: SECTIONS.DISCOUNTS,
+    label: "Chegirmalar",
+    group: "Moliya",
+    actions: [
+      A.view,
+      A.create,
+      A.update,
+      A.delete,
+      { key: "assign", label: "O'quvchiga biriktirish" },
+    ],
+  },
+  {
     // Tariflardan alohida: narxlarni ko'rish huquqi butun qarzdorlik registrini
     // ochib bermasligi kerak.
+    //
+    // Amallar ataylab mayda: kassir `pay` oladi, lekin `void`/`refund`/
+    // `transfer`/`accounts` olmaydi — bularning har biri pulni ota-onasiz
+    // harakatlantiradi.
     key: SECTIONS.FINANCE,
     label: "Hisob-fakturalar va to'lovlar",
     group: "Moliya",
@@ -215,9 +234,13 @@ export const PERMISSION_SECTIONS = [
       A.view,
       { key: "generate", label: "Hisob-faktura shakllantirish" },
       { key: "pay", label: "To'lov qabul qilish" },
+      { key: "void", label: "To'lovni bekor qilish" },
+      { key: "refund", label: "Depozitni qaytarish" },
       { key: "status", label: "O'quvchi moliyaviy holati" },
       { key: "cancel", label: "Hisob-fakturani bekor qilish" },
       { key: "adjust", label: "Amaldagi yozuvni to'g'rilash" },
+      { key: "accounts", label: "Kassalarni boshqarish" },
+      { key: "transfer", label: "Hisoblar orasida o'tkazma" },
       A.export,
       A.settings,
     ],
@@ -397,7 +420,11 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/premium", key: "premium.view" },
   { prefix: "/coin-distribution", key: "coins.view" },
   { prefix: "/coin-settings", key: "coins.view" },
-  { prefix: "/finance", key: "tariffs.view" },
+  // Moliya bo'limiga kirish `finance.view` bilan; katalog tablari esa
+  // qo'shimcha o'z kalitini talab qiladi (eng UZUN mos prefiks yutadi).
+  { prefix: "/finance", key: "finance.view" },
+  { prefix: "/finance/main/tariffs", key: "tariffs.view" },
+  { prefix: "/finance/main/discounts", key: "discounts.view" },
   { prefix: "/holidays", key: "holidays.view" },
   { prefix: "/monitors", key: "monitors.view" },
   { prefix: "/changelog", key: "changelog.view" },
