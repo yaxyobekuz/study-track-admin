@@ -4,17 +4,10 @@ import Button from "@/shared/components/ui/button/Button";
 import { Field, FieldLabel } from "@/shared/components/shadcn/field";
 
 // Data
-import { WORK_DAYS_OPTIONS } from "@/features/attendance/data/attendance.data";
-
-const DAY_NAMES = {
-  0: "Yakshanba",
-  1: "Dushanba",
-  2: "Seshanba",
-  3: "Chorshanba",
-  4: "Payshanba",
-  5: "Juma",
-  6: "Shanba",
-};
+import {
+  WEEK_DAY_NAMES,
+  WORK_DAYS_OPTIONS,
+} from "@/features/attendance/data/attendance.data";
 
 /**
  * weeklySchedule: { "1": { startTime: "09:00", endTime: "18:00" }, ... }
@@ -65,7 +58,7 @@ const WeeklyScheduleEditor = ({
         return (
           <div key={day} className="flex items-center gap-3 flex-wrap">
             <span className="w-24 text-sm font-medium text-gray-700 shrink-0">
-              {DAY_NAMES[day]}
+              {WEEK_DAY_NAMES[day]}
             </span>
 
             {hasOverride ? (

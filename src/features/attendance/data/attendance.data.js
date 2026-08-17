@@ -131,3 +131,14 @@ export const WORK_DAYS_OPTIONS = [
   { label: "Ju", value: 5 },
   { label: "Sh", value: 6 },
 ];
+
+/** Hafta kuni raqami → to'liq nom (JS `getDay()` tartibida). */
+export const WEEK_DAY_NAMES = {
+  0: "Yakshanba",
+  1: "Dushanba",
+  2: "Seshanba",
+  3: "Chorshanba",
+  4: "Payshanba",
+  5: "Juma",
+  6: "Shanba",
+};
