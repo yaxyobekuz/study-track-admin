@@ -107,6 +107,24 @@ export const MODAL_NAMES = [
   "recordPayment",
   "editStudentFinanceStatus",
 
+  // Moliya - chegirmalar
+  "createDiscount",
+  "editDiscount",
+  "assignDiscount",
+
+  // Moliya - kassa va depozit
+  "paymentAccount",
+  "accountTransfer",
+  "adjustAccount",
+  "refundDeposit",
+  "adjustStudentBalance",
+
+  // Moliya - ta'til
+  "markVacation",
+
+  // Moliya - sabab so'raladigan amallar (bekor qilish, qayta shakllantirish)
+  "financeReason",
+
   // Premium
   "grantPremium",
   "createEmoji",

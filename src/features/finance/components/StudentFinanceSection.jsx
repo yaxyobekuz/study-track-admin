@@ -2,7 +2,16 @@
 import { toast } from "sonner";
 
 // Icons
-import { Repeat, Trash2, UserCog, Wallet } from "lucide-react";
+import {
+  BadgePercent,
+  PiggyBank,
+  Repeat,
+  Scale,
+  Trash2,
+  Undo2,
+  UserCog,
+  Wallet,
+} from "lucide-react";
 
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
@@ -16,22 +25,35 @@ import Button from "@/shared/components/ui/button/Button";
 import ChangeStudentTariffModal from "./ChangeStudentTariffModal";
 import RecordPaymentModal from "./RecordPaymentModal";
 import StudentFinanceStatusModal from "./StudentFinanceStatusModal";
+import AssignDiscountModal from "./AssignDiscountModal";
+import {
+  AdjustStudentBalanceModal,
+  RefundDepositModal,
+} from "./DepositModals";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
 
 // Utils & helpers
+import { cn } from "@/shared/utils/cn";
 import { formatMoney } from "@/shared/utils/formatMoney";
+import { formatDateUZ } from "@/shared/utils/date.utils";
 import {
   currentMonthKey,
-  formatMonthKey,
   formatMonthRange,
 } from "@/shared/helpers/month.helpers";
 
 // Data & queries
-import { FINANCE_STATUS_META, INVOICE_STATUS_META } from "../data/finance.data";
+import {
+  FINANCE_STATUS_META,
+  INVOICE_STATUS_META,
+  MOVEMENT_TYPE_META,
+} from "../data/finance.data";
 import { financeQueries } from "../queries/finance.queries";
-import { useDeleteFinanceStatus } from "../queries/finance.mutations";
+import {
+  useApplyDeposit,
+  useDeleteFinanceStatus,
+} from "../queries/finance.mutations";
 
 /**
  * Foydalanuvchi detal sahifasidagi "Moliya" bo'limi.
@@ -39,6 +61,10 @@ import { useDeleteFinanceStatus } from "../queries/finance.mutations";
  * Faqat `studentId` propini oladi va o'zi fetch qiladi — davomat bo'limidagi
  * `UserAttendancePanel` bilan bir xil naqsh. Shu tufayli `users` feature'i
  * moliyadan mutlaqo bexabar qoladi: modallar ham shu yerda mount qilinadi.
+ *
+ * Bir ekranda to'rt savolga javob: qanchaga o'qiydi (tarif + chegirma),
+ * qancha qarzi bor, depozitida qancha pul turibdi va o'sha pul qaysi
+ * oylarga ketgan.
  */
 const StudentFinanceSection = ({ studentId }) => {
   const { openModal } = useModal();
@@ -50,11 +76,18 @@ const StudentFinanceSection = ({ studentId }) => {
   const { data: tariffData } = useQuery(
     financeQueries.studentTariffHistory(studentId),
   );
+  const { data: discountData } = useQuery(
+    financeQueries.studentDiscounts(studentId),
+  );
   const { data: invoiceData, isLoading } = useQuery(
     financeQueries.studentInvoices(studentId),
   );
+  const { data: movementData } = useQuery(
+    financeQueries.studentMovements(studentId),
+  );
 
   const { mutate: deleteStatus } = useDeleteFinanceStatus();
+  const { mutate: applyDeposit } = useApplyDeposit();
 
   const statusBadge =
     FINANCE_STATUS_META[statusData?.currentStatus?.status ?? "active"];
@@ -64,22 +97,40 @@ const StudentFinanceSection = ({ studentId }) => {
     (item) => item.startMonth <= now && (item.endMonth == null || item.endMonth >= now),
   );
 
-  const handleDeleteStatus = (row) => {
-    if (!confirm("Holat yozuvini o'chirishni tasdiqlaysizmi?")) return;
+  const discounts = discountData?.current ?? [];
+  const balance = invoiceData?.balance ?? "0.00";
+  const hasBalance = Number(balance) > 0;
 
+  const student = {
+    id: studentId,
+    fullName: statusData?.student
+      ? `${statusData.student.firstName} ${statusData.student.lastName ?? ""}`.trim()
+      : "",
+  };
+
+  const handleError = (err) =>
+    toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+
+  const handleDeleteStatus = (row) => {
     deleteStatus(row.id, {
       onSuccess: () => toast.success("Holat yozuvi o'chirildi"),
-      onError: (err) =>
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      onError: handleError,
     });
   };
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-semibold text-gray-900">Moliya</h2>
 
-        <div className="flex items-center flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Can do="finance.pay">
+            <Button onClick={() => openModal("recordPayment", { student })}>
+              <Wallet />
+              To'lov qabul qilish
+            </Button>
+          </Can>
+
           <Can do="finance.status">
             <Button
               variant="secondary"
@@ -91,7 +142,17 @@ const StudentFinanceSection = ({ studentId }) => {
               }
             >
               <UserCog />
-              Holatni o'zgartirish
+              Holat
+            </Button>
+          </Can>
+
+          <Can do="discounts.assign">
+            <Button
+              variant="secondary"
+              onClick={() => openModal("assignDiscount", { student })}
+            >
+              <BadgePercent />
+              Chegirma
             </Button>
           </Can>
 
@@ -104,7 +165,7 @@ const StudentFinanceSection = ({ studentId }) => {
                 }
               >
                 <Repeat />
-                Tarifni almashtirish
+                Tarif
               </Button>
             ) : (
               // Biriktirish tarif detalidan bajariladi — u yerda tarif allaqachon
@@ -121,11 +182,11 @@ const StudentFinanceSection = ({ studentId }) => {
       </div>
 
       {/* Qisqacha */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-gray-100 p-3">
           <p className="text-xs text-gray-500">Moliyaviy holat</p>
           <span
-            className={`mt-1 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${statusBadge.className}`}
+            className={`mt-1 inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${statusBadge.className}`}
           >
             {statusBadge.label}
           </span>
@@ -144,11 +205,90 @@ const StudentFinanceSection = ({ studentId }) => {
           <p className="mt-1 font-medium text-gray-900">
             {currentAssignment?.tariff?.name ?? "Biriktirilmagan"}
           </p>
-          {currentAssignment?.resolvedAmount && (
-            <p className="mt-0.5 text-xs text-gray-500">
-              {formatMoney(currentAssignment.resolvedAmount)} / oy
-            </p>
+
+          {discounts.length > 0 ? (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {discounts.map((item) => (
+                <span
+                  key={item.id}
+                  title={item.discount?.name}
+                  className="rounded-md bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700"
+                >
+                  {item.discount?.valueLabel}
+                </span>
+              ))}
+            </div>
+          ) : (
+            currentAssignment?.resolvedAmount && (
+              <p className="mt-0.5 text-xs text-gray-500">
+                {formatMoney(currentAssignment.resolvedAmount)} / oy
+              </p>
+            )
           )}
+        </div>
+
+        <div className="rounded-xl border border-gray-100 p-3">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-xs text-gray-500">Depozit</p>
+
+            <div className="flex shrink-0 items-center gap-0.5">
+              {hasBalance && (
+                <Can do="finance.pay">
+                  <button
+                    title="Qarzlarga qo'llash"
+                    onClick={() =>
+                      applyDeposit(studentId, {
+                        onSuccess: (result) =>
+                          toast.success(
+                            Number(result.applied) > 0
+                              ? `${formatMoney(result.applied)} qarzlarga yechildi`
+                              : "Qo'llash uchun ochiq qarz yo'q",
+                          ),
+                        onError: handleError,
+                      })
+                    }
+                    className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  >
+                    <PiggyBank className="size-3.5" />
+                  </button>
+                </Can>
+              )}
+
+              {hasBalance && (
+                <Can do="finance.refund">
+                  <button
+                    title="Ota-onaga qaytarish"
+                    onClick={() => openModal("refundDeposit", { student, balance })}
+                    className="rounded-lg p-1 text-gray-400 hover:bg-orange-50 hover:text-orange-600"
+                  >
+                    <Undo2 className="size-3.5" />
+                  </button>
+                </Can>
+              )}
+
+              <Can do="finance.adjust">
+                <button
+                  title="Qoldiqni to'g'rilash"
+                  onClick={() =>
+                    openModal("adjustStudentBalance", { student, balance })
+                  }
+                  className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                >
+                  <Scale className="size-3.5" />
+                </button>
+              </Can>
+            </div>
+          </div>
+
+          <p
+            className={cn(
+              "mt-1 text-xl font-semibold",
+              hasBalance ? "text-blue-600" : "text-gray-400",
+            )}
+          >
+            {formatMoney(balance)}
+          </p>
+          <p className="mt-0.5 text-xs text-gray-500">Oldindan to'langan</p>
         </div>
 
         <div className="rounded-xl border border-gray-100 p-3">
@@ -160,8 +300,8 @@ const StudentFinanceSection = ({ studentId }) => {
           </p>
           {invoiceData?.totals && (
             <p className="mt-0.5 text-xs text-gray-500">
-              Hisoblangan {formatMoney(invoiceData.totals.invoiced)} · to'langan{" "}
-              {formatMoney(invoiceData.totals.paid)}
+              {invoiceData.totals.paidMonths} / {invoiceData.totals.billableMonths} oy
+              to'langan
             </p>
           )}
         </div>
@@ -180,7 +320,7 @@ const StudentFinanceSection = ({ studentId }) => {
                     <tr key={row.id} className="border-b border-gray-50 last:border-0">
                       <td className="px-3 py-2">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${badge.className}`}
+                          className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${badge.className}`}
                         >
                           {badge.label}
                         </span>
@@ -196,7 +336,7 @@ const StudentFinanceSection = ({ studentId }) => {
                             <button
                               title="O'chirish"
                               onClick={() => handleDeleteStatus(row)}
-                              className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"
+                              className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
                             >
                               <Trash2 className="size-3.5" />
                             </button>
@@ -212,7 +352,7 @@ const StudentFinanceSection = ({ studentId }) => {
         </div>
       )}
 
-      {/* Hisob-fakturalar */}
+      {/* Oylar — ta'til oylari ham ko'rinadi */}
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-gray-700">
           Oylik majburiyatlar
@@ -221,7 +361,7 @@ const StudentFinanceSection = ({ studentId }) => {
 
         {isLoading ? (
           <p className="py-4 text-center text-sm text-gray-500">Yuklanmoqda...</p>
-        ) : (invoiceData?.invoices ?? []).length === 0 ? (
+        ) : (invoiceData?.timeline ?? []).length === 0 ? (
           <p className="py-4 text-center text-sm text-gray-500">
             Hali majburiyat shakllantirilmagan
           </p>
@@ -229,42 +369,57 @@ const StudentFinanceSection = ({ studentId }) => {
           <div className="overflow-x-auto rounded-xl border border-gray-100">
             <table className="min-w-full text-sm">
               <tbody>
-                {invoiceData.invoices.map((invoice) => {
-                  const badge = INVOICE_STATUS_META[invoice.status];
+                {invoiceData.timeline.map((row) => {
+                  const invoice = row.invoice;
+                  const badge = invoice ? INVOICE_STATUS_META[invoice.status] : null;
+
                   return (
                     <tr
-                      key={invoice.id}
-                      className="border-b border-gray-50 last:border-0"
+                      key={row.month}
+                      className={cn(
+                        "border-b border-gray-50 last:border-0",
+                        row.isVacation && "bg-amber-50/50",
+                      )}
                     >
-                      <td className="px-3 py-2 whitespace-nowrap font-medium">
-                        {formatMonthKey(invoice.month)}
+                      <td className="px-3 py-2 font-medium whitespace-nowrap">
+                        {row.monthLabel}
                       </td>
+
                       <td className="px-3 py-2 whitespace-nowrap">
-                        {formatMoney(invoice.amount)}
+                        {row.isVacation ? (
+                          <span className="text-xs text-amber-700">Ta'til</span>
+                        ) : invoice ? (
+                          formatMoney(invoice.amount)
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
                       </td>
+
                       <td className="px-3 py-2 whitespace-nowrap text-green-600">
-                        {formatMoney(invoice.paidAmount)}
+                        {invoice ? formatMoney(invoice.paidAmount) : ""}
                       </td>
+
                       <td className="px-3 py-2 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${badge.className}`}
-                        >
-                          {badge.label}
-                        </span>
+                        {badge ? (
+                          <span
+                            className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${badge.className}`}
+                          >
+                            {badge.label}
+                          </span>
+                        ) : row.isVacation ? (
+                          <span className="text-xs text-gray-400">To'lov yo'q</span>
+                        ) : row.isFuture ? (
+                          <span className="text-xs text-gray-400">Kelgusi oy</span>
+                        ) : (
+                          <span className="text-xs text-gray-400">
+                            Shakllantirilmagan
+                          </span>
+                        )}
                       </td>
-                      <td className="px-3 py-2 text-right">
-                        {invoice.status !== "paid" &&
-                          invoice.status !== "cancelled" && (
-                            <Can do="finance.pay">
-                              <button
-                                title="To'lov qabul qilish"
-                                onClick={() => openModal("recordPayment", { invoice })}
-                                className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600"
-                              >
-                                <Wallet className="size-3.5" />
-                              </button>
-                            </Can>
-                          )}
+
+                      <td className="px-3 py-2 text-right text-xs text-gray-400">
+                        {/* Chek raqamlari — ota-ona telefon qilganda kerak */}
+                        {invoice?.payments?.map((p) => p.receiptLabel).join(", ")}
                       </td>
                     </tr>
                   );
@@ -275,10 +430,49 @@ const StudentFinanceSection = ({ studentId }) => {
         )}
       </div>
 
+      {/* Depozit harakatlari */}
+      {movementData?.items?.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-gray-700">Depozit harakatlari</h3>
+          <div className="overflow-x-auto rounded-xl border border-gray-100">
+            <table className="min-w-full text-sm">
+              <tbody>
+                {movementData.items.slice(0, 20).map((item) => {
+                  const meta = MOVEMENT_TYPE_META[item.type];
+                  return (
+                    <tr key={item.id} className="border-b border-gray-50 last:border-0">
+                      <td className="px-3 py-2 whitespace-nowrap text-gray-500">
+                        {formatDateUZ(item.occurredAt)}
+                      </td>
+                      <td className={cn("px-3 py-2 whitespace-nowrap", meta?.className)}>
+                        {meta?.label ?? item.label}
+                      </td>
+                      <td className="px-3 py-2 text-gray-500">{item.description}</td>
+                      <td
+                        className={cn(
+                          "px-3 py-2 text-right font-medium whitespace-nowrap",
+                          item.direction === "in" ? "text-green-600" : "text-gray-600",
+                        )}
+                      >
+                        {item.direction === "in" ? "+" : "−"}
+                        {formatMoney(item.amount)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Modallar shu bo'lim ichida — users feature'i moliyadan bexabar qoladi */}
       <ChangeStudentTariffModal />
       <RecordPaymentModal />
       <StudentFinanceStatusModal />
+      <AssignDiscountModal />
+      <RefundDepositModal />
+      <AdjustStudentBalanceModal />
     </div>
   );
 };

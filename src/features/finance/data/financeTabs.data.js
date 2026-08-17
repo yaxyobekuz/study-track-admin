@@ -1,13 +1,38 @@
-// Moliya bo'limining ASOSIY SAHIFASIDAGI tablar.
+// Moliya bo'limining tab sahifalari.
 //
-// Iyerarxiya: /finance (bo'lim) → /finance/main (asosiy sahifa) →
-// /finance/main/tariffs (tab). Tab asosiy sahifaga tegishli, bo'limga emas —
-// shuning uchun keyingi sahifalar (/finance/payments va h.k.) o'z tablariga
-// ega bo'ladi.
-//
-// `to` - route path, `label` - tabdagi matn, `title`/`description` - sarlavha.
-// `exact: false` - ichki sahifalarda ham tab aktiv bo'lishi uchun.
+// Tartib ISH CHASTOTASI bo'yicha: kassir kun bo'yi "O'quvchilar" va
+// "To'lovlar" da ishlaydi, "Tariflar"/"Chegirmalar"/"Sozlamalar" ga esa
+// oyiga bir-ikki marta kiradi.
+
 export const MAIN_TABS = [
+  {
+    to: "/finance/main/overview",
+    label: "Umumiy",
+    title: "Moliya",
+    description: "Oylik manzara va hisob-faktura shakllantirish",
+    exact: false,
+  },
+  {
+    to: "/finance/main/students",
+    label: "O'quvchilar",
+    title: "Moliya",
+    description: "Qarzdorlar, depozit va to'lov qabul qilish",
+    exact: false,
+  },
+  {
+    to: "/finance/main/payments",
+    label: "To'lovlar",
+    title: "Moliya",
+    description: "Kassa cheklari registri",
+    exact: false,
+  },
+  {
+    to: "/finance/main/accounts",
+    label: "Kassalar",
+    title: "Moliya",
+    description: "To'lov hisoblari, qoldiqlar va o'tkazmalar",
+    exact: false,
+  },
   {
     to: "/finance/main/tariffs",
     label: "Tariflar",
@@ -16,17 +41,17 @@ export const MAIN_TABS = [
     exact: false,
   },
   {
-    to: "/finance/main/invoices",
-    label: "Hisob-fakturalar",
+    to: "/finance/main/discounts",
+    label: "Chegirmalar",
     title: "Moliya",
-    description: "Oylik to'lov majburiyatlari va to'lovlar",
+    description: "Chegirma turlari va o'quvchilarga biriktirish",
     exact: false,
   },
   {
     to: "/finance/main/settings",
     label: "Sozlamalar",
     title: "Moliya",
-    description: "O'quv yili va hisob-faktura shakllantirish qoidalari",
+    description: "O'quv yili, ta'til oylari va shakllantirish qoidalari",
     exact: false,
   },
 ];

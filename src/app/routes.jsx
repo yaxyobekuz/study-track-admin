@@ -115,9 +115,13 @@ import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettin
 
 // Moliya (Finance) - layout & route-level pages
 import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
+import OverviewPage from "@/features/finance/pages/OverviewPage";
+import StudentsFinancePage from "@/features/finance/pages/StudentsFinancePage";
+import PaymentsPage from "@/features/finance/pages/PaymentsPage";
+import AccountsPage from "@/features/finance/pages/AccountsPage";
 import TariffsPage from "@/features/finance/pages/TariffsPage";
 import TariffDetailPage from "@/features/finance/pages/TariffDetailPage";
-import InvoicesPage from "@/features/finance/pages/InvoicesPage";
+import DiscountsPage from "@/features/finance/pages/DiscountsPage";
 import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
 
 // Pages - Leads
@@ -329,18 +333,27 @@ const Routes = () => {
             element={<Navigate to="/attendance/daily/students" replace />}
           />
 
-          {/* Moliya bo'limi - hozircha bitta sahifa: "Asosiy" */}
+          {/* Moliya bo'limi - bitta sahifa, ichida tablar */}
           <Route path="/finance" element={<Navigate to="/finance/main" replace />} />
 
           {/* Asosiy sahifa + uning tablari */}
           <Route path="/finance/main" element={<FinanceMainLayout />}>
             <Route
               index
-              element={<Navigate to="/finance/main/tariffs" replace />}
+              element={<Navigate to="/finance/main/overview" replace />}
             />
+            <Route path="overview" element={<OverviewPage />} />
+            <Route path="students" element={<StudentsFinancePage />} />
+            <Route path="payments" element={<PaymentsPage />} />
+            <Route path="accounts" element={<AccountsPage />} />
             <Route path="tariffs" element={<TariffsPage />} />
-            <Route path="invoices" element={<InvoicesPage />} />
+            <Route path="discounts" element={<DiscountsPage />} />
             <Route path="settings" element={<FinanceSettingsPage />} />
+            {/* Eski havolalar uchun */}
+            <Route
+              path="invoices"
+              element={<Navigate to="/finance/main/overview" replace />}
+            />
           </Route>
 
           {/* Tarif detali - layoutdan tashqarida: contentga to'liq egalik qiladi */}

@@ -1,9 +1,21 @@
+// React
+import { useState } from "react";
+
 // Toast
 import { toast } from "sonner";
 
+// Icons
+import { ArrowRight, PiggyBank } from "lucide-react";
+
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
+
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
-import { useCreatePayment } from "../queries/finance.mutations";
+import {
+  useCreatePayment,
+  usePreviewPayment,
+} from "../queries/finance.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -12,12 +24,11 @@ import InputField from "@/shared/components/ui/input/InputField";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
-// Utils & helpers
+// Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
-import { formatMonthKey } from "@/shared/helpers/month.helpers";
 
-// Data
-import { PAYMENT_METHOD_OPTIONS } from "../data/finance.data";
+// Queries
+import { financeQueries } from "../queries/finance.queries";
 
 /** Bugungi sana `input[type=date]` uchun. */
 const todayInputValue = () => {
@@ -27,11 +38,16 @@ const todayInputValue = () => {
 };
 
 /**
- * To'lov qabul qilish.
+ * To'lov qabul qilish — kassirning asosiy amali.
  *
- * Summa qoldiqdan oshsa server rad etadi — ortiqcha to'lov yozilmaydi.
- * To'lov keyin o'zgartirilmaydi: xato bo'lsa bekor qilinib, qaytadan
- * kiritiladi (append-only moliyaviy log).
+ * Kassir BITTA summa kiritadi; server uni eng eski qarzdan boshlab
+ * taqsimlaydi va ortiqchasini depozitga qo'yadi. Taqsimot SAQLASHDAN
+ * OLDIN ko'rsatiladi (`/payments/preview` hech narsa yozmaydi) — kassir
+ * "pulim qayerga ketdi?" degan savolga ota-ona hali yonida turganda
+ * javob bera olishi kerak.
+ *
+ * `openModal("recordPayment", { student })` — `student` da kamida
+ * `{ id, fullName }` bo'lishi kerak.
  */
 const RecordPaymentModal = () => (
   <ResponsiveModal name="recordPayment" title="To'lov qabul qilish">
@@ -39,35 +55,71 @@ const RecordPaymentModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, isLoading, setIsLoading, invoice }) => {
+const Content = ({ close, isLoading, setIsLoading, student }) => {
+  const { data: accounts = [] } = useQuery(financeQueries.activeAccounts());
   const { mutate: createPayment } = useCreatePayment();
+  const { mutate: runPreview, isPending: isPreviewing } = usePreviewPayment();
 
-  const { amount, paidAt, method, note, setField } = useObjectState({
-    // Odatiy holat — qoldiqni to'liq to'lash
-    amount: invoice?.debt ?? "",
+  const [preview, setPreview] = useState(null);
+
+  const { amount, accountId, paidAt, note, setField } = useObjectState({
+    amount: "",
+    accountId: "",
     paidAt: todayInputValue(),
-    method: "cash",
     note: "",
   });
 
+  // Faqat bitta hisob bo'lsa tanlash shart emas
+  const resolvedAccountId = accountId || (accounts.length === 1 ? accounts[0].id : "");
+
+  /**
+   * Taqsimotni hisoblash — summa kiritilib bo'lgach (blur). Har harfda
+   * emas: bu server so'rovi va oraliq qiymatlar ("15", "150", "1500")
+   * mazmunsiz natija berardi.
+   */
+  const refreshPreview = () => {
+    const value = Number(amount);
+    if (!student?.id || !Number.isFinite(value) || value <= 0) {
+      setPreview(null);
+      return;
+    }
+
+    runPreview(
+      { studentId: student.id, amount: String(amount) },
+      {
+        onSuccess: setPreview,
+        onError: () => setPreview(null),
+      },
+    );
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!invoice) return;
+    if (!student?.id) return;
+
+    if (!resolvedAccountId) {
+      toast.error("Pul qaysi hisobga tushganini tanlang");
+      return;
+    }
 
     setIsLoading(true);
 
     createPayment(
       {
-        id: invoice.id,
-        data: { amount: String(amount), paidAt, method, note },
+        studentId: student.id,
+        accountId: resolvedAccountId,
+        amount: String(amount),
+        paidAt,
+        note,
       },
       {
         onSuccess: (result) => {
           close();
+          const deposit = Number(result.summary.depositAmount);
           toast.success(
-            result.invoice.status === "paid"
-              ? "To'lov qabul qilindi — majburiyat yopildi"
-              : `To'lov qabul qilindi. Qoldiq: ${formatMoney(result.invoice.debt)}`,
+            deposit > 0
+              ? `Chek ${result.receiptLabel} — ${formatMoney(result.summary.depositAmount)} depozitga tushdi`
+              : `Chek ${result.receiptLabel} qabul qilindi`,
           );
         },
         onError: (err) =>
@@ -79,34 +131,99 @@ const Content = ({ close, isLoading, setIsLoading, invoice }) => {
 
   return (
     <InputGroup onSubmit={handleSubmit} as="form">
-      {invoice && (
-        <div className="rounded-xl bg-gray-50 p-3 text-sm space-y-0.5">
-          <p className="font-medium text-gray-900">{invoice.studentName}</p>
-          <p className="text-gray-500">
-            {formatMonthKey(invoice.month)} · {invoice.tariffName || "—"}
+      {student && (
+        <div className="rounded-xl bg-gray-50 p-3 text-sm">
+          <p className="font-medium text-gray-900">
+            {student.fullName || student.studentName}
           </p>
-          <p className="text-gray-500">
-            Summa: {formatMoney(invoice.amount)} · To'langan:{" "}
-            {formatMoney(invoice.paidAmount)}
-          </p>
-          <p className="font-medium text-red-600">
-            Qoldiq: {formatMoney(invoice.debt)}
-          </p>
+          {student.className && (
+            <p className="text-gray-500">{student.className}</p>
+          )}
         </div>
       )}
 
       <InputField
         required
+        autoFocus
         min="0"
         step="0.01"
         type="number"
         name="amount"
-        label="To'lov summasi (so'm)"
+        label="Qabul qilingan summa (so'm)"
         value={amount}
-        onChange={(e) => setField("amount", e.target.value)}
+        onBlur={refreshPreview}
+        onChange={(e) => {
+          setField("amount", e.target.value);
+          setPreview(null);
+        }}
       />
 
-      <div className="grid grid-cols-2 gap-3">
+      {/* Taqsimot — saqlashdan OLDIN */}
+      {isPreviewing && (
+        <p className="text-sm text-gray-500">Taqsimot hisoblanmoqda...</p>
+      )}
+
+      {preview && !isPreviewing && (
+        <div className="space-y-2 rounded-xl border border-gray-100 p-3">
+          <p className="text-xs font-medium tracking-wide text-gray-500 uppercase">
+            Qanday taqsimlanadi
+          </p>
+
+          {preview.allocations.length === 0 && (
+            <p className="text-sm text-gray-500">
+              Ochiq qarz yo'q — hammasi depozitga tushadi.
+            </p>
+          )}
+
+          {preview.allocations.map((row) => (
+            <div key={row.invoiceId} className="flex items-center gap-2 text-sm">
+              <span className="min-w-0 flex-1 truncate text-gray-700">
+                {row.monthLabel}
+              </span>
+              <ArrowRight className="size-3.5 shrink-0 text-gray-300" />
+              <span className="shrink-0 font-medium text-gray-900">
+                {formatMoney(row.amount)}
+              </span>
+              <span
+                className={`shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium ${
+                  row.closes
+                    ? "bg-green-100 text-green-700"
+                    : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                {row.closes ? "yopiladi" : "qisman"}
+              </span>
+            </div>
+          ))}
+
+          {Number(preview.depositAmount) > 0 && (
+            <div className="flex items-center gap-2 border-t border-gray-100 pt-2 text-sm">
+              <PiggyBank className="size-3.5 shrink-0 text-blue-500" />
+              <span className="min-w-0 flex-1 text-gray-700">Depozitga</span>
+              <span className="shrink-0 font-medium text-blue-600">
+                {formatMoney(preview.depositAmount)}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Pul qayerga tushdi</p>
+        <Select
+          value={resolvedAccountId}
+          placeholder="Hisobni tanlang"
+          onChange={(v) => setField("accountId", v)}
+          options={accounts.map((a) => ({ label: a.name, value: a.id }))}
+        />
+        {accounts.length === 0 && (
+          <p className="text-xs text-amber-700">
+            Faol kassa yo'q — avval "Kassalar" bo'limida hisob qo'shing.
+          </p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
         <InputField
           required
           type="date"
@@ -117,30 +234,21 @@ const Content = ({ close, isLoading, setIsLoading, invoice }) => {
           onChange={(e) => setField("paidAt", e.target.value)}
         />
 
-        <div className="space-y-1.5">
-          <p className="text-sm font-medium text-gray-700">To'lov usuli</p>
-          <Select
-            value={method}
-            options={PAYMENT_METHOD_OPTIONS}
-            onChange={(v) => setField("method", v)}
-          />
-        </div>
+        <InputField
+          name="note"
+          value={note}
+          label="Izoh"
+          placeholder="Ixtiyoriy"
+          onChange={(e) => setField("note", e.target.value)}
+        />
       </div>
 
-      <InputField
-        name="note"
-        value={note}
-        label="Izoh"
-        placeholder="Ixtiyoriy"
-        onChange={(e) => setField("note", e.target.value)}
-      />
-
       <p className="text-xs text-gray-500">
-        To'lov keyin o'zgartirilmaydi — xato bo'lsa bekor qilinib, qaytadan
-        kiritiladi.
+        To'lov keyin o'zgartirilmaydi — xato bo'lsa to'liq bekor qilinib,
+        qaytadan kiritiladi.
       </p>
 
-      <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
+      <div className="mt-5 flex w-full flex-col-reverse gap-3.5 xs:m-0 xs:flex-row xs:justify-end">
         <Button
           type="button"
           onClick={close}
@@ -150,8 +258,11 @@ const Content = ({ close, isLoading, setIsLoading, invoice }) => {
           Bekor qilish
         </Button>
 
-        <Button autoFocus className="w-full xs:w-32" disabled={isLoading}>
-          Saqlash
+        <Button
+          className="w-full xs:w-40"
+          disabled={isLoading || accounts.length === 0}
+        >
+          Qabul qilish
           {isLoading && "..."}
         </Button>
       </div>
