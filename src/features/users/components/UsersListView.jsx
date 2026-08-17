@@ -16,40 +16,48 @@ import Card from "@/shared/components/ui/Card";
 import Input from "@/shared/components/ui/input/Input";
 import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
+import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
 
-// Queries
+// Data & queries
+import { ARCHIVE_TABS } from "../data/usersTabs.data";
 import { usersQueries } from "../queries/users.queries";
 
 const PAGE_SIZE = 32;
 
 /**
- * Xodimlar va O'quvchilar ro'yxatlarining umumiy qobig'i.
+ * Xodimlar va O'quvchilar sahifalarining umumiy qobig'i.
  *
- * Qidiruv, sahifalash va so'rov paramlari shu yerda; ustunlar va qator
- * ko'rinishi esa sahifadan `columns`/`renderRow` orqali keladi — ikki ro'yxat
- * bir xil ma'lumot manbasidan o'qisa ham, mutlaqo boshqacha ustunlarni
- * ko'rsatadi.
+ * Ikkalasi mustaqil sahifa (sidebarda ham alohida), lekin ish mantiqi bir xil:
+ * sarlavha, "Asosiy / Arxivlangan" tabi, qidiruv, sahifalash. Ustunlar va
+ * qator ko'rinishi esa sahifadan `columns`/`renderRow` orqali keladi — bir xil
+ * ma'lumot manbasidan o'qishsa ham, butunlay boshqacha ustunlarni ko'rsatadi.
  *
- * Filtrlar (rol, sinf, arxiv) URL orqali bog'lanadi: sahifa `Select`'i
- * paramni yozadi, bu komponent esa o'qiydi. Shu tufayli har qanday ro'yxat
- * holatini link qilib yuborish mumkin.
+ * Filtrlar URL orqali bog'lanadi: sahifa `Select`'i paramni yozadi, bu
+ * komponent o'qiydi. Shu tufayli har qanday ro'yxat holatini link qilsa
+ * bo'ladi.
  *
  * @param {object} props
  * @param {"staff"|"student"} props.variant
+ * @param {string} props.title
+ * @param {string} [props.description]
  * @param {string[]} props.columns - jadval sarlavhalari
  * @param {(user: object, ctx: {isArchived: boolean}) => React.ReactNode} props.renderRow
  * @param {React.ReactNode} [props.filters] - qo'shimcha filtr elementlari
  * @param {string} [props.emptyText]
+ * @param {string} [props.emptyArchivedText]
  */
 const UsersListView = ({
   variant,
+  title,
+  description,
   columns,
   renderRow,
   filters = null,
   emptyText = "Foydalanuvchilar topilmadi",
+  emptyArchivedText = "Arxivlangan foydalanuvchilar yo'q",
 }) => {
   const navigate = useNavigate();
   const { openModal } = useModal();
@@ -60,8 +68,9 @@ const UsersListView = ({
   const search = searchParams.get("search") || "";
   const roleFilter = searchParams.get("role") || "";
   const classFilter = searchParams.get("class") || "";
-  // Arxiv faqat o'quvchilarda bor — xodim o'chiriladi, arxivlanmaydi
-  const isArchived = isStudentList && searchParams.get("tab") === "archived";
+  const activeTab =
+    searchParams.get("tab") === "archived" ? "archived" : "main";
+  const isArchived = activeTab === "archived";
 
   // Qidiruv inputi darhol yangilanadi, URL esa 300ms dan keyin
   const [searchInput, setSearchInput] = useState(search);
@@ -95,6 +104,14 @@ const UsersListView = ({
 
   useEffect(() => () => clearTimeout(debounceRef.current), []);
 
+  const handleTabChange = (value) =>
+    setSearchParams((prev) => {
+      if (value === "archived") prev.set("tab", "archived");
+      else prev.delete("tab");
+      prev.delete("page");
+      return prev;
+    });
+
   const { data, isLoading } = useQuery(
     usersQueries.list({
       page,
@@ -120,6 +137,20 @@ const UsersListView = ({
 
   return (
     <div className="space-y-4">
+      <div>
+        <h1 className="page-title">{title}</h1>
+        {description && (
+          <p className="text-sm text-gray-500 mt-0.5">{description}</p>
+        )}
+      </div>
+
+      {/* Asosiy / Arxivlangan */}
+      <TabsButtons
+        items={ARCHIVE_TABS}
+        value={activeTab}
+        onChange={handleTabChange}
+      />
+
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Input
@@ -147,7 +178,9 @@ const UsersListView = ({
 
           <Can do="users.create">
             <Button asChild className="flex-1 sm:flex-none">
-              <Link to={`/users/new?role=${isStudentList ? "student" : "staff"}`}>
+              <Link
+                to={`/users/new?role=${isStudentList ? "student" : "staff"}`}
+              >
                 <Plus />
                 {isStudentList ? "Yangi o'quvchi" : "Yangi xodim"}
               </Link>
@@ -161,7 +194,9 @@ const UsersListView = ({
         <div className="py-8 text-center text-gray-500">Yuklanmoqda...</div>
       ) : users.length === 0 ? (
         <Card className="text-center">
-          <p className="text-sm text-gray-500">{emptyText}</p>
+          <p className="text-sm text-gray-500">
+            {isArchived ? emptyArchivedText : emptyText}
+          </p>
         </Card>
       ) : (
         <div className="overflow-x-auto rounded-2xl bg-white">

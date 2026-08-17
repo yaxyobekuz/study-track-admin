@@ -18,7 +18,7 @@ import {
 } from "../data/users.data";
 
 /**
- * Xodimlar ro'yxati — o'quvchilardan boshqa barcha rollar.
+ * Xodimlar sahifasi — o'quvchilardan boshqa barcha rollar.
  *
  * Xodim uchun muhim ustunlar: roli va ish vaqti (davomat shu asosda
  * hisoblanadi). Tanga va sinf ustunlari bu yerda ma'nosiz, shuning uchun yo'q.
@@ -48,8 +48,11 @@ const StaffPage = () => {
   return (
     <UsersListView
       variant="staff"
-      emptyText="Xodimlar topilmadi"
+      title="Xodimlar"
+      description="O'qituvchilar, adminlar va boshqa xodimlar"
       columns={STAFF_TABLE_COLUMNS}
+      emptyText="Xodimlar topilmadi"
+      emptyArchivedText="Arxivlangan xodimlar yo'q"
       filters={
         <Select
           value={roleFilter}
@@ -59,7 +62,7 @@ const StaffPage = () => {
           triggerClassName="w-full sm:w-48 sm:shrink-0"
         />
       }
-      renderRow={(user) => (
+      renderRow={(user, { isArchived }) => (
         <>
           <td className="px-4 py-3">
             <div className="flex items-center gap-3">
@@ -91,7 +94,7 @@ const StaffPage = () => {
           <td className="px-4 py-3 text-gray-500">{user.penaltyPoints ?? 0}</td>
 
           <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-            <UserRowActions user={user} />
+            <UserRowActions user={user} isArchived={isArchived} />
           </td>
         </>
       )}

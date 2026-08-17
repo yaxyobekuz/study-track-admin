@@ -1,25 +1,11 @@
-// Foydalanuvchilar bo'limining tablari.
+// Foydalanuvchilar bo'limining statik ma'lumotlari.
 //
-// Iyerarxiya: /users (bo'lim) → /users/staff | /users/students (ro'yxat) →
-// /users/:userId (detal sahifa, o'z ichki tablari bilan).
-//
-// `to` - route path, `label` - tabdagi matn, `title`/`description` - sarlavha.
-export const USERS_TABS = [
-  {
-    to: "/users/staff",
-    label: "Xodimlar",
-    title: "Xodimlar",
-    description: "O'qituvchilar, adminlar va boshqa xodimlar",
-  },
-  {
-    to: "/users/students",
-    label: "O'quvchilar",
-    title: "O'quvchilar",
-    description: "Sinflarga biriktirilgan o'quvchilar ro'yxati",
-  },
-];
+// Xodimlar va O'quvchilar — ikkita mustaqil sahifa (sidebarda ham alohida).
+// Har birining ichida "Asosiy / Arxivlangan" tabi bor: arxivlangan
+// foydalanuvchi o'chirilmaydi, shunchaki ro'yxatdan yashiriladi va tizimga
+// kira olmaydi.
 
-/** Ro'yxat ichidagi arxiv filtri (faqat o'quvchilarda — xodim arxivlanmaydi). */
+/** Ro'yxat ichidagi arxiv filtri (ikkala sahifada ham bor). */
 export const ARCHIVE_TABS = [
   { value: "main", label: "Asosiy" },
   { value: "archived", label: "Arxivlangan" },
@@ -27,7 +13,7 @@ export const ARCHIVE_TABS = [
 
 // ── Detal sahifaning ichki tablari ────────────────
 //
-// Har bir tab `key` bo'yicha URL'ga yoziladi (`?tab=finance`), shuning uchun
+// Har bir tab `value` bo'yicha URL'ga yoziladi (`?tab=finance`), shuning uchun
 // sahifani ochiq tab bilan birga link qilib yuborish mumkin.
 
 export const STAFF_DETAIL_TABS = [

@@ -86,8 +86,12 @@ const navItems = [
         url: "/",
       },
       {
-        title: "Foydalanuvchilar",
-        url: "/users",
+        title: "Xodimlar",
+        url: "/users/staff",
+      },
+      {
+        title: "O'quvchilar",
+        url: "/users/students",
       },
       {
         title: "Statistika",

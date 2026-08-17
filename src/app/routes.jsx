@@ -15,7 +15,6 @@ import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import ProfilePage from "@/features/profile/pages/ProfilePage";
 
 // Pages - Users
-import UsersLayout from "@/features/users/layouts/UsersLayout";
 import StaffPage from "@/features/users/pages/StaffPage";
 import StudentsPage from "@/features/users/pages/StudentsPage";
 import CreateUserPage from "@/features/users/pages/CreateUserPage";
@@ -150,15 +149,15 @@ const Routes = () => {
           {/* Profile */}
           <Route path="/profile" element={<ProfilePage />} />
 
-          {/* Foydalanuvchilar - Xodimlar va O'quvchilar */}
-          <Route path="/users" element={<UsersLayout />}>
-            <Route index element={<Navigate to="/users/staff" replace />} />
-            <Route path="staff" element={<StaffPage />} />
-            <Route path="students" element={<StudentsPage />} />
-          </Route>
+          {/* Xodimlar va O'quvchilar - ikkita mustaqil sahifa (sidebarda ham
+              alohida). Har birining ichida "Asosiy / Arxivlangan" tabi bor. */}
+          <Route
+            path="/users"
+            element={<Navigate to="/users/staff" replace />}
+          />
+          <Route path="/users/staff" element={<StaffPage />} />
+          <Route path="/users/students" element={<StudentsPage />} />
 
-          {/* Yaratish va detal - layoutdan tashqarida: contentga to'liq
-              egalik qiladi (tablar detal sahifasining o'zida) */}
           <Route path="/users/new" element={<CreateUserPage />} />
           <Route path="/users/:userId" element={<UserDetailPage />} />
 
