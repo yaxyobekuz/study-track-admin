@@ -4,7 +4,7 @@ import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 import StudentMainTab from "./StudentMainTab";
 import UserDetailHeader from "./UserDetailHeader";
 import UserPenaltiesTab from "./UserPenaltiesTab";
-import StudentAttendanceSummary from "@/features/attendance/components/StudentAttendanceSummary";
+import UserAttendancePanel from "@/features/attendance/components/UserAttendancePanel";
 import StudentFinanceSection from "@/features/finance/components/StudentFinanceSection";
 
 // Hooks
@@ -43,9 +43,7 @@ const StudentDetail = ({ user }) => {
       {tab === "main" && <StudentMainTab user={user} />}
 
       {tab === "attendance" && (
-        <Card>
-          <StudentAttendanceSummary studentId={user.id} />
-        </Card>
+        <UserAttendancePanel variant="student" user={user} />
       )}
 
       {tab === "finance" && (

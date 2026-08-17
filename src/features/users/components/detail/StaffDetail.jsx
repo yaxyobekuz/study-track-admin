@@ -1,10 +1,9 @@
 // Components
-import Card from "@/shared/components/ui/Card";
 import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 import StaffMainTab from "./StaffMainTab";
 import UserDetailHeader from "./UserDetailHeader";
 import UserPenaltiesTab from "./UserPenaltiesTab";
-import StaffAttendanceSummary from "@/features/attendance/components/StaffAttendanceSummary";
+import UserAttendancePanel from "@/features/attendance/components/UserAttendancePanel";
 
 // Hooks
 import useDetailTab from "../../hooks/useDetailTab";
@@ -38,9 +37,7 @@ const StaffDetail = ({ user }) => {
       {tab === "main" && <StaffMainTab user={user} />}
 
       {tab === "attendance" && (
-        <Card>
-          <StaffAttendanceSummary userId={user.id} />
-        </Card>
+        <UserAttendancePanel variant="staff" user={user} />
       )}
 
       {tab === "penalties" && (

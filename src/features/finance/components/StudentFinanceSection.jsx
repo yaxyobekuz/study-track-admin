@@ -37,7 +37,7 @@ import { useDeleteFinanceStatus } from "../queries/finance.mutations";
  * Foydalanuvchi detal sahifasidagi "Moliya" bo'limi.
  *
  * Faqat `studentId` propini oladi va o'zi fetch qiladi — davomat bo'limidagi
- * `StudentAttendanceSummary` bilan bir xil naqsh. Shu tufayli `users` feature'i
+ * `UserAttendancePanel` bilan bir xil naqsh. Shu tufayli `users` feature'i
  * moliyadan mutlaqo bexabar qoladi: modallar ham shu yerda mount qilinadi.
  */
 const StudentFinanceSection = ({ studentId }) => {
