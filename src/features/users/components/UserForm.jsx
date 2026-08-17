@@ -8,10 +8,7 @@ import { useNavigate } from "react-router-dom";
 import useObjectState from "@/shared/hooks/useObjectState";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 import { useClasses } from "@/features/classes/queries/classes.queries";
-import {
-  useCreateUser,
-  useUpdateUser,
-} from "@/features/users/queries/users.mutations";
+import { useCreateUser } from "@/features/users/queries/users.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -26,49 +23,37 @@ import { genderOptions } from "../data/users.data";
 import { WORK_DAYS_OPTIONS } from "@/features/attendance/data/attendance.data";
 
 /**
- * mode: "create" | "edit"
- * initialData: existing user object (edit mode only)
- * defaultRole: yangi foydalanuvchi uchun boshlang'ich rol (create mode)
+ * Yangi foydalanuvchi formasi.
  *
- * Yaratishdan keyin mos ro'yxatga qaytariladi (xodim → Xodimlar, o'quvchi →
- * O'quvchilar). Tahrirlashda esa sahifa almashmaydi: forma detal sahifaning
- * bir tabi ichida turadi, saqlagandan keyin undan uchib ketish noqulay.
+ * Faqat yaratish uchun: mavjud foydalanuvchi detal sahifasidagi kartalar
+ * orqali, har biri o'z qalami va o'z modali bilan tahrirlanadi. Shu sababli
+ * bu yerda "edit" rejimi yo'q.
+ *
+ * @param {object} props
+ * @param {string} [props.defaultRole] - boshlang'ich rol (qaysi ro'yxatdan
+ *   kelinganiga qarab)
  */
-const UserForm = ({
-  mode = "create",
-  initialData = null,
-  defaultRole = "student",
-}) => {
+const UserForm = ({ defaultRole = "student" }) => {
   const navigate = useNavigate();
   const { data: classes = [] } = useClasses();
   const { data: rolesData = [] } = useRoles();
   const roles = rolesData.filter((r) => r.value !== "owner");
 
   const { mutateAsync: createUser } = useCreateUser();
-  const { mutateAsync: updateUser } = useUpdateUser();
 
-  const isEdit = mode === "edit";
-
-  const {
-    state,
-    setField,
-  } = useObjectState({
-    firstName: initialData?.firstName || "",
-    lastName: initialData?.lastName || "",
-    username: initialData?.username || "",
+  const { state, setField } = useObjectState({
+    firstName: "",
+    lastName: "",
+    username: "",
     password: "",
-    role: initialData?.role || defaultRole,
-    gender: initialData?.gender || "male",
-    classes: initialData?.classes?.map((c) => (typeof c === "object" ? c.id : c)) || [],
-    workStartTime: initialData?.workStartTime || "",
-    workEndTime: initialData?.workEndTime || "",
-    workDays: initialData?.workDays || [1, 2, 3, 4, 5],
-    weeklySchedule: initialData?.weeklySchedule
-      ? (initialData.weeklySchedule instanceof Map
-          ? Object.fromEntries(initialData.weeklySchedule)
-          : initialData.weeklySchedule)
-      : {},
-    hasCustomSchedule: !!(initialData?.workStartTime && initialData?.workEndTime),
+    role: defaultRole,
+    gender: "male",
+    classes: [],
+    workStartTime: "",
+    workEndTime: "",
+    workDays: [1, 2, 3, 4, 5],
+    weeklySchedule: {},
+    hasCustomSchedule: false,
     isLoading: false,
   });
 
@@ -87,11 +72,9 @@ const UserForm = ({
     if (!checked) {
       setField("workStartTime", "");
       setField("workEndTime", "");
-      setField("workDays", [1, 2, 3, 4, 5]);
       setField("weeklySchedule", {});
-    } else {
-      setField("workDays", initialData?.workDays || [1, 2, 3, 4, 5]);
     }
+    setField("workDays", [1, 2, 3, 4, 5]);
   };
 
   const showScheduleSection = state.role !== "student" && state.role !== "owner";
@@ -108,33 +91,26 @@ const UserForm = ({
 
     setField("isLoading", true);
 
+    const withSchedule = showScheduleSection && state.hasCustomSchedule;
+
     const payload = {
       firstName: state.firstName,
       lastName: state.lastName,
       gender: state.gender || null,
-      ...(isEdit
-        ? {}
-        : {
-            username: state.username,
-            password: state.password,
-            role: state.role,
-          }),
+      username: state.username,
+      password: state.password,
+      role: state.role,
       classes: state.role === "student" ? state.classes : undefined,
-      workStartTime: showScheduleSection && state.hasCustomSchedule ? state.workStartTime || null : null,
-      workEndTime: showScheduleSection && state.hasCustomSchedule ? state.workEndTime || null : null,
-      workDays: showScheduleSection && state.hasCustomSchedule ? state.workDays : null,
-      weeklySchedule: showScheduleSection && state.hasCustomSchedule ? state.weeklySchedule : {},
+      workStartTime: withSchedule ? state.workStartTime || null : null,
+      workEndTime: withSchedule ? state.workEndTime || null : null,
+      workDays: withSchedule ? state.workDays : null,
+      weeklySchedule: withSchedule ? state.weeklySchedule : {},
     };
 
     try {
-      if (isEdit) {
-        await updateUser({ id: initialData.id, data: payload });
-        toast.success("Ma'lumotlar saqlandi");
-      } else {
-        await createUser(payload);
-        toast.success("Foydalanuvchi yaratildi");
-        navigate(listPath);
-      }
+      await createUser(payload);
+      toast.success("Foydalanuvchi yaratildi");
+      navigate(listPath);
     } catch (err) {
       toast.error(err.response?.data?.message || "Xatolik yuz berdi");
     } finally {
@@ -164,40 +140,36 @@ const UserForm = ({
         onChange={(e) => setField("lastName", e.target.value)}
       />
 
-      {!isEdit && (
-        <>
-          <InputField
-            required
-            name="username"
-            value={state.username}
-            autoComplete="off"
-            label="Foydalanuvchi nomi"
-            placeholder="Raqam va harflardan iborat"
-            onChange={(e) =>
-              setField("username", e.target.value?.toLowerCase()?.trim())
-            }
-          />
+      <InputField
+        required
+        name="username"
+        value={state.username}
+        autoComplete="off"
+        label="Foydalanuvchi nomi"
+        placeholder="Raqam va harflardan iborat"
+        onChange={(e) =>
+          setField("username", e.target.value?.toLowerCase()?.trim())
+        }
+      />
 
-          <InputField
-            required
-            label="Parol"
-            minLength={6}
-            type="password"
-            name="password"
-            value={state.password}
-            autoComplete="off"
-            onChange={(e) => setField("password", e.target.value)}
-          />
+      <InputField
+        required
+        label="Parol"
+        minLength={6}
+        type="password"
+        name="password"
+        value={state.password}
+        autoComplete="off"
+        onChange={(e) => setField("password", e.target.value)}
+      />
 
-          <SelectField
-            required
-            label="Rol"
-            value={state.role}
-            onChange={(v) => setField("role", v)}
-            options={roles.map((r) => ({ label: r.name, value: r.value }))}
-          />
-        </>
-      )}
+      <SelectField
+        required
+        label="Rol"
+        value={state.role}
+        onChange={(v) => setField("role", v)}
+        options={roles.map((r) => ({ label: r.name, value: r.value }))}
+      />
 
       <SelectField
         label="Jins"
@@ -291,20 +263,16 @@ const UserForm = ({
       )}
 
       <div className="flex gap-3 pt-2">
-        {/* Tahrirlashda "Bekor qilish" yo'q — forma detal sahifaning tabi
-            ichida, undan chiqish uchun sarlavhadagi orqaga havolasi bor */}
-        {!isEdit && (
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => navigate(listPath)}
-          >
-            Bekor qilish
-          </Button>
-        )}
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => navigate(listPath)}
+        >
+          Bekor qilish
+        </Button>
 
         <Button disabled={state.isLoading}>
-          {isEdit ? "Saqlash" : "Yaratish"}
+          Yaratish
           {state.isLoading && "..."}
         </Button>
       </div>

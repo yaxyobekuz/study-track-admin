@@ -8,7 +8,9 @@
 export const MODAL_NAMES = [
   // User
   "profile",
-  "editUser",
+  "editUserBasic",
+  "editWorkSchedule",
+  "editStudentClasses",
   "deleteUser",
   "archiveUser",
   "restoreUser",

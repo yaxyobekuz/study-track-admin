@@ -32,7 +32,7 @@ const CreateUserPage = () => {
         {isStudent ? "Yangi o'quvchi" : "Yangi xodim"}
       </h1>
 
-      <UserForm mode="create" defaultRole={isStudent ? "student" : "teacher"} />
+      <UserForm defaultRole={isStudent ? "student" : "teacher"} />
     </div>
   );
 };
