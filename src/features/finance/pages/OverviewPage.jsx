@@ -267,9 +267,6 @@ const OverviewPage = () => {
               <span className="min-w-0 flex-1 truncate text-gray-700">
                 {account.name}
               </span>
-              <span className="shrink-0 text-xs text-gray-400">
-                {account.typeLabel}
-              </span>
               <span className="w-32 shrink-0 text-right font-medium text-gray-900">
                 {formatMoney(account.balance)}
               </span>

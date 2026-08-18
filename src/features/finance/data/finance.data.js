@@ -170,22 +170,6 @@ export const DISCOUNT_RULES_HINT =
 
 // ── Kassalar ─────────────────────────────────
 
-export const ACCOUNT_TYPE_OPTIONS = [
-  { label: "Naqd", value: "cash" },
-  { label: "Plastik / terminal", value: "card" },
-  { label: "Bank hisob-raqami", value: "bank" },
-  { label: "Onlayn to'lov", value: "online" },
-  { label: "Boshqa", value: "other" },
-];
-
-export const ACCOUNT_TYPE_LABELS = {
-  cash: "Naqd",
-  card: "Plastik / terminal",
-  bank: "Bank hisob-raqami",
-  online: "Onlayn to'lov",
-  other: "Boshqa",
-};
-
 /** Kassa daftaridagi harakat turlari. */
 export const ENTRY_TYPE_META = {
   payment: { label: "To'lov", className: "bg-green-100 text-green-700" },

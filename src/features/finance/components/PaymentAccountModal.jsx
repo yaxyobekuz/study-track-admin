@@ -8,13 +8,9 @@ import { useCreateAccount, useUpdateAccount } from "../queries/finance.mutations
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import Switch from "@/shared/components/ui/switch/Switch";
-import Select from "@/shared/components/ui/select/Select";
 import InputField from "@/shared/components/ui/input/InputField";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
-
-// Data
-import { ACCOUNT_TYPE_OPTIONS } from "../data/finance.data";
 
 /**
  * To'lov hisobi (kassa) qo'shish yoki tahrirlash.
@@ -41,11 +37,9 @@ const Content = ({ close, isLoading, setIsLoading, account }) => {
   const { mutate: createAccount } = useCreateAccount();
   const { mutate: updateAccount } = useUpdateAccount();
 
-  const { name, type, description, openingBalance, isActive, setField } =
+  const { name, openingBalance, isActive, setField } =
     useObjectState({
       name: account?.name ?? "",
-      type: account?.type ?? "cash",
-      description: account?.description ?? "",
       openingBalance: account?.openingBalance ?? "0",
       isActive: account?.isActive ?? true,
     });
@@ -56,8 +50,6 @@ const Content = ({ close, isLoading, setIsLoading, account }) => {
 
     const payload = {
       name,
-      type,
-      description,
       isActive,
       ...(isOpeningLocked ? {} : { openingBalance: String(openingBalance) }),
     };
@@ -89,18 +81,6 @@ const Content = ({ close, isLoading, setIsLoading, account }) => {
         onChange={(e) => setField("name", e.target.value)}
       />
 
-      <div className="space-y-1.5">
-        <p className="text-sm font-medium text-gray-700">Turi</p>
-        <Select
-          value={type}
-          options={ACCOUNT_TYPE_OPTIONS}
-          onChange={(v) => setField("type", v)}
-        />
-        <p className="text-xs text-gray-500">
-          Hisobot "naqd / plastik / bank" kesimida shu bo'yicha guruhlanadi.
-        </p>
-      </div>
-
       {!isOpeningLocked && (
         <InputField
           min="0"
@@ -120,14 +100,6 @@ const Content = ({ close, isLoading, setIsLoading, account }) => {
           foydalaning.
         </p>
       )}
-
-      <InputField
-        name="description"
-        label="Izoh"
-        value={description}
-        placeholder="Ixtiyoriy"
-        onChange={(e) => setField("description", e.target.value)}
-      />
 
       <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl bg-gray-50 p-3">
         <span className="text-sm">
