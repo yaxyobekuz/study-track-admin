@@ -98,7 +98,7 @@ const Content = ({ close, isLoading, setIsLoading, student }) => {
     if (!student?.id) return;
 
     if (!resolvedAccountId) {
-      toast.error("Pul qaysi hisobga tushganini tanlang");
+      toast.error("Pul qaysi to'lov turiga tushganini tanlang");
       return;
     }
 
@@ -212,13 +212,13 @@ const Content = ({ close, isLoading, setIsLoading, student }) => {
         <p className="text-sm font-medium text-gray-700">Pul qayerga tushdi</p>
         <Select
           value={resolvedAccountId}
-          placeholder="Hisobni tanlang"
+          placeholder="To'lov turini tanlang"
           onChange={(v) => setField("accountId", v)}
           options={accounts.map((a) => ({ label: a.name, value: a.id }))}
         />
         {accounts.length === 0 && (
           <p className="text-xs text-amber-700">
-            Faol kassa yo'q — avval "Kassalar" bo'limida hisob qo'shing.
+            Faol to'lov turi yo'q — avval "To'lov turlari" bo'limida qo'shing.
           </p>
         )}
       </div>

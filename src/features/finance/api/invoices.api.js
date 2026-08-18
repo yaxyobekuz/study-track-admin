@@ -26,7 +26,7 @@ export const invoicesAPI = {
 };
 
 /**
- * To'lovlar — kassa cheki.
+ * To'lovlar — to'lov cheki.
  *
  * To'lov endi HISOB-FAKTURAGA emas, O'QUVCHIGA kiritiladi: kassir bitta
  * summa beradi, server uni eng eski qarzdan boshlab taqsimlaydi.
@@ -46,7 +46,7 @@ export const paymentsAPI = {
   void: (id, reason) => http.post(`/payments/${id}/void`, { reason }),
 };
 
-/** To'lov hisoblari (kassalar) va ular orasidagi o'tkazmalar. */
+/** To'lov turlari va ular orasidagi o'tkazmalar. */
 export const paymentAccountsAPI = {
   getAll: (params) => http.get("/payment-accounts", { params }),
   getById: (id) => http.get(`/payment-accounts/${id}`),

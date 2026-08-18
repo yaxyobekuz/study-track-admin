@@ -13,7 +13,7 @@ import InputGroup from "@/shared/components/ui/input/InputGroup";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 /**
- * To'lov hisobi (kassa) qo'shish yoki tahrirlash.
+ * To'lov turi qo'shish yoki tahrirlash.
  *
  * Bitta oyna, chunki maydonlar bir xil: `account` berilsa tahrirlash,
  * berilmasa yaratish.
@@ -24,7 +24,7 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
  * hisoblashga majbur qilardi. Farqni to'g'rilash uchun alohida amal bor.
  */
 const PaymentAccountModal = () => (
-  <ResponsiveModal name="paymentAccount" title="To'lov hisobi">
+  <ResponsiveModal name="paymentAccount" title="To'lov turi">
     <Content />
   </ResponsiveModal>
 );
@@ -56,7 +56,7 @@ const Content = ({ close, isLoading, setIsLoading, account }) => {
 
     const onSuccess = () => {
       close();
-      toast.success(isEdit ? "Hisob yangilandi" : "Hisob qo'shildi");
+      toast.success(isEdit ? "To'lov turi yangilandi" : "To'lov turi qo'shildi");
     };
     const onError = (err) =>
       toast.error(err.response?.data?.message || "Xatolik yuz berdi");
@@ -77,7 +77,7 @@ const Content = ({ close, isLoading, setIsLoading, account }) => {
         name="name"
         label="Nomi"
         value={name}
-        placeholder="Naqd kassa"
+        placeholder="Naqd"
         onChange={(e) => setField("name", e.target.value)}
       />
 
@@ -95,7 +95,7 @@ const Content = ({ close, isLoading, setIsLoading, account }) => {
 
       {isOpeningLocked && (
         <p className="rounded-xl bg-gray-50 p-3 text-sm text-gray-600">
-          Bu hisobda harakatlar boshlangan — boshlang'ich qoldiqni
+          Bu tur bo'yicha harakatlar boshlangan — boshlang'ich qoldiqni
           o'zgartirib bo'lmaydi. Farq bo'lsa "To'g'rilash" amalidan
           foydalaning.
         </p>

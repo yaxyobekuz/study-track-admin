@@ -56,9 +56,9 @@ const VIEW_TABS = [
 ];
 
 /**
- * Kassalar — pul qayerda turgani.
+ * To'lov turlari — pul qayerga tushadi va qayerda turadi.
  *
- * Yuqorida hisoblar va ularning qoldig'i, pastda tanlangan hisobning
+ * Yuqorida turlar va ularning qoldig'i, pastda tanlangan turning
  * daftari. Daftar QO'SHILISH tartibida ko'rsatiladi ("Qoldiq" ustuni
  * shunga bog'liq) — orqaga sanalgan to'lov ro'yxat o'rtasiga tushib,
  * ustunni ma'nosiz qilib qo'ymasligi uchun.
@@ -136,25 +136,25 @@ const AccountsPage = () => {
         <Can do="finance.accounts">
           <Button onClick={() => openModal("paymentAccount", {})}>
             <Plus />
-            Hisob qo'shish
+            To'lov turi qo'shish
           </Button>
         </Can>
       </div>
 
-      {/* Hisoblar */}
+      {/* To'lov turlari */}
       {isLoading ? (
         <Card className="py-10 text-center text-gray-500">Yuklanmoqda...</Card>
       ) : accounts.length === 0 ? (
         <Card className="p-0 xs:p-0">
           <EmptyState
             icon={Landmark}
-            title="Kassa yo'q"
-            description="To'lov qabul qilish uchun kamida bitta hisob kerak: Naqd kassa, terminal yoki bank hisob-raqami."
+            title="To'lov turi yo'q"
+            description="To'lov qabul qilish uchun kamida bitta tur kerak: Naqd, terminal yoki bank hisob-raqami."
             action={
               <Can do="finance.accounts">
                 <Button onClick={() => openModal("paymentAccount", {})}>
                   <Plus />
-                  Hisob qo'shish
+                  To'lov turi qo'shish
                 </Button>
               </Can>
             }
@@ -274,7 +274,7 @@ const AccountsPage = () => {
   );
 };
 
-/** Tanlangan hisobning daftari. */
+/** Tanlangan to'lov turining daftari. */
 const EntriesView = ({ account, data, page, onPageChange }) => {
   const entries = data?.data ?? [];
   const pagination = data?.pagination;
@@ -288,8 +288,8 @@ const EntriesView = ({ account, data, page, onPageChange }) => {
           title="Harakat yo'q"
           description={
             account
-              ? `"${account.name}" hisobida hali pul harakati qayd etilmagan.`
-              : "Hisobni tanlang."
+              ? `"${account.name}" bo'yicha hali pul harakati qayd etilmagan.`
+              : "To'lov turini tanlang."
           }
         />
       </Card>
@@ -357,7 +357,7 @@ const EntriesView = ({ account, data, page, onPageChange }) => {
   );
 };
 
-/** Hisoblar orasidagi o'tkazmalar. */
+/** To'lov turlari orasidagi o'tkazmalar. */
 const TransfersView = ({ data, page, onPageChange, onVoid }) => {
   const transfers = data?.data ?? [];
   const pagination = data?.pagination;

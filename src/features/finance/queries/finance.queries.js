@@ -133,7 +133,7 @@ export const financeQueries = {
       enabled: Boolean(id),
     }),
 
-  // ── To'lovlar (kassa cheklari) ─────────────
+  // ── To'lovlar (cheklar) ───────────────────
 
   /** To'lovlar registri → `{ data, pagination, totals }`. */
   paymentList: (params) =>
@@ -159,16 +159,16 @@ export const financeQueries = {
       enabled: Boolean(studentId),
     }),
 
-  // ── Kassalar ───────────────────────────────
+  // ── To'lov turlari ───────────────────────
 
-  /** Hisoblar ro'yxati (sahifalanmaydi) → `{ items, totals }`. */
+  /** To'lov turlari ro'yxati (sahifalanmaydi) → `{ items, totals }`. */
   accountList: (params) =>
     queryOptions({
       queryKey: [...accountsKey, "list", params],
       queryFn: () => paymentAccountsAPI.getAll(params).then((r) => r.data),
     }),
 
-  /** To'lov qabul qilish uchun faol hisoblar (modal select). */
+  /** To'lov qabul qilish uchun faol to'lov turlari (modal select). */
   activeAccounts: () =>
     queryOptions({
       queryKey: [...accountsKey, "active"],
@@ -187,7 +187,7 @@ export const financeQueries = {
       placeholderData: keepPreviousData,
     }),
 
-  /** Bitta hisobning daftari (seq bo'yicha, balanceAfter ustuni bilan). */
+  /** Bitta to'lov turining daftari (seq bo'yicha, balanceAfter ustuni bilan). */
   accountEntries: (id, params) =>
     queryOptions({
       queryKey: [...accountsKey, "entries", id, params],
@@ -196,7 +196,7 @@ export const financeQueries = {
       placeholderData: keepPreviousData,
     }),
 
-  /** Hisoblar orasidagi o'tkazmalar. */
+  /** To'lov turlari orasidagi o'tkazmalar. */
   transferList: (params) =>
     queryOptions({
       queryKey: [...accountsKey, "transfers", params],

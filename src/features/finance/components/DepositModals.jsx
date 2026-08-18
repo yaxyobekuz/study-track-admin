@@ -55,8 +55,8 @@ const Footer = ({ close, isLoading, label }) => (
 // ─────────────────────────────────────────────
 
 /**
- * Ota-onaga oldindan to'langan pulni qaytarish — pul kassadan CHIQADI,
- * shuning uchun qaysi hisobdan berilgani tanlanadi.
+ * Ota-onaga oldindan to'langan pulni qaytarish — pul tashqariga CHIQADI,
+ * shuning uchun qaysi to'lov turidan berilgani tanlanadi.
  *
  * Qoldiqdan ko'pini qaytarib bo'lmaydi (server rad etadi).
  */
@@ -81,7 +81,7 @@ const RefundForm = ({ close, isLoading, setIsLoading, student, balance }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!resolvedAccountId) return toast.error("Pul qaysi hisobdan berilishini tanlang");
+    if (!resolvedAccountId) return toast.error("Pul qaysi to'lov turidan berilishini tanlang");
 
     setIsLoading(true);
 
@@ -125,10 +125,10 @@ const RefundForm = ({ close, isLoading, setIsLoading, student, balance }) => {
       />
 
       <div className="space-y-1.5">
-        <p className="text-sm font-medium text-gray-700">Qaysi hisobdan</p>
+        <p className="text-sm font-medium text-gray-700">Qaysi to'lov turidan</p>
         <Select
           value={resolvedAccountId}
-          placeholder="Hisobni tanlang"
+          placeholder="To'lov turini tanlang"
           onChange={(v) => setField("accountId", v)}
           options={accounts.map((a) => ({
             label: `${a.name} — ${formatMoney(a.balance)}`,
@@ -176,7 +176,7 @@ const DIRECTION_OPTIONS = [
  * O'quvchi qoldig'ini qo'lda to'g'rilash — eski qarzni ko'chirish yoki
  * kiritishdagi xatoni tuzatish.
  *
- * Kassaga TEGMAYDI: bu pul harakati emas, hisob tuzatishi. Sabab
+ * To'lov turiga TEGMAYDI: bu pul harakati emas, hisob tuzatishi. Sabab
  * majburiy va serverda logga tushadi.
  */
 export const AdjustStudentBalanceModal = () => (
@@ -185,9 +185,9 @@ export const AdjustStudentBalanceModal = () => (
   </ResponsiveModal>
 );
 
-/** Kassa qoldig'ini to'g'rilash — smena yopilishidagi sanoq farqi. */
+/** To'lov turi qoldig'ini to'g'rilash — smena yopilishidagi sanoq farqi. */
 export const AdjustAccountModal = () => (
-  <ResponsiveModal name="adjustAccount" title="Kassa qoldig'ini to'g'rilash">
+  <ResponsiveModal name="adjustAccount" title="To'lov turi qoldig'ini to'g'rilash">
     <AdjustForm scope="account" />
   </ResponsiveModal>
 );
@@ -286,7 +286,7 @@ const AdjustForm = ({
       />
 
       <p className="text-xs text-gray-500">
-        Bu amal auditga yoziladi. {isAccount ? "Kassa" : "O'quvchi"} qoldig'i
+        Bu amal auditga yoziladi. {isAccount ? "To'lov turi" : "O'quvchi"} qoldig'i
         sababsiz o'zgarmasligi kerak — shuning uchun izoh aniq bo'lsin.
       </p>
 

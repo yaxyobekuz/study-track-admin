@@ -198,7 +198,7 @@ export const useRegenerateInvoice = () => {
   });
 };
 
-// ── To'lovlar (kassa cheki) ──────────────────
+// ── To'lovlar (chek) ────────────────────────
 
 /**
  * Taqsimot oldindan ko'rinishi — hech narsa yozmaydi, shuning uchun
@@ -237,7 +237,7 @@ export const useUpdatePaymentNote = () => {
   });
 };
 
-// ── Kassalar ─────────────────────────────────
+// ── To'lov turlari ─────────────────────────
 
 export const useCreateAccount = () => {
   const qc = useQueryClient();

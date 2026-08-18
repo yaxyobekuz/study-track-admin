@@ -23,14 +23,14 @@ export const MAIN_TABS = [
     to: "/finance/main/payments",
     label: "To'lovlar",
     title: "Moliya",
-    description: "Kassa cheklari registri",
+    description: "To'lov cheklari registri",
     exact: false,
   },
   {
     to: "/finance/main/accounts",
-    label: "Kassalar",
+    label: "To'lov turlari",
     title: "Moliya",
-    description: "To'lov hisoblari, qoldiqlar va o'tkazmalar",
+    description: "To'lov turlari, qoldiqlar va o'tkazmalar",
     exact: false,
   },
   {

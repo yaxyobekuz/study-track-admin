@@ -168,9 +168,9 @@ export const DISCOUNT_RULES_HINT =
   "Bir nechta chegirma bir vaqtda amal qilsa, foizlar qo'shiladi (20% + 15% = 35%) " +
   "va qat'iy summalardan oldin qo'llanadi. Summa hech qachon manfiy bo'lmaydi.";
 
-// ── Kassalar ─────────────────────────────────
+// ── To'lov turlari ─────────────────────────
 
-/** Kassa daftaridagi harakat turlari. */
+/** Harakatlar daftaridagi yozuv turlari. */
 export const ENTRY_TYPE_META = {
   payment: { label: "To'lov", className: "bg-green-100 text-green-700" },
   payment_void: { label: "To'lov bekor qilindi", className: "bg-red-100 text-red-700" },
@@ -214,7 +214,7 @@ export const PAYMENT_TABLE_COLUMNS = [
   "O'quvchi",
   "Summa",
   "Taqsimlandi",
-  "Hisob",
+  "To'lov turi",
   "",
 ];
 

@@ -40,7 +40,7 @@ import { financeQueries } from "../queries/finance.queries";
 import { useVoidPayment } from "../queries/finance.mutations";
 
 /**
- * Kassa cheklari registri.
+ * To'lov cheklari registri.
  *
  * Har bir qator — pulni bir marta qabul qilish akti. Qaysi oylarga
  * taqsimlangani darhol ko'rinadi: "1 500 000 → sentabr, oktabr, noyabr"
@@ -93,7 +93,7 @@ const PaymentsPage = () => {
         payment.allocations?.length
           ? `${payment.allocations.length} ta oy qayta ochiladi`
           : "Bu chek hech qaysi oyga taqsimlanmagan",
-        "Pul kassadan chiqim sifatida yoziladi",
+        "Pul to'lov turidan chiqim sifatida yoziladi",
         "Chek o'chirilmaydi — bekor qilingan deb belgilanadi",
       ],
       warning:
@@ -151,7 +151,7 @@ const PaymentsPage = () => {
         <Select
           value={accountId}
           triggerClassName="min-w-44"
-          placeholder="Barcha kassalar"
+          placeholder="Barcha to'lov turlari"
           onChange={(v) => setParam("accountId", v)}
           options={accounts.map((a) => ({ label: a.name, value: a.id }))}
         />
@@ -174,7 +174,7 @@ const PaymentsPage = () => {
           <EmptyState
             icon={Receipt}
             title="To'lov topilmadi"
-            description="Sana oralig'ini yoki kassani o'zgartirib ko'ring."
+            description="Sana oralig'ini yoki to'lov turini o'zgartirib ko'ring."
           />
         </Card>
       ) : (

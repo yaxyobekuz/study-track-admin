@@ -53,7 +53,7 @@ const MONTH_OPTIONS = buildMonthOptions({ back: 12, forward: 1 });
  * Moliyaning oylik manzarasi.
  *
  * Bitta savolga javob beradi: "shu oyda qancha hisoblandi, qancha
- * yig'ildi, qancha qarz qoldi va pul qaysi kassaga tushdi?" Shu yerdan
+ * yig'ildi, qancha qarz qoldi va pul qaysi turga tushdi?" Shu yerdan
  * majburiyat shakllantiriladi va o'sha oy hisob-fakturalari ko'riladi.
  */
 const OverviewPage = () => {
@@ -259,9 +259,9 @@ const OverviewPage = () => {
         </div>
       )}
 
-      {/* Kassalar bo'yicha tushum */}
+      {/* To'lov turlari bo'yicha qoldiq */}
       {report?.items?.length > 0 && (
-        <Card title="Kassalar" className="space-y-2">
+        <Card title="To'lov turlari" className="space-y-2">
           {report.items.map((account) => (
             <div key={account.id} className="flex items-center gap-3 text-sm">
               <span className="min-w-0 flex-1 truncate text-gray-700">

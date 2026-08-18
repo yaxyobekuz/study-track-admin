@@ -32,7 +32,7 @@ const todayInputValue = () => {
 };
 
 /**
- * Hisoblar orasida pul o'tkazish — inkassatsiya (naqd kassadan bankka),
+ * To'lov turlari orasida pul o'tkazish — inkassatsiya (naqd puldan bankka),
  * Click hamyonidan hisob-raqamga.
  *
  * KOMISSIYA: manbadan to'liq summa chiqadi, manzilga esa komissiya
@@ -41,7 +41,7 @@ const todayInputValue = () => {
  * ko'rinardi.
  */
 const AccountTransferModal = () => (
-  <ResponsiveModal name="accountTransfer" title="Hisoblar orasida o'tkazma">
+  <ResponsiveModal name="accountTransfer" title="To'lov turlari orasida o'tkazma">
     <Content />
   </ResponsiveModal>
 );
@@ -69,10 +69,10 @@ const Content = ({ close, isLoading, setIsLoading, fromAccount }) => {
     e.preventDefault();
 
     if (!fromAccountId || !toAccountId) {
-      return toast.error("Ikkala hisobni ham tanlang");
+      return toast.error("Ikkala to'lov turini ham tanlang");
     }
     if (fromAccountId === toAccountId) {
-      return toast.error("Bitta hisobning o'ziga o'tkazma qilib bo'lmaydi");
+      return toast.error("Bitta turning o'ziga o'tkazma qilib bo'lmaydi");
     }
 
     setIsLoading(true);
@@ -113,7 +113,7 @@ const Content = ({ close, isLoading, setIsLoading, fromAccount }) => {
           <Select
             value={fromAccountId}
             options={accountOptions}
-            placeholder="Hisobni tanlang"
+            placeholder="To'lov turini tanlang"
             onChange={(v) => setField("fromAccountId", v)}
           />
         </div>
@@ -122,7 +122,7 @@ const Content = ({ close, isLoading, setIsLoading, fromAccount }) => {
           <p className="text-sm font-medium text-gray-700">Qayerga</p>
           <Select
             value={toAccountId}
-            placeholder="Hisobni tanlang"
+            placeholder="To'lov turini tanlang"
             onChange={(v) => setField("toAccountId", v)}
             options={accountOptions.filter((o) => o.value !== fromAccountId)}
           />
@@ -165,7 +165,7 @@ const Content = ({ close, isLoading, setIsLoading, fromAccount }) => {
 
       {source && Number(amount) > Number(source.balance) && (
         <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
-          "{source.name}" hisobida {formatMoney(source.balance)} bor — bu
+          "{source.name}" bo'yicha {formatMoney(source.balance)} bor — bu
           summani o'tkazib bo'lmaydi.
         </p>
       )}
