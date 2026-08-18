@@ -106,7 +106,9 @@ const Content = ({ close, isLoading, setIsLoading, month }) => {
 
           <div className="text-xs text-gray-500 space-y-0.5">
             <p>Allaqachon mavjud: {skipped.alreadyExists}</p>
-            <p>Muzlatilgan: {skipped.frozen} · Chetlatilgan: {skipped.expelled}</p>
+            <p>
+              Muzlatilgan: {skipped.frozen} · O'qimaydi: {skipped.notEnrolled}
+            </p>
             <p>Tarifsiz: {skipped.noTariff} · Narxsiz: {skipped.noPrice}</p>
           </div>
 

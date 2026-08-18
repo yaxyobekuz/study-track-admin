@@ -249,13 +249,11 @@ export const MOVEMENT_TYPE_META = {
 export const FINANCE_STATUS_META = {
   active: { label: "Faol", className: "bg-green-100 text-green-700" },
   frozen: { label: "Muzlatilgan", className: "bg-blue-100 text-blue-700" },
-  expelled: { label: "Chetlatilgan", className: "bg-red-100 text-red-700" },
 };
 
 export const FINANCE_STATUS_OPTIONS = [
   { label: "Faol", value: "active" },
   { label: "Muzlatilgan", value: "frozen" },
-  { label: "Chetlatilgan", value: "expelled" },
 ];
 
 /** O'quv yili boshlanish oyi (sozlamalar sahifasi uchun). */

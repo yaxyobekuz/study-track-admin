@@ -224,6 +224,10 @@ const OverviewPage = () => {
               {summary.counts.invoiced} ta majburiyat
               {Number(summary.totals.discountAmount) > 0 &&
                 ` · ${formatMoney(summary.totals.discountAmount)} chegirma`}
+              {/* Proratsiya farqi yorliqsiz g'oyib bo'lmasligi kerak:
+                  baza − proratsiya − chegirma = summa */}
+              {Number(summary.totals.prorationAmount) > 0 &&
+                ` · ${formatMoney(summary.totals.prorationAmount)} qisman oy`}
             </p>
           </Card>
 
@@ -324,7 +328,14 @@ const OverviewPage = () => {
                   )}
                 </Td>
 
-                <Td className="font-medium">{formatMoney(invoice.amount)}</Td>
+                <Td className="font-medium">
+                  {formatMoney(invoice.amount)}
+                  {invoice.isProrated && (
+                    <span className="block text-xs font-normal text-blue-600">
+                      {invoice.prorationLabel}
+                    </span>
+                  )}
+                </Td>
 
                 <Td className="text-green-600">{formatMoney(invoice.paidAmount)}</Td>
 

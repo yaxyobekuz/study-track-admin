@@ -77,7 +77,7 @@ const Content = ({ close, isLoading, setIsLoading, studentId, currentStatus }) =
     );
   };
 
-  const isNonBillable = status === "frozen" || status === "expelled";
+  const isNonBillable = status === "frozen";
 
   return (
     <InputGroup onSubmit={handleSubmit} as="form">

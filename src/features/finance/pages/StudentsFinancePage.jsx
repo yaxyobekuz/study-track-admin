@@ -227,6 +227,18 @@ const StudentsFinancePage = () => {
 
                 <Td align="right" className="font-medium">
                   {student.monthlyAmount ? formatMoney(student.monthlyAmount) : "—"}
+                  {/* Oy o'rtasida kelgan bo'lsa summa ulushga hisoblangan —
+                      kassir buni ko'rmasa ortiqcha pul qabul qilardi */}
+                  {student.isProrated && (
+                    <span className="block text-xs font-normal text-blue-600">
+                      {student.billableDays}/{student.monthDays} kun
+                    </span>
+                  )}
+                  {!student.isEnrolled && (
+                    <span className="block text-xs font-normal text-gray-400">
+                      o&apos;qimaydi
+                    </span>
+                  )}
                 </Td>
 
                 <Td align="right">
