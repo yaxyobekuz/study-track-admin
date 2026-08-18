@@ -96,6 +96,10 @@ export const MODAL_NAMES = [
   "createAbsenceReason",
   "editAbsenceReason",
 
+  // O'qish davrlari
+  "enrollmentPeriod",
+  "closeEnrollment",
+
   // Moliya - tariflar
   "createTariff",
   "editTariff",

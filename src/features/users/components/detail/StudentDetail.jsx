@@ -6,6 +6,7 @@ import UserDetailHeader from "./UserDetailHeader";
 import UserPenaltiesTab from "./UserPenaltiesTab";
 import UserAttendancePanel from "@/features/attendance/components/UserAttendancePanel";
 import StudentFinanceSection from "@/features/finance/components/StudentFinanceSection";
+import StudentEnrollmentSection from "@/features/enrollment/components/StudentEnrollmentSection";
 
 // Hooks
 import useDetailTab from "../../hooks/useDetailTab";
@@ -41,6 +42,12 @@ const StudentDetail = ({ user }) => {
       />
 
       {tab === "main" && <StudentMainTab user={user} />}
+
+      {tab === "enrollment" && (
+        <Card>
+          <StudentEnrollmentSection studentId={user.id} />
+        </Card>
+      )}
 
       {tab === "attendance" && (
         <UserAttendancePanel variant="student" user={user} />

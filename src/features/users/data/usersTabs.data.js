@@ -24,6 +24,7 @@ export const STAFF_DETAIL_TABS = [
 
 export const STUDENT_DETAIL_TABS = [
   { value: "main", label: "Asosiy" },
+  { value: "enrollment", label: "O'qish davrlari" },
   { value: "attendance", label: "Davomat" },
   { value: "finance", label: "Moliya" },
   { value: "penalties", label: "Jarimalar" },
