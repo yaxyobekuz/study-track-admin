@@ -277,3 +277,15 @@ export const ACADEMIC_MONTH_COUNT_OPTIONS = [
   { label: "9 oy", value: "9" },
   { label: "11 oy", value: "11" },
 ];
+
+/**
+ * O'quvchi kartasidagi oylar jadvalida hisob-faktura NEGA yo'qligi.
+ *
+ * "Shakllantirilmagan" dan ajratish shart: u kamchilikni bildiradi,
+ * bular esa qoidani — o'quvchi o'qimagan yoki ta'til bo'lgan.
+ */
+export const TIMELINE_SKIP_LABELS = {
+  not_enrolled: "O'qimagan",
+  vacation: "Ta'til",
+  before_first_invoice_month: "Tizimga o'tishdan oldin",
+};

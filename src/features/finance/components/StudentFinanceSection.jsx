@@ -1,3 +1,6 @@
+// React
+import { useState } from "react";
+
 // Toast
 import { toast } from "sonner";
 
@@ -16,15 +19,14 @@ import {
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
-// Router
-import { Link } from "react-router-dom";
-
 // Components
 import Can from "@/shared/components/guards/Can";
 import Button from "@/shared/components/ui/button/Button";
+import Select from "@/shared/components/ui/select/Select";
 import ChangeStudentTariffModal from "./ChangeStudentTariffModal";
 import RecordPaymentModal from "./RecordPaymentModal";
 import StudentFinanceStatusModal from "./StudentFinanceStatusModal";
+import AssignTariffModal from "./AssignTariffModal";
 import AssignDiscountModal from "./AssignDiscountModal";
 import {
   AdjustStudentBalanceModal,
@@ -48,6 +50,7 @@ import {
   FINANCE_STATUS_META,
   INVOICE_STATUS_META,
   MOVEMENT_TYPE_META,
+  TIMELINE_SKIP_LABELS,
 } from "../data/finance.data";
 import { financeQueries } from "../queries/finance.queries";
 import {
@@ -70,6 +73,11 @@ const StudentFinanceSection = ({ studentId }) => {
   const { openModal } = useModal();
   const now = currentMonthKey();
 
+  // null = server o'zi tanlaydi. Server kalendar bo'yicha "joriy" yilni emas,
+  // o'quvchi HAQIQATDA o'qigan yilni ochadi — avgustda kalendar yili o'tgan
+  // o'quv yilining dumi bo'lib, iyunda kelgan o'quvchi uchun bo'sh chiqardi.
+  const [academicYear, setAcademicYear] = useState(null);
+
   const { data: statusData } = useQuery(
     financeQueries.studentFinanceStatus(studentId),
   );
@@ -80,7 +88,10 @@ const StudentFinanceSection = ({ studentId }) => {
     financeQueries.studentDiscounts(studentId),
   );
   const { data: invoiceData, isLoading } = useQuery(
-    financeQueries.studentInvoices(studentId),
+    financeQueries.studentInvoices(
+      studentId,
+      academicYear ? { academicYear } : undefined,
+    ),
   );
   const { data: movementData } = useQuery(
     financeQueries.studentMovements(studentId),
@@ -100,6 +111,14 @@ const StudentFinanceSection = ({ studentId }) => {
   const discounts = discountData?.current ?? [];
   const balance = invoiceData?.balance ?? "0.00";
   const hasBalance = Number(balance) > 0;
+
+  // Qarz progressining maxraji — o'quvchida hozirga qadar KELGAN oylar.
+  // Eski javoblarda `dueMonths` bo'lmasligi mumkin, shuning uchun zaxira.
+  const dueMonths =
+    invoiceData?.totals?.dueMonths ??
+    invoiceData?.totals?.enrolledMonths ??
+    invoiceData?.totals?.billableMonths ??
+    0;
 
   const student = {
     id: studentId,
@@ -168,13 +187,15 @@ const StudentFinanceSection = ({ studentId }) => {
                 Tarif
               </Button>
             ) : (
-              // Biriktirish tarif detalidan bajariladi — u yerda tarif allaqachon
-              // tanlangan bo'ladi, bu yerda esa yana bir tanlov kerak bo'lardi
-              <Button variant="secondary" asChild>
-                <Link to="/finance/main/tariffs">
-                  <Repeat />
-                  Tarif biriktirish
-                </Link>
+              // O'quvchi allaqachon ma'lum — oynada faqat tarif tanlanadi.
+              // Ilgari bu yer tariflar sahifasiga havola edi va xodim
+              // o'quvchini qaytadan qidirishga majbur bo'lardi.
+              <Button
+                variant="secondary"
+                onClick={() => openModal("assignTariff", { student })}
+              >
+                <Repeat />
+                Tarif biriktirish
               </Button>
             )}
           </Can>
@@ -300,8 +321,12 @@ const StudentFinanceSection = ({ studentId }) => {
           </p>
           {invoiceData?.totals && (
             <p className="mt-0.5 text-xs text-gray-500">
-              {invoiceData.totals.paidMonths} / {invoiceData.totals.billableMonths} oy
-              to'langan
+              {/* Maxraj — HOZIRGA QADAR KELGAN oylar. Kelgusi oylar sanalmaydi:
+                  sentabrda boshlanadigan yil avgustda "0 / 9 oy" bo'lib,
+                  o'quvchi 9 oy qarzdordek ko'rinardi. */}
+              {dueMonths > 0
+                ? `${invoiceData.totals.paidMonths} / ${dueMonths} oy to'langan`
+                : "O'quv yili hali boshlanmagan"}
             </p>
           )}
         </div>
@@ -354,10 +379,25 @@ const StudentFinanceSection = ({ studentId }) => {
 
       {/* Oylar — ta'til oylari ham ko'rinadi */}
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-gray-700">
-          Oylik majburiyatlar
-          {invoiceData?.academicYearLabel ? ` — ${invoiceData.academicYearLabel}` : ""}
-        </h3>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-medium text-gray-700">Oylik majburiyatlar</h3>
+
+          {/* O'quv yili tanlagichi — o'quvchi o'qimagan yil ham ro'yxatda
+              qoladi, lekin yonida belgisi bilan */}
+          {invoiceData?.academicYears?.length > 0 && (
+            <Select
+              triggerClassName="min-w-44"
+              value={String(invoiceData.academicYear)}
+              onChange={(v) => setAcademicYear(Number(v))}
+              options={invoiceData.academicYears.map((year) => ({
+                label: year.isEnrolled
+                  ? year.label
+                  : `${year.label} — o'qimagan`,
+                value: String(year.academicYear),
+              }))}
+            />
+          )}
+        </div>
 
         {isLoading ? (
           <p className="py-4 text-center text-sm text-gray-500">Yuklanmoqda...</p>
@@ -379,6 +419,9 @@ const StudentFinanceSection = ({ studentId }) => {
                       className={cn(
                         "border-b border-gray-50 last:border-0",
                         row.isVacation && "bg-amber-50/50",
+                        // O'quvchi o'qimagan oy — jadvalda ko'rinadi, lekin
+                        // "yetishmayotgan hisob-faktura" kabi ko'rinmasligi kerak
+                        !row.isEnrolled && !row.isVacation && "opacity-50",
                       )}
                     >
                       <td className="px-3 py-2 font-medium whitespace-nowrap">
@@ -389,7 +432,14 @@ const StudentFinanceSection = ({ studentId }) => {
                         {row.isVacation ? (
                           <span className="text-xs text-amber-700">Ta'til</span>
                         ) : invoice ? (
-                          formatMoney(invoice.amount)
+                          <>
+                            {formatMoney(invoice.amount)}
+                            {invoice.isProrated && (
+                              <span className="ml-1.5 text-xs text-blue-600">
+                                {invoice.prorationLabel}
+                              </span>
+                            )}
+                          </>
                         ) : (
                           <span className="text-gray-400">—</span>
                         )}
@@ -406,8 +456,12 @@ const StudentFinanceSection = ({ studentId }) => {
                           >
                             {badge.label}
                           </span>
-                        ) : row.isVacation ? (
-                          <span className="text-xs text-gray-400">To'lov yo'q</span>
+                        ) : row.skipReason ? (
+                          // "O'qimagan" va "ta'til" ni "shakllantirilmagan" dan
+                          // ajratish shart: birinchisi qoida, ikkinchisi kamchilik
+                          <span className="text-xs text-gray-400">
+                            {TIMELINE_SKIP_LABELS[row.skipReason]}
+                          </span>
                         ) : row.isFuture ? (
                           <span className="text-xs text-gray-400">Kelgusi oy</span>
                         ) : (
@@ -467,6 +521,7 @@ const StudentFinanceSection = ({ studentId }) => {
       )}
 
       {/* Modallar shu bo'lim ichida — users feature'i moliyadan bexabar qoladi */}
+      <AssignTariffModal />
       <ChangeStudentTariffModal />
       <RecordPaymentModal />
       <StudentFinanceStatusModal />
