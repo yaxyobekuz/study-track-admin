@@ -113,9 +113,11 @@ const ChangelogSettingsTab = () => {
   }
 
   return (
-    <div className="max-w-3xl space-y-4">
+    // Ikki ustun: chapda sozlamalar kartalari, o'ngda yuborish jurnali.
+    // `items-start` — ustunlar bir-birining balandligiga cho'zilmasin.
+    <div className="grid items-start gap-4 lg:grid-cols-2">
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Xabarnomalar */}
+        {/* Xabarnoma sozlamalari */}
         <Card className="p-4">
           <h2 className="mb-1 font-medium text-gray-900">Telegram xabarnomalari</h2>
           <p className="mb-4 text-xs text-gray-500">
@@ -175,8 +177,8 @@ const ChangelogSettingsTab = () => {
         <Card className="p-4">
           <h2 className="mb-1 font-medium text-gray-900">Kimga yuborilsin</h2>
           <p className="mb-4 text-xs text-gray-500">
-            Chat ID raqam (guruh uchun manfiy, masalan -1001234567890) yoki @username.
-            Bot avval o'sha guruhga qo'shilgan bo'lishi kerak.
+            Chat ID raqam (guruh uchun manfiy, masalan -1001234567890) yoki
+            @username. Bot avval o'sha guruhga qo'shilgan bo'lishi kerak.
           </p>
 
           {recipients.length === 0 ? (
@@ -192,7 +194,7 @@ const ChangelogSettingsTab = () => {
                 >
                   <InputField
                     label="Nomi"
-                    className="min-w-40 flex-1"
+                    className="min-w-36 flex-1"
                     value={recipient.label}
                     placeholder="Rahbariyat guruhi"
                     onChange={(e) => updateRecipient(index, "label", e.target.value)}
@@ -200,7 +202,7 @@ const ChangelogSettingsTab = () => {
 
                   <InputField
                     label="Chat ID"
-                    className="min-w-44 flex-1"
+                    className="min-w-36 flex-1"
                     value={recipient.chatId}
                     placeholder="-1001234567890"
                     onChange={(e) => updateRecipient(index, "chatId", e.target.value)}
@@ -267,6 +269,7 @@ const ChangelogSettingsTab = () => {
         </div>
       </form>
 
+      {/* O'ng ustun — yuborish jurnali */}
       <ChangelogNotificationLog />
     </div>
   );

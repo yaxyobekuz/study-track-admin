@@ -8,12 +8,11 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 // Hooks
-import useModal from "@/shared/hooks/useModal";
 import { useChangelogs } from "../queries/changelog.queries";
 import { useSendChangelogNow } from "../queries/changelog.mutations";
 
 // Icons
-import { History, Plus, Send } from "lucide-react";
+import { History, Send } from "lucide-react";
 
 // Utils
 import { formatUzDate } from "@/shared/utils/formatDate";
@@ -21,22 +20,16 @@ import { formatUzDate } from "@/shared/utils/formatDate";
 // Components
 import Card from "@/shared/components/ui/Card";
 import Can from "@/shared/components/guards/Can";
-import Button from "@/shared/components/ui/button/Button";
-import Select from "@/shared/components/ui/select/Select";
 import Pagination from "@/shared/components/ui/Pagination";
-import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import ChangelogForm from "./ChangelogForm";
 import ChangelogEntryCard from "./ChangelogEntryCard";
 import DeleteChangelogForm from "./DeleteChangelogForm";
-import ChangelogVersionHeader from "./ChangelogVersionHeader";
-
-// Data
-import { PANEL_FILTER_OPTIONS } from "../data/changelog.data";
 
 /**
- * Yozuvlarni sana bo'yicha guruhlaydi. Server allaqachon `date desc, panel asc`
- * tartibida qaytaradi, shuning uchun bu yerda faqat ketma-ket to'planadi.
+ * Yozuvlarni sana bo'yicha guruhlaydi. Server allaqachon
+ * `date desc, panel asc, seq desc` tartibida qaytaradi, shuning uchun bu yerda
+ * faqat ketma-ket to'planadi.
  */
 const groupByDate = (entries) => {
   const groups = [];
@@ -52,28 +45,30 @@ const groupByDate = (entries) => {
   return groups;
 };
 
-const ChangelogListTab = () => {
-  const { openModal } = useModal();
+/**
+ * Yozuvlar ro'yxati — "Bugungi o'zgarishlar" va "Barchasi" tablari uchun umumiy.
+ *
+ * Filtrlarni tab o'zi chizadi va tayyor `params` ni shu yerga uzatadi; bu
+ * komponent faqat so'rov, guruhlash va chizishni biladi.
+ *
+ * @param {object} props
+ * @param {object} props.params - serverga uzatiladigan filtrlar (page'siz)
+ * @param {string} [props.emptyText] - ro'yxat bo'sh bo'lgandagi matn
+ */
+const ChangelogEntryList = ({ params, emptyText = "Yozuv topilmadi" }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { mutate: sendNow, isPending: isSending } = useSendChangelogNow();
 
   const page = Number(searchParams.get("page")) || 1;
-  const panel = searchParams.get("panel") || "all";
-  const from = searchParams.get("from") || "";
-  const to = searchParams.get("to") || "";
 
-  // DIQQAT: `tab` parametri bu yerda BOSHQARILMAYDI — u `useChangelogTab`
-  // ixtiyorida. Ikkalasi ham funksional `prev => ...` shaklda ishlagani uchun
-  // bir-biriga xalaqit qilmaydi.
-  const setParam = (key, value) =>
+  const setPage = (value) =>
     setSearchParams((prev) => {
-      if (value == null || value === "") prev.delete(key);
-      else prev.set(key, String(value));
-      if (key !== "page") prev.delete("page");
+      if (!value || value === 1) prev.delete("page");
+      else prev.set("page", String(value));
       return prev;
     });
 
-  const { data, isLoading } = useChangelogs({ page, panel, from, to });
+  const { data, isLoading } = useChangelogs({ ...params, page });
 
   const entries = data?.data ?? [];
   const pagination = data?.pagination;
@@ -91,55 +86,15 @@ const ChangelogListTab = () => {
 
   return (
     <div>
-      {/* Qo'shish */}
-      <div className="mb-4 flex justify-end">
-        <Can do="changelog.create">
-          <Button onClick={() => openModal("createChangelog", null)}>
-            <Plus strokeWidth={1.5} />
-            Qo'shish
-          </Button>
-        </Can>
-      </div>
-
-      {/* Panellarning joriy versiyalari */}
-      <ChangelogVersionHeader />
-
-      {/* Filtrlar */}
-      <div className="mb-4 flex flex-wrap items-end gap-3">
-        <Select
-          value={panel}
-          triggerClassName="min-w-44"
-          options={PANEL_FILTER_OPTIONS}
-          onChange={(v) => setParam("panel", v)}
-        />
-
-        <InputField
-          name="from"
-          type="date"
-          label="Sanadan"
-          value={from}
-          onChange={(e) => setParam("from", e.target.value)}
-        />
-
-        <InputField
-          name="to"
-          type="date"
-          label="Sanagacha"
-          value={to}
-          onChange={(e) => setParam("to", e.target.value)}
-        />
-      </div>
-
-      {/* Ro'yxat */}
       {isLoading ? (
-        <div className="py-8 text-center">Yuklanmoqda...</div>
+        <div className="py-8 text-center text-gray-500">Yuklanmoqda...</div>
       ) : entries.length === 0 ? (
         <Card className="py-8 text-center">
           <History
             className="mx-auto mb-3 size-12 text-gray-400"
             strokeWidth={1.5}
           />
-          <p className="text-gray-500">Hozircha o'zgarishlar yozilmagan</p>
+          <p className="text-gray-500">{emptyText}</p>
         </Card>
       ) : (
         <div className="space-y-6">
@@ -152,7 +107,7 @@ const ChangelogListTab = () => {
 
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-gray-400">
-                    {group.entries.length} ta panel
+                    {group.entries.length} ta yozuv
                   </span>
 
                   <Can do="changelog.send">
@@ -179,14 +134,13 @@ const ChangelogListTab = () => {
         </div>
       )}
 
-      {/* Sahifalash */}
       {pagination && pagination.totalPages > 1 && (
         <Pagination
           currentPage={pagination.page}
           totalPages={pagination.totalPages}
           hasNextPage={pagination.hasNextPage}
           hasPrevPage={pagination.hasPrevPage}
-          onPageChange={(next) => setParam("page", next)}
+          onPageChange={setPage}
         />
       )}
 
@@ -212,4 +166,4 @@ const ChangelogListTab = () => {
   );
 };
 
-export default ChangelogListTab;
+export default ChangelogEntryList;

@@ -3,14 +3,24 @@ import useChangelogTab from "../hooks/useChangelogTab";
 
 // Components
 import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
-import ChangelogListTab from "../components/ChangelogListTab";
+import ChangelogAllTab from "../components/ChangelogAllTab";
+import ChangelogTodayTab from "../components/ChangelogTodayTab";
 import ChangelogSettingsTab from "../components/ChangelogSettingsTab";
 
 // Data
 import { CHANGELOG_TABS } from "../data/changelog.data";
 
+const TAB_CONTENT = {
+  today: ChangelogTodayTab,
+  all: ChangelogAllTab,
+  settings: ChangelogSettingsTab,
+};
+
 const ChangelogPage = () => {
   const [tab, setTab] = useChangelogTab(CHANGELOG_TABS);
+
+  // Tab almashganda oldingi tab unmount bo'ladi — keraksiz so'rovlar ketmaydi
+  const Content = TAB_CONTENT[tab] ?? ChangelogTodayTab;
 
   return (
     <div>
@@ -25,9 +35,7 @@ const ChangelogPage = () => {
         />
       </div>
 
-      {/* Tab almashganda ro'yxat unmount bo'ladi — sozlamalar ochiq turganda
-          keraksiz so'rovlar ketmaydi. */}
-      {tab === "main" ? <ChangelogListTab /> : <ChangelogSettingsTab />}
+      <Content />
     </div>
   );
 };

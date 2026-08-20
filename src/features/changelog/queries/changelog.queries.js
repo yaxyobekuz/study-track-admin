@@ -9,6 +9,7 @@ import { changelogAPI, changelogSettingsAPI } from "../api/changelog.api";
 
 export const changelogKeys = createQueryKeys("changelog");
 
+export const changelogMonthsKey = [...changelogKeys.all, "months"];
 export const changelogSettingsKey = [...changelogKeys.all, "settings"];
 export const changelogNotificationsKey = [...changelogKeys.all, "notifications"];
 
@@ -33,6 +34,13 @@ export const changelogQueries = {
       queryKey: changelogKeys.detail(id),
       queryFn: () => changelogAPI.getById(id).then((r) => r.data.data),
       enabled: Boolean(id),
+    }),
+
+  /** Yozuv bo'lgan oylar — "Barchasi" tabidagi tanlov uchun. */
+  months: () =>
+    queryOptions({
+      queryKey: changelogMonthsKey,
+      queryFn: () => changelogAPI.getMonths().then((r) => r.data.data),
     }),
 
   /** Xabarnoma sozlamalari (singleton). */
@@ -66,6 +74,14 @@ export const useChangelogs = (params) => useQuery(changelogQueries.list(params))
  * const { data: versions = [] } = usePanelVersions();
  */
 export const usePanelVersions = () => useQuery(changelogQueries.versions());
+
+/**
+ * Yozuv bo'lgan oylar.
+ *
+ * @example
+ * const { data: months = [] } = useChangelogMonths();
+ */
+export const useChangelogMonths = () => useQuery(changelogQueries.months());
 
 /**
  * Xabarnoma sozlamalari.

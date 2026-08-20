@@ -7,7 +7,7 @@ import { useSearchParams } from "react-router-dom";
  * Birinchi tab standart, shuning uchun u paramsiz — manzil toza qoladi.
  * `replace: true` — tab bosish brauzer tarixini to'ldirmasligi uchun.
  *
- * DIQQAT: `ChangelogListTab` dagi `setParam` helperi `page` dan boshqa har
+ * DIQQAT: tab komponentlaridagi `setParam` helperlari `page` dan boshqa har
  * qanday parametr o'zgarganda `page` ni o'chiradi. Tab shu sababli ALOHIDA
  * setter orqali boshqariladi — ikkalasi ham funksional `prev => ...` shaklda
  * ishlaydi, ya'ni bir-biriga xalaqit qilmaydi.

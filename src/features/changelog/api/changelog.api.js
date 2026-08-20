@@ -4,6 +4,7 @@ import http from "@/shared/api/http";
 export const changelogAPI = {
   getAll: (params) => http.get("/changelogs", { params }),
   getVersions: () => http.get("/changelogs/versions"),
+  getMonths: () => http.get("/changelogs/months"),
   getById: (id) => http.get(`/changelogs/${id}`),
   create: (data) => http.post("/changelogs", data),
   update: (id, data) => http.put(`/changelogs/${id}`, data),
