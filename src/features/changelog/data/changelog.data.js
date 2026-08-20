@@ -26,12 +26,11 @@ export const PANEL_META = {
 };
 
 // O'zgarish darajasi — versiya shu asosda oshadi
-// Formada uchta tugma bo'lib chiziladi, shuning uchun yorliq qisqa;
-// tanlanganining izohi tugmalar ostida ko'rsatiladi.
+// Formada uchta tugma bo'lib chiziladi, shuning uchun yorliq qisqa.
 export const BUMP_OPTIONS = [
-  { value: "patch", label: "Kichik", hint: "Tuzatish, mayda yaxshilash" },
-  { value: "minor", label: "O'rta", hint: "Yangi imkoniyat" },
-  { value: "major", label: "Katta", hint: "Yirik o'zgarish" },
+  { value: "patch", label: "Kichik" },
+  { value: "minor", label: "O'rta" },
+  { value: "major", label: "Katta" },
 ];
 
 export const BUMP_META = {

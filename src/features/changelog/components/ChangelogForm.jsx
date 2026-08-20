@@ -102,7 +102,7 @@ const ChangelogForm = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <InputGroup>
+      <InputGroup className="grid-cols-2">
         <SelectField
           required
           value={panel}
@@ -118,12 +118,11 @@ const ChangelogForm = ({
           type="date"
           label="Sana"
           value={date}
-          description="Istalgan kunni tanlash mumkin"
           onChange={(e) => setField("date", e.target.value)}
         />
       </InputGroup>
 
-      {/* O'zgarish darajasi — tanlangani , qolganlari .
+      {/* O'zgarish darajasi — tanlangani to'liq rangda, qolganlari xira.
           Tahrirlashda ko'rsatilmaydi: versiya bir marta beriladi va keyin
           daraja hech narsani o'zgartirmaydi. */}
       {!isEdit && (
@@ -146,10 +145,6 @@ const ChangelogForm = ({
               </Button>
             ))}
           </div>
-
-          <p className="mt-1.5 text-xs text-gray-500">
-            {BUMP_OPTIONS.find((option) => option.value === bump)?.hint}
-          </p>
         </div>
       )}
 
@@ -178,7 +173,7 @@ const ChangelogForm = ({
           className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-transparent focus:ring-2 focus:ring-blue-500"
         />
         <p className="mt-1.5 text-sm text-gray-500">
-          Har qatorda bitta o'zgarish. Sodda tilda yozing — tizim egasi ham o'qiydi.
+          Har qatorda bitta o'zgarish.
         </p>
       </div>
 
