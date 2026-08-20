@@ -156,44 +156,24 @@ const ChangelogForm = ({
         onChange={(e) => setField("title", e.target.value)}
       />
 
-      {/* O'zgarishlar */}
-      <div>
-        <label
-          htmlFor="itemsText"
-          className="mb-1.5 block text-sm font-medium text-gray-700"
-        >
-          O'zgarishlar
-        </label>
-        <textarea
-          rows={7}
-          id="itemsText"
-          value={itemsText}
-          placeholder={"O'quvchi kartochkasida to'lov tarixi ko'rinadigan bo'ldi\nHisobotni Excel'ga yuklash qo'shildi"}
-          onChange={(e) => setField("itemsText", e.target.value)}
-          className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-transparent focus:ring-2 focus:ring-blue-500"
-        />
-        <p className="mt-1.5 text-sm text-gray-500">
-          Har qatorda bitta o'zgarish.
-        </p>
-      </div>
+      <InputField
+        name="itemsText"
+        type="textarea"
+        label="O'zgarishlar"
+        value={itemsText}
+        description="Har qatorda bitta o'zgarish."
+        placeholder={"O'quvchi kartochkasida to'lov tarixi ko'rinadigan bo'ldi\nHisobotni Excel'ga yuklash qo'shildi"}
+        onChange={(e) => setField("itemsText", e.target.value)}
+      />
 
-      {/* Izoh */}
-      <div>
-        <label
-          htmlFor="notes"
-          className="mb-1.5 block text-sm font-medium text-gray-700"
-        >
-          Izoh (ixtiyoriy)
-        </label>
-        <textarea
-          rows={5}
-          id="notes"
-          value={notes}
-          placeholder="Nega kerak edi?"
-          onChange={(e) => setField("notes", e.target.value)}
-          className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-transparent focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+      <InputField
+        name="notes"
+        type="textarea"
+        value={notes}
+        label="Izoh (ixtiyoriy)"
+        placeholder="Nega kerak edi?"
+        onChange={(e) => setField("notes", e.target.value)}
+      />
 
       {/* Amallar */}
       <div className="flex justify-end gap-4 pt-4">
