@@ -6,7 +6,6 @@ import { useEffect } from "react";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
-import { usePanelVersions } from "../queries/changelog.queries";
 import {
   useCreateChangelog,
   useUpdateChangelog,
@@ -43,14 +42,12 @@ const ChangelogForm = ({
 }) => {
   const { mutate: createChangelog } = useCreateChangelog();
   const { mutate: updateChangelog } = useUpdateChangelog();
-  const { data: versions = [] } = usePanelVersions();
 
-  const { panel, date, bump, version, title, itemsText, notes, setField, setFields } =
+  const { panel, date, bump, title, itemsText, notes, setField, setFields } =
     useObjectState({
       panel: "admin",
       date: today(),
       bump: "patch",
-      version: "",
       title: "",
       itemsText: "",
       notes: "",
@@ -62,17 +59,12 @@ const ChangelogForm = ({
         panel: entry.panel || "admin",
         date: toDateInput(entry.date),
         bump: entry.bump || "patch",
-        version: entry.version || "",
         title: entry.title || "",
         itemsText: (entry.items || []).join("\n"),
         notes: entry.notes || "",
       });
     }
   }, [isEdit, entry?.id]);
-
-  // "Keyingi versiya" maslahati — qiymat serverdan keladi, bu yerda
-  // semver hisob-kitobi takrorlanmaydi.
-  const nextVersion = versions.find((item) => item.panel === panel)?.nextVersion?.[bump];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -86,7 +78,7 @@ const ChangelogForm = ({
 
     setIsLoading(true);
 
-    const payload = { panel, date, title, items, notes, version: version.trim() };
+    const payload = { panel, date, title, items, notes };
 
     // `bump` faqat yaratishda ma'noga ega — tahrirlash versiyani qayta hisoblamaydi
     if (!isEdit) payload.bump = bump;
@@ -131,31 +123,35 @@ const ChangelogForm = ({
         />
       </InputGroup>
 
+      {/* O'zgarish darajasi — tanlangani , qolganlari .
+          Tahrirlashda ko'rsatilmaydi: versiya bir marta beriladi va keyin
+          daraja hech narsani o'zgartirmaydi. */}
       {!isEdit && (
-        <SelectField
-          required
-          value={bump}
-          label="O'zgarish darajasi"
-          options={BUMP_OPTIONS}
-          triggerClassName="w-full"
-          onChange={(v) => setField("bump", v)}
-        />
-      )}
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-gray-700">
+            O'zgarish darajasi
+          </p>
 
-      <InputField
-        name="version"
-        label="Versiya"
-        value={version}
-        placeholder={nextVersion || "0.0.0"}
-        description={
-          isEdit
-            ? "Faqat ataylab o'zgartirmoqchi bo'lsangiz to'ldiring"
-            : `Bo'sh qoldirilsa avtomatik hisoblanadi${
-                nextVersion ? ` — keyingisi: ${nextVersion}` : ""
-              }`
-        }
-        onChange={(e) => setField("version", e.target.value)}
-      />
+          <div className="flex gap-2">
+            {BUMP_OPTIONS.map((option) => (
+              <Button
+                type="button"
+                key={option.value}
+                className="flex-1"
+                playClickSound={false}
+                onClick={() => setField("bump", option.value)}
+                variant={bump === option.value ? "default" : "secondary"}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+
+          <p className="mt-1.5 text-xs text-gray-500">
+            {BUMP_OPTIONS.find((option) => option.value === bump)?.hint}
+          </p>
+        </div>
+      )}
 
       <InputField
         name="title"
@@ -195,7 +191,7 @@ const ChangelogForm = ({
           Izoh (ixtiyoriy)
         </label>
         <textarea
-          rows={3}
+          rows={5}
           id="notes"
           value={notes}
           placeholder="Nega kerak edi?"
