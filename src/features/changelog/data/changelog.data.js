@@ -40,9 +40,13 @@ export const BUMP_META = {
 
 // Sahifa tablari — birinchisi standart (URL'da `tab` parametri bo'lmaydi)
 export const CHANGELOG_TABS = [
-  { value: "main", label: "Asosiy" },
+  { value: "today", label: "Bugun" },
+  { value: "all", label: "Barchasi" },
   { value: "settings", label: "Sozlamalar" },
 ];
+
+// Panel filtri "Barchasi" tabida oy tanlash bilan yonma-yon turadi
+export const ALL_MONTHS_OPTION = { value: "all", label: "Barcha oylar" };
 
 export const DEFAULT_SEND_TIME = "09:00";
 
