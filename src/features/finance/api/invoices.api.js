@@ -7,7 +7,6 @@ export const invoicesAPI = {
   getById: (id, params) => http.get(`/invoices/${id}`, { params }),
   getSummary: (params) => http.get("/invoices/summary", { params }),
   // Kassirning asosiy ekrani: o'quvchi + tarif + chegirma + depozit + qarz
-  getStudentRegistry: (params) => http.get("/invoices/students", { params }),
   getForStudent: (studentId, params) =>
     http.get(`/invoices/student/${studentId}`, { params }),
 

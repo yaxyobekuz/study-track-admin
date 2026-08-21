@@ -224,17 +224,6 @@ export const ALLOCATION_SOURCE_META = {
   deposit: { label: "Depozitdan", className: "bg-blue-100 text-blue-700" },
 };
 
-/** O'quvchilar registri — kassirning asosiy ekrani. */
-export const STUDENT_FINANCE_TABLE_COLUMNS = [
-  "O'quvchi",
-  "Tarif",
-  "Chegirma",
-  "Oylik",
-  "Depozit",
-  "Qarz",
-  "",
-];
-
 /** Depozit harakatlari. */
 export const MOVEMENT_TYPE_META = {
   payment: { label: "To'lov qabul qilindi", className: "text-green-700" },
@@ -286,6 +275,7 @@ export const ACADEMIC_MONTH_COUNT_OPTIONS = [
  */
 export const TIMELINE_SKIP_LABELS = {
   not_enrolled: "O'qimagan",
+  no_periods: "Davr kiritilmagan",
   vacation: "Ta'til",
   before_first_invoice_month: "Tizimga o'tishdan oldin",
 };

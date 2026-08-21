@@ -108,14 +108,6 @@ export const financeQueries = {
       enabled: Boolean(id),
     }),
 
-  /** Kassirning asosiy ekrani → `{ data, pagination, totals, month }`. */
-  studentRegistry: (params) =>
-    queryOptions({
-      queryKey: [...invoicesKey, "registry", params],
-      queryFn: () => invoicesAPI.getStudentRegistry(params).then((r) => r.data),
-      placeholderData: keepPreviousData,
-    }),
-
   /** O'quvchining o'quv yili bo'yicha majburiyatlari va qarzi. */
   studentInvoices: (studentId, params) =>
     queryOptions({
