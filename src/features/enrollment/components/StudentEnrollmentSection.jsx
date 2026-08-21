@@ -28,8 +28,10 @@ import {
   END_REASON_LABELS,
   ENROLLMENT_REASON_LABELS,
   ENROLLMENT_TABLE_COLUMNS,
-  formatDuration,
+  buildEnrollmentStats,
+  formatDayCount,
   getEnrollmentStatus,
+  getStudentState,
 } from "../data/enrollment.data";
 import { enrollmentQueries } from "../queries/enrollment.queries";
 import { useDeleteEnrollment } from "../queries/enrollment.mutations";
@@ -40,6 +42,58 @@ const todayIso = () => {
   return local.toISOString().slice(0, 10);
 };
 
+/** Kartalar qatoridagi bitta ko'rsatkich. */
+const StatCard = ({ label, value, sub }) => (
+  <div className="rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-3">
+    <p className="text-xs font-medium text-gray-500">{label}</p>
+    <p className="mt-1 truncate text-lg font-semibold text-gray-900">{value}</p>
+    {sub && <p className="mt-0.5 truncate text-[11px] text-gray-400">{sub}</p>}
+  </div>
+);
+
+/**
+ * Uzluksizlik halqasi — birinchi kelgan kundan beri vaqtning qanchasi
+ * maktabda o'tgani. Recharts kerak emas: bitta doira uchun SVG yengilroq.
+ */
+const AttendanceRing = ({ percent, gapDays }) => {
+  const RADIUS = 26;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+  const filled = (Math.min(100, Math.max(0, percent)) / 100) * CIRCUMFERENCE;
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-3">
+      <svg viewBox="0 0 64 64" className="size-16 shrink-0 -rotate-90">
+        <circle
+          cx="32"
+          cy="32"
+          r={RADIUS}
+          fill="none"
+          strokeWidth="8"
+          className="stroke-red-100"
+        />
+        <circle
+          cx="32"
+          cy="32"
+          r={RADIUS}
+          fill="none"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={`${filled} ${CIRCUMFERENCE}`}
+          className="stroke-green-500"
+        />
+      </svg>
+
+      <div className="min-w-0">
+        <p className="text-lg font-semibold text-gray-900">{percent}%</p>
+        <p className="text-xs font-medium text-gray-500">Uzluksiz o'qigan</p>
+        <p className="mt-0.5 truncate text-[11px] text-gray-400">
+          {gapDays > 0 ? `${gapDays} kun tanaffus` : "Tanaffussiz"}
+        </p>
+      </div>
+    </div>
+  );
+};
+
 /**
  * O'quvchi detal sahifasidagi "O'qish davrlari" bo'limi.
  *
@@ -47,8 +101,7 @@ const todayIso = () => {
  * bo'limlari bilan bir xil naqsh, shuning uchun `users` feature'i o'qish
  * davrlaridan bexabar qoladi.
  *
- * Bu ekran ikki savolga javob beradi: o'quvchi hozir o'qiyaptimi va
- * shu oyga qancha to'lov yoziladi.
+ * Tuzilishi: holat qatori → ko'rsatkichlar → davrlar jadvali.
  */
 const StudentEnrollmentSection = ({ studentId }) => {
   const { openModal } = useModal();
@@ -59,6 +112,8 @@ const StudentEnrollmentSection = ({ studentId }) => {
 
   const items = data?.items ?? [];
   const current = data?.currentMonth;
+  const state = getStudentState(data);
+  const stats = buildEnrollmentStats(items, today);
 
   const handleDelete = (period) =>
     deleteEnrollment(period.id, {
@@ -70,8 +125,23 @@ const StudentEnrollmentSection = ({ studentId }) => {
 
   return (
     <div className="space-y-4">
+      {/* 1-qator: holat + amal */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-semibold text-gray-900">O'qish davrlari</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-semibold text-gray-900">O'qish davrlari</h2>
+
+          {data && (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
+                state.className,
+              )}
+            >
+              <span className={cn("size-1.5 rounded-full", state.dotClassName)} />
+              {state.label}
+            </span>
+          )}
+        </div>
 
         <Can do="enrollment.create">
           <Button onClick={() => openModal("enrollmentPeriod", { studentId })}>
@@ -81,58 +151,52 @@ const StudentEnrollmentSection = ({ studentId }) => {
         </Can>
       </div>
 
-      {/* Holat kartasi — bir qarashda "o'qiyaptimi?" */}
-      {data && (
-        <Card
-          className={cn(
-            "border",
-            data.isStudying ? "border-green-100 bg-green-50/40" : "border-gray-100",
+      {/* 2-qator: ko'rsatkichlar. Davr yo'q bo'lsa chizilmaydi — hammasi
+          nolga teng bo'lardi va bo'sh holat matni o'zi tushuntiradi. */}
+      {data?.hasPeriods && (
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            label="Maktabda"
+            value={formatDayCount(stats.attendedDays)}
+            sub={
+              stats.firstStart
+                ? `${formatDateUZ(stats.firstStart)} dan`
+                : "Hali boshlanmagan"
+            }
+          />
+
+          <StatCard
+            label="O'qish davrlari"
+            value={`${stats.periodCount} ta`}
+            sub={
+              stats.openCount > 0
+                ? `${stats.openCount} ta ochiq`
+                : "Hammasi yopilgan"
+            }
+          />
+
+          {current && (
+            <StatCard
+              label={`Joriy oy · ${current.monthLabel}`}
+              value={
+                current.enrolled
+                  ? current.isProrated
+                    ? `${current.billableDays}/${current.monthDays} kun`
+                    : "To'liq oy"
+                  : "Hisob yozilmaydi"
+              }
+              sub={ENROLLMENT_REASON_LABELS[current.reason] ?? ""}
+            />
           )}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    "size-2 rounded-full",
-                    data.isStudying ? "bg-green-500" : "bg-gray-400",
-                  )}
-                />
-                <p className="font-medium text-gray-900">
-                  {data.isStudying ? "Hozir o'qiyapti" : "O'qimayapti"}
-                </p>
-              </div>
 
-              <p className="mt-1 text-sm text-gray-500">
-                {!data.hasPeriods
-                  ? "Davr kiritilmagan — to'liq oy hisoblanadi"
-                  : data.isStudying
-                    ? `${formatDateUZ(data.since)} dan · ${formatDuration(data.since, null)}`
-                    : `${formatDateUZ(data.since)} — ${formatDateUZ(data.until)} · ${formatDuration(data.since, data.until)}`}
-              </p>
-            </div>
-
-            {/* Joriy oy qanday hisoblanadi — kassirning asosiy savoli */}
-            {current && (
-              <div className="text-right">
-                <p className="text-xs text-gray-500">{current.monthLabel}</p>
-                <p className="font-medium text-gray-900">
-                  {current.enrolled
-                    ? current.isProrated
-                      ? `${current.billableDays}/${current.monthDays} kun`
-                      : "To'liq oy"
-                    : "Hisob yozilmaydi"}
-                </p>
-                <p className="mt-0.5 text-xs text-gray-400">
-                  {ENROLLMENT_REASON_LABELS[current.reason] ?? ""}
-                </p>
-              </div>
-            )}
-          </div>
-        </Card>
+          <AttendanceRing
+            percent={stats.attendedPercent}
+            gapDays={stats.gapDays}
+          />
+        </div>
       )}
 
-      {/* Davrlar */}
+      {/* 3-qator: davrlar jadvali */}
       {isLoading ? (
         <Card className="py-10 text-center text-gray-500">Yuklanmoqda...</Card>
       ) : items.length === 0 ? (
@@ -140,7 +204,7 @@ const StudentEnrollmentSection = ({ studentId }) => {
           <EmptyState
             icon={CalendarRange}
             title="O'qish davri kiritilmagan"
-            description="Davr kiritilmaguncha o'quvchi to'liq oy to'laydi. Oy o'rtasida kelgan o'quvchi uchun kelgan sanani kiriting — o'sha oy ulushga hisoblanadi."
+            description="Davr kiritilmaguncha bu o'quvchiga hisob-faktura yozilmaydi. Maktabga kelgan sanasini kiriting — oy o'rtasida kelgan bo'lsa o'sha oy ulushga hisoblanadi."
             action={
               <Can do="enrollment.create">
                 <Button onClick={() => openModal("enrollmentPeriod", { studentId })}>
