@@ -4,12 +4,16 @@ import { useState } from "react";
 // Toast
 import { toast } from "sonner";
 
+// Icons
+import { Building2 } from "lucide-react";
+
 // Components
 import Card from "@/shared/components/ui/Card";
 import StaffPermissionsList from "@/features/permissions/components/StaffPermissionsList";
 import UserPermissionsPanel from "@/features/permissions/components/UserPermissionsPanel";
 
 // Hooks
+import useBranch from "@/shared/hooks/useBranch";
 import { useStaff } from "@/features/permissions/queries/permissions.queries";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 
@@ -19,6 +23,7 @@ const PermissionsPage = () => {
 
   const { data: staff = [], isLoading } = useStaff();
   const { data: roles = [] } = useRoles();
+  const { branch } = useBranch();
 
   // Tanlanmagan bo'lsa (yoki tanlangan xodim ro'yxatdan chiqib ketsa) — birinchisi
   const selected = staff.find((user) => user.id === selectedId) || staff[0];
@@ -50,9 +55,33 @@ const PermissionsPage = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <h1 className="page-title">Ruxsatlar</h1>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="page-title">Ruxsatlar</h1>
+
+          {/* Ruxsatlar HAR FILIALDA alohida, shuning uchun "qaysi filial"
+              savoli hech qachon noaniq qolmasligi kerak. */}
+          {branch && (
+            <p className="mt-0.5 flex items-center gap-1.5 text-sm text-gray-500">
+              <Building2 size={15} strokeWidth={1.5} className="shrink-0" />
+              <span>
+                <b className="font-medium text-gray-700">{branch.name}</b>{" "}
+                filialidagi ruxsatlar
+              </span>
+            </p>
+          )}
+        </div>
       </div>
+
+      {/* Boshqa filial uchun ruxsat berish — xodim kartasidan, filialni
+          almashtirmasdan. Bu yerda faqat eslatma. */}
+      {branch && (
+        <p className="mb-4 rounded-xl bg-blue-50 px-3.5 py-3 text-sm text-blue-800">
+          Boshqa filialdagi ruxsatlarni sozlash uchun xodim sahifasidagi
+          <b> "Filiallar"</b> bo'limidan foydalaning — u yerda har bir filial
+          alohida ko'rsatiladi.
+        </p>
+      )}
 
       {!selected ? (
         <Card className="py-12 text-center">

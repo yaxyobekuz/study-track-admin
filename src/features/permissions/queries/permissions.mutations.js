@@ -6,6 +6,7 @@ import { permissionsAPI } from "../api/permissions.api";
 
 // Keys
 import { permissionsKeys } from "./permissions.queries";
+import { usersKeys } from "@/features/users/queries/users.queries";
 
 /**
  * Foydalanuvchining ruxsatlar to'plamini yangilash (grant/revoke).
@@ -16,8 +17,13 @@ import { permissionsKeys } from "./permissions.queries";
 export const useUpdateUserPermissions = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, permissions }) =>
-      permissionsAPI.updateUser(id, permissions).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: permissionsKeys.all }),
+    // `branchId` ixtiyoriy: berilmasa server joriy filialga yozadi.
+    mutationFn: ({ id, permissions, branchId }) =>
+      permissionsAPI.updateUser(id, permissions, branchId).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: permissionsKeys.all });
+      // Xodim kartasidagi "Filiallar" ro'yxati ham ruxsatlarni ko'rsatadi
+      qc.invalidateQueries({ queryKey: usersKeys.all });
+    },
   });
 };
