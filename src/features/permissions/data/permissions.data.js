@@ -47,9 +47,12 @@ const A = {
 /** Bo'lim → amallar. Modal checkbox'lari shu ro'yxatdan chiziladi. */
 export const PERMISSION_SECTIONS = [
   {
-    // Filiallar — `branches.create` yangi baza yaratadi, `branches.switch` esa
-    // foydalanuvchini butun BOSHQA bazaga olib o'tadi. Ikkalasi ham amalda
-    // owner darajasidagi huquq, lekin katalogda turishi kerak.
+    // Filiallar — `branches.create` yangi baza yaratadi, `branches.assign` esa
+    // odamni butun BOSHQA bazaga kiritadi. Ikkalasi ham amalda owner
+    // darajasidagi huquq, lekin katalogda turishi kerak.
+    //
+    // "Filial almashtirish" ruxsat EMAS: xodim o'zi biriktirilgan filiallar
+    // orasida erkin harakatlanadi — ro'yxatning o'zi grant.
     key: SECTIONS.BRANCHES,
     label: "Filiallar",
     group: "Asosiy",
@@ -58,7 +61,7 @@ export const PERMISSION_SECTIONS = [
       A.create,
       A.update,
       { key: "archive", label: "Arxivlash" },
-      { key: "switch", label: "Filial almashtirish" },
+      { key: "assign", label: "Xodimni filialga biriktirish" },
     ],
   },
   {
