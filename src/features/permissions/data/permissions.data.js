@@ -7,6 +7,7 @@
 
 /** Bo'lim kalitlari. */
 export const SECTIONS = {
+  BRANCHES: "branches",
   USERS: "users",
   ENROLLMENT: "enrollment",
   STATISTICS: "statistics",
@@ -45,6 +46,21 @@ const A = {
 
 /** Bo'lim → amallar. Modal checkbox'lari shu ro'yxatdan chiziladi. */
 export const PERMISSION_SECTIONS = [
+  {
+    // Filiallar — `branches.create` yangi baza yaratadi, `branches.switch` esa
+    // foydalanuvchini butun BOSHQA bazaga olib o'tadi. Ikkalasi ham amalda
+    // owner darajasidagi huquq, lekin katalogda turishi kerak.
+    key: SECTIONS.BRANCHES,
+    label: "Filiallar",
+    group: "Asosiy",
+    actions: [
+      A.view,
+      A.create,
+      A.update,
+      { key: "archive", label: "Arxivlash" },
+      { key: "switch", label: "Filial almashtirish" },
+    ],
+  },
   {
     key: SECTIONS.USERS,
     label: "Foydalanuvchilar",
@@ -413,6 +429,7 @@ export const toPermissionSet = (permissions = []) =>
 // `/roles` va `/permissions` grant qilinmaydi — kalitlari katalogda yo'q,
 // shuning uchun can() ular uchun faqat owner'ga true qaytaradi (owner-only).
 const ROUTE_PERMISSIONS = [
+  { prefix: "/branches", key: "branches.view" },
   { prefix: "/users", key: "users.view" },
   { prefix: "/statistics", key: "statistics.view" },
   { prefix: "/attendance", key: "attendance.view" },
