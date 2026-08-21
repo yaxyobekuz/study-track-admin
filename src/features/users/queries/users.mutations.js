@@ -56,3 +56,28 @@ export const useResetUserPassword = () => {
       usersAPI.resetPassword(id, { newPassword }).then((r) => r.data),
   });
 };
+
+/**
+ * Xodimni boshqa filialga biriktirish.
+ *
+ * Yangi filialda ruxsatlar ROLNING standart to'plamidan boshlanadi —
+ * boshqa filialdagi ruxsatlar ko'chirilmaydi.
+ */
+export const useAttachUserBranch = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, branchId, role }) =>
+      usersAPI.attachBranch(id, { branchId, role }).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
+  });
+};
+
+/** Xodimni filialdan chiqarish (asosiy filialdan chiqarib bo'lmaydi). */
+export const useDetachUserBranch = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, branchId }) =>
+      usersAPI.detachBranch(id, branchId).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
+  });
+};

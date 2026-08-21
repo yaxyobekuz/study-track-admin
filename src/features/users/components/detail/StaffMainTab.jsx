@@ -2,6 +2,7 @@
 import InfoCard, { InfoRows } from "./InfoCard";
 import UserAccountCard from "./UserAccountCard";
 import UserBasicInfoCard from "./UserBasicInfoCard";
+import UserBranchesCard from "./UserBranchesCard";
 import EditUserBasicModal from "../EditUserBasicModal";
 import EditWorkScheduleModal from "../EditWorkScheduleModal";
 
@@ -133,6 +134,11 @@ const StaffMainTab = ({ user }) => {
 
         <UserAccountCard user={user} />
       </div>
+
+      {/* Xodim qayerda ishlashi — faqat O'QISH uchun qisqa ro'yxat.
+          Biriktirish va ruxsatlar "Ruxsatlar" tabida: ular bir-biridan
+          ajralmaydi va ikki joyda takrorlanmasligi kerak. */}
+      <UserBranchesCard user={user} />
 
       {/* Modallar shu tab ichida — ro'yxat sahifalariga tegishli emas */}
       <EditUserBasicModal />

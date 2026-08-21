@@ -57,3 +57,22 @@ export const useTeachers = () => {
     staleTime: 10 * 60 * 1000,
   });
 };
+
+/** Xodim qaysi filiallarda ishlaydi — kalit `usersKeys.all` dan cho'ziladi. */
+export const userBranchesKey = (id) => [...usersKeys.detail(id), "branches"];
+
+/**
+ * Xodimning filiallari, har birida O'Z roli va O'Z ruxsatlari bilan.
+ *
+ * Server har filial bazasidan `permissions` ni o'qib beradi — ya'ni bu
+ * yagona joy bo'lib, "bu odam qayerda nima qila oladi" degan savolga
+ * to'liq javob beradi.
+ *
+ * @param {string} id
+ */
+export const useUserBranches = (id) =>
+  useQuery({
+    queryKey: userBranchesKey(id),
+    queryFn: () => usersAPI.getBranches(id).then((r) => r.data.data),
+    enabled: Boolean(id),
+  });

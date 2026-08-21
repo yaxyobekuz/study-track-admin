@@ -16,8 +16,15 @@ export const ARCHIVE_TABS = [
 // Har bir tab `value` bo'yicha URL'ga yoziladi (`?tab=finance`), shuning uchun
 // sahifani ochiq tab bilan birga link qilib yuborish mumkin.
 
+// `permission` — tab ko'rinishi uchun talab qilinadigan ruxsat kaliti.
+// Berilmasa tab hammaga ochiq. `StaffDetail` shu maydonga qarab ro'yxatni
+// filtrlaydi (`usersTabs.data.js` — statik ma'lumot, filtr esa komponentda).
 export const STAFF_DETAIL_TABS = [
   { value: "main", label: "Asosiy" },
+  // Ruxsatlar HAR FILIALDA alohida bo'lgani uchun bu tab ichida avval
+  // filial tanlanadi. Biriktirish ham shu yerda — "qayerda ishlaydi" va
+  // "u yerda nima qila oladi" bir-biridan ajralmaydi.
+  { value: "permissions", label: "Ruxsatlar", permission: "branches.assign" },
   { value: "attendance", label: "Davomat" },
   { value: "penalties", label: "Jarimalar" },
 ];

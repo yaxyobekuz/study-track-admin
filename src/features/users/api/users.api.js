@@ -14,4 +14,10 @@ export const usersAPI = {
   getPassword: (id) => http.get(`/users/${id}/password`),
   exportUsers: (role) =>
     http.get("/users/export", { params: { role }, responseType: "blob" }),
+
+  // Xodim qaysi filiallarda ishlaydi — har birida o'z roli va ruxsatlari bilan
+  getBranches: (id) => http.get(`/users/${id}/branches`),
+  attachBranch: (id, data) => http.post(`/users/${id}/branches`, data),
+  detachBranch: (id, branchId) =>
+    http.delete(`/users/${id}/branches/${branchId}`),
 };
