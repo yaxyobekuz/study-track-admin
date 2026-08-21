@@ -8,7 +8,7 @@ import { Loader } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 
 // Animations
-import magicAnimation from "@/shared/assets/animations/magic.json";
+import { magicEmojiAnimation as magicAnimation } from "@/shared/assets/animations";
 
 /**
  * LoaderCard

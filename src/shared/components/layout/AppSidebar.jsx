@@ -73,6 +73,9 @@ import usePermissions from "@/shared/hooks/usePermissions";
 // Permissions
 import { permissionForPath } from "@/features/permissions/data/permissions.data";
 
+// Filial almashtirgich
+import BranchSwitcher from "@/features/branches/components/BranchSwitcher";
+
 // Navigation items
 const navItems = [
   {
@@ -84,6 +87,10 @@ const navItems = [
       {
         title: "Bosh sahifa",
         url: "/",
+      },
+      {
+        title: "Filiallar",
+        url: "/branches",
       },
       {
         title: "Xodimlar",
@@ -350,6 +357,12 @@ const Header = () => {
         </SidebarMenuItem>
       </SidebarMenu>
 
+      {/* Joriy filial. Owner uchun — almashtirgich, qolganlar uchun yorliq:
+          xodim qaysi filialda ishlayotganini har doim ko'rib turishi kerak,
+          chunki ekrandagi hamma narsa (o'quvchi, kassa, davomat) o'sha
+          filialga tegishli. */}
+      <BranchSwitcher />
+
       {/* Collapse Button */}
       {!open && <SidebarTrigger className="size-8" />}
     </SidebarHeader>
@@ -365,14 +378,15 @@ const Main = () => {
   const visibleNavItems = navItems
     .map((item) => ({
       ...item,
-      items: (item.items || []).filter((sub) => can(permissionForPath(sub.url))),
+      items: (item.items || []).filter((sub) =>
+        can(permissionForPath(sub.url)),
+      ),
     }))
     .filter((item) => item.items.length > 0);
 
   return (
     <SidebarContent>
       <SidebarGroup>
-        <SidebarGroupLabel>Platforma</SidebarGroupLabel>
         <SidebarMenu>
           {visibleNavItems.map((item) => (
             <Collapsible

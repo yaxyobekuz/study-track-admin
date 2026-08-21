@@ -20,6 +20,9 @@ import StudentsPage from "@/features/users/pages/StudentsPage";
 import CreateUserPage from "@/features/users/pages/CreateUserPage";
 import UserDetailPage from "@/features/users/pages/UserDetailPage";
 
+// Pages - Branches (filiallar)
+import BranchesPage from "@/features/branches/pages/BranchesPage";
+
 // Pages - Roles
 import RolesPage from "@/features/roles/pages/RolesPage";
 
@@ -173,6 +176,9 @@ const Routes = () => {
             path="/users/:userId/edit"
             element={<Navigate to=".." relative="path" replace />}
           />
+
+          {/* Filiallar */}
+          <Route path="/branches" element={<BranchesPage />} />
 
           {/* Roles */}
           <Route path="/roles" element={<RolesPage />} />

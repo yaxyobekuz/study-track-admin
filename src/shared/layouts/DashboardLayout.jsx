@@ -38,6 +38,9 @@ import StudentStatisticsModal from "@/features/statistics/components/StudentStat
 import CreateRoleModal from "@/features/roles/components/CreateRoleModal";
 import DeleteRoleModal from "@/features/roles/components/DeleteRoleModal";
 import ReviewExcuseModal from "@/features/attendance/components/ReviewExcuseModal";
+import CreateBranchModal from "@/features/branches/components/CreateBranchModal";
+import EditBranchModal from "@/features/branches/components/EditBranchModal";
+import ArchiveBranchModal from "@/features/branches/components/ArchiveBranchModal";
 import BugReport from "../components/layout/BugReport";
 
 const DashboardLayout = () => {
@@ -61,6 +64,11 @@ const DashboardLayout = () => {
 
       {/* Background Patterns */}
       <MainBackgroundPatterns />
+
+      {/* Filial Modals */}
+      <CreateBranchModal />
+      <EditBranchModal />
+      <ArchiveBranchModal />
 
       {/* User Modals */}
       <DeleteUserModal />
