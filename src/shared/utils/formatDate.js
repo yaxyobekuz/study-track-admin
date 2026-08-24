@@ -1,31 +1,12 @@
 /**
- * Format a date to Uzbek text like "10-noyabr, 2025".
+ * @deprecated Bu fayl faqat eski importlar uchun qoldirilgan.
  *
- * @param {Date|string|number} value - Date instance or parseable input.
- * @returns {string} Formatted date or empty string if invalid.
+ * Ilgari bu yerda `date.utils.js` dagidan MUSTAQIL ikkinchi formatlovchi
+ * turardi va uning oy nomlari boshqacha edi ("sentyabr"/"oktyabr", u yerda
+ * esa "sentabr"/"oktabr") — shu sababli bitta ekranda ikki xil sana
+ * ko'rinardi. Endi ikkalasi ham bitta funksiyaga ishora qiladi.
+ *
+ * Yangi kodda to'g'ridan-to'g'ri `@/shared/utils/date.utils` dan
+ * `formatDateUz` ni import qiling.
  */
-export const formatUzDate = (value) => {
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-
-  const months = [
-    "yanvar",
-    "fevral",
-    "mart",
-    "aprel",
-    "may",
-    "iyun",
-    "iyul",
-    "avgust",
-    "sentyabr",
-    "oktyabr",
-    "noyabr",
-    "dekabr",
-  ];
-
-  const day = date.getDate();
-  const monthName = months[date.getMonth()];
-  const year = date.getFullYear();
-
-  return `${day}-${monthName}, ${year}`;
-};
+export { formatDateUz, formatDateUz as formatUzDate } from "./date.utils";
