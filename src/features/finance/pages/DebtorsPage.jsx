@@ -131,6 +131,7 @@ const DebtorsPage = () => {
       <div className="flex flex-wrap items-end gap-2">
         <InputField
           name="search"
+          type="search"
           value={search}
           placeholder="O'quvchini qidirish..."
           className="min-w-52 flex-1"

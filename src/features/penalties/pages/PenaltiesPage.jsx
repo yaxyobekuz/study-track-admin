@@ -181,6 +181,7 @@ const PenaltiesPage = () => {
 
       <form onSubmit={handleSearchSubmit} className="flex items-end gap-2">
         <InputField
+          type="search"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Ism yoki sabab..."

@@ -116,6 +116,7 @@ const LeadsListPage = () => {
 
         <form onSubmit={handleSearch} className="w-full">
           <InputField
+            type="search"
             label="Qidirish"
             name="search"
             value={state.searchInput}

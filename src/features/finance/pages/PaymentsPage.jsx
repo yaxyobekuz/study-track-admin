@@ -126,6 +126,7 @@ const PaymentsPage = () => {
       <div className="flex flex-wrap items-end gap-2">
         <InputField
           name="search"
+          type="search"
           value={search}
           placeholder="O'quvchini qidirish..."
           className="min-w-52 flex-1"
@@ -137,7 +138,9 @@ const PaymentsPage = () => {
           name="from"
           label="Dan"
           value={range.from}
-          onChange={(e) => setRange((prev) => ({ ...prev, from: e.target.value }))}
+          onChange={(e) =>
+            setRange((prev) => ({ ...prev, from: e.target.value }))
+          }
         />
 
         <InputField
@@ -145,7 +148,9 @@ const PaymentsPage = () => {
           name="to"
           label="Gacha"
           value={range.to}
-          onChange={(e) => setRange((prev) => ({ ...prev, to: e.target.value }))}
+          onChange={(e) =>
+            setRange((prev) => ({ ...prev, to: e.target.value }))
+          }
         />
 
         <Select
@@ -180,7 +185,10 @@ const PaymentsPage = () => {
       ) : (
         <Table columns={PAYMENT_TABLE_COLUMNS}>
           {payments.map((payment) => (
-            <Tr key={payment.id} className={payment.isVoided ? "opacity-50" : ""}>
+            <Tr
+              key={payment.id}
+              className={payment.isVoided ? "opacity-50" : ""}
+            >
               <Td className="font-mono text-xs text-gray-500">
                 {payment.receiptLabel}
               </Td>
@@ -188,7 +196,9 @@ const PaymentsPage = () => {
               <Td className="text-gray-500">{formatDateUZ(payment.paidAt)}</Td>
 
               <Td nowrap={false}>
-                <p className="font-medium text-gray-900">{payment.studentName}</p>
+                <p className="font-medium text-gray-900">
+                  {payment.studentName}
+                </p>
                 {payment.isVoided && (
                   <p className="text-xs text-red-500">
                     Bekor qilingan: {payment.voidReason}
@@ -211,7 +221,8 @@ const PaymentsPage = () => {
                           title={meta?.label}
                           className={`rounded-md px-1.5 py-0.5 text-xs ${meta?.className ?? ""}`}
                         >
-                          {allocation.monthLabel} · {formatMoney(allocation.amount)}
+                          {allocation.monthLabel} ·{" "}
+                          {formatMoney(allocation.amount)}
                         </span>
                       );
                     })}

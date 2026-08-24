@@ -9,7 +9,7 @@ import useModal from "@/shared/hooks/useModal";
 import { useChangelogMonths } from "../queries/changelog.queries";
 
 // Icons
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 
 // Utils
 import { months as MONTHS_UZ } from "@/shared/utils/date.utils";
@@ -120,11 +120,10 @@ const ChangelogAllTab = () => {
         />
 
         <div className="relative min-w-56 flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-gray-400" />
           <InputField
             name="search"
+            type="search"
             value={searchDraft}
-            inputClassName="pl-9"
             placeholder="Sarlavha yoki o'zgarish matni bo'yicha qidirish"
             onChange={(e) => setSearchDraft(e.target.value)}
           />
