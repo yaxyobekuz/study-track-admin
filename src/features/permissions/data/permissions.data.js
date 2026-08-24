@@ -26,6 +26,7 @@ export const SECTIONS = {
   TARIFFS: "tariffs",
   DISCOUNTS: "discounts",
   FINANCE: "finance",
+  DEBTORS: "debtors",
   HOLIDAYS: "holidays",
   MONITORS: "monitors",
   CHANGELOG: "changelog",
@@ -273,6 +274,20 @@ export const PERMISSION_SECTIONS = [
       A.export,
       A.settings,
     ],
+  },
+  {
+    // Qarzdorlar registri — moliyaning eng nozik KESIMI: bitta ekranda butun
+    // maktabning qarzi va har bir o'quvchining necha oydan beri to'lamagani
+    // ko'rinadi. Shuning uchun u `finance.view` dan ALOHIDA: undiruv bilan
+    // shug'ullanadigan odamga ro'yxatni ochish uchun hisob-faktura registrini
+    // va to'lov cheklarini ham berish shart emas.
+    //
+    // Bitta amal — bu ATAYLAB. To'lov qabul qilish `finance.pay` da qoladi:
+    // ro'yxatni ko'rish va pulni harakatlantirish boshqa-boshqa mas'uliyat.
+    key: SECTIONS.DEBTORS,
+    label: "Qarzdorlar",
+    group: "Moliya",
+    actions: [A.view],
   },
   {
     key: SECTIONS.HOLIDAYS,
