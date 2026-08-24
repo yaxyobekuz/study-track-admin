@@ -13,8 +13,20 @@
 
 ## Dates
 
-- Always use `formatDateUz(...)` for date formatting in UI.
-- Do not use `toLocaleDateString()` / `toLocaleString()` directly in UI rendering.
+Tizimda sana YAGONA formatda: `21-may, 2025` / `21-may, 2025 14:30` / `Yanvar, 2026`.
+
+- Barcha formatlovchilar `src/shared/utils/date.utils.js` da: `formatDateUz`,
+  `formatDateTimeUz`, `formatTimeUz`, `formatMonthUz`, `formatDateRangeUz`.
+  Feature ichida lokal `formatDate` yozilmaydi, oy nomlari nusxalanmaydi.
+- `toLocaleDateString()` / `toLocaleString()` / `Intl.DateTimeFormat` va qo'lda
+  yig'ilgan `` `${day}.${month}.${year}` `` shablonlari TAQIQLANGAN.
+- `toISOString().split("T")[0]` faqat `<input type="date">` va API parametri
+  uchun — ekranga chiqmaydi. Oy kalitini inputga berish — `monthKeyToInputValue`,
+  ko'rsatish — `formatMonthKey` (`shared/helpers/month.helpers.js`).
+- Eski nomlar (`formatDateUZ`, `formatUzDate`, `formatTimeUZ`, ...) alias
+  sifatida qolgan, yangi kodda ishlatilmaydi.
+
+Batafsil: `.claude/rules/dates.md`.
 
 ## Data fetching & caching
 
