@@ -6,21 +6,11 @@
  * kelib chiqadi). Bu yerda faqat ko'rsatish va tanlash uchun yordamchilar.
  */
 
-// Uzun (sarlavha uchun) va qisqa (jadval uchun) oy nomlari.
-const MONTH_NAMES_UZ = [
-  "Yanvar",
-  "Fevral",
-  "Mart",
-  "Aprel",
-  "May",
-  "Iyun",
-  "Iyul",
-  "Avgust",
-  "Sentabr",
-  "Oktabr",
-  "Noyabr",
-  "Dekabr",
-];
+import { MONTHS_UZ_CAP, formatMonthUz } from "@/shared/utils/date.utils";
+
+// Oy nomlari `date.utils.js` dan keladi — tizimda sana atamalarining
+// yagona manbai o'sha fayl (`.claude/rules/dates.md`).
+const MONTH_NAMES_UZ = MONTHS_UZ_CAP;
 
 /** Joriy oy — YYYYMM. */
 export const currentMonthKey = () => {
@@ -50,16 +40,13 @@ export const inputValueToMonthKey = (value) => {
   return Number.isNaN(key) ? null : key;
 };
 
-/** 202608 → "Avgust 2026". */
-export const formatMonthKey = (monthKey, { fallback = "—" } = {}) => {
-  if (monthKey == null) return fallback;
-  const month = monthKey % 100;
-  const name = MONTH_NAMES_UZ[month - 1];
-  return name ? `${name} ${Math.trunc(monthKey / 100)}` : String(monthKey);
-};
+/** 202608 → "Avgust, 2026". Kanonik oy yorlig'i. */
+export const formatMonthKey = (monthKey, { fallback = "—" } = {}) =>
+  formatMonthUz(monthKey, { fallback });
 
 /**
- * Davr matni: "Yanvar 2026 — Avgust 2026" yoki "Yanvar 2026 dan (muddatsiz)".
+ * Davr matni: "Yanvar, 2026 — Avgust, 2026" yoki
+ * "Yanvar, 2026 dan (muddatsiz)".
  * `endMonth = null` — butun o'qish davri / ochiq narx versiyasi.
  */
 export const formatMonthRange = (startMonth, endMonth) =>
