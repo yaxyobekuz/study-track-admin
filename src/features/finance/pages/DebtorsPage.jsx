@@ -182,15 +182,14 @@ const DebtorsPage = () => {
                     >
                       {debtor.fullName}
                     </Link>
-                    {debtor.username && (
+                    {/* Arxivlangan o'quvchining qarzi ham ko'rinadi —
+                        arxivlash qarzni bekor qilmaydi */}
+                    {debtor.isArchived && (
                       <span className="block text-xs text-gray-400">
-                        @{debtor.username}
-                        {debtor.isArchived && " · arxivlangan"}
+                        arxivlangan
                       </span>
                     )}
                   </Td>
-
-                  <Td className="text-gray-500">{debtor.className ?? "—"}</Td>
 
                   <Td className="text-gray-500">{debtor.unpaidCount} oy</Td>
 
@@ -203,15 +202,6 @@ const DebtorsPage = () => {
                     </span>
                   </Td>
 
-                  <Td>
-                    {debtor.hasBalance ? (
-                      <span className="font-medium text-blue-600">
-                        {formatMoney(debtor.balance)}
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </Td>
 
                   <Td className="font-semibold text-red-600">
                     {formatMoney(debtor.debt)}
@@ -227,7 +217,6 @@ const DebtorsPage = () => {
                               student: {
                                 id: debtor.id,
                                 fullName: debtor.fullName,
-                                username: debtor.username,
                               },
                             })
                           }

@@ -35,7 +35,7 @@ import { currentMonthKey, buildMonthOptions } from "@/shared/helpers/month.helpe
 // Data & queries
 import {
   GENERATE_BLOCKED_LABELS,
-  INVOICE_STATUS_META,
+
   INVOICE_STATUS_OPTIONS,
   INVOICE_TABLE_COLUMNS,
 } from "../data/finance.data";
@@ -304,7 +304,7 @@ const OverviewPage = () => {
       ) : (
         <Table columns={INVOICE_TABLE_COLUMNS}>
           {invoices.map((invoice) => {
-            const badge = INVOICE_STATUS_META[invoice.status];
+
             const isCancelled = invoice.status === "cancelled";
 
             return (
@@ -349,13 +349,6 @@ const OverviewPage = () => {
                   )}
                 </Td>
 
-                <Td>
-                  <span
-                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${badge.className}`}
-                  >
-                    {badge.label}
-                  </span>
-                </Td>
 
                 <Td>
                   <div className="flex items-center justify-end gap-1">
