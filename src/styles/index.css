@@ -131,3 +131,34 @@
 .bottom-navigation {
   box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.1);
 }
+
+/* Removes 'X' from Chrome, Safari, and Edge (Chromium) */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  display: none;
+  -webkit-appearance: none;
+}
+
+/* Removes 'X' from Internet Explorer 10+ */
+input[type="search"]::-ms-clear,
+input[type="search"]::-ms-reveal {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Number inputlardagi spinner (yuqori/past) tugmalarini olib tashlash */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  /* Yengil border radius */
+  border-radius: 6px;
+}
