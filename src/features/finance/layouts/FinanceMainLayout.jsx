@@ -4,6 +4,9 @@ import { Outlet, useLocation } from "react-router-dom";
 // Components
 import { TabsLinks } from "@/shared/components/ui/tabs/Tabs";
 
+// Hooks
+import usePermissions from "@/shared/hooks/usePermissions";
+
 // Data
 import { MAIN_TABS } from "../data/financeTabs.data";
 
@@ -13,6 +16,11 @@ import { MAIN_TABS } from "../data/financeTabs.data";
  */
 const FinanceMainLayout = () => {
   const { pathname } = useLocation();
+  const { can } = usePermissions();
+
+  // Ruxsat talab qiladigan tablar yashiriladi. Server baribir har so'rovda
+  // tekshiradi — bu faqat UI qatlami.
+  const tabs = MAIN_TABS.filter((tab) => !tab.can || can(tab.can));
 
   // Aktiv tab (sarlavha shu asosida o'zgaradi)
   const activeTab =
@@ -32,7 +40,7 @@ const FinanceMainLayout = () => {
 
       {/* Tablar — tor ekranga sig'masa gorizontal scroll bo'ladi */}
       <TabsLinks
-        items={MAIN_TABS}
+        items={tabs}
         itemClassName="shrink-0"
         className="max-w-full justify-start overflow-x-auto overflow-y-hidden hidden-scrollbar"
       />

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 // Icons
-import { CalendarClock, CheckCircle2, Users, Wallet } from "lucide-react";
+import { CalendarClock, CheckCircle2, Lock, Users, Wallet } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -25,6 +25,7 @@ import RecordPaymentModal from "../components/RecordPaymentModal";
 // Hooks
 import useModal from "@/shared/hooks/useModal";
 import useDebounce from "@/shared/hooks/useDebounce";
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
@@ -61,6 +62,8 @@ const StatCard = ({ icon: Icon, label, value, sub, className }) => (
  */
 const DebtorsPage = () => {
   const { openModal } = useModal();
+  const { can } = usePermissions();
+  const allowed = can("debtors.view");
 
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
@@ -80,15 +83,18 @@ const DebtorsPage = () => {
 
   const { data: classes = [] } = useQuery(classesQueries.list());
 
-  const { data, isLoading } = useQuery(
-    financeQueries.debtors({
+  const { data, isLoading } = useQuery({
+    ...financeQueries.debtors({
       page,
       limit: 24,
       sort,
       ...(classId ? { classId } : {}),
       ...(debouncedSearch ? { search: debouncedSearch } : {}),
     }),
-  );
+    // Ruxsat yo'q bo'lsa so'rov ham yuborilmaydi — 403 ni kutib turishning
+    // ma'nosi yo'q va konsolda keraksiz xato paydo bo'lardi.
+    enabled: allowed,
+  });
 
   const debtors = data?.data ?? [];
   const pagination = data?.pagination;
@@ -96,6 +102,19 @@ const DebtorsPage = () => {
   const currentMonth = data?.currentMonth;
 
   const isFiltered = Boolean(classId || debouncedSearch);
+
+  // Havolani to'g'ridan-to'g'ri ochgan xodimga tushunarli javob berish
+  if (!allowed) {
+    return (
+      <Card className="p-0 xs:p-0">
+        <EmptyState
+          icon={Lock}
+          title="Ruxsat yo'q"
+          description="Qarzdorlar ro'yxatini ko'rish uchun ruxsatingiz yo'q. Kerak bo'lsa administratordan so'rang."
+        />
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-4">

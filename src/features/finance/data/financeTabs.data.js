@@ -6,6 +6,10 @@
 // `description` YO'Q — sarlavha ostidagi izoh olib tashlangan (davomat
 // bo'limidagi kabi). Layout uni shartli chizadi, shuning uchun qo'shimcha
 // o'zgarish talab qilinmaydi.
+//
+// `can` — ixtiyoriy ruxsat kaliti. Berilgan bo'lsa, tab faqat o'sha
+// ruxsatga ega xodimga ko'rinadi. Qolgan tablar moliya bo'limiga kirish
+// huquqining o'zi bilan ochiladi.
 
 export const MAIN_TABS = [
   {
@@ -18,6 +22,7 @@ export const MAIN_TABS = [
     to: "/finance/main/debtors",
     label: "Qarzdorlar",
     title: "Moliya",
+    can: "debtors.view",
     exact: false,
   },
   {
