@@ -108,6 +108,14 @@ export const financeQueries = {
       enabled: Boolean(id),
     }),
 
+  /** Qarzdorlar registri → `{ data, pagination, totals }`. */
+  debtors: (params) =>
+    queryOptions({
+      queryKey: [...invoicesKey, "debtors", params],
+      queryFn: () => invoicesAPI.getDebtors(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
   /** O'quvchining o'quv yili bo'yicha majburiyatlari va qarzi. */
   studentInvoices: (studentId, params) =>
     queryOptions({

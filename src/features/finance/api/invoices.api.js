@@ -5,6 +5,9 @@ import http from "@/shared/api/http";
 export const invoicesAPI = {
   getAll: (params) => http.get("/invoices", { params }),
   getById: (id, params) => http.get(`/invoices/${id}`, { params }),
+  /** Qarzdorlar — qarzdan boshlanadigan ro'yxat. */
+  getDebtors: (params) => http.get("/invoices/debtors", { params }),
+
   getSummary: (params) => http.get("/invoices/summary", { params }),
   // Kassirning asosiy ekrani: o'quvchi + tarif + chegirma + depozit + qarz
   getForStudent: (studentId, params) =>

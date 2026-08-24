@@ -279,3 +279,51 @@ export const TIMELINE_SKIP_LABELS = {
   vacation: "Ta'til",
   before_first_invoice_month: "Tizimga o'tishdan oldin",
 };
+
+// ── Qarzdorlar ───────────────────────────────
+
+export const DEBTOR_TABLE_COLUMNS = [
+  "O'quvchi",
+  "Sinf",
+  "To'lanmagan oylar",
+  "Eng eski qarz",
+  "Depozit",
+  "Qarz",
+  "",
+];
+
+/**
+ * Saralash tartibi.
+ * "Eng eski" — undiruvni qaysi o'quvchidan boshlash kerakligini ko'rsatadi:
+ * uzoq turgan qarz yangisidan xavfliroq.
+ */
+export const DEBTOR_SORT_OPTIONS = [
+  { label: "Eng katta qarz", value: "debt" },
+  { label: "Eng eski qarz", value: "oldest" },
+];
+
+/**
+ * Qarz qancha vaqtdan beri turibdi — oy raqamlari (YYYYMM) farqi.
+ * Sana emas, OY aniqligida: moliya domenidagi o'lchov birligi shu.
+ */
+export const monthsSince = (monthKey, currentMonth) => {
+  if (!monthKey || !currentMonth) return 0;
+  const y = Math.trunc(currentMonth / 100) - Math.trunc(monthKey / 100);
+  return y * 12 + ((currentMonth % 100) - (monthKey % 100));
+};
+
+/** Qarzning "yoshi" — eskirgani qanchalik jiddiy ekanini rang bilan aytadi. */
+export const getDebtAgeMeta = (monthKey, currentMonth) => {
+  const months = monthsSince(monthKey, currentMonth);
+
+  if (months >= 3) {
+    return { label: `${months} oy oldin`, className: "bg-red-100 text-red-700" };
+  }
+  if (months >= 1) {
+    return {
+      label: months === 1 ? "O'tgan oy" : `${months} oy oldin`,
+      className: "bg-amber-100 text-amber-700",
+    };
+  }
+  return { label: "Shu oy", className: "bg-gray-100 text-gray-600" };
+};
