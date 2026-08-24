@@ -1,5 +1,6 @@
 // Utils
 import { cn } from "@/shared/utils/cn";
+import { formatTimeUz } from "@/shared/utils/date.utils";
 
 // Components
 import Tooltip from "@/shared/components/ui/tooltip/Tooltip";
@@ -115,10 +116,7 @@ const TooltipContent = ({ record }) => (
     {record.markedAt && (
       <p>
         Belgilandi:{" "}
-        {new Date(record.markedAt).toLocaleTimeString("uz-UZ", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
+        {formatTimeUz(record.markedAt)}
       </p>
     )}
 

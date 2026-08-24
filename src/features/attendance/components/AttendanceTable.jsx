@@ -1,6 +1,6 @@
 // Utils
 import { cn } from "@/shared/utils/cn";
-import { formatDurationUZ } from "@/shared/utils/date.utils";
+import { formatDurationUz, formatTimeUz } from "@/shared/utils/date.utils";
 
 // Components
 import Tooltip from "@/shared/components/ui/tooltip/Tooltip";
@@ -125,32 +125,26 @@ const TooltipContent = ({ record }) => (
     {record.checkIn && (
       <p>
         Keldi:{" "}
-        {new Date(record.checkIn).toLocaleTimeString("uz-UZ", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
+        {formatTimeUz(record.checkIn)}
       </p>
     )}
 
     {record.checkOut && (
       <p>
         Ketdi:{" "}
-        {new Date(record.checkOut).toLocaleTimeString("uz-UZ", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
+        {formatTimeUz(record.checkOut)}
       </p>
     )}
 
     {record.isLate && (
       <p className="text-yellow-300">
-        {formatDurationUZ(record.lateMinutes)} kech
+        {formatDurationUz(record.lateMinutes)} kech
       </p>
     )}
 
     {record.isEarlyOut && (
       <p className="text-orange-300">
-        {formatDurationUZ(record.earlyOutMinutes)} erta ketdi
+        {formatDurationUz(record.earlyOutMinutes)} erta ketdi
       </p>
     )}
 

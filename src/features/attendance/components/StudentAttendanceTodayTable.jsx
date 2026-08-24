@@ -1,13 +1,8 @@
 import { cn } from "@/shared/utils/cn";
+import { formatTimeUz } from "@/shared/utils/date.utils";
 import { STATUS_COLORS, STATUS_LABELS } from "../data/studentAttendance.data";
 
-const formatTime = (iso) => {
-  if (!iso) return "-";
-  return new Date(iso).toLocaleTimeString("uz-UZ", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+const formatTime = (iso) => formatTimeUz(iso, "-");
 
 // O'quvchining sinf(lar)i nomini ko'rsatadi (populate qilingan classes massivi)
 const formatClasses = (classes) => {

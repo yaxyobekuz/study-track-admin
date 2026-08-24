@@ -9,6 +9,7 @@ import { messagesQueries } from "@/features/messages/queries/messages.queries";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 import { useClasses } from "@/features/classes/queries/classes.queries";
 import { useTeachers } from "@/features/users/queries/users.queries";
+import { formatDateUz, formatTimeUz } from "@/shared/utils/date.utils";
 
 // Helpers
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
@@ -282,18 +283,10 @@ const Messages = () => {
                     {/* Date */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">
-                        {new Date(message.createdAt).toLocaleDateString(
-                          "uz-UZ",
-                        )}
+                        {formatDateUz(message.createdAt)}
                       </div>
                       <div className="text-xs text-gray-400">
-                        {new Date(message.createdAt).toLocaleTimeString(
-                          "uz-UZ",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          },
-                        )}
+                        {formatTimeUz(message.createdAt)}
                       </div>
                     </td>
 

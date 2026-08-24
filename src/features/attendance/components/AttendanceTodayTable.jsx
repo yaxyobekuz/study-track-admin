@@ -1,6 +1,6 @@
 // Utils
 import { cn } from "@/shared/utils/cn";
-import { formatDurationUZ } from "@/shared/utils/date.utils";
+import { formatDurationUz, formatTimeUz } from "@/shared/utils/date.utils";
 
 // Data
 import {
@@ -12,13 +12,7 @@ import {
 // Hooks
 import { useRoles } from "@/features/roles/queries/roles.queries";
 
-const formatTime = (iso) => {
-  if (!iso) return "-";
-  return new Date(iso).toLocaleTimeString("uz-UZ", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+const formatTime = (iso) => formatTimeUz(iso, "-");
 
 const AttendanceTodayTable = ({ rows }) => {
   const { data: roles = [] } = useRoles();
@@ -88,7 +82,7 @@ const AttendanceTodayTable = ({ rows }) => {
               <td className="px-4 py-3">
                 {row.isLate ? (
                   <span className="text-yellow-600 text-xs">
-                    {formatDurationUZ(row.lateMinutes)}
+                    {formatDurationUz(row.lateMinutes)}
                   </span>
                 ) : (
                   <span className="text-gray-300">-</span>

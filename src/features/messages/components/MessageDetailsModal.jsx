@@ -13,6 +13,7 @@ import { useEffect } from "react";
 // Icons
 import { CheckCircle, XCircle, Clock, Ban } from "lucide-react";
 import Button from "@/shared/components/ui/button/Button";
+import { formatDateUz, formatTimeUz } from "@/shared/utils/date.utils";
 
 const MessageDetailsModal = () => (
   <ResponsiveModal name="messageDetails" title="Xabar tafsilotlari">
@@ -138,13 +139,10 @@ const Content = ({ close, ...data }) => {
               Yuborilgan sana
             </label>
             <div className="text-sm text-gray-900">
-              {new Date(messageDetails.createdAt).toLocaleDateString("uz-UZ")}
+              {formatDateUz(messageDetails.createdAt)}
             </div>
             <div className="text-xs text-gray-500">
-              {new Date(messageDetails.createdAt).toLocaleTimeString("uz-UZ", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {formatTimeUz(messageDetails.createdAt)}
             </div>
           </div>
         </div>
@@ -223,12 +221,7 @@ const Content = ({ close, ...data }) => {
                     )}
                   </td>
                   <td className="px-4 py-2 text-sm text-gray-500">
-                    {delivery.sentAt
-                      ? new Date(delivery.sentAt).toLocaleTimeString("uz-UZ", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "-"}
+                    {formatTimeUz(delivery.sentAt, "-")}
                   </td>
                 </tr>
               ))}
