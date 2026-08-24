@@ -119,6 +119,7 @@ import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettin
 // Moliya (Finance) - layout & route-level pages
 import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
 import OverviewPage from "@/features/finance/pages/OverviewPage";
+import DebtorsPage from "@/features/finance/pages/DebtorsPage";
 import PaymentsPage from "@/features/finance/pages/PaymentsPage";
 import AccountsPage from "@/features/finance/pages/AccountsPage";
 import TariffsPage from "@/features/finance/pages/TariffsPage";
@@ -348,6 +349,7 @@ const Routes = () => {
               element={<Navigate to="/finance/main/overview" replace />}
             />
             <Route path="overview" element={<OverviewPage />} />
+            <Route path="debtors" element={<DebtorsPage />} />
             <Route path="payments" element={<PaymentsPage />} />
             <Route path="accounts" element={<AccountsPage />} />
             <Route path="tariffs" element={<TariffsPage />} />
