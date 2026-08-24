@@ -118,7 +118,7 @@ export const INVOICE_TABLE_COLUMNS = [
 
 /** Nima uchun shu oyga hisob-faktura shakllantirib bo'lmaydi. */
 export const GENERATE_BLOCKED_LABELS = {
-  not_academic: "Bu oy o'quv yiliga kirmaydi",
+
   vacation: "Bu oy ta'til deb belgilangan",
   future: "Kelajakdagi oy uchun shakllantirilmaydi",
   before_first_invoice_month: "Bu oy tizimga o'tishdan oldingi davrga tegishli",
@@ -245,27 +245,6 @@ export const FINANCE_STATUS_OPTIONS = [
   { label: "Muzlatilgan", value: "frozen" },
 ];
 
-/** O'quv yili boshlanish oyi (sozlamalar sahifasi uchun). */
-export const MONTH_OF_YEAR_OPTIONS = [
-  "Yanvar",
-  "Fevral",
-  "Mart",
-  "Aprel",
-  "May",
-  "Iyun",
-  "Iyul",
-  "Avgust",
-  "Sentabr",
-  "Oktabr",
-  "Noyabr",
-  "Dekabr",
-].map((label, index) => ({ label, value: String(index + 1) }));
-
-/** O'quv yili davomiyligi — serverda faqat shu ikkisi qabul qilinadi. */
-export const ACADEMIC_MONTH_COUNT_OPTIONS = [
-  { label: "9 oy", value: "9" },
-  { label: "11 oy", value: "11" },
-];
 
 /**
  * O'quvchi kartasidagi oylar jadvalida hisob-faktura NEGA yo'qligi.

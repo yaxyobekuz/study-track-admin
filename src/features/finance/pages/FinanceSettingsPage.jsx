@@ -38,8 +38,7 @@ import {
 
 // Data & queries
 import {
-  ACADEMIC_MONTH_COUNT_OPTIONS,
-  MONTH_OF_YEAR_OPTIONS,
+
 } from "../data/finance.data";
 import { financeQueries } from "../queries/finance.queries";
 
@@ -48,8 +47,6 @@ const FinanceSettingsPage = () => {
   const { mutate: updateSettings } = useUpdateFinanceSettings();
 
   const {
-    academicStartMonth,
-    academicMonthCount,
     invoiceDayOfMonth,
     autoGenerateEnabled,
     catchUpMonths,
@@ -59,8 +56,6 @@ const FinanceSettingsPage = () => {
     setFields,
     setField,
   } = useObjectState({
-    academicStartMonth: "9",
-    academicMonthCount: "9",
     invoiceDayOfMonth: 1,
     autoGenerateEnabled: true,
     catchUpMonths: 1,
@@ -73,8 +68,6 @@ const FinanceSettingsPage = () => {
   useEffect(() => {
     if (!settings) return;
     setFields({
-      academicStartMonth: String(settings.academicStartMonth),
-      academicMonthCount: String(settings.academicMonthCount),
       invoiceDayOfMonth: settings.invoiceDayOfMonth,
       autoGenerateEnabled: settings.autoGenerateEnabled,
       catchUpMonths: settings.catchUpMonths,
@@ -90,8 +83,6 @@ const FinanceSettingsPage = () => {
 
     updateSettings(
       {
-        academicStartMonth: Number(academicStartMonth),
-        academicMonthCount: Number(academicMonthCount),
         invoiceDayOfMonth: Number(invoiceDayOfMonth),
         autoGenerateEnabled,
         catchUpMonths: Number(catchUpMonths),
@@ -102,7 +93,6 @@ const FinanceSettingsPage = () => {
       {
         onSuccess: (result) => {
           toast.success("Sozlamalar saqlandi");
-          // Akademik davr o'zgargan bo'lsa server ogohlantiradi
           result?.warnings?.forEach((warning) => toast.warning(warning));
         },
         onError: (err) =>
@@ -117,42 +107,6 @@ const FinanceSettingsPage = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-3xl">
-      {/* O'quv yili */}
-      <Card title="O'quv yili">
-        <p className="mt-1 text-sm text-gray-500">
-          Butun maktab uchun bitta davr. Majburiyat faqat shu oylarda
-          shakllanadi — yozgi tanaffusda hisoblanmaydi.
-        </p>
-
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <p className="text-sm font-medium text-gray-700">Boshlanish oyi</p>
-            <Select
-              value={academicStartMonth}
-              options={MONTH_OF_YEAR_OPTIONS}
-              onChange={(v) => setField("academicStartMonth", v)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <p className="text-sm font-medium text-gray-700">Davomiyligi</p>
-            <Select
-              value={academicMonthCount}
-              options={ACADEMIC_MONTH_COUNT_OPTIONS}
-              onChange={(v) => setField("academicMonthCount", v)}
-            />
-          </div>
-        </div>
-
-        {settings?.current && (
-          <p className="mt-3 text-xs text-gray-500">
-            Joriy oy ({settings.current.monthLabel}):{" "}
-            {settings.current.isAcademicMonth
-              ? `${settings.current.academicYearLabel} o'quv yilining ${settings.current.academicIndex}-oyi`
-              : "akademik oy emas"}
-          </p>
-        )}
-      </Card>
 
       {/* Avtomatik shakllantirish */}
       <Card title="Avtomatik shakllantirish">
@@ -290,13 +244,13 @@ const VacationMonths = () => {
   const [year, setYear] = useState(null);
 
   const { data } = useQuery(
-    financeQueries.vacationMonths(year != null ? { academicYear: year } : {}),
+    financeQueries.vacationMonths(year != null ? { year } : {}),
   );
 
   const { mutate: deleteVacation } = useDeleteVacationMonth();
 
-  // Server joriy o'quv yilini o'zi tanlaydi — birinchi javobdan olamiz
-  const academicYear = year ?? data?.academicYear ?? null;
+  // Server joriy kalendar yilini o'zi tanlaydi — birinchi javobdan olamiz
+  const shownYear = year ?? data?.year ?? null;
 
   const handleToggle = (entry) => {
     if (entry.id) {
@@ -318,27 +272,28 @@ const VacationMonths = () => {
     <Card title="Ta'til oylari">
       <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-gray-500">
-          Belgilangan oyda hech bir o'quvchiga to'lov yozilmaydi. Bitta
-          o'quvchini to'xtatish uchun "Muzlatish" ishlatiladi.
+          Belgilanmagan har bir oy to'lanadi. Belgilangan oyda esa hech bir
+          o'quvchiga to'lov yozilmaydi — bitta o'quvchini to'xtatish uchun
+          "Muzlatish" ishlatiladi.
         </p>
 
-        {academicYear != null && (
+        {shownYear != null && (
           <div className="flex items-center gap-1">
             <button
               type="button"
-              onClick={() => setYear(academicYear - 1)}
+              onClick={() => setYear(shownYear - 1)}
               className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
             >
               <ChevronLeft className="size-4" />
             </button>
 
             <span className="min-w-24 text-center text-sm font-medium text-gray-900">
-              {data?.academicYearLabel ?? "—"}
+              {data?.year ?? "—"}
             </span>
 
             <button
               type="button"
-              onClick={() => setYear(academicYear + 1)}
+              onClick={() => setYear(shownYear + 1)}
               className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
             >
               <ChevronRight className="size-4" />
@@ -363,7 +318,7 @@ const VacationMonths = () => {
 
       {data && (
         <p className="mt-3 text-xs text-gray-500">
-          To'lanadigan oylar: {data.billableMonthCount} / {data.academicMonthCount}
+          {data.year}-yilda to'lanadigan oylar: {data.billableMonthCount} / 12
         </p>
       )}
     </Card>
@@ -391,7 +346,9 @@ const VacationCell = ({ entry, interactive = false }) => (
     <p className="mt-0.5 truncate text-xs text-gray-500">
       {entry.isVacation
         ? entry.title || "Ta'til"
-        : `${entry.billableIndex}-to'lov oyi`}
+        : entry.isCurrent
+          ? "Joriy oy"
+          : "To'lanadi"}
     </p>
   </div>
 );

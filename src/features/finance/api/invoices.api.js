@@ -130,6 +130,5 @@ export const financeStatusAPI = {
 export const financeSettingsAPI = {
   get: () => http.get("/finance-settings"),
   update: (data) => http.put("/finance-settings", data),
-  getAcademicYear: (params) =>
-    http.get("/finance-settings/academic-year", { params }),
+
 };

@@ -289,13 +289,6 @@ export const financeQueries = {
       queryFn: () => financeSettingsAPI.get().then((r) => r.data.data),
     }),
 
-  /** O'quv yili oylari — oy tanlagichi uchun. */
-  academicYear: (params) =>
-    queryOptions({
-      queryKey: [...settingsKey, "academic-year", params],
-      queryFn: () =>
-        financeSettingsAPI.getAcademicYear(params).then((r) => r.data.data),
-    }),
 };
 
 export {

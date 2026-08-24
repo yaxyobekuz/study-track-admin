@@ -1,5 +1,3 @@
-// React
-import { useState } from "react";
 
 // Toast
 import { toast } from "sonner";
@@ -22,7 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 // Components
 import Can from "@/shared/components/guards/Can";
 import Button from "@/shared/components/ui/button/Button";
-import Select from "@/shared/components/ui/select/Select";
+
 import ChangeStudentTariffModal from "./ChangeStudentTariffModal";
 import RecordPaymentModal from "./RecordPaymentModal";
 import StudentFinanceStatusModal from "./StudentFinanceStatusModal";
@@ -73,10 +71,6 @@ const StudentFinanceSection = ({ studentId }) => {
   const { openModal } = useModal();
   const now = currentMonthKey();
 
-  // null = server o'zi tanlaydi. Server kalendar bo'yicha "joriy" yilni emas,
-  // o'quvchi HAQIQATDA o'qigan yilni ochadi — avgustda kalendar yili o'tgan
-  // o'quv yilining dumi bo'lib, iyunda kelgan o'quvchi uchun bo'sh chiqardi.
-  const [academicYear, setAcademicYear] = useState(null);
 
   const { data: statusData } = useQuery(
     financeQueries.studentFinanceStatus(studentId),
@@ -88,10 +82,7 @@ const StudentFinanceSection = ({ studentId }) => {
     financeQueries.studentDiscounts(studentId),
   );
   const { data: invoiceData, isLoading } = useQuery(
-    financeQueries.studentInvoices(
-      studentId,
-      academicYear ? { academicYear } : undefined,
-    ),
+    financeQueries.studentInvoices(studentId),
   );
   const { data: movementData } = useQuery(
     financeQueries.studentMovements(studentId),
@@ -115,10 +106,7 @@ const StudentFinanceSection = ({ studentId }) => {
   // Qarz progressining maxraji — o'quvchida hozirga qadar KELGAN oylar.
   // Eski javoblarda `dueMonths` bo'lmasligi mumkin, shuning uchun zaxira.
   const dueMonths =
-    invoiceData?.totals?.dueMonths ??
-    invoiceData?.totals?.enrolledMonths ??
-    invoiceData?.totals?.billableMonths ??
-    0;
+    invoiceData?.totals?.dueMonths ?? invoiceData?.totals?.enrolledMonths ?? 0;
 
   const student = {
     id: studentId,
@@ -314,7 +302,7 @@ const StudentFinanceSection = ({ studentId }) => {
 
         <div className="rounded-xl border border-gray-100 p-3">
           <p className="text-xs text-gray-500">
-            {invoiceData?.academicYearLabel ?? "O'quv yili"} bo'yicha qarz
+            Jami qarz
           </p>
           <p className="mt-1 text-xl font-semibold text-red-600">
             {formatMoney(invoiceData?.totals?.debt)}
@@ -382,20 +370,12 @@ const StudentFinanceSection = ({ studentId }) => {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-medium text-gray-700">Oylik majburiyatlar</h3>
 
-          {/* O'quv yili tanlagichi — o'quvchi o'qimagan yil ham ro'yxatda
-              qoladi, lekin yonida belgisi bilan */}
-          {invoiceData?.academicYears?.length > 0 && (
-            <Select
-              triggerClassName="min-w-44"
-              value={String(invoiceData.academicYear)}
-              onChange={(v) => setAcademicYear(Number(v))}
-              options={invoiceData.academicYears.map((year) => ({
-                label: year.isEnrolled
-                  ? year.label
-                  : `${year.label} — o'qimagan`,
-                value: String(year.academicYear),
-              }))}
-            />
+          {/* Oyna o'quvchining O'ZIDAN chiqadi: kelgan oyidan hozirgacha.
+              O'quv yili tushunchasi yo'q, shuning uchun tanlagich ham yo'q. */}
+          {invoiceData?.fromMonthLabel && (
+            <span className="text-xs text-gray-400">
+              {invoiceData.fromMonthLabel} — {invoiceData.toMonthLabel}
+            </span>
           )}
         </div>
 
