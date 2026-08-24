@@ -51,7 +51,6 @@ const FinanceSettingsPage = () => {
     autoGenerateEnabled,
     catchUpMonths,
     firstInvoiceMonth,
-    maxDiscountPercent,
     depositAutoApply,
     setFields,
     setField,
@@ -60,7 +59,6 @@ const FinanceSettingsPage = () => {
     autoGenerateEnabled: true,
     catchUpMonths: 1,
     firstInvoiceMonth: "",
-    maxDiscountPercent: 100,
     depositAutoApply: true,
   });
 
@@ -72,7 +70,6 @@ const FinanceSettingsPage = () => {
       autoGenerateEnabled: settings.autoGenerateEnabled,
       catchUpMonths: settings.catchUpMonths,
       firstInvoiceMonth: monthKeyToInputValue(settings.firstInvoiceMonth),
-      maxDiscountPercent: settings.maxDiscountPercent,
       depositAutoApply: settings.depositAutoApply,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,7 +84,6 @@ const FinanceSettingsPage = () => {
         autoGenerateEnabled,
         catchUpMonths: Number(catchUpMonths),
         firstInvoiceMonth: inputValueToMonthKey(firstInvoiceMonth),
-        maxDiscountPercent: Number(maxDiscountPercent),
         depositAutoApply,
       },
       {
@@ -172,39 +168,21 @@ const FinanceSettingsPage = () => {
       </Card>
 
       {/* Chegirma va depozit qoidalari */}
-      <Card title="Chegirma va depozit">
-        <p className="mt-1 text-sm text-gray-500">
-          Chegirmalar bir o'quvchida yig'ilib ketmasligi va oldindan
-          to'langan pul o'z-o'zidan ishlashi uchun.
-        </p>
-
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <InputField
-            min="0"
-            max="100"
-            type="number"
-            name="maxDiscountPercent"
-            label="Eng ko'p chegirma (%)"
-            value={maxDiscountPercent}
-            description="Bir o'quvchidagi foizlar yig'indisi shundan oshmaydi"
-            onChange={(e) => setField("maxDiscountPercent", e.target.value)}
-          />
-
-          <div className="flex items-center justify-between gap-3 sm:pt-6">
-            <div>
-              <p className="text-sm font-medium text-gray-700">
-                Depozit avtomatik yechilsin
-              </p>
-              <p className="text-xs text-gray-500">
-                Yangi hisob-faktura chiqqanda oldindan to'langan pul o'zi
-                ishlatiladi
-              </p>
-            </div>
-            <Switch
-              checked={depositAutoApply}
-              onChange={(v) => setField("depositAutoApply", v)}
-            />
+      <Card title="Depozit">
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-gray-700">
+              Depozit avtomatik yechilsin
+            </p>
+            <p className="text-xs text-gray-500">
+              Yangi hisob-faktura chiqqanda oldindan to'langan pul o'zi
+              ishlatiladi
+            </p>
           </div>
+          <Switch
+            checked={depositAutoApply}
+            onChange={(v) => setField("depositAutoApply", v)}
+          />
         </div>
       </Card>
 
