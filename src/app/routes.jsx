@@ -10,6 +10,7 @@ import LoginPage from "@/features/auth/pages/LoginPage";
 
 // Pages - Dashboard
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
+import HomeLayout from "@/features/dashboard/layouts/HomeLayout";
 
 // Pages - Profile
 import ProfilePage from "@/features/profile/pages/ProfilePage";
@@ -126,6 +127,7 @@ import TariffsPage from "@/features/finance/pages/TariffsPage";
 import TariffDetailPage from "@/features/finance/pages/TariffDetailPage";
 import DiscountsPage from "@/features/finance/pages/DiscountsPage";
 import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
+import FinanceReportsPage from "@/features/financeReports/pages/FinanceReportsPage";
 
 // Pages - Leads
 import LeadDetailPage from "@/features/leads/pages/LeadDetailPage";
@@ -154,7 +156,12 @@ const Routes = () => {
       {/* Protected routes */}
       <Route element={<AuthGuard />}>
         <Route element={<DashboardLayout />}>
-          <Route path="/" element={<DashboardPage />} />
+          {/* Bosh sahifa — ikki tab. Layout PATHSIZ: `path="/"` ni ota-route
+              qilib qo'ysak, har bir yo'l uning tarmog'idan o'tishga urinardi. */}
+          <Route element={<HomeLayout />}>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/reports" element={<FinanceReportsPage />} />
+          </Route>
 
           {/* Profile */}
           <Route path="/profile" element={<ProfilePage />} />
@@ -365,6 +372,12 @@ const Routes = () => {
               element={<Navigate to="/finance/main/overview" replace />}
             />
           </Route>
+
+          {/* Hisobotlar bosh sahifaga ko'chdi — eski havola yo'naltiriladi */}
+          <Route
+            path="/finance/reports"
+            element={<Navigate to="/reports" replace />}
+          />
 
           {/* Tarif detali - layoutdan tashqarida: contentga to'liq egalik qiladi */}
           <Route
