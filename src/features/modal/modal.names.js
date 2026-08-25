@@ -126,6 +126,9 @@ export const MODAL_NAMES = [
   // Moliya - ta'til
   "markVacation",
 
+  // Moliya - qarzdorlarga Telegram eslatmasi
+  "remindDebtors",
+
   // Moliya - sabab so'raladigan amallar (bekor qilish, qayta shakllantirish)
   "financeReason",
 

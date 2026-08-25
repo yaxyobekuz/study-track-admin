@@ -7,6 +7,11 @@ export const invoicesAPI = {
   getById: (id, params) => http.get(`/invoices/${id}`, { params }),
   /** Qarzdorlar — qarzdan boshlanadigan ro'yxat. */
   getDebtors: (params) => http.get("/invoices/debtors", { params }),
+  /**
+   * Qarzdorlarga Telegram eslatmasi.
+   * `{ studentIds, note }` — summa YUBORILMAYDI, server uni qayta hisoblaydi.
+   */
+  remindDebtors: (data) => http.post("/invoices/debtors/remind", data),
 
   getSummary: (params) => http.get("/invoices/summary", { params }),
   // Kassirning asosiy ekrani: o'quvchi + tarif + chegirma + depozit + qarz

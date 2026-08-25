@@ -171,6 +171,18 @@ export const useUpdateInvoiceNote = () => {
   });
 };
 
+/**
+ * Qarzdorlarga eslatma yuborish.
+ *
+ * Kesh yangilanmaydi: eslatma pulni harakatlantirmaydi, faqat xabar
+ * navbatiga yozuv qo'shadi. Natija — `{ queued, sentTo, skipped }`.
+ */
+export const useRemindDebtors = () =>
+  useMutation({
+    mutationFn: (data) =>
+      invoicesAPI.remindDebtors(data).then((r) => r.data.data),
+  });
+
 export const useCancelInvoice = () => {
   const qc = useQueryClient();
   return useMutation({

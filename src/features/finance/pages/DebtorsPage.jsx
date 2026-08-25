@@ -5,7 +5,14 @@ import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 // Icons
-import { CalendarClock, CheckCircle2, Lock, Users, Wallet } from "lucide-react";
+import {
+  BellRing,
+  CalendarClock,
+  CheckCircle2,
+  Lock,
+  Users,
+  Wallet,
+} from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +28,7 @@ import EmptyState from "@/shared/components/ui/EmptyState";
 import Pagination from "@/shared/components/ui/Pagination";
 import InputField from "@/shared/components/ui/input/InputField";
 import RecordPaymentModal from "../components/RecordPaymentModal";
+import RemindDebtorsModal from "../components/RemindDebtorsModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -171,6 +179,29 @@ const DebtorsPage = () => {
           options={DEBTOR_SORT_OPTIONS}
           onChange={(v) => setParam("sort", v)}
         />
+
+        {/* Faqat SHU SAHIFADAGI qarzdorlarga — butun ro'yxatga emas. Xodim
+            kimga xabar ketishini ko'rib turgan bo'lishi kerak, "hammasi"
+            esa keyingi sahifalardagi ko'rinmagan odamlarni ham qamrardi. */}
+        {debtors.length > 0 && (
+          <Can do="debtors.remind">
+            <Button
+              variant="secondary"
+              onClick={() =>
+                openModal("remindDebtors", {
+                  students: debtors.map((d) => ({
+                    id: d.id,
+                    fullName: d.fullName,
+                    debt: d.debt,
+                  })),
+                })
+              }
+            >
+              <BellRing />
+              Eslatma yuborish ({debtors.length})
+            </Button>
+          </Can>
+        )}
       </div>
 
       {isLoading ? (
@@ -228,7 +259,29 @@ const DebtorsPage = () => {
                   </Td>
 
                   <Td>
-                    <div className="flex justify-end">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Can do="debtors.remind">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          title="Ota-onaga eslatma yuborish"
+                          onClick={() =>
+                            openModal("remindDebtors", {
+                              students: [
+                                {
+                                  id: debtor.id,
+                                  fullName: debtor.fullName,
+                                  debt: debtor.debt,
+                                },
+                              ],
+                            })
+                          }
+                        >
+                          <BellRing />
+                          Eslatma
+                        </Button>
+                      </Can>
+
                       <Can do="finance.pay">
                         <Button
                           size="sm"
@@ -264,6 +317,7 @@ const DebtorsPage = () => {
       )}
 
       <RecordPaymentModal />
+      <RemindDebtorsModal />
     </div>
   );
 };
