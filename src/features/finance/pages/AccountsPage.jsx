@@ -76,6 +76,11 @@ const AccountsPage = () => {
 
   // Birinchi hisob avtomatik tanlanadi — bo'sh ekran ma'nosiz
   const activeId = selectedId ?? accounts[0]?.id ?? null;
+
+  const selectAccount = (id) => {
+    setSelectedId(id);
+    setPage(1);
+  };
   const activeAccount = accounts.find((a) => a.id === activeId) ?? null;
 
   const { data: entriesData } = useQuery({
@@ -169,9 +174,18 @@ const AccountsPage = () => {
                 "cursor-pointer transition-colors",
                 account.id === activeId && "ring-1 ring-primary",
               )}
-              onClick={() => {
-                setSelectedId(account.id);
-                setPage(1);
+              // Karta ichida tugmalar bor (to'g'rilash / tahrirlash),
+              // shuning uchun kartaning o'zi <button> bo'la olmaydi —
+              // tugma ichiga tugma qo'yib bo'lmaydi.
+              role="button"
+              tabIndex={0}
+              aria-pressed={account.id === activeId}
+              onClick={() => selectAccount(account.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  selectAccount(account.id);
+                }
               }}
             >
               <div className="flex items-start justify-between gap-2">
