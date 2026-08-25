@@ -57,9 +57,22 @@ export const DAYS_UZ = [
  * @param {Date|string|number|null|undefined} value
  * @returns {Date|null}
  */
+/** Faqat sana: "2026-08-24" (vaqt komponentisiz). */
+const DATE_ONLY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 const toDate = (value) => {
   if (value === null || value === undefined || value === "") return null;
-  const date = value instanceof Date ? value : new Date(value);
+
+  // ⚠️ "2026-08-24" ni `new Date()` UTC yarim tuni deb o'qiydi, keyin esa
+  // pastdagi `getDate()` LOKAL kunni qaytaradi. Manfiy ofsetli brauzerda
+  // (masalan UTC-5) sana bir kun orqaga siljib, 23-avgust bo'lib ko'rinardi.
+  // Bo'sh sana — kalendar qiymati, instant emas: lokal deb o'qiladi.
+  const raw =
+    typeof value === "string" && DATE_ONLY_RE.test(value)
+      ? `${value}T00:00:00`
+      : value;
+
+  const date = raw instanceof Date ? raw : new Date(raw);
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
