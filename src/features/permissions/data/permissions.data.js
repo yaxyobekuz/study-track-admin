@@ -27,6 +27,7 @@ export const SECTIONS = {
   DISCOUNTS: "discounts",
   FINANCE: "finance",
   DEBTORS: "debtors",
+  REPORTS: "reports",
   HOLIDAYS: "holidays",
   MONITORS: "monitors",
   CHANGELOG: "changelog",
@@ -290,6 +291,16 @@ export const PERMISSION_SECTIONS = [
     actions: [A.view],
   },
   {
+    // Hisobotlar — moliyaning eng KENG kesimi: bitta ekranda butun maktabning
+    // tushumi, qarzi, sinf va tarif bo'yicha taqsimoti ko'rinadi. Registrni
+    // ko'rish huquqi (`finance.view`) bilan birga berilmaydi: kassirga kunlik
+    // ish uchun registr kerak, butun maktabning moliyaviy manzarasi emas.
+    key: SECTIONS.REPORTS,
+    label: "Moliya hisobotlari",
+    group: "Moliya",
+    actions: [A.view],
+  },
+  {
     key: SECTIONS.HOLIDAYS,
     label: "Dam olish kunlari",
     group: "Boshqaruv",
@@ -467,6 +478,8 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/coin-settings", key: "coins.view" },
   // Moliya bo'limiga kirish `finance.view` bilan; katalog tablari esa
   // qo'shimcha o'z kalitini talab qiladi (eng UZUN mos prefiks yutadi).
+  // Moliya hisobotlari bosh sahifaning "Moliya" tabida
+  { prefix: "/reports", key: "reports.view" },
   { prefix: "/finance", key: "finance.view" },
   { prefix: "/finance/main/tariffs", key: "tariffs.view" },
   { prefix: "/finance/main/discounts", key: "discounts.view" },
