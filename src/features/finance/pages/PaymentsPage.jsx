@@ -2,13 +2,13 @@
 import { useState } from "react";
 
 // Router
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 // Toast
 import { toast } from "sonner";
 
 // Icons
-import { Ban, Receipt } from "lucide-react";
+import { Ban, Printer, Receipt } from "lucide-react";
 
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
@@ -236,6 +236,19 @@ const PaymentsPage = () => {
 
               <Td>
                 <div className="flex items-center justify-end gap-1">
+                  {/* Chek YANGI OYNADA ochiladi: kassirning ro'yxati,
+                      filtri va sahifasi joyida qoladi. Bekor qilingani ham
+                      chop etiladi — ota-onada qo'lidagi nusxa qolgan
+                      bo'lishi mumkin va uni solishtirish kerak bo'ladi. */}
+                  <Link
+                    target="_blank"
+                    title="Chekni chop etish"
+                    to={`/finance/receipt/${payment.id}`}
+                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  >
+                    <Printer className="size-3.5" />
+                  </Link>
+
                   {!payment.isVoided && (
                     <Can do="finance.void">
                       <button

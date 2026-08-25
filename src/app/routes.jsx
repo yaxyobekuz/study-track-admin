@@ -122,6 +122,7 @@ import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
 import OverviewPage from "@/features/finance/pages/OverviewPage";
 import DebtorsPage from "@/features/finance/pages/DebtorsPage";
 import PaymentsPage from "@/features/finance/pages/PaymentsPage";
+import PaymentReceiptPage from "@/features/finance/pages/PaymentReceiptPage";
 import AccountsPage from "@/features/finance/pages/AccountsPage";
 import TariffsPage from "@/features/finance/pages/TariffsPage";
 import TariffDetailPage from "@/features/finance/pages/TariffDetailPage";
@@ -422,6 +423,15 @@ const Routes = () => {
             element={<StudentResultsPage />}
           />
         </Route>
+
+        {/* Chek — `DashboardLayout` dan TASHQARIDA: chop etilganda yon menyu
+            va yuqori panel qog'ozga tushmasligi kerak. Yangi oynada
+            ochiladi, shuning uchun kassirning to'lovlar ro'yxati joyida
+            qoladi. */}
+        <Route
+          path="/finance/receipt/:paymentId"
+          element={<PaymentReceiptPage />}
+        />
       </Route>
 
       {/* 404 */}

@@ -162,3 +162,25 @@ input[type="number"] {
   /* Yengil border radius */
   border-radius: 6px;
 }
+
+/* ── CHOP ETISH ──────────────────────────────
+   Chek ALOHIDA sahifada (`/finance/receipt/:id`) va u yon menyudan
+   tashqarida turadi, shuning uchun murakkab yashirish qoidalari kerak
+   emas: qog'ozga sahifaning o'zi tushadi.
+
+   `.no-print` — ekranda kerak, qog'ozda ortiqcha elementlar uchun
+   (Orqaga / Chop etish tugmalari). */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  /* Qog.oz chetlari — brauzer sukut bo'yicha katta chekka qo.yadi */
+  @page {
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff;
+  }
+}
