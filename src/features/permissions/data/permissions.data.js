@@ -288,7 +288,13 @@ export const PERMISSION_SECTIONS = [
     key: SECTIONS.DEBTORS,
     label: "Qarzdorlar",
     group: "Moliya",
-    actions: [A.view],
+    actions: [
+      A.view,
+      // Eslatma maktabdan tashqariga chiqadi — ota-onaning telefoniga.
+      // Ro'yxatni ko'rish ichki ish, xabar yuborish esa maktab nomidan
+      // gapirish: shuning uchun alohida amal.
+      { key: "remind", label: "Eslatma yuborish" },
+    ],
   },
   {
     // Hisobotlar — moliyaning eng KENG kesimi: bitta ekranda butun maktabning
