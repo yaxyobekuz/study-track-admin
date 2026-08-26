@@ -13,6 +13,7 @@ export const REPORT_TABS = [
   { value: "cashflow", label: "Tushum" },
   { value: "debt", label: "Qarzdorlik" },
   { value: "tariffs", label: "Tarif va chegirma" },
+  { value: "external", label: "Tashqi kirim" },
 ];
 
 /** Oylar oralig'i tanlagichi. */

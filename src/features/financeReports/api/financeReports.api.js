@@ -17,6 +17,9 @@ export const financeReportsAPI = {
 
   /** Tarif ulushi, chegirma va proratsiya. Params: { fromMonth, toMonth } */
   getTariffs: (params) => http.get("/finance-reports/tariffs", { params }),
+
+  /** Tashqi kirim: kategoriya kesimi va dinamika. Params: { from, to } */
+  getExternal: (params) => http.get("/finance-reports/external", { params }),
 };
 
 export default financeReportsAPI;

@@ -46,4 +46,11 @@ export const reportQueries = {
       queryFn: () => financeReportsAPI.getTariffs(params).then((r) => r.data.data),
       staleTime: STALE,
     }),
+
+  external: (params) =>
+    queryOptions({
+      queryKey: [...reportKeys.all, "external", params],
+      queryFn: () => financeReportsAPI.getExternal(params).then((r) => r.data.data),
+      staleTime: STALE,
+    }),
 };

@@ -22,6 +22,12 @@ import {
   TopDebtorsList,
 } from "../components/DebtCharts";
 import { TariffShareChart, DiscountProrationChart } from "../components/TariffCharts";
+import {
+  IncomeSourceChart,
+  IncomeCategoryChart,
+  IncomeTrendChart,
+  RecentIncomeList,
+} from "../components/ExternalIncomeCharts";
 
 // Hooks
 import usePermissions from "@/shared/hooks/usePermissions";
@@ -103,6 +109,11 @@ const FinanceReportsPage = () => {
     enabled: allowed && tab === "tariffs",
   });
 
+  const external = useQuery({
+    ...reportQueries.external({ from: range.from }),
+    enabled: allowed && tab === "external",
+  });
+
   if (!allowed) {
     return (
       <Card className="p-0 xs:p-0">
@@ -168,11 +179,20 @@ const FinanceReportsPage = () => {
           </div>
         )}
 
-        <AccountShareChart
-          data={cashflow.data}
-          isLoading={cashflow.isLoading}
-          isError={cashflow.isError}
-        />
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          {/* Manba kesimi — tashqi kirim qo'shilgach "Jami tushum" ikki
+              qismdan iborat bo'ldi, buni ko'rsatmasak raqam tushunarsiz qolardi */}
+          <IncomeSourceChart
+            data={cashflow.data}
+            isLoading={cashflow.isLoading}
+            isError={cashflow.isError}
+          />
+          <AccountShareChart
+            data={cashflow.data}
+            isLoading={cashflow.isLoading}
+            isError={cashflow.isError}
+          />
+        </div>
       </div>
     ),
 
@@ -245,6 +265,54 @@ const FinanceReportsPage = () => {
           data={tariffs.data}
           isLoading={tariffs.isLoading}
           isError={tariffs.isError}
+        />
+      </div>
+    ),
+
+    external: (
+      <div className="space-y-4">
+        {external.data && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <SummaryTile
+              label="Jami tashqi kirim"
+              value={formatMoney(external.data.totals.amount)}
+              valueClassName="text-green-700"
+              sub={`${external.data.totals.count} ta yozuv`}
+            />
+            <SummaryTile
+              label="Kategoriyalar"
+              value={`${external.data.totals.categoryCount} ta`}
+              sub="Pul kelayotgan manbalar"
+            />
+            <SummaryTile
+              label="Eng katta manba"
+              value={external.data.byCategory[0]?.categoryName ?? "—"}
+              sub={
+                external.data.byCategory[0]
+                  ? `${external.data.byCategory[0].share}% ulush`
+                  : "Hali yozuv yo'q"
+              }
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <IncomeCategoryChart
+            data={external.data}
+            isLoading={external.isLoading}
+            isError={external.isError}
+          />
+          <IncomeTrendChart
+            data={external.data}
+            isLoading={external.isLoading}
+            isError={external.isError}
+          />
+        </div>
+
+        <RecentIncomeList
+          data={external.data}
+          isLoading={external.isLoading}
+          isError={external.isError}
         />
       </div>
     ),
