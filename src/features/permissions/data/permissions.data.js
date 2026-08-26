@@ -29,6 +29,8 @@ export const SECTIONS = {
   DEBTORS: "debtors",
   REPORTS: "reports",
   INCOME: "income",
+  PAYROLL: "payroll",
+  EXPENSES: "expenses",
   HOLIDAYS: "holidays",
   MONITORS: "monitors",
   CHANGELOG: "changelog",
@@ -323,6 +325,35 @@ export const PERMISSION_SECTIONS = [
     ],
   },
   {
+    // XODIMLAR OYLIGI — chiqim tomonining o'quvchi registriga o'xshashi.
+    // Amallar ATAYLAB mayda: qoida biriktirish (kimga qancha oylik) va
+    // to'lash (pulni kassadan chiqarish) — ikki xil mas'uliyat. Buxgalter
+    // to'laydi, lekin oylik miqdorini o'zi belgilay olmasligi kerak.
+    key: SECTIONS.PAYROLL,
+    label: "Xodimlar oyligi",
+    group: "Moliya",
+    actions: [
+      A.view,
+      { key: "assign", label: "Oylik belgilash" },
+      { key: "generate", label: "Oylik shakllantirish" },
+      { key: "pay", label: "To'lash" },
+      { key: "void", label: "To'lovni bekor qilish" },
+      { key: "cancel", label: "Majburiyatni bekor qilish" },
+    ],
+  },
+  {
+    // XARAJATLAR — kommunal, ta'mirlash, jihoz. Oylik BU YERDA EMAS.
+    key: SECTIONS.EXPENSES,
+    label: "Xarajatlar",
+    group: "Moliya",
+    actions: [
+      A.view,
+      A.create,
+      { key: "void", label: "Bekor qilish" },
+      { key: "categories", label: "Kategoriyalarni boshqarish" },
+    ],
+  },
+  {
     key: SECTIONS.HOLIDAYS,
     label: "Dam olish kunlari",
     group: "Boshqaruv",
@@ -503,6 +534,8 @@ const ROUTE_PERMISSIONS = [
   // Moliya hisobotlari bosh sahifaning "Moliya" tabida
   { prefix: "/reports", key: "reports.view" },
   { prefix: "/finance/main/income", key: "income.view" },
+  { prefix: "/finance/main/payroll", key: "payroll.view" },
+  { prefix: "/finance/main/expenses", key: "expenses.view" },
   { prefix: "/finance", key: "finance.view" },
   { prefix: "/finance/main/tariffs", key: "tariffs.view" },
   { prefix: "/finance/main/discounts", key: "discounts.view" },
