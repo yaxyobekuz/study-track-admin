@@ -383,7 +383,11 @@ const StudentFinanceSection = ({ studentId }) => {
           <p className="py-4 text-center text-sm text-gray-500">Yuklanmoqda...</p>
         ) : (invoiceData?.timeline ?? []).length === 0 ? (
           <p className="py-4 text-center text-sm text-gray-500">
-            Hali majburiyat shakllantirilmagan
+            {/* Davri yo'q o'quvchida majburiyat HECH QACHON yozilmaydi —
+                "shakllantirilmagan" desak, xodim bosishni kutib qolardi */}
+            {invoiceData?.enrollment?.hasPeriods === false
+              ? "O'qish davri kiritilmagan — majburiyat yozilmaydi. \"O'qish davrlari\" tabida davr qo'shing."
+              : "Hali majburiyat shakllantirilmagan"}
           </p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-gray-100">
