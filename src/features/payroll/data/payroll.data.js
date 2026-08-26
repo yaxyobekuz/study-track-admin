@@ -1,0 +1,61 @@
+// Xodimlar oyligi bo'limining statik ma'lumotlari.
+//
+// Oylik — CHIQIM tomonining o'quvchi registriga o'xshashi: qoida belgilanadi,
+// har oy majburiyat hisoblanadi, to'lov uni yopadi.
+
+/** Bo'limning ichki tablari. */
+export const PAYROLL_TABS = [
+  { value: "entries", label: "Oyliklar" },
+  { value: "rules", label: "Qoidalar" },
+];
+
+export const ENTRY_TABLE_COLUMNS = [
+  "Xodim",
+  "Oy",
+  "Hisoblangan",
+  "To'langan",
+  "Qoldiq",
+  "Holat",
+  "",
+];
+
+export const RULE_TABLE_COLUMNS = ["Xodim", "Oylik", "Davr", "Holat", ""];
+
+/** Majburiyat holati uchun badge. */
+export const ENTRY_STATUS_META = {
+  unpaid: { label: "To'lanmagan", className: "bg-red-100 text-red-700" },
+  partial: { label: "Qisman to'langan", className: "bg-amber-100 text-amber-700" },
+  paid: { label: "To'langan", className: "bg-green-100 text-green-700" },
+  cancelled: { label: "Bekor qilingan", className: "bg-gray-100 text-gray-600" },
+};
+
+export const ENTRY_STATUS_OPTIONS = [
+  { label: "Barchasi", value: "" },
+  { label: "To'lanmagan", value: "unpaid" },
+  { label: "Qisman to'langan", value: "partial" },
+  { label: "To'langan", value: "paid" },
+];
+
+/** Qoida davri holati. */
+export const getRuleStatus = (rule, currentMonth) => {
+  if (rule.startMonth > currentMonth) {
+    return { label: "Kelajakda", className: "bg-blue-100 text-blue-700" };
+  }
+  if (rule.endMonth != null && rule.endMonth < currentMonth) {
+    return { label: "Tugagan", className: "bg-gray-100 text-gray-600" };
+  }
+  return { label: "Amalda", className: "bg-green-100 text-green-700" };
+};
+
+/**
+ * Oylik summasini o'zgartirish qoidasi — oynada ko'rsatiladi.
+ * Server bilan bir xil (server/src/services/payroll.service.js).
+ */
+export const PAYROLL_SEAL_HINT =
+  "Shakllantirilgan oylik summasi muhrlanadi: uni tahrirlab bo'lmaydi. " +
+  "Xato bo'lsa majburiyat bekor qilinadi, qoida to'g'rilanadi va oy " +
+  "qaytadan shakllantiriladi.";
+
+export const NO_ADVANCE_HINT =
+  "Avans qo'llab-quvvatlanmaydi: to'lov qarzdan ko'p bo'lishi mumkin emas. " +
+  "Lekin bitta oylikni bir necha marta bo'lib to'lash mumkin.";
