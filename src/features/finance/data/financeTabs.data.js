@@ -45,6 +45,20 @@ export const MAIN_TABS = [
     exact: false,
   },
   {
+    to: "/finance/main/payroll",
+    label: "Xodimlar oyligi",
+    title: "Moliya",
+    can: "payroll.view",
+    exact: false,
+  },
+  {
+    to: "/finance/main/expenses",
+    label: "Chiqimlar",
+    title: "Moliya",
+    can: "expenses.view",
+    exact: false,
+  },
+  {
     to: "/finance/main/tariffs",
     label: "Tariflar",
     title: "Moliya",

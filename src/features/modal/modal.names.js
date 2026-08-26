@@ -128,6 +128,15 @@ export const MODAL_NAMES = [
   "voidExternalIncome",
   "incomeCategory",
 
+  // Moliya - chiqim (oylik va xarajatlar)
+  "staffSalary",
+  "salaryPayment",
+  "voidSalaryPayment",
+  "cancelPayrollEntry",
+  "expense",
+  "voidExpense",
+  "expenseCategory",
+
   // Moliya - ta'til
   "markVacation",
 
