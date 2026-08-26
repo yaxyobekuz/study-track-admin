@@ -38,6 +38,13 @@ export const MAIN_TABS = [
     exact: false,
   },
   {
+    to: "/finance/main/income",
+    label: "Tashqi kirimlar",
+    title: "Moliya",
+    can: "income.view",
+    exact: false,
+  },
+  {
     to: "/finance/main/tariffs",
     label: "Tariflar",
     title: "Moliya",

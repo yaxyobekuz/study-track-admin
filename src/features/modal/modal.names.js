@@ -123,6 +123,11 @@ export const MODAL_NAMES = [
   "refundDeposit",
   "adjustStudentBalance",
 
+  // Moliya - tashqi kirimlar
+  "externalIncome",
+  "voidExternalIncome",
+  "incomeCategory",
+
   // Moliya - ta'til
   "markVacation",
 
