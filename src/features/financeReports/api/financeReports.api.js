@@ -20,6 +20,9 @@ export const financeReportsAPI = {
 
   /** Tashqi kirim: kategoriya kesimi va dinamika. Params: { from, to } */
   getExternal: (params) => http.get("/finance-reports/external", { params }),
+
+  /** Chiqim: oylik va xarajatlar. Params: { from, to } */
+  getExpenses: (params) => http.get("/finance-reports/expenses", { params }),
 };
 
 export default financeReportsAPI;

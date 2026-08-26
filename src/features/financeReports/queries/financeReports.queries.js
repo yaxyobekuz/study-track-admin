@@ -53,4 +53,11 @@ export const reportQueries = {
       queryFn: () => financeReportsAPI.getExternal(params).then((r) => r.data.data),
       staleTime: STALE,
     }),
+
+  expenses: (params) =>
+    queryOptions({
+      queryKey: [...reportKeys.all, "expenses", params],
+      queryFn: () => financeReportsAPI.getExpenses(params).then((r) => r.data.data),
+      staleTime: STALE,
+    }),
 };

@@ -28,6 +28,12 @@ import {
   IncomeTrendChart,
   RecentIncomeList,
 } from "../components/ExternalIncomeCharts";
+import {
+  ExpenseSourceChart,
+  ExpenseCategoryChart,
+  ExpenseTrendChart,
+  RecentExpenseList,
+} from "../components/ExpenseCharts";
 
 // Hooks
 import usePermissions from "@/shared/hooks/usePermissions";
@@ -114,6 +120,11 @@ const FinanceReportsPage = () => {
     enabled: allowed && tab === "external",
   });
 
+  const expenses = useQuery({
+    ...reportQueries.expenses({ from: range.from }),
+    enabled: allowed && tab === "expenses",
+  });
+
   if (!allowed) {
     return (
       <Card className="p-0 xs:p-0">
@@ -130,6 +141,33 @@ const FinanceReportsPage = () => {
     overview: (
       <div className="space-y-4">
         <ReportKpiCards data={overview.data} isLoading={overview.isLoading} />
+
+        {/* SOF NATIJA — kassaga tushgan va kassadan chiqqan pul.
+            Majburiyat emas: bu haqiqiy pul harakati. */}
+        {overview.data?.cash && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <SummaryTile
+              label="Kassaga tushdi"
+              value={formatMoney(overview.data.cash.income)}
+              valueClassName="text-green-700"
+              sub="To'lov va tashqi kirim"
+            />
+            <SummaryTile
+              label="Kassadan chiqdi"
+              value={formatMoney(overview.data.cash.expense)}
+              valueClassName="text-red-600"
+              sub={`Oylik ${formatMoney(overview.data.cash.salary)}`}
+            />
+            <SummaryTile
+              label={overview.data.cash.isProfit ? "Sof foyda" : "Sof zarar"}
+              value={formatMoney(overview.data.cash.net)}
+              valueClassName={
+                overview.data.cash.isProfit ? "text-green-700" : "text-red-600"
+              }
+              sub="Kirim − chiqim"
+            />
+          </div>
+        )}
         <InvoicedVsCollectedChart
           data={overview.data}
           isLoading={overview.isLoading}
@@ -313,6 +351,61 @@ const FinanceReportsPage = () => {
           data={external.data}
           isLoading={external.isLoading}
           isError={external.isError}
+        />
+      </div>
+    ),
+
+    expenses: (
+      <div className="space-y-4">
+        {expenses.data && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <SummaryTile
+              label="Jami chiqim"
+              value={formatMoney(expenses.data.totals.amount)}
+              valueClassName="text-red-600"
+              sub="Kassadan chiqqan pul"
+            />
+            <SummaryTile
+              label="Xodimlar oyligi"
+              value={formatMoney(expenses.data.totals.salary)}
+              sub="To'langan qismi"
+            />
+            <SummaryTile
+              label="Oylik qarzimiz"
+              value={formatMoney(expenses.data.totals.salaryDebt)}
+              valueClassName={
+                Number(expenses.data.totals.salaryDebt) > 0
+                  ? "text-amber-600"
+                  : undefined
+              }
+              sub={`${expenses.data.totals.salaryDebtCount} ta to'lanmagan majburiyat`}
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <ExpenseSourceChart
+            data={expenses.data}
+            isLoading={expenses.isLoading}
+            isError={expenses.isError}
+          />
+          <ExpenseCategoryChart
+            data={expenses.data}
+            isLoading={expenses.isLoading}
+            isError={expenses.isError}
+          />
+        </div>
+
+        <ExpenseTrendChart
+          data={expenses.data}
+          isLoading={expenses.isLoading}
+          isError={expenses.isError}
+        />
+
+        <RecentExpenseList
+          data={expenses.data}
+          isLoading={expenses.isLoading}
+          isError={expenses.isError}
         />
       </div>
     ),
