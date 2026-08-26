@@ -28,6 +28,7 @@ export const SECTIONS = {
   FINANCE: "finance",
   DEBTORS: "debtors",
   REPORTS: "reports",
+  INCOME: "income",
   HOLIDAYS: "holidays",
   MONITORS: "monitors",
   CHANGELOG: "changelog",
@@ -307,6 +308,21 @@ export const PERMISSION_SECTIONS = [
     actions: [A.view],
   },
   {
+    // Tashqi kirim — o'quvchi to'lovi BO'LMAGAN pul (ijara, sotuv, homiylik).
+    // Amallar ATAYLAB mayda: kirim qo'sha oladigan xodim uni BEKOR QILA
+    // olmasligi kerak — bekor qilish kassa qoldig'ini kamaytiradi va
+    // to'lovni bekor qilish bilan bir xil og'irlikdagi amal.
+    key: SECTIONS.INCOME,
+    label: "Tashqi kirimlar",
+    group: "Moliya",
+    actions: [
+      A.view,
+      A.create,
+      { key: "void", label: "Bekor qilish" },
+      { key: "categories", label: "Kategoriyalarni boshqarish" },
+    ],
+  },
+  {
     key: SECTIONS.HOLIDAYS,
     label: "Dam olish kunlari",
     group: "Boshqaruv",
@@ -486,6 +502,7 @@ const ROUTE_PERMISSIONS = [
   // qo'shimcha o'z kalitini talab qiladi (eng UZUN mos prefiks yutadi).
   // Moliya hisobotlari bosh sahifaning "Moliya" tabida
   { prefix: "/reports", key: "reports.view" },
+  { prefix: "/finance/main/income", key: "income.view" },
   { prefix: "/finance", key: "finance.view" },
   { prefix: "/finance/main/tariffs", key: "tariffs.view" },
   { prefix: "/finance/main/discounts", key: "discounts.view" },
