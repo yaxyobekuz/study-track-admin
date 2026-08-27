@@ -65,6 +65,14 @@ import TestSettingsPage from "@/features/test-settings/pages/TestSettingsPage";
 // Pages - Schedule Settings
 import ScheduleSettingsPage from "@/features/schedule-settings/pages/ScheduleSettingsPage";
 
+// Dars jadvalini rejalashtirish - layout & tab sahifalari
+import SchedulePlannerLayout from "@/features/schedule-planner/layouts/SchedulePlannerLayout";
+import PlannerLoadsPage from "@/features/schedule-planner/pages/PlannerLoadsPage";
+import PlannerAvailabilityPage from "@/features/schedule-planner/pages/PlannerAvailabilityPage";
+import PlannerGeneratePage from "@/features/schedule-planner/pages/PlannerGeneratePage";
+import PlannerTimetablePage from "@/features/schedule-planner/pages/PlannerTimetablePage";
+import PlannerSettingsPage from "@/features/schedule-planner/pages/PlannerSettingsPage";
+
 // Pages - Coin Distribution
 import CoinDistributionPage from "@/features/coin-distribution/pages/CoinDistributionPage";
 
@@ -405,6 +413,20 @@ const Routes = () => {
             path="/schedule-settings"
             element={<ScheduleSettingsPage />}
           />
+
+          {/* Dars jadvalini rejalashtirish - bitta sahifa, ichida tablar.
+              Bu bo'lim AMALDAGI jadvalga (/schedules) tegmaydi. */}
+          <Route path="/schedule-planner" element={<SchedulePlannerLayout />}>
+            <Route
+              index
+              element={<Navigate to="/schedule-planner/loads" replace />}
+            />
+            <Route path="loads" element={<PlannerLoadsPage />} />
+            <Route path="availability" element={<PlannerAvailabilityPage />} />
+            <Route path="generate" element={<PlannerGeneratePage />} />
+            <Route path="timetable" element={<PlannerTimetablePage />} />
+            <Route path="settings" element={<PlannerSettingsPage />} />
+          </Route>
 
           {/* Test Seasons */}
           <Route path="/test-seasons" element={<TestSeasonsPage />} />
