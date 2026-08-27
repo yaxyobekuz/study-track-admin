@@ -10,9 +10,6 @@ import { useState, useMemo } from "react";
 // Router
 import { useNavigate } from "react-router-dom";
 
-// Tanstack Query
-import { useQuery } from "@tanstack/react-query";
-
 // Icons
 import { Trash2, Plus } from "lucide-react";
 
@@ -22,7 +19,7 @@ import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 import { useTeachers } from "@/features/users/queries/users.queries";
 
 // API
-import { scheduleSettingsAPI } from "@/features/schedule-settings/api/scheduleSettings.api";
+import { usePeriods } from "@/features/schedule-settings/queries/scheduleSettings.queries";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -59,19 +56,15 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
   const { data: teachers = [] } = useTeachers();
 
   // Dars tartibi -> standart { startTime, endTime } sozlamalari
-  const { data: settingsData } = useQuery({
-    queryKey: ["schedule-settings"],
-    queryFn: () => scheduleSettingsAPI.getSettings(),
-  });
+  const { data: periods = [] } = usePeriods();
 
   const periodMap = useMemo(() => {
     const map = new Map();
-    const periods = settingsData?.data?.data?.periods || [];
     for (const p of periods) {
       map.set(Number(p.order), { startTime: p.startTime, endTime: p.endTime });
     }
     return map;
-  }, [settingsData]);
+  }, [periods]);
 
   const [week, setWeek] = useState(() => {
     const initial = {};
