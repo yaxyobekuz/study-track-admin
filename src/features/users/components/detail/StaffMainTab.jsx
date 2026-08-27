@@ -5,6 +5,7 @@ import UserBasicInfoCard from "./UserBasicInfoCard";
 import UserBranchesCard from "./UserBranchesCard";
 import EditUserBasicModal from "../EditUserBasicModal";
 import EditWorkScheduleModal from "../EditWorkScheduleModal";
+import EditStaffSubjectsModal from "../EditStaffSubjectsModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -34,6 +35,7 @@ const StaffMainTab = ({ user }) => {
   const { data: roles = [] } = useRoles();
 
   const hasCustomSchedule = Boolean(user.workStartTime && user.workEndTime);
+  const subjects = user.subjects ?? [];
   const workDays = user.workDays ?? [];
 
   // { "1": { startTime, endTime } } — asosiy vaqtdan farq qiladigan kunlar
@@ -135,6 +137,34 @@ const StaffMainTab = ({ user }) => {
         <UserAccountCard user={user} />
       </div>
 
+      {/* Xodim qaysi fanlardan dars beradi. Bu ro'yxat dars jadvalini
+          rejalashtirishning kirimi: fan biriktirilgan zahoti xodim
+          "Dars jadvalini rejalashtirish" jadvalida satr sifatida chiqadi. */}
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        <InfoCard
+          title="Fanlar"
+          onEdit={() => openModal("editStaffSubjects", user)}
+        >
+          {subjects.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {subjects.map((subject) => (
+                <span
+                  key={subject.id}
+                  className="inline-flex items-center rounded-lg bg-blue-50 px-2.5 py-1 text-sm font-medium text-blue-700"
+                >
+                  {subject.name}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">
+              Fan biriktirilmagan — dars jadvalini rejalashtirishda
+              qatnashmaydi.
+            </p>
+          )}
+        </InfoCard>
+      </div>
+
       {/* Xodim qayerda ishlashi — faqat O'QISH uchun qisqa ro'yxat.
           Biriktirish va ruxsatlar "Ruxsatlar" tabida: ular bir-biridan
           ajralmaydi va ikki joyda takrorlanmasligi kerak. */}
@@ -143,6 +173,7 @@ const StaffMainTab = ({ user }) => {
       {/* Modallar shu tab ichida — ro'yxat sahifalariga tegishli emas */}
       <EditUserBasicModal />
       <EditWorkScheduleModal />
+      <EditStaffSubjectsModal />
     </div>
   );
 };
