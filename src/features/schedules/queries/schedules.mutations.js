@@ -7,12 +7,14 @@ import { schedulesAPI } from "../api/schedules.api";
 // Keys
 import { schedulesKeys } from "./schedules.queries";
 
-/** Replace the whole-week schedule of a class in one request. */
+/** Replace the whole-week schedule of a class as a new version (with a validity range). */
 export const useSaveClassSchedule = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ classId, schedules }) =>
-      schedulesAPI.saveClassSchedule(classId, schedules).then((r) => r.data),
+    mutationFn: ({ classId, schedules, effectiveFrom, effectiveTo }) =>
+      schedulesAPI
+        .saveClassSchedule(classId, { schedules, effectiveFrom, effectiveTo })
+        .then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: schedulesKeys.all }),
   });
 };

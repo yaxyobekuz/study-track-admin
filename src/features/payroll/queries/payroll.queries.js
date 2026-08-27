@@ -30,6 +30,16 @@ export const payrollQueries = {
       enabled: Boolean(staffId),
     }),
 
+  /** Xodimning berilgan oydagi dars soati (KPI preview'i uchun). */
+  lessonHours: (staffId, month) =>
+    queryOptions({
+      queryKey: [...salariesKey, "lesson-hours", staffId, month],
+      queryFn: () =>
+        staffSalariesAPI.getLessonHours(staffId, month).then((r) => r.data.data),
+      enabled: Boolean(staffId),
+      staleTime: 60 * 1000,
+    }),
+
   /** Oylik majburiyatlari → `{ data, pagination, totals }`. */
   entries: (params) =>
     queryOptions({

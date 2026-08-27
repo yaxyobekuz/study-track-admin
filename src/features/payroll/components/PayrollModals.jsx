@@ -29,6 +29,7 @@ import {
 // Queries
 import { financeQueries } from "@/features/finance/queries/finance.queries";
 import { usersQueries } from "@/features/users/queries/users.queries";
+import { payrollQueries } from "../queries/payroll.queries";
 import {
   useCreateSalary,
   useUpdateSalary,
@@ -37,7 +38,7 @@ import {
   useVoidSalaryPayment,
   useCancelEntry,
 } from "../queries/payroll.mutations";
-import { NO_ADVANCE_HINT, PAYROLL_SEAL_HINT } from "../data/payroll.data";
+import { NO_ADVANCE_HINT, PAYROLL_SEAL_HINT, KPI_HINT } from "../data/payroll.data";
 
 const todayInputValue = () => {
   const now = new Date();
@@ -55,6 +56,10 @@ export const SalaryRuleModal = () => (
   </ResponsiveModal>
 );
 
+// Serverdan formatlangan summa ("4500000.00") → input qiymati ("4500000")
+const toInputAmount = (value) =>
+  value == null || Number(value) === 0 ? "" : String(Number(value));
+
 const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
   const isEdit = Boolean(rule?.id);
 
@@ -69,9 +74,18 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
     enabled: !isEdit && !staff,
   });
 
-  const { staffId, amount, startMonth, endMonth, note, setField } = useObjectState({
+  const {
+    staffId,
+    fixedAmount,
+    perHourRate,
+    startMonth,
+    endMonth,
+    note,
+    setField,
+  } = useObjectState({
     staffId: staff?.id ?? rule?.staffId ?? "",
-    amount: rule?.amount ?? "",
+    fixedAmount: toInputAmount(rule?.fixedAmount),
+    perHourRate: toInputAmount(rule?.perHourRate),
     startMonth: monthKeyToInputValue(rule?.startMonth ?? currentMonthKey()),
     endMonth: monthKeyToInputValue(rule?.endMonth),
     note: rule?.note ?? "",
@@ -84,12 +98,27 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
       value: person.id,
     }));
 
+  // KPI preview: tanlangan xodimning shu oydagi dars soati (jadvaldan).
+  const previewStaffId = staff?.id || staffId || rule?.staffId || "";
+  const previewMonth = inputValueToMonthKey(startMonth);
+  const wantsKpi = Number(perHourRate) > 0;
+  const { data: lessonInfo, isFetching: hoursLoading } = useQuery({
+    ...payrollQueries.lessonHours(previewStaffId, previewMonth),
+    enabled: Boolean(previewStaffId) && wantsKpi,
+  });
+
+  const hours = lessonInfo?.hours ?? 0;
+  const kpiValue = wantsKpi ? Number(perHourRate) * hours : 0;
+  const totalValue = (Number(fixedAmount) || 0) + kpiValue;
+  const hasAmount = Number(fixedAmount) > 0 || Number(perHourRate) > 0;
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     const payload = {
-      amount,
+      fixedAmount: fixedAmount || 0,
+      perHourRate: perHourRate || 0,
       startMonth: inputValueToMonthKey(startMonth),
       endMonth: inputValueToMonthKey(endMonth),
       note,
@@ -132,16 +161,61 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
       )}
 
       <InputField
-        required
-        min="1"
+        min="0"
         type="number"
-        name="amount"
-        label="Oylik summasi"
-        value={amount}
+        name="fixedAmount"
+        label="Fiksa oylik (ixtiyoriy)"
+        value={fixedAmount}
         placeholder="5000000"
-        description={amount ? `${formatMoney(amount)} / oy` : "Oyiga qat'iy summa"}
-        onChange={(e) => setField("amount", e.target.value)}
+        description={
+          Number(fixedAmount) > 0 ? `${formatMoney(fixedAmount)} / oy` : "Oyiga qat'iy summa"
+        }
+        onChange={(e) => setField("fixedAmount", e.target.value)}
       />
+
+      <InputField
+        min="0"
+        type="number"
+        name="perHourRate"
+        label="KPI: 1 dars soatiga (ixtiyoriy)"
+        value={perHourRate}
+        placeholder="50000"
+        description={
+          Number(perHourRate) > 0
+            ? `${formatMoney(perHourRate)} / dars soati`
+            : "Dars soatlariga qarab hisoblanadi"
+        }
+        onChange={(e) => setField("perHourRate", e.target.value)}
+      />
+
+      {/* KPI preview — tanlangan oy uchun dars soati va taxminiy summa */}
+      {wantsKpi && previewStaffId && (
+        <div className="rounded-xl bg-indigo-50 p-3 text-xs text-indigo-900">
+          {hoursLoading ? (
+            "Dars soati hisoblanmoqda..."
+          ) : hours > 0 ? (
+            <div className="space-y-0.5">
+              <div>
+                {formatMonthKey(previewMonth)}: <b>{hours} dars soati</b>
+                {lessonInfo?.monthlyLessons
+                  ? ` (${lessonInfo.monthlyLessons} ta dars)`
+                  : ""}
+              </div>
+              <div>
+                KPI: {formatMoney(perHourRate)} × {hours} = <b>{formatMoney(kpiValue)}</b>
+              </div>
+              {Number(fixedAmount) > 0 && (
+                <div className="border-t border-indigo-200 pt-0.5">
+                  Jami ≈ {formatMoney(fixedAmount)} + {formatMoney(kpiValue)} ={" "}
+                  <b>{formatMoney(totalValue)}</b>
+                </div>
+              )}
+            </div>
+          ) : (
+            "Bu oy uchun jadvalda dars topilmadi — KPI 0 bo'ladi. Avval dars jadvalini to'ldiring."
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
         <InputField
@@ -170,16 +244,13 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
         onChange={(e) => setField("note", e.target.value)}
       />
 
-      <p className="rounded-xl bg-gray-50 p-3 text-xs text-gray-500">
-        Oylik OY aniqligida hisoblanadi — kun bo'yicha bo'linmaydi. Oy o'rtasida
-        ishga kirgan xodim uchun keyingi oydan boshlang.
-      </p>
+      <p className="rounded-xl bg-gray-50 p-3 text-xs text-gray-500">{KPI_HINT}</p>
 
       <Button
         type="submit"
         className="w-full"
         loading={isLoading}
-        disabled={!amount || (!isEdit && !staffId && !staff)}
+        disabled={!hasAmount || (!isEdit && !staffId && !staff)}
       >
         {isEdit ? "Saqlash" : "Belgilash"}
       </Button>

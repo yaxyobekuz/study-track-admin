@@ -46,6 +46,7 @@ import {
   ENTRY_TABLE_COLUMNS,
   PAYROLL_TABS,
   RULE_TABLE_COLUMNS,
+  SALARY_TYPE_META,
   getRuleStatus,
 } from "../data/payroll.data";
 import { payrollQueries } from "../queries/payroll.queries";
@@ -224,7 +225,17 @@ const EntriesView = () => {
                   </Td>
 
                   <Td className="text-gray-500">{entry.monthLabel}</Td>
-                  <Td className="font-medium">{formatMoney(entry.amount)}</Td>
+                  <Td className="font-medium">
+                    {formatMoney(entry.amount)}
+                    {Number(entry.kpiAmount) > 0 && (
+                      <span className="block text-xs font-normal text-gray-400">
+                        {Number(entry.fixedAmount) > 0
+                          ? `Fiksa ${formatMoney(entry.fixedAmount)} + `
+                          : ""}
+                        KPI {formatMoney(entry.kpiAmount)} ({entry.lessonHours} soat)
+                      </span>
+                    )}
+                  </Td>
                   <Td className="text-green-600">{formatMoney(entry.paidAmount)}</Td>
 
                   <Td>
@@ -331,8 +342,8 @@ const RulesView = () => {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-gray-500">
-          Kimga qancha fiksa oylik belgilangani. Har oy shu qoidadan majburiyat
-          hisoblanadi.
+          Kimga qancha oylik belgilangani — fiksa, dars soatlariga qarab KPI, yoki
+          ikkalasi. Har oy shu qoidadan majburiyat hisoblanadi.
         </p>
 
         <Can do="payroll.assign">
@@ -366,6 +377,7 @@ const RulesView = () => {
           <Table columns={RULE_TABLE_COLUMNS}>
             {items.map((rule) => {
               const badge = getRuleStatus(rule, now);
+              const typeMeta = SALARY_TYPE_META[rule.type] ?? SALARY_TYPE_META.fixed;
 
               return (
                 <Tr key={rule.id}>
@@ -378,7 +390,28 @@ const RulesView = () => {
                     )}
                   </Td>
 
-                  <Td className="font-medium">{formatMoney(rule.amount)}</Td>
+                  <Td>
+                    <span
+                      className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${typeMeta.className}`}
+                    >
+                      {typeMeta.label}
+                    </span>
+                  </Td>
+
+                  <Td className="font-medium">
+                    {Number(rule.fixedAmount) > 0 && (
+                      <span className="block">{formatMoney(rule.fixedAmount)}</span>
+                    )}
+                    {Number(rule.perHourRate) > 0 && (
+                      <span className="block text-xs font-normal text-indigo-600">
+                        {formatMoney(rule.perHourRate)} / dars soati
+                      </span>
+                    )}
+                    {Number(rule.fixedAmount) === 0 &&
+                      Number(rule.perHourRate) === 0 && (
+                        <span className="text-gray-400">—</span>
+                      )}
+                  </Td>
                   <Td nowrap={false} className="text-gray-500">
                     {rule.periodLabel}
                     {rule.note && (

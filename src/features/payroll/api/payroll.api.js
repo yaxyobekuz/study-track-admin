@@ -5,6 +5,9 @@ import http from "@/shared/api/http";
 export const staffSalariesAPI = {
   getAll: (params) => http.get("/payroll/salaries", { params }),
   getStaffHistory: (staffId) => http.get(`/payroll/salaries/staff/${staffId}`),
+  // KPI oyligini oldindan ko'rsatish uchun: xodimning oydagi dars soati
+  getLessonHours: (staffId, month) =>
+    http.get(`/payroll/salaries/lesson-hours/${staffId}`, { params: { month } }),
   create: (data) => http.post("/payroll/salaries", data),
   update: (id, data) => http.put(`/payroll/salaries/${id}`, data),
   close: (id, endMonth) => http.patch(`/payroll/salaries/${id}/close`, { endMonth }),

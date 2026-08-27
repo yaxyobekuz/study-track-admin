@@ -31,6 +31,15 @@ import InputField from "@/shared/components/ui/input/InputField";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import SelectField from "@/shared/components/ui/select/SelectField";
 
+// Utils
+import { formatDateUz } from "@/shared/utils/date.utils";
+
+const todayInputValue = () => {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+};
+
 const createEmptyLesson = (order) => ({
   subject: "",
   teacher: "",
@@ -81,6 +90,14 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
     }
     return initial;
   });
+
+  // Amal qilish davri — saqlangan jadval shu sanadan yangi VERSIYA sifatida
+  // yoziladi (oldingisi avtomat yopiladi). Default: bugundan.
+  const [effectiveFrom, setEffectiveFrom] = useState(todayInputValue);
+  const [effectiveTo, setEffectiveTo] = useState("");
+
+  // Hozir amaldagi versiya davri (kontekst uchun)
+  const currentFrom = initialSchedules.find((s) => s.effectiveFrom)?.effectiveFrom;
 
   const saveMutation = useSaveClassSchedule();
 
@@ -157,8 +174,15 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
       return toast.error("Kamida bitta kun uchun dars jadvali kiriting");
     }
 
+    if (!effectiveFrom) {
+      return toast.error("Amal qilish sanasini kiriting");
+    }
+    if (effectiveTo && effectiveTo < effectiveFrom) {
+      return toast.error("Tugash sanasi boshlanish sanasidan oldin bo'lishi mumkin emas");
+    }
+
     saveMutation.mutate(
-      { classId, schedules: payload },
+      { classId, schedules: payload, effectiveFrom, effectiveTo: effectiveTo || null },
       {
         onSuccess: () => {
           toast.success("Dars jadvali saqlandi");
@@ -173,6 +197,45 @@ const ScheduleForm = ({ classId, initialSchedules = [] }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Amal qilish davri */}
+      <Card className="space-y-3">
+        <div>
+          <h3 className="text-base font-semibold text-gray-900">
+            Amal qilish davri
+          </h3>
+          <p className="text-sm text-gray-500">
+            Jadval shu sanadan boshlab amal qiladi va yangi versiya sifatida
+            saqlanadi. Oldingi jadval avtomatik yopiladi va o'z sanasida tarixda
+            qoladi.
+            {currentFrom && (
+              <>
+                {" "}
+                Hozir amaldagi jadval:{" "}
+                <b className="text-gray-700">{formatDateUz(currentFrom)}</b> dan.
+              </>
+            )}
+          </p>
+        </div>
+
+        <InputGroup className="grid-cols-1 xs:grid-cols-2">
+          <InputField
+            required
+            type="date"
+            label="Qaysi sanadan"
+            value={effectiveFrom}
+            onChange={(e) => setEffectiveFrom(e.target.value)}
+          />
+          <InputField
+            type="date"
+            label="Qaysi sanagacha (ixtiyoriy)"
+            value={effectiveTo}
+            min={effectiveFrom}
+            description="Bo'sh — muddatsiz"
+            onChange={(e) => setEffectiveTo(e.target.value)}
+          />
+        </InputGroup>
+      </Card>
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {days.map((day) => {
           const lessons = week[day.value];

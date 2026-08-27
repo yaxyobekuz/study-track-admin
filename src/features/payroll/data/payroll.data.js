@@ -19,7 +19,23 @@ export const ENTRY_TABLE_COLUMNS = [
   "",
 ];
 
-export const RULE_TABLE_COLUMNS = ["Xodim", "Oylik", "Davr", "Holat", ""];
+export const RULE_TABLE_COLUMNS = ["Xodim", "Turi", "Oylik", "Davr", "Holat", ""];
+
+/** Oylik turi badge'i (fiksa / KPI / ikkalasi). */
+export const SALARY_TYPE_META = {
+  fixed: { label: "Fiksa", className: "bg-gray-100 text-gray-700" },
+  kpi: { label: "KPI", className: "bg-indigo-100 text-indigo-700" },
+  mixed: { label: "Fiksa + KPI", className: "bg-violet-100 text-violet-700" },
+};
+
+/**
+ * KPI oyligi tushuntirishi — forma va tooltip uchun.
+ * Server bilan bir xil (server/src/services/lessonHours.service.js).
+ */
+export const KPI_HINT =
+  "KPI oyligi dars soatlariga qarab hisoblanadi: 1 dars soati narxi × " +
+  "o'sha oydagi jami dars soati (jadvaldan). Fiksa bilan birga ham bo'lishi " +
+  "mumkin. Oylik soat shakllantirilganda muhrlanadi.";
 
 /** Majburiyat holati uchun badge. */
 export const ENTRY_STATUS_META = {

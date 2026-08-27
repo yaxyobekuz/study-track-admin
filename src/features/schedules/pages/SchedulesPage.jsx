@@ -25,6 +25,9 @@ import { useClasses } from "@/features/classes/queries/classes.queries";
 // Icons
 import { Edit, Calendar, Download } from "lucide-react";
 
+// Utils
+import { formatDateUz } from "@/shared/utils/date.utils";
+
 const Schedules = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -140,9 +143,19 @@ const Schedules = () => {
                     strokeWidth={1.5}
                     className="size-5 text-blue-500"
                   />
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {day.label}
-                  </h3>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {day.label}
+                    </h3>
+                    {schedule?.effectiveFrom && (
+                      <p className="text-xs text-gray-400">
+                        {formatDateUz(schedule.effectiveFrom)} dan
+                        {schedule.effectiveTo
+                          ? ` ${formatDateUz(schedule.effectiveTo)} gacha`
+                          : ""}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
