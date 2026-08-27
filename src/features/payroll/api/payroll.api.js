@@ -1,6 +1,17 @@
 // HTTP
 import http from "@/shared/api/http";
 
+/** Malaka toifasi katalogi — soatlik KPI stavka (sozlamalar). */
+export const salaryCategoriesAPI = {
+  getAll: (params) => http.get("/payroll/categories", { params }),
+  getActive: () => http.get("/payroll/categories/active"),
+  create: (data) => http.post("/payroll/categories", data),
+  update: (id, data) => http.put(`/payroll/categories/${id}`, data),
+  archive: (id, isArchived) =>
+    http.patch(`/payroll/categories/${id}/archive`, { isArchived }),
+  remove: (id) => http.delete(`/payroll/categories/${id}`),
+};
+
 /** Oylik qoidalari — kimga qancha fiksa belgilangan. */
 export const staffSalariesAPI = {
   getAll: (params) => http.get("/payroll/salaries", { params }),

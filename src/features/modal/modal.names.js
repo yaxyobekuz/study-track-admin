@@ -130,6 +130,7 @@ export const MODAL_NAMES = [
 
   // Moliya - chiqim (oylik va xarajatlar)
   "staffSalary",
+  "salaryCategory",
   "salaryPayment",
   "voidSalaryPayment",
   "cancelPayrollEntry",

@@ -37,8 +37,19 @@ import {
   usePreviewSalaryPayment,
   useVoidSalaryPayment,
   useCancelEntry,
+  useCreateCategory,
+  useUpdateCategory,
 } from "../queries/payroll.mutations";
-import { NO_ADVANCE_HINT, PAYROLL_SEAL_HINT, KPI_HINT } from "../data/payroll.data";
+import {
+  NO_ADVANCE_HINT,
+  PAYROLL_SEAL_HINT,
+  KPI_HINT,
+  CATEGORY_HINT,
+  ALLOWANCE_TYPE_OPTIONS,
+} from "../data/payroll.data";
+
+// Icons
+import { Plus, Trash2 } from "lucide-react";
 
 const todayInputValue = () => {
   const now = new Date();
@@ -60,24 +71,29 @@ export const SalaryRuleModal = () => (
 const toInputAmount = (value) =>
   value == null || Number(value) === 0 ? "" : String(Number(value));
 
+// Fiksadan ustama summasini hisoblaydi (percent — fiksadan foiz)
+const allowanceAmount = (rule, fixed) =>
+  rule.type === "percent"
+    ? (Number(fixed) || 0) * (Number(rule.value) || 0) / 100
+    : Number(rule.value) || 0;
+
 const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
   const isEdit = Boolean(rule?.id);
 
   const { mutate: createSalary } = useCreateSalary();
   const { mutate: updateSalary } = useUpdateSalary();
 
-  // Xodim allaqachon tanlangan bo'lsa ro'yxat kerak emas.
-  // `allShort` — ruxsatga bog'liq bo'lmagan qisqa ro'yxat; o'quvchilar
-  // mijozda filtrlanadi (serverda ham rad etiladi, bu faqat UI qatlami).
   const { data: people = [] } = useQuery({
     ...usersQueries.allShort(),
     enabled: !isEdit && !staff,
   });
+  const { data: categories = [] } = useQuery(payrollQueries.activeCategories());
 
   const {
     staffId,
     fixedAmount,
-    perHourRate,
+    categoryId,
+    allowances,
     startMonth,
     endMonth,
     note,
@@ -85,7 +101,8 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
   } = useObjectState({
     staffId: staff?.id ?? rule?.staffId ?? "",
     fixedAmount: toInputAmount(rule?.fixedAmount),
-    perHourRate: toInputAmount(rule?.perHourRate),
+    categoryId: rule?.categoryId ?? "",
+    allowances: Array.isArray(rule?.allowances) ? rule.allowances : [],
     startMonth: monthKeyToInputValue(rule?.startMonth ?? currentMonthKey()),
     endMonth: monthKeyToInputValue(rule?.endMonth),
     note: rule?.note ?? "",
@@ -98,27 +115,48 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
       value: person.id,
     }));
 
-  // KPI preview: tanlangan xodimning shu oydagi dars soati (jadvaldan).
+  // Ustama qoidalari
+  const addAllowance = () =>
+    setField("allowances", [...allowances, { label: "", type: "fixed", value: "" }]);
+  const removeAllowance = (i) =>
+    setField("allowances", allowances.filter((_, idx) => idx !== i));
+  const updateAllowance = (i, field, value) =>
+    setField(
+      "allowances",
+      allowances.map((a, idx) => (idx === i ? { ...a, [field]: value } : a)),
+    );
+
+  // KPI: toifa stavkasi × dars soati
+  const selectedCategory = categories.find((c) => c.id === categoryId);
+  const categoryRate = Number(selectedCategory?.perHourRate) || 0;
+  const wantsKpi = Boolean(categoryId);
+
   const previewStaffId = staff?.id || staffId || rule?.staffId || "";
   const previewMonth = inputValueToMonthKey(startMonth);
-  const wantsKpi = Number(perHourRate) > 0;
   const { data: lessonInfo, isFetching: hoursLoading } = useQuery({
     ...payrollQueries.lessonHours(previewStaffId, previewMonth),
     enabled: Boolean(previewStaffId) && wantsKpi,
   });
 
   const hours = lessonInfo?.hours ?? 0;
-  const kpiValue = wantsKpi ? Number(perHourRate) * hours : 0;
-  const totalValue = (Number(fixedAmount) || 0) + kpiValue;
-  const hasAmount = Number(fixedAmount) > 0 || Number(perHourRate) > 0;
+  const kpiValue = wantsKpi ? categoryRate * hours : 0;
+  const allowancesTotal = allowances.reduce((sum, a) => sum + allowanceAmount(a, fixedAmount), 0);
+  const totalValue = (Number(fixedAmount) || 0) + allowancesTotal + kpiValue;
+  const hasAmount = Number(fixedAmount) > 0 || wantsKpi;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true);
 
+    // Ustamalarni tozalaymiz (bo'sh qiymatlilarni tashlab)
+    const cleanAllowances = allowances
+      .filter((a) => Number(a.value) > 0)
+      .map((a) => ({ label: a.label || "", type: a.type, value: Number(a.value) }));
+
+    setIsLoading(true);
     const payload = {
       fixedAmount: fixedAmount || 0,
-      perHourRate: perHourRate || 0,
+      categoryId: categoryId || null,
+      allowances: cleanAllowances,
       startMonth: inputValueToMonthKey(startMonth),
       endMonth: inputValueToMonthKey(endMonth),
       note,
@@ -173,22 +211,26 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
         onChange={(e) => setField("fixedAmount", e.target.value)}
       />
 
-      <InputField
-        min="0"
-        type="number"
-        name="perHourRate"
-        label="KPI: 1 dars soatiga (ixtiyoriy)"
-        value={perHourRate}
-        placeholder="50000"
-        description={
-          Number(perHourRate) > 0
-            ? `${formatMoney(perHourRate)} / dars soati`
-            : "Dars soatlariga qarab hisoblanadi"
-        }
-        onChange={(e) => setField("perHourRate", e.target.value)}
-      />
+      {/* KPI toifasi (soatlik stavka sozlamalardan) */}
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">
+          KPI toifasi (dars soati bo'yicha, ixtiyoriy)
+        </p>
+        <Select
+          value={categoryId}
+          placeholder={categories.length ? "Toifani tanlang" : "Sozlamalarda toifa yo'q"}
+          onChange={(v) => setField("categoryId", v)}
+          options={[
+            { label: "— (KPI yo'q)", value: "" },
+            ...categories.map((c) => ({
+              label: `${c.name} — ${formatMoney(c.perHourRate)}/soat`,
+              value: c.id,
+            })),
+          ]}
+        />
+      </div>
 
-      {/* KPI preview — tanlangan oy uchun dars soati va taxminiy summa */}
+      {/* KPI preview */}
       {wantsKpi && previewStaffId && (
         <div className="rounded-xl bg-indigo-50 p-3 text-xs text-indigo-900">
           {hoursLoading ? (
@@ -197,23 +239,87 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
             <div className="space-y-0.5">
               <div>
                 {formatMonthKey(previewMonth)}: <b>{hours} dars soati</b>
-                {lessonInfo?.monthlyLessons
-                  ? ` (${lessonInfo.monthlyLessons} ta dars)`
-                  : ""}
+                {lessonInfo?.monthlyLessons ? ` (${lessonInfo.monthlyLessons} ta dars)` : ""}
               </div>
               <div>
-                KPI: {formatMoney(perHourRate)} × {hours} = <b>{formatMoney(kpiValue)}</b>
+                KPI: {formatMoney(categoryRate)} × {hours} = <b>{formatMoney(kpiValue)}</b>
               </div>
-              {Number(fixedAmount) > 0 && (
-                <div className="border-t border-indigo-200 pt-0.5">
-                  Jami ≈ {formatMoney(fixedAmount)} + {formatMoney(kpiValue)} ={" "}
-                  <b>{formatMoney(totalValue)}</b>
-                </div>
-              )}
             </div>
           ) : (
             "Bu oy uchun jadvalda dars topilmadi — KPI 0 bo'ladi. Avval dars jadvalini to'ldiring."
           )}
+        </div>
+      )}
+
+      {/* Ustama qoidalari (cheksiz) */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-gray-700">Ustama qoidalari</p>
+          <button
+            type="button"
+            onClick={addAllowance}
+            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            <Plus className="size-3.5" /> Qoida qo'shish
+          </button>
+        </div>
+
+        {allowances.length === 0 && (
+          <p className="text-xs text-gray-400">
+            Sertifikat, tajriba ustamasi va h.k. Foizli ustama fiksa maoshdan olinadi.
+          </p>
+        )}
+
+        {allowances.map((a, i) => (
+          <div key={i} className="rounded-xl border border-gray-200 p-2 space-y-1.5">
+            <div className="flex items-center gap-2">
+              <input
+                value={a.label}
+                placeholder="Nomi (masalan: Sertifikat)"
+                onChange={(e) => updateAllowance(i, "label", e.target.value)}
+                className="h-9 flex-1 rounded-lg border border-gray-200 px-2 text-sm outline-none focus:border-primary"
+              />
+              <button
+                type="button"
+                onClick={() => removeAllowance(i)}
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Select
+                value={a.type}
+                onChange={(v) => updateAllowance(i, "type", v)}
+                options={ALLOWANCE_TYPE_OPTIONS}
+              />
+              <input
+                type="number"
+                min="0"
+                value={a.value}
+                placeholder={a.type === "percent" ? "10" : "200000"}
+                onChange={(e) => updateAllowance(i, "value", e.target.value)}
+                className="h-9 rounded-lg border border-gray-200 px-2 text-sm outline-none focus:border-primary"
+              />
+            </div>
+            {Number(a.value) > 0 && (
+              <p className="text-xs text-gray-500">
+                = {formatMoney(allowanceAmount(a, fixedAmount))}
+                {a.type === "percent" ? " (fiksadan)" : ""}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Jami hisob */}
+      {totalValue > 0 && (
+        <div className="rounded-xl bg-green-50 p-3 text-sm text-green-900">
+          Jami ≈ fiksa {formatMoney(fixedAmount || 0)}
+          {allowancesTotal > 0 ? ` + ustama ${formatMoney(allowancesTotal)}` : ""}
+          {kpiValue > 0 ? ` + KPI ${formatMoney(kpiValue)}` : ""} ={" "}
+          <b>{formatMoney(totalValue)}</b>
+          {wantsKpi && <span className="block text-xs text-green-700">KPI dars soatiga qarab har oy o'zgaradi</span>}
         </div>
       )}
 
@@ -226,7 +332,6 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
           value={startMonth}
           onChange={(e) => setField("startMonth", e.target.value)}
         />
-
         <InputField
           type="month"
           name="endMonth"
@@ -253,6 +358,83 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
         disabled={!hasAmount || (!isEdit && !staffId && !staff)}
       >
         {isEdit ? "Saqlash" : "Belgilash"}
+      </Button>
+    </InputGroup>
+  );
+};
+
+// ─────────────────────────────────────────────
+// Malaka toifasi (KPI stavka katalogi)
+// ─────────────────────────────────────────────
+
+export const SalaryCategoryModal = () => (
+  <ResponsiveModal name="salaryCategory" title="Malaka toifasi">
+    <SalaryCategoryForm />
+  </ResponsiveModal>
+);
+
+const SalaryCategoryForm = ({ close, isLoading, setIsLoading, category }) => {
+  const isEdit = Boolean(category?.id);
+  const { mutate: createCategory } = useCreateCategory();
+  const { mutate: updateCategory } = useUpdateCategory();
+
+  const { name, perHourRate, description, setField } = useObjectState({
+    name: category?.name ?? "",
+    perHourRate: toInputAmount(category?.perHourRate),
+    description: category?.description ?? "",
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    const payload = { name, perHourRate: perHourRate || 0, description };
+    const handlers = {
+      onSuccess: () => {
+        close();
+        toast.success(isEdit ? "Toifa yangilandi" : "Toifa qo'shildi");
+      },
+      onError: (err) => toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      onSettled: () => setIsLoading(false),
+    };
+    if (isEdit) updateCategory({ id: category.id, data: payload }, handlers);
+    else createCategory(payload, handlers);
+  };
+
+  return (
+    <InputGroup onSubmit={handleSubmit} as="form">
+      <InputField
+        required
+        name="name"
+        label="Toifa nomi"
+        value={name}
+        placeholder="Oliy malaka toifasi"
+        onChange={(e) => setField("name", e.target.value)}
+      />
+      <InputField
+        required
+        min="0"
+        type="number"
+        name="perHourRate"
+        label="1 dars soatiga (KPI stavka)"
+        value={perHourRate}
+        placeholder="60000"
+        description={Number(perHourRate) > 0 ? `${formatMoney(perHourRate)} / soat` : "So'mda"}
+        onChange={(e) => setField("perHourRate", e.target.value)}
+      />
+      <InputField
+        name="description"
+        label="Izoh (ixtiyoriy)"
+        value={description}
+        onChange={(e) => setField("description", e.target.value)}
+      />
+      <p className="rounded-xl bg-gray-50 p-3 text-xs text-gray-500">{CATEGORY_HINT}</p>
+      <Button
+        type="submit"
+        className="w-full"
+        loading={isLoading}
+        disabled={!name || !(Number(perHourRate) > 0)}
+      >
+        {isEdit ? "Saqlash" : "Qo'shish"}
       </Button>
     </InputGroup>
   );

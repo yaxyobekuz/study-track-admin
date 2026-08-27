@@ -53,6 +53,22 @@ export const schedulesQueries = {
       queryKey: [...schedulesKeys.all, "all-today"],
       queryFn: () => schedulesAPI.getAllToday().then((r) => r.data.data),
     }),
+
+  /** Sinf tahrirlar tarixi (revision) → `{ data, pagination }`. */
+  revisions: (classId) =>
+    queryOptions({
+      queryKey: [...schedulesKeys.all, "revisions", classId],
+      queryFn: () => schedulesAPI.getRevisions(classId).then((r) => r.data),
+      enabled: Boolean(classId),
+    }),
+
+  /** Bitta revision — to'liq snapshot bilan. */
+  revision: (revId) =>
+    queryOptions({
+      queryKey: [...schedulesKeys.all, "revision", revId],
+      queryFn: () => schedulesAPI.getRevision(revId).then((r) => r.data.data),
+      enabled: Boolean(revId),
+    }),
 };
 
 /**

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Icons
-import { Ban, Pencil, Plus, RefreshCw, Users, Wallet, XCircle } from "lucide-react";
+import { Ban, Pencil, Plus, RefreshCw, Users, Wallet, XCircle, Award, Archive, Trash2 } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +21,7 @@ import EmptyState from "@/shared/components/ui/EmptyState";
 import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 import {
   SalaryRuleModal,
+  SalaryCategoryModal,
   SalaryPaymentModal,
   VoidSalaryPaymentModal,
   CancelPayrollEntryModal,
@@ -47,10 +48,17 @@ import {
   PAYROLL_TABS,
   RULE_TABLE_COLUMNS,
   SALARY_TYPE_META,
+  CATEGORY_TABLE_COLUMNS,
+  CATEGORY_STATUS_OPTIONS,
   getRuleStatus,
 } from "../data/payroll.data";
 import { payrollQueries } from "../queries/payroll.queries";
-import { useGeneratePayroll, useCloseSalary } from "../queries/payroll.mutations";
+import {
+  useGeneratePayroll,
+  useCloseSalary,
+  useArchiveCategory,
+  useDeleteCategory,
+} from "../queries/payroll.mutations";
 
 /**
  * XODIMLAR OYLIGI — chiqim tomonining o'quvchi registriga o'xshashi.
@@ -63,7 +71,14 @@ const PayrollPage = () => {
 
   const tabs = PAYROLL_TABS.map((item) => ({
     ...item,
-    content: item.value === "entries" ? <EntriesView /> : <RulesView />,
+    content:
+      item.value === "entries" ? (
+        <EntriesView />
+      ) : item.value === "rules" ? (
+        <RulesView />
+      ) : (
+        <CategoriesView />
+      ),
   }));
 
   return (
@@ -76,6 +91,7 @@ const PayrollPage = () => {
       />
 
       <SalaryRuleModal />
+      <SalaryCategoryModal />
       <SalaryPaymentModal />
       <VoidSalaryPaymentModal />
       <CancelPayrollEntryModal />
@@ -227,12 +243,17 @@ const EntriesView = () => {
                   <Td className="text-gray-500">{entry.monthLabel}</Td>
                   <Td className="font-medium">
                     {formatMoney(entry.amount)}
-                    {Number(entry.kpiAmount) > 0 && (
+                    {(Number(entry.kpiAmount) > 0 || Number(entry.allowanceAmount) > 0) && (
                       <span className="block text-xs font-normal text-gray-400">
                         {Number(entry.fixedAmount) > 0
-                          ? `Fiksa ${formatMoney(entry.fixedAmount)} + `
+                          ? `Fiksa ${formatMoney(entry.fixedAmount)}`
                           : ""}
-                        KPI {formatMoney(entry.kpiAmount)} ({entry.lessonHours} soat)
+                        {Number(entry.allowanceAmount) > 0
+                          ? ` + ustama ${formatMoney(entry.allowanceAmount)}`
+                          : ""}
+                        {Number(entry.kpiAmount) > 0
+                          ? ` + KPI ${formatMoney(entry.kpiAmount)} (${entry.lessonHours} soat${entry.categoryName ? ", " + entry.categoryName : ""})`
+                          : ""}
                       </span>
                     )}
                   </Td>
@@ -402,12 +423,24 @@ const RulesView = () => {
                     {Number(rule.fixedAmount) > 0 && (
                       <span className="block">{formatMoney(rule.fixedAmount)}</span>
                     )}
-                    {Number(rule.perHourRate) > 0 && (
+                    {rule.categoryName ? (
                       <span className="block text-xs font-normal text-indigo-600">
-                        {formatMoney(rule.perHourRate)} / dars soati
+                        {rule.categoryName} · {formatMoney(rule.categoryRate)}/soat
+                      </span>
+                    ) : (
+                      Number(rule.perHourRate) > 0 && (
+                        <span className="block text-xs font-normal text-indigo-600">
+                          {formatMoney(rule.perHourRate)}/soat
+                        </span>
+                      )
+                    )}
+                    {Number(rule.allowanceTotal) > 0 && (
+                      <span className="block text-xs font-normal text-emerald-600">
+                        + ustama {formatMoney(rule.allowanceTotal)}
                       </span>
                     )}
                     {Number(rule.fixedAmount) === 0 &&
+                      !rule.categoryName &&
                       Number(rule.perHourRate) === 0 && (
                         <span className="text-gray-400">—</span>
                       )}
@@ -465,6 +498,147 @@ const RulesView = () => {
             />
           )}
         </>
+      )}
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────
+// Toifalar — malaka toifasi (soatlik KPI stavka)
+// ─────────────────────────────────────────────
+
+const CategoriesView = () => {
+  const { openModal } = useModal();
+  const [status, setStatus] = useState("active");
+
+  const { data: categories = [], isLoading } = useQuery(
+    payrollQueries.categories({ status }),
+  );
+  const { mutate: archiveCategory } = useArchiveCategory();
+  const { mutate: deleteCategory } = useDeleteCategory();
+
+  const handleArchive = (cat) =>
+    archiveCategory(
+      { id: cat.id, isArchived: !cat.isArchived },
+      {
+        onSuccess: () => toast.success(cat.isArchived ? "Qaytarildi" : "Arxivlandi"),
+        onError: (err) => toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      },
+    );
+
+  const handleDelete = (cat) => {
+    if (!window.confirm(`"${cat.name}" toifasini o'chirasizmi?`)) return;
+    deleteCategory(cat.id, {
+      onSuccess: () => toast.success("Toifa o'chirildi"),
+      onError: (err) => toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Select
+            triggerClassName="min-w-40"
+            value={status}
+            options={CATEGORY_STATUS_OPTIONS}
+            onChange={setStatus}
+          />
+          <p className="hidden text-sm text-gray-500 sm:block">
+            Har toifa soatiga har xil KPI stavka oladi
+          </p>
+        </div>
+
+        <Can do="payroll.assign">
+          <Button onClick={() => openModal("salaryCategory", {})}>
+            <Plus />
+            Toifa qo'shish
+          </Button>
+        </Can>
+      </div>
+
+      {isLoading ? (
+        <Card className="py-10 text-center text-gray-500">Yuklanmoqda...</Card>
+      ) : categories.length === 0 ? (
+        <Card className="p-0 xs:p-0">
+          <EmptyState
+            icon={Award}
+            title="Malaka toifasi yo'q"
+            description="Toifa qo'shing (Mutaxassis, 1/2-malaka, Oliy malaka) — har biri soatiga har xil KPI stavka oladi. Keyin xodim oyligiga toifa biriktiriladi."
+            action={
+              <Can do="payroll.assign">
+                <Button onClick={() => openModal("salaryCategory", {})}>
+                  <Plus />
+                  Toifa qo'shish
+                </Button>
+              </Can>
+            }
+          />
+        </Card>
+      ) : (
+        <Table columns={CATEGORY_TABLE_COLUMNS}>
+          {categories.map((cat) => {
+            const badge = cat.isArchived
+              ? { label: "Arxivlangan", className: "bg-gray-100 text-gray-600" }
+              : cat.isActive
+                ? { label: "Faol", className: "bg-green-100 text-green-700" }
+                : { label: "Nofaol", className: "bg-amber-100 text-amber-700" };
+
+            return (
+              <Tr key={cat.id} className={cn(cat.isArchived && "opacity-60")}>
+                <Td className="font-medium text-gray-900">
+                  {cat.name}
+                  {cat.description && (
+                    <span className="block text-xs font-normal text-gray-400">
+                      {cat.description}
+                    </span>
+                  )}
+                </Td>
+                <Td className="font-medium">
+                  {formatMoney(cat.perHourRate)}
+                  <span className="text-xs font-normal text-gray-400"> / soat</span>
+                </Td>
+                <Td className="text-gray-500">{cat.usageCount}</Td>
+                <Td>
+                  <span
+                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${badge.className}`}
+                  >
+                    {badge.label}
+                  </span>
+                </Td>
+                <Td>
+                  <div className="flex items-center justify-end gap-1">
+                    <Can do="payroll.assign">
+                      <button
+                        title="Tahrirlash"
+                        onClick={() => openModal("salaryCategory", { category: cat })}
+                        className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                      <button
+                        title={cat.isArchived ? "Arxivdan qaytarish" : "Arxivlash"}
+                        onClick={() => handleArchive(cat)}
+                        className="rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600"
+                      >
+                        <Archive className="size-3.5" />
+                      </button>
+                      {cat.usageCount === 0 && (
+                        <button
+                          title="O'chirish"
+                          onClick={() => handleDelete(cat)}
+                          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      )}
+                    </Can>
+                  </div>
+                </Td>
+              </Tr>
+            );
+          })}
+        </Table>
       )}
     </div>
   );

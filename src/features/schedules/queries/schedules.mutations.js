@@ -48,3 +48,12 @@ export const useDeleteSchedule = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: schedulesKeys.all }),
   });
 };
+
+/** Tarixdagi versiyaga qaytarish (restore). */
+export const useRestoreRevision = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (revId) => schedulesAPI.restoreRevision(revId).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: schedulesKeys.all }),
+  });
+};

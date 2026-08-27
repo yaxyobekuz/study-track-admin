@@ -6,6 +6,11 @@ export const schedulesAPI = {
     http.get(`/schedules/class/${classId}`, { params: asOf ? { asOf } : {} }),
   // Barcha versiyalar (tarix)
   getVersions: (classId) => http.get(`/schedules/class/${classId}/versions`),
+  // Tahrirlar tarixi (revision)
+  getRevisions: (classId, params) =>
+    http.get(`/schedules/class/${classId}/revisions`, { params }),
+  getRevision: (revId) => http.get(`/schedules/revisions/${revId}`),
+  restoreRevision: (revId) => http.post(`/schedules/revisions/${revId}/restore`),
   getByDay: (classId, day) => http.get(`/schedules/class/${classId}/day/${day}`),
   getBySubject: (subjectId) => http.get(`/schedules/subject/${subjectId}`),
   getMyToday: () => http.get("/schedules/my-today"),

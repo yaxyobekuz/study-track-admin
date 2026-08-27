@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { staffSalariesAPI, payrollAPI } from "../api/payroll.api";
+import { staffSalariesAPI, payrollAPI, salaryCategoriesAPI } from "../api/payroll.api";
 import { payrollKeys } from "./payroll.queries";
 
 // Oylik to'lovi KASSAGA tegadi, ya'ni to'lov turlari qoldig'i va moliya
@@ -18,6 +18,42 @@ const useInvalidate = () => {
     queryClient.invalidateQueries({ queryKey: financeKeys.all });
     queryClient.invalidateQueries({ queryKey: reportKeys.all });
   };
+};
+
+// ── Malaka toifalari (KPI stavka katalogi) ───
+
+export const useCreateCategory = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (data) => salaryCategoriesAPI.create(data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+export const useUpdateCategory = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      salaryCategoriesAPI.update(id, data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+export const useArchiveCategory = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ id, isArchived }) =>
+      salaryCategoriesAPI.archive(id, isArchived).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+export const useDeleteCategory = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (id) => salaryCategoriesAPI.remove(id).then((r) => r.data),
+    onSuccess: invalidate,
+  });
 };
 
 // ── Qoidalar ─────────────────────────────────

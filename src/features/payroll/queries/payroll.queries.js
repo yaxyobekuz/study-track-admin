@@ -5,15 +5,32 @@ import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 import { createQueryKeys } from "@/shared/lib/query";
 
 // API
-import { staffSalariesAPI, payrollAPI } from "../api/payroll.api";
+import { staffSalariesAPI, payrollAPI, salaryCategoriesAPI } from "../api/payroll.api";
 
 export const payrollKeys = createQueryKeys("payroll");
 
 const salariesKey = [...payrollKeys.all, "salaries"];
 const entriesKey = [...payrollKeys.all, "entries"];
 const paymentsKey = [...payrollKeys.all, "payments"];
+const categoriesKey = [...payrollKeys.all, "categories"];
 
 export const payrollQueries = {
+  /** Malaka toifalari (soatlik KPI stavka) — status bo'yicha. */
+  categories: (params) =>
+    queryOptions({
+      queryKey: [...categoriesKey, params],
+      queryFn: () => salaryCategoriesAPI.getAll(params).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Faol toifalar (oylik formasidagi select uchun). */
+  activeCategories: () =>
+    queryOptions({
+      queryKey: [...categoriesKey, "active"],
+      queryFn: () => salaryCategoriesAPI.getActive().then((r) => r.data.data),
+      staleTime: 5 * 60 * 1000,
+    }),
+
   /** Oylik qoidalari (sahifalangan). */
   salaries: (params) =>
     queryOptions({

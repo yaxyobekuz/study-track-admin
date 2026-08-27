@@ -7,7 +7,27 @@
 export const PAYROLL_TABS = [
   { value: "entries", label: "Oyliklar" },
   { value: "rules", label: "Qoidalar" },
+  { value: "categories", label: "Toifalar" },
 ];
+
+/** Malaka toifalari jadvali (soatlik KPI stavka). */
+export const CATEGORY_TABLE_COLUMNS = ["Toifa", "Soat narxi (KPI)", "Oyliklar", "Holat", ""];
+
+export const CATEGORY_STATUS_OPTIONS = [
+  { label: "Faol", value: "active" },
+  { label: "Nofaol", value: "inactive" },
+  { label: "Arxivlangan", value: "archived" },
+];
+
+/** Ustama qoidasi turi. */
+export const ALLOWANCE_TYPE_OPTIONS = [
+  { label: "Qat'iy summa (so'm)", value: "fixed" },
+  { label: "Foiz (fiksadan)", value: "percent" },
+];
+
+export const CATEGORY_HINT =
+  "Har malaka toifasi soatiga har xil summa oladi. Xodim toifasiga qarab " +
+  "uning KPI oyligi (dars soati × toifa stavkasi) hisoblanadi.";
 
 export const ENTRY_TABLE_COLUMNS = [
   "Xodim",
