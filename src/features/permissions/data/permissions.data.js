@@ -14,6 +14,7 @@ export const SECTIONS = {
   ATTENDANCE: "attendance",
   GRADES: "grades",
   SCHEDULES: "schedules",
+  PLANNER: "planner",
   TOPICS: "topics",
   CLASSES: "classes",
   SUBJECTS: "subjects",
@@ -124,6 +125,28 @@ export const PERMISSION_SECTIONS = [
     label: "Dars jadvali",
     group: "Ta'lim",
     actions: [A.view, A.create, A.update, A.delete, A.export, A.settings],
+  },
+  {
+    // REJALASHTIRISH — amaldagi jadvaldan ALOHIDA bo'lim.
+    //
+    // Reja tuzadigan odam (o'quv bo'limi) amaldagi jadvalni o'zgartira
+    // olmasligi, jadvalni ko'radigan odam esa butun yuklama registrini
+    // (kim necha soat ishlaydi) ochib yubormasligi kerak.
+    //
+    // Amallar ATAYLAB mayda: soat belgilash (kim qancha dars beradi) va
+    // bandlik belgilash (kim qachon bo'sh) — ikki xil mas'uliyat, ikkalasi
+    // ham shakllantirishdan alohida.
+    key: SECTIONS.PLANNER,
+    label: "Dars jadvali rejasi",
+    group: "Ta'lim",
+    actions: [
+      A.view,
+      { key: "loads", label: "Dars soatlarini belgilash" },
+      { key: "availability", label: "Bandlikni belgilash" },
+      { key: "generate", label: "Jadval shakllantirish" },
+      A.export,
+      A.settings,
+    ],
   },
   {
     key: SECTIONS.TOPICS,
@@ -518,6 +541,7 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/grades", key: "grades.view" },
   { prefix: "/schedules", key: "schedules.view" },
   { prefix: "/schedule-settings", key: "schedules.view" },
+  { prefix: "/schedule-planner", key: "planner.view" },
   { prefix: "/topics", key: "topics.view" },
   { prefix: "/classes", key: "classes.view" },
   { prefix: "/subjects", key: "subjects.view" },
