@@ -34,6 +34,15 @@ export const MAIN_TABS = [
     exact: false,
   },
   {
+    // MUSTAQIL varaq: boshqa tablarning ma'lumotiga bog'lanmagan.
+    // Ko'rish uchun alohida ruxsat talab qilinmaydi — bo'limga kirish
+    // huquqining o'zi yetarli; serverga saqlash esa planner.distribution.
+    to: "/schedule-planner/distribution",
+    label: "Dars taqsimoti",
+    title: "Dars jadvalini rejalashtirish",
+    exact: false,
+  },
+  {
     to: "/schedule-planner/settings",
     label: "Sozlamalar",
     title: "Dars jadvalini rejalashtirish",

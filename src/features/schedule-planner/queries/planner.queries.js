@@ -15,6 +15,7 @@ export const plannerLoadsKey = () => [...plannerKeys.all, "loads"];
 export const plannerAvailabilityKey = () => [...plannerKeys.all, "availability"];
 export const plannerPreflightKey = () => [...plannerKeys.all, "preflight"];
 export const plannerSettingsKey = () => [...plannerKeys.all, "settings"];
+export const plannerDistributionKey = () => [...plannerKeys.all, "distribution"];
 
 export const plannerQueries = {
   loads: () =>
@@ -41,8 +42,20 @@ export const plannerQueries = {
       queryFn: () => plannerAPI.getSettings().then((r) => r.data.data),
     }),
 
-  runs: () =>
+  // Dars taqsimoti varag'i — SERVERDAGI nusxa.
+  //
+  // ⚠️ Bu so'rov varaqni EKRANGA chizish uchun emas: varaqning haqiqiy manbai
+  // localStorage. Bu faqat "serverda nusxa bormi va qachon saqlangan?"
+  // degan savolga javob beradi, shuning uchun avtomatik qayta so'ralmaydi.
+  distribution: () =>
     queryOptions({
+      queryKey: plannerDistributionKey(),
+      queryFn: () => plannerAPI.getDistribution().then((r) => r.data.data),
+      staleTime: Infinity,
+      refetchOnMount: false,
+    }),
+
+  runs: () =>    queryOptions({
       queryKey: plannerKeys.lists(),
       queryFn: () => plannerAPI.getRuns().then((r) => r.data.data),
     }),
@@ -60,4 +73,5 @@ export const usePlannerAvailability = () => useQuery(plannerQueries.availability
 export const usePlannerPreflight = () => useQuery(plannerQueries.preflight());
 export const usePlannerSettings = () => useQuery(plannerQueries.settings());
 export const usePlannerRuns = () => useQuery(plannerQueries.runs());
+export const usePlannerDistribution = () => useQuery(plannerQueries.distribution());
 export const usePlannerRun = (id) => useQuery(plannerQueries.run(id));

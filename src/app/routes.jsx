@@ -72,6 +72,7 @@ import PlannerAvailabilityPage from "@/features/schedule-planner/pages/PlannerAv
 import PlannerGeneratePage from "@/features/schedule-planner/pages/PlannerGeneratePage";
 import PlannerTimetablePage from "@/features/schedule-planner/pages/PlannerTimetablePage";
 import PlannerSettingsPage from "@/features/schedule-planner/pages/PlannerSettingsPage";
+import PlannerDistributionPage from "@/features/schedule-planner/pages/PlannerDistributionPage";
 
 // Pages - Coin Distribution
 import CoinDistributionPage from "@/features/coin-distribution/pages/CoinDistributionPage";
@@ -425,6 +426,7 @@ const Routes = () => {
             <Route path="availability" element={<PlannerAvailabilityPage />} />
             <Route path="generate" element={<PlannerGeneratePage />} />
             <Route path="timetable" element={<PlannerTimetablePage />} />
+            <Route path="distribution" element={<PlannerDistributionPage />} />
             <Route path="settings" element={<PlannerSettingsPage />} />
           </Route>
 

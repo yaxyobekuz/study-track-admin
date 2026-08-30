@@ -14,8 +14,11 @@ export const plannerAPI = {
   fillFromWorkSchedule: (teacherId) =>
     http.post(`/planner/availability/${teacherId}/from-work-schedule`),
 
-  // Sozlamalar
-  getSettings: () => http.get("/planner/settings"),
+  // Dars taqsimoti varag'i (mustaqil tab)
+  getDistribution: () => http.get("/planner/distribution"),
+  saveDistribution: (data) => http.put("/planner/distribution", { data }),
+
+  // Sozlamalar  getSettings: () => http.get("/planner/settings"),
   updateSettings: (data) => http.put("/planner/settings", data),
 
   // Shakllantirish

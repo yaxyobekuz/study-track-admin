@@ -140,8 +140,25 @@ export const useDeleteRun = () => {
   });
 };
 
-/** Darsni ko'chirish / qadash. */
-export const useUpdateLesson = () => {
+/**
+ * Dars taqsimoti varag'ini SERVERGA saqlaydi.
+ *
+ * ⚠️ Bu AVTOMATIK emas — foydalanuvchi "Saqlash" tugmasini bosgandagina
+ * chaqiriladi. Varaqning doimiy saqlanishi localStorage orqali bo'ladi;
+ * bu esa boshqa kompyuterda ochish yoki brauzer xotirasi tozalanib
+ * ketishidan himoya qiladigan ixtiyoriy nusxa.
+ */
+export const useSaveDistribution = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) =>
+      plannerAPI.saveDistribution(data).then((r) => r.data.data),
+    onSuccess: (result) =>
+      qc.setQueryData([...plannerKeys.all, "distribution"], result),
+  });
+};
+
+/** Darsni ko'chirish / qadash. */export const useUpdateLesson = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ runId, lessonId, data }) =>
