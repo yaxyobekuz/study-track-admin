@@ -68,8 +68,14 @@ const PlannerDistributionPage = () => {
     columns,
     rows,
   });
-  const { sheet, totals, visibleColumns, visibleRows, dirtyForServer, markSaved } =
-    sheetState;
+  const {
+    sheet,
+    totals,
+    visibleColumns,
+    visibleRows,
+    dirtyForServer,
+    markSaved,
+  } = sheetState;
 
   const { data: serverCopy } = usePlannerDistribution();
   const { mutate: saveToServer, isPending: isSaving } = useSaveDistribution();
@@ -216,14 +222,6 @@ const PlannerDistributionPage = () => {
         onToggleRow={sheetState.toggleRow}
         onPasteReport={handlePasteReport}
       />
-
-      <p className="text-xs text-gray-500">
-        Sinflar va fanlar tizimdan olinadi — nomini o`zgartirish uchun
-        &laquo;Sinflar&raquo; va &laquo;Fanlar&raquo; bo`limlariga kiring.
-        Katakni bosib raqam yozing; strelkalar, <b>Enter</b> va <b>Tab</b> bilan
-        yuriladi, <b>Delete</b> tozalaydi. Excel`dan blokni nusxa ko`chirib{" "}
-        <b>Ctrl+V</b> bilan bir yo`la qo`ysangiz ham bo`ladi.
-      </p>
     </div>
   );
 };

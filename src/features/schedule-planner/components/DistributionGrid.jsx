@@ -1,5 +1,5 @@
 // React
-import { useCallback } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 
 // Icons
 import { EyeOff } from "lucide-react";
@@ -20,24 +20,54 @@ import {
   parseClipboardMatrix,
 } from "../helpers/distribution.helpers";
 
-// Vertikal sarlavha: matn pastdan yuqoriga o'qiladi (skrinshotdagi kabi).
+// Vertikal sarlavha: matn pastdan yuqoriga o'qiladi.
 //
-// ⚠️ `transform` FAQAT ichki <span> da bo'lishi shart. Uni sticky <th> ning
-// o'ziga qo'ysak, transform yangi "containing block" yaratadi va yopishqoq
-// sarlavha butunlay ishlamay qoladi.
-const VERTICAL_TEXT = { writingMode: "vertical-rl", transform: "rotate(180deg)" };
+// ⚠️ `transform` FAQAT ichki <span> da bo'lishi shart. Uni yopishib turgan
+// katakning O'ZIGA qo'ysak, transform yangi "containing block" yaratadi va
+// yopishqoqlik butunlay ishlamay qoladi.
+const VERTICAL_TEXT = {
+  writingMode: "vertical-rl",
+  transform: "rotate(180deg)",
+};
 
-// Global `thead th` qoidasi (px-6 py-3, uppercase, text-white, text-center)
-// zich jadvalni buzadi — har bir sarlavha katagi o'z sinflarini ANIQ beradi
-// (utility'lar @layer base dan ustun keladi).
+// ⚠️ SILJISH QOTIRIB QO'YILMAYDI — O'LCHANADI.
 //
-// ⚠️ `border-collapse` ISHLATILMAYDI: yig'ilgan chegara jadvalga tegishli
-// bo'lib qoladi va yopishib turgan katak scroll paytida chegarasini yo'qotadi.
-const TH =
-  "sticky top-0 z-30 border border-gray-300 bg-slate-700 p-0 text-white normal-case";
-const STICKY_LEFT = "sticky left-0 z-20";
-const STICKY_RIGHT = "sticky right-0 z-20";
-const STICKY_CORNER = "sticky top-0 z-40";
+// Jadval katagida `height` faqat MINIMUM hisoblanadi, shuning uchun uzun
+// vertikal sinf nomi sarlavha qatorini cho'zib yuboradi va har qanday qat'iy
+// raqam noto'g'ri bo'lib qoladi.
+const VAR_ROW2 = "--dist-row2"; // sarlavha balandligi
+const VAR_ROW3 = "--dist-row3"; // sarlavha + o'quvchi soni
+const VAR_SCROLL = "--dist-scroll"; // uchala qator (scroll chekkasi uchun)
+
+// Sarlavha ichidagi plitka balandligi. Balandlik KATAKKA emas, shu blokka
+// beriladi va foiz ishlatilmaydi: katakka `h-*`, ichkariga `h-full` qo'yilsa
+// aylanma bog'liqlik hosil bo'lib, kataklar qator balandligiga cho'zilmaydi.
+const HEAD_BOX = "flex h-40 items-end justify-center rounded-xl";
+
+// ⚠️ Plitkalar orasidagi bo'shliq `border-spacing` bilan EMAS, har katakning
+// ichki to'ldirmasi bilan yasaladi. `border-spacing` haqiqiy teshik qoldiradi
+// va yopishib turgan qatorlar ostidan pastdagi ma'lumot o'sha teshiklardan
+// ko'rinib qolardi. To'ldirma esa katakni to'liq shaffofmas qoldiradi.
+const GAP = "p-[2px]";
+
+// z-qatlamlar qat'iy o'suvchi bo'lishi shart, aks holda teng qiymatda DOM'da
+// keyingi element yutadi va yopishgan qator sarlavha USTIGA chiqadi:
+//   tana katagi (auto) < tana yon ustuni (10) < yopishgan qator (20)
+//   < yopishgan qator yon ustuni (30) < sarlavha (40) < sarlavha burchagi (50)
+const TH = cn("sticky top-0 z-40 bg-white text-white normal-case", GAP);
+const STICKY_LEFT = "sticky left-0 z-10";
+const STICKY_RIGHT = "sticky right-0 z-10";
+const STICKY_CORNER = "sticky top-0 z-50";
+const PINNED_CELL = "sticky z-20";
+const PINNED_SIDE = "sticky z-30";
+
+// Plitka ko'rinishlari — har biri yumaloq, oralarida oq bo'shliq.
+const TILE_HEAD = "bg-slate-700";
+const TILE_LABEL =
+  "rounded-lg px-2 py-1 text-center font-medium text-slate-700";
+const TILE_META =
+  "rounded-lg bg-lime-100 py-1 text-center font-medium text-slate-700";
+const TILE_TOTAL = "rounded-lg py-1 text-center font-semibold text-slate-800";
 
 /**
  * DARS TAQSIMOTI JADVALI.
@@ -46,7 +76,7 @@ const STICKY_CORNER = "sticky top-0 z-40";
  * katak qiymatlarini saqlaydi.
  *
  * Aktiv katakning butun QATORI va USTUNI ajratib ko'rsatiladi (sarlavhalar
- * ham) — 25 ustunli jadvalning o'rtasida "men qaysi fan va qaysi sinf
+ * ham) — ko'p ustunli jadvalning o'rtasida "men qaysi fan va qaysi sinf
  * ustidaman?" degan savol bir qarashda hal bo'lsin.
  */
 const DistributionGrid = ({
@@ -63,6 +93,53 @@ const DistributionGrid = ({
   onToggleRow,
   onPasteReport,
 }) => {
+  const rootRef = useRef(null);
+  const headRef = useRef(null);
+  const studentsRef = useRef(null);
+  const totalsRef = useRef(null);
+
+  // Yopishgan qatorlarning siljishini O'LCHAB, CSS o'zgaruvchisiga yozadi.
+  //
+  // `useLayoutEffect` — brauzer chizishdan OLDIN: aks holda birinchi kadrda
+  // qatorlar noto'g'ri joyda turib, ko'zga tashlanadigan sakrash bo'lardi.
+  //
+  // React holati ISHLATILMAYDI: o'lchov faqat chizishga ta'sir qiladi, uni
+  // holatga aylantirish har o'lchovda ortiqcha qayta render berardi.
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    // ⚠️ `offsetHeight` EMAS: u butun songa PASTGA yaxlitlaydi va yopishgan
+    // qator 1-2 piksel yuqorida turib, ostidagi qatorning cheti ingichka
+    // chiziq bo'lib ko'rinib qolardi.
+    const heightOf = (el) =>
+      el ? Math.ceil(el.getBoundingClientRect().height) : 0;
+
+    const measure = () => {
+      const head = heightOf(headRef.current);
+      const students = heightOf(studentsRef.current);
+      const totalsH = heightOf(totalsRef.current);
+
+      root.style.setProperty(VAR_ROW2, `${head}px`);
+      root.style.setProperty(VAR_ROW3, `${head + students}px`);
+      root.style.setProperty(VAR_SCROLL, `${head + students + totalsH}px`);
+    };
+
+    measure();
+
+    // Qayta o'lchash sabablari: ustun yashirildi, oyna o'lchami o'zgardi,
+    // shrift kech yuklandi.
+    const observer = new ResizeObserver(measure);
+    for (const el of [
+      headRef.current,
+      studentsRef.current,
+      totalsRef.current,
+    ]) {
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, [columns.length, rows.length]);
+
   const focusCell = useCallback((rowIndex, colIndex) => {
     const el = document.querySelector(
       `[data-row="${rowIndex}"][data-col="${colIndex}"]`,
@@ -118,7 +195,13 @@ const DistributionGrid = ({
 
       const rowIndex = Number(event.currentTarget.dataset.row);
       const colIndex = Number(event.currentTarget.dataset.col);
-      const report = buildPasteEntries(matrix, rows, columns, rowIndex, colIndex);
+      const report = buildPasteEntries(
+        matrix,
+        rows,
+        columns,
+        rowIndex,
+        colIndex,
+      );
 
       onManyValues(report.entries);
       onPasteReport(report);
@@ -140,31 +223,34 @@ const DistributionGrid = ({
   if (columns.length === 0 || rows.length === 0) return null;
 
   return (
-    <div className="relative max-h-[calc(100svh-15rem)] overflow-auto rounded-xl border border-gray-300 bg-white">
+    <div
+      ref={rootRef}
+      className="relative max-h-[calc(100svh-15rem)] overflow-auto rounded-2xl bg-white p-1 w-max hidden-scrollbar shadow"
+    >
       <table className="min-w-0 border-separate border-spacing-0 text-xs">
         <thead>
-          <tr>
-            <th
-              className={cn(
-                TH,
-                STICKY_LEFT,
-                STICKY_CORNER,
-                "min-w-52 px-2 py-1 text-left align-bottom",
-              )}
-            >
-              Fan yo`nalishi va nomi
+          <tr ref={headRef}>
+            <th className={cn(TH, STICKY_LEFT, STICKY_CORNER, "min-w-52")}>
+              <div
+                className={cn(
+                  HEAD_BOX,
+                  TILE_HEAD,
+                  "justify-center items-center p-3 font-medium",
+                )}
+              >
+                Fan yo'nalishi va nomi
+              </div>
             </th>
 
             {columns.map((column, colIndex) => (
-              <th
-                key={column.id}
-                className={cn(
-                  TH,
-                  "relative w-9 min-w-9",
-                  active?.col === colIndex && "bg-primary",
-                )}
-              >
-                <div className="flex h-28 items-end justify-center pb-1">
+              <th key={column.id} className={cn(TH, "w-10 min-w-10")}>
+                <div
+                  className={cn(
+                    HEAD_BOX,
+                    "overflow-hidden pb-2",
+                    active?.col === colIndex ? "bg-primary" : TILE_HEAD,
+                  )}
+                >
                   <span
                     style={VERTICAL_TEXT}
                     className="whitespace-nowrap text-[11px] font-medium"
@@ -179,7 +265,7 @@ const DistributionGrid = ({
                     type="button"
                     title="Ustunni yashirish"
                     onClick={() => onToggleColumn(column.id)}
-                    className="absolute right-0 top-0 rounded bg-black/40 p-0.5 text-white hover:bg-black/70"
+                    className="absolute right-[calc(50%-11px)] top-2 rounded-md bg-black p-1.5 text-white hover:scale-125 transition-transform"
                   >
                     <EyeOff size={10} strokeWidth={2.5} />
                   </button>
@@ -188,86 +274,112 @@ const DistributionGrid = ({
             ))}
 
             <th
-              className={cn(
-                TH,
-                STICKY_RIGHT,
-                STICKY_CORNER,
-                "w-16 min-w-16 px-1 py-1 align-bottom",
-              )}
+              className={cn(TH, STICKY_RIGHT, STICKY_CORNER, "w-16 min-w-16")}
             >
-              <span className="text-[11px] leading-tight">
-                Haftalik
-                <br />
-                umumiy soat
-              </span>
+              <div className={cn(HEAD_BOX, TILE_HEAD, "justify-center items-center p-3")}>
+                <span className="text-center font-medium">
+                  Haftalik umumiy soat
+                </span>
+              </div>
             </th>
           </tr>
         </thead>
 
         <tbody>
-          {/* O'quvchi soni — TIZIMDAN keladi, shuning uchun faqat o'qiladi */}
-          <tr>
+          {/* O'quvchi soni — TIZIMDAN keladi, faqat o'qiladi.
+              Sarlavha ostiga yopishadi — siljish o'lchanadi. */}
+          <tr ref={studentsRef}>
             <td
               className={cn(
                 STICKY_LEFT,
-                "border border-gray-300 bg-lime-50 px-2 py-0.5 text-center font-medium",
+                PINNED_SIDE,
+                GAP,
+                "left-0 top-[var(--dist-row2,11rem)] bg-white",
               )}
             >
-              O`quvchi soni
+              <div className={cn(TILE_META, "px-2")}>O`quvchi soni</div>
             </td>
 
             {columns.map((column, colIndex) => (
               <td
                 key={column.id}
                 className={cn(
-                  "border border-gray-200 px-0 text-center font-medium tabular-nums",
-                  active?.col === colIndex ? "bg-sky-100" : "bg-lime-50",
+                  PINNED_CELL,
+                  GAP,
+                  "top-[var(--dist-row2,11rem)] bg-white",
                 )}
               >
-                {column.studentCount ?? 0}
+                <div
+                  className={cn(
+                    TILE_META,
+                    "tabular-nums",
+                    active?.col === colIndex && "bg-lime-300",
+                  )}
+                >
+                  {column.studentCount ?? 0}
+                </div>
               </td>
             ))}
 
             <td
               className={cn(
                 STICKY_RIGHT,
-                "border border-gray-300 bg-lime-100 px-1 text-center font-semibold tabular-nums",
+                PINNED_SIDE,
+                GAP,
+                "right-0 top-[var(--dist-row2,11rem)] bg-white",
               )}
             >
-              {totals.students}
+              <div className={cn(TILE_TOTAL, "bg-lime-200 tabular-nums")}>
+                {totals.students}
+              </div>
             </td>
           </tr>
 
           {/* Fanlar ro'yhati — USTUN yig'indisi, hisoblanadi */}
-          <tr>
+          <tr ref={totalsRef}>
             <td
               className={cn(
                 STICKY_LEFT,
-                "border border-gray-300 bg-lime-50 px-2 py-0.5 text-center font-medium",
+                PINNED_SIDE,
+                GAP,
+                "left-0 top-[var(--dist-row3,12.5rem)] bg-white",
               )}
             >
-              Fanlar ro`yhati
+              <div className={cn(TILE_META, "px-2")}>Fanlar ro`yhati</div>
             </td>
 
             {columns.map((column, colIndex) => (
               <td
                 key={column.id}
                 className={cn(
-                  "border border-gray-200 px-0 text-center font-medium tabular-nums",
-                  active?.col === colIndex ? "bg-sky-100" : "bg-lime-50",
+                  PINNED_CELL,
+                  GAP,
+                  "top-[var(--dist-row3,12.5rem)] bg-white",
                 )}
               >
-                {totals.byColumn[column.id]}
+                <div
+                  className={cn(
+                    TILE_META,
+                    "tabular-nums",
+                    active?.col === colIndex && "bg-lime-300",
+                  )}
+                >
+                  {totals.byColumn[column.id]}
+                </div>
               </td>
             ))}
 
             <td
               className={cn(
                 STICKY_RIGHT,
-                "border border-gray-300 bg-lime-100 px-1 text-center font-semibold tabular-nums",
+                PINNED_SIDE,
+                GAP,
+                "right-0 top-[var(--dist-row3,12.5rem)] bg-white",
               )}
             >
-              {totals.grand}
+              <div className={cn(TILE_TOTAL, "bg-lime-200 tabular-nums")}>
+                {totals.grand}
+              </div>
             </td>
           </tr>
 
@@ -277,16 +389,15 @@ const DistributionGrid = ({
 
             return (
               <tr key={row.id}>
-                <td
-                  className={cn(
-                    STICKY_LEFT,
-                    "border border-gray-300 px-2 py-0.5",
-                    // Qaysi FAN ustida turganingiz — chap ustunda ko'rinadi.
-                    rowActive ? "bg-primary font-medium text-white" : "bg-white",
-                  )}
-                >
-                  <div className="flex items-center gap-1">
-                    <span className="block flex-1 truncate text-center" title={row.name}>
+                <td className={cn(STICKY_LEFT, GAP, "bg-white")}>
+                  <div
+                    className={cn(
+                      TILE_LABEL,
+                      "flex items-center gap-1 relative",
+                      rowActive ? "bg-primary text-white" : "bg-slate-100",
+                    )}
+                  >
+                    <span className="block flex-1 truncate" title={row.name}>
                       {row.name}
                     </span>
 
@@ -295,9 +406,11 @@ const DistributionGrid = ({
                         type="button"
                         title="Qatorni yashirish"
                         onClick={() => onToggleRow(row.id)}
-                        className="shrink-0 rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                        className={cn(
+                          "absolute right-0 rounded-lg bg-black p-1.5 text-white hover:scale-125 transition-transform",
+                        )}
                       >
-                        <EyeOff size={12} strokeWidth={2} />
+                        <EyeOff size={10} strokeWidth={2.5} />
                       </button>
                     )}
                   </div>
@@ -320,14 +433,16 @@ const DistributionGrid = ({
                   />
                 ))}
 
-                <td
-                  className={cn(
-                    STICKY_RIGHT,
-                    "border border-gray-300 px-1 text-center font-semibold tabular-nums",
-                    rowActive ? "bg-emerald-200" : "bg-emerald-100",
-                  )}
-                >
-                  {totals.byRow[row.id]}
+                <td className={cn(STICKY_RIGHT, GAP, "bg-white")}>
+                  <div
+                    className={cn(
+                      TILE_TOTAL,
+                      "tabular-nums",
+                      rowActive ? "bg-emerald-300" : "bg-emerald-100",
+                    )}
+                  >
+                    {totals.byRow[row.id]}
+                  </div>
                 </td>
               </tr>
             );
