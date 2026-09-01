@@ -18,7 +18,8 @@ export const plannerAPI = {
   getDistribution: () => http.get("/planner/distribution"),
   saveDistribution: (data) => http.put("/planner/distribution", { data }),
 
-  // Sozlamalar  getSettings: () => http.get("/planner/settings"),
+  // Sozlamalar
+  getSettings: () => http.get("/planner/settings"),
   updateSettings: (data) => http.put("/planner/settings", data),
 
   // Shakllantirish
