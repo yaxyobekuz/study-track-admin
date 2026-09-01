@@ -158,7 +158,8 @@ export const useSaveDistribution = () => {
   });
 };
 
-/** Darsni ko'chirish / qadash. */export const useUpdateLesson = () => {
+/** Darsni ko'chirish / qadash. */
+export const useUpdateLesson = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ runId, lessonId, data }) =>

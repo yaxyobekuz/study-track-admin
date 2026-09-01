@@ -55,7 +55,8 @@ export const plannerQueries = {
       refetchOnMount: false,
     }),
 
-  runs: () =>    queryOptions({
+  runs: () =>
+    queryOptions({
       queryKey: plannerKeys.lists(),
       queryFn: () => plannerAPI.getRuns().then((r) => r.data.data),
     }),
