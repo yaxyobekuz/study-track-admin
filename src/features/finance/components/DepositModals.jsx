@@ -116,7 +116,7 @@ const RefundForm = ({ close, isLoading, setIsLoading, student, balance }) => {
         autoFocus
         min="0"
         step="0.01"
-        type="number"
+        type="amount"
         name="amount"
         label="Qaytariladigan summa (so'm)"
         value={amount}
@@ -126,7 +126,7 @@ const RefundForm = ({ close, isLoading, setIsLoading, student, balance }) => {
 
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Qaysi to'lov turidan</p>
-        <Select
+        <Select searchable
           value={resolvedAccountId}
           placeholder="To'lov turini tanlang"
           onChange={(v) => setField("accountId", v)}
@@ -254,7 +254,7 @@ const AdjustForm = ({
       <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
         <div className="space-y-1.5">
           <p className="text-sm font-medium text-gray-700">Yo'nalish</p>
-          <Select
+          <Select searchable
             value={direction}
             options={DIRECTION_OPTIONS}
             onChange={(v) => setField("direction", v)}
@@ -266,7 +266,7 @@ const AdjustForm = ({
           autoFocus
           min="0"
           step="0.01"
-          type="number"
+          type="amount"
           name="value"
           label="Summa (so'm)"
           value={value}

@@ -153,7 +153,7 @@ const PaymentsPage = () => {
           }
         />
 
-        <Select
+        <Select searchable
           value={accountId}
           triggerClassName="min-w-44"
           placeholder="Barcha to'lov turlari"

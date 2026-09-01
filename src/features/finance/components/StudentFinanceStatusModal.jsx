@@ -90,7 +90,7 @@ const Content = ({ close, isLoading, setIsLoading, studentId, currentStatus }) =
 
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Yangi holat</p>
-        <Select
+        <Select searchable
           value={status}
           options={FINANCE_STATUS_OPTIONS}
           onChange={(v) => setField("status", v)}

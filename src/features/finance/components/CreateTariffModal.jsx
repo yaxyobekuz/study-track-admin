@@ -100,7 +100,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
           <InputField
             min="0"
             step="0.01"
-            type="number"
+            type="amount"
             name="monthlyAmount"
             label="Oylik summa (so'm)"
             value={monthlyAmount}

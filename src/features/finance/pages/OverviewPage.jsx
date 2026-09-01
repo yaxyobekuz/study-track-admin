@@ -169,14 +169,14 @@ const OverviewPage = () => {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <Select
+          <Select searchable
             value={String(month)}
             triggerClassName="min-w-40"
             options={MONTH_OPTIONS}
             onChange={(v) => setMonth(Number(v))}
           />
 
-          <Select
+          <Select searchable
             value={status}
             triggerClassName="min-w-40"
             options={INVOICE_STATUS_OPTIONS}

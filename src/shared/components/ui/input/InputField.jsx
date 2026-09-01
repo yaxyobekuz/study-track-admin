@@ -3,6 +3,7 @@ import Input from "./Input";
 import InputPwd from "./InputPwd";
 import InputOtp from "./InputOtp";
 import InputTel from "./InputTel";
+import InputNumber from "./InputNumber";
 import InputSearch from "./InputSearch";
 import {
   Field,
@@ -15,6 +16,8 @@ const InputComponent = ({ ...props }) => {
   if (props.type === "otp") return <InputOtp {...props} />;
   if (props.type === "tel") return <InputTel {...props} />;
   if (props.type === "search") return <InputSearch {...props} />;
+  // `amount` — ming ajratgichli raqam (pul/son) inputi
+  if (props.type === "amount") return <InputNumber {...props} />;
   return <Input {...props} />;
 };
 

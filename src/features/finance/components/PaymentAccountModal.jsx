@@ -85,7 +85,7 @@ const Content = ({ close, isLoading, setIsLoading, account }) => {
         <InputField
           min="0"
           step="0.01"
-          type="number"
+          type="amount"
           name="openingBalance"
           label="Boshlang'ich qoldiq (so'm)"
           value={openingBalance}

@@ -71,7 +71,7 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
 
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Holat</p>
-        <Select
+        <Select searchable
           value={isActive ? "true" : "false"}
           onChange={(v) => setField("isActive", v === "true")}
           options={[

@@ -173,7 +173,7 @@ const DebtorsPage = () => {
           options={classes.map((c) => ({ label: c.name, value: c.id }))}
         />
 
-        <Select
+        <Select searchable
           value={sort}
           triggerClassName="min-w-40"
           options={DEBTOR_SORT_OPTIONS}

@@ -105,7 +105,7 @@ const IncomeForm = ({ close, isLoading, setIsLoading }) => {
 
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Kategoriya</p>
-        <Select
+        <Select searchable
           value={resolvedCategory}
           placeholder="Kategoriyani tanlang"
           onChange={(v) => setField("categoryId", v)}
@@ -116,7 +116,7 @@ const IncomeForm = ({ close, isLoading, setIsLoading }) => {
       <InputField
         required
         min="1"
-        type="number"
+        type="amount"
         name="amount"
         label="Summa"
         value={amount}
@@ -127,7 +127,7 @@ const IncomeForm = ({ close, isLoading, setIsLoading }) => {
 
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Pul qayerga tushdi</p>
-        <Select
+        <Select searchable
           value={resolvedAccount}
           placeholder="To'lov turini tanlang"
           onChange={(v) => setField("accountId", v)}

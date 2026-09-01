@@ -190,7 +190,7 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
         <>
           <div className="space-y-1.5">
             <p className="text-sm font-medium text-gray-700">Kimga</p>
-            <Select
+            <Select searchable
               value={scope}
               options={SCOPE_OPTIONS}
               onChange={(v) => setField("scope", v)}

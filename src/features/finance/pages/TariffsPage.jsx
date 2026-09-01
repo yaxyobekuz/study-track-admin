@@ -98,7 +98,7 @@ const TariffsPage = () => {
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <Select
+        <Select searchable
           value={status}
           triggerClassName="min-w-36"
           options={TARIFF_STATUS_OPTIONS}

@@ -112,7 +112,7 @@ const IncomeList = () => {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <Select
+          <Select searchable
             triggerClassName="min-w-44"
             value={categoryId}
             placeholder="Barcha kategoriyalar"
@@ -126,7 +126,7 @@ const IncomeList = () => {
             ]}
           />
 
-          <Select
+          <Select searchable
             triggerClassName="min-w-40"
             value={accountId}
             placeholder="Barcha to'lov turlari"
@@ -276,7 +276,7 @@ const CategoriesPanel = () => {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Select
+        <Select searchable
           triggerClassName="min-w-36"
           value={status}
           options={CATEGORY_STATUS_OPTIONS}

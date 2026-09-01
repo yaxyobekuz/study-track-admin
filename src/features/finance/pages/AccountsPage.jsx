@@ -249,7 +249,7 @@ const AccountsPage = () => {
             />
 
             {view === "entries" && (
-              <Select
+              <Select searchable
                 value={entryType}
                 triggerClassName="min-w-44"
                 options={ENTRY_TYPE_OPTIONS}

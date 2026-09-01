@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   Select as SelectWrapper,
 } from "@/shared/components/shadcn/select";
+import SelectSearch from "./SelectSearch";
 
 // Hooks
 import useSound from "@/shared/hooks/useSound";
@@ -19,9 +20,23 @@ const Select = ({
   options = [],
   isLoading = false,
   triggerClassName = "",
+  searchable = false,
   ...props
 }) => {
   const { playSound } = useSound();
+
+  // `searchable` — qidiruvli variant (SelectSearch), API bir xil
+  if (searchable) {
+    return (
+      <SelectSearch
+        onChange={onChange}
+        options={options}
+        isLoading={isLoading}
+        triggerClassName={triggerClassName}
+        {...props}
+      />
+    );
+  }
   const handleChange = (e) => onChange?.(e);
 
   const handleOpenChange = (e) => {
