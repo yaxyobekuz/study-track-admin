@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // React
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 // Icons
 import { Check, CloudDownload, Eraser, Eye, Save, Table2 } from "lucide-react";
@@ -13,6 +13,7 @@ import Switch from "@/shared/components/ui/switch/Switch";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import LoaderCard from "@/shared/components/ui/LoaderCard";
 import DistributionGrid from "../components/DistributionGrid";
+import SubjectSplitRows from "../components/SubjectSplitRows";
 
 // Hooks
 import useAuth from "@/shared/hooks/useAuth";
@@ -24,8 +25,9 @@ import { useClasses } from "@/features/classes/queries/classes.queries";
 import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 
 // Queries
-import { usePlannerDistribution } from "../queries/planner.queries";
-import { useSaveDistribution } from "../queries/planner.mutations";
+import { useQuery } from "@tanstack/react-query";
+import { plannerQueries, usePlannerDistribution } from "../queries/planner.queries";
+import { useSaveDistribution, useSavePlannerLoad } from "../queries/planner.mutations";
 
 // Utils
 import { formatDateTimeUz } from "@/shared/utils/date.utils";
@@ -38,12 +40,15 @@ import { formatDateTimeUz } from "@/shared/utils/date.utils";
  * o'zgarsa yoki yangi fan qo'shilsa jadval o'zi yangilanadi va kiritilgan
  * soatlar joyida qoladi (ular id ga bog'langan).
  *
- * ⚠️ Bu tab rejalashtirishning BOSHQA tablariga (Asosiy, Bandlik,
- * Shakllantirish) hech narsa yozmaydi — u mustaqil varaq.
- *
- * SAQLASH IKKI QAVATLI:
+ * VARAQNI SAQLASH IKKI QAVATLI:
  *   1. localStorage — DOIMIY va avtomatik, FILIALGA bog'langan kalit bilan.
  *   2. Server — IXTIYORIY, faqat "Saqlash" tugmasi bosilganda.
+ *
+ * ⚠️ FAN QATORI OSTIDAGI TAQSIMOT esa boshqacha: u to'g'ridan-to'g'ri
+ * SERVERGA yoziladi ("Asosiy" tabdagi yuklama jadvaliga). Ataylab: varaqdagi
+ * raqam — TALAB ("5-A da matematikadan 4 soat"), taqsimot esa "kim beradi"
+ * degan javob va u jadval shakllantirishning haqiqiy kirimi. Brauzer
+ * xotirasida qolsa, generator uni ko'rmasdi.
  */
 const PlannerDistributionPage = () => {
   const { user } = useAuth();
@@ -82,6 +87,37 @@ const PlannerDistributionPage = () => {
 
   const [editStructure, setEditStructure] = useState(false);
   const [active, setActive] = useState(null);
+  // Ochiq fan qatori — BITTA. Ikkitasi ochiq bo'lsa jadval "sig'adigan bitta
+  // sahifa" bo'lishdan to'xtardi va qaysi taqsimot qaysi fanniki ekani
+  // chalkashardi.
+  const [expandedRow, setExpandedRow] = useState(null);
+
+  // Yuklama faqat KERAK BO'LGANDA so'raladi: varaqni to'ldirish uchun bu
+  // ma'lumot kerak emas, u esa beshta jadvalni o'qiydi.
+  const { data: loads, isLoading: loadsLoading } = useQuery({
+    ...plannerQueries.loads(),
+    enabled: Boolean(expandedRow),
+  });
+
+  const { mutateAsync: savePlannerLoad } = useSavePlannerLoad();
+
+  const handleSaveSplit = useCallback(
+    (payload) =>
+      savePlannerLoad(payload).catch((err) => {
+        toast.error(
+          err.response?.data?.message || "Taqsimotni saqlashda xatolik",
+        );
+        // Qayta tashlaymiz — panel qoralamani orqaga qaytarishi kerak.
+        throw err;
+      }),
+    [savePlannerLoad],
+  );
+
+  const toggleExpanded = useCallback(
+    (subjectId) =>
+      setExpandedRow((prev) => (prev === subjectId ? null : subjectId)),
+    [],
+  );
 
   const hiddenCount = sheet.hiddenColumns.length + sheet.hiddenRows.length;
 
@@ -214,10 +250,24 @@ const PlannerDistributionPage = () => {
         values={sheet.values}
         totals={totals}
         active={active}
+        expandedRowId={expandedRow}
         editStructure={editStructure}
         onValueChange={sheetState.setValue}
         onManyValues={sheetState.setManyValues}
         onActiveChange={setActive}
+        onToggleExpand={toggleExpanded}
+        renderRowPanel={(row) => (
+          <SubjectSplitRows
+            subject={row}
+            columns={visibleColumns}
+            values={sheet.values}
+            loadRows={loads?.rows ?? []}
+            isLoading={loadsLoading}
+            canEdit={can("planner.loads")}
+            onSave={handleSaveSplit}
+            onClose={() => setExpandedRow(null)}
+          />
+        )}
         onToggleColumn={sheetState.toggleColumn}
         onToggleRow={sheetState.toggleRow}
         onPasteReport={handlePasteReport}
