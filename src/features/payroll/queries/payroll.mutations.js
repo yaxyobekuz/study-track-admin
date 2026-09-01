@@ -2,7 +2,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { staffSalariesAPI, payrollAPI, salaryCategoriesAPI } from "../api/payroll.api";
+import {
+  staffSalariesAPI,
+  payrollAPI,
+  salaryCategoriesAPI,
+  departmentsAPI,
+  positionsAPI,
+  payrollViewAPI,
+  payrollRequestsAPI,
+} from "../api/payroll.api";
 import { payrollKeys } from "./payroll.queries";
 
 // Oylik to'lovi KASSAGA tegadi, ya'ni to'lov turlari qoldig'i va moliya
@@ -18,6 +26,40 @@ const useInvalidate = () => {
     queryClient.invalidateQueries({ queryKey: financeKeys.all });
     queryClient.invalidateQueries({ queryKey: reportKeys.all });
   };
+};
+
+// ── Bo'limlar ────────────────────────────────
+export const useCreateDepartment = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (data) => departmentsAPI.create(data).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useUpdateDepartment = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: ({ id, data }) => departmentsAPI.update(id, data).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useDeleteDepartment = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (id) => departmentsAPI.remove(id).then((r) => r.data), onSuccess: invalidate });
+};
+
+// ── Lavozimlar ───────────────────────────────
+export const useCreatePosition = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (data) => positionsAPI.create(data).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useUpdatePosition = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: ({ id, data }) => positionsAPI.update(id, data).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useDeletePosition = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (id) => positionsAPI.remove(id).then((r) => r.data), onSuccess: invalidate });
+};
+
+// ── Xodimni biriktirish ──────────────────────
+export const useAssignStaff = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: ({ staffId, data }) => payrollViewAPI.assign(staffId, data).then((r) => r.data.data), onSuccess: invalidate });
 };
 
 // ── Malaka toifalari (KPI stavka katalogi) ───
@@ -129,6 +171,18 @@ export const useVoidSalaryPayment = () => {
   return useMutation({
     mutationFn: ({ id, reason }) =>
       payrollAPI.voidPayment(id, reason).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+// ── Oylik zayavkalari ────────────────────────
+// Tasdiq/rad oylik strukturasiga tegishi mumkin (toifa biriktirish / ustama
+// yaratish) — shuning uchun butun payroll cache'ini invalidatsiya qilamiz.
+export const useReviewPayrollRequest = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ id, status, rejectionReason }) =>
+      payrollRequestsAPI.review(id, { status, rejectionReason }).then((r) => r.data.data),
     onSuccess: invalidate,
   });
 };

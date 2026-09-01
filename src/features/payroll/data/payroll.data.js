@@ -3,7 +3,39 @@
 // Oylik — CHIQIM tomonining o'quvchi registriga o'xshashi: qoida belgilanadi,
 // har oy majburiyat hisoblanadi, to'lov uni yopadi.
 
-/** Bo'limning ichki tablari. */
+/** Yo'nalish (payroll ko'rinishi). */
+export const DIRECTION_OPTIONS = [
+  { value: "salary", label: "Oylik maosh" },
+  { value: "bonus", label: "Ustama haq" },
+];
+
+/** Struktura tablari. */
+export const PAYROLL_MAIN_TABS = [
+  { value: "structure", label: "Struktura" },
+  { value: "obligations", label: "Majburiyatlar" },
+];
+
+/** Staff bo'lim xodimlari jadvali. */
+export const STAFF_PAYROLL_COLUMNS = ["Xodim", "Lavozim", "Bazaviy maosh", "Ustama", "Yakuniy oylik", ""];
+
+/** Lavozimlar jadvali. */
+export const POSITION_COLUMNS = ["Lavozim", "Bazaviy maosh", "Xodimlar", ""];
+
+/** Teaching toifalar jadvali (reference). */
+export const CATEGORY_V2_COLUMNS = [
+  "Toifa turi",
+  "Bir soat uchun",
+  "Bir oy uchun",
+  "Dars soati / stavka",
+  "Asosiy maosh",
+  "O'qituvchilar",
+  "",
+];
+
+/** Toifa o'qituvchilari jadvali. */
+export const TEACHER_PAYROLL_COLUMNS = ["O'qituvchi", "Dars soati", "Soatbay hisob", "Ustama", "Yakuniy oylik"];
+
+/** Bo'limning ichki tablari (eski). */
 export const PAYROLL_TABS = [
   { value: "entries", label: "Oyliklar" },
   { value: "rules", label: "Qoidalar" },
@@ -95,3 +127,34 @@ export const PAYROLL_SEAL_HINT =
 export const NO_ADVANCE_HINT =
   "Avans qo'llab-quvvatlanmaydi: to'lov qarzdan ko'p bo'lishi mumkin emas. " +
   "Lekin bitta oylikni bir necha marta bo'lib to'lash mumkin.";
+
+// ── Oylik zayavkalari (admin ko'rib chiqadi) ──
+export const REQUEST_KIND_LABELS = {
+  category: "Toifa o'zgartirish",
+  bonus: "Ustama haq",
+};
+
+export const REQUEST_STATUS_META = {
+  pending: { label: "Kutilmoqda", className: "bg-amber-100 text-amber-700" },
+  approved: { label: "Tasdiqlangan", className: "bg-green-100 text-green-700" },
+  rejected: { label: "Rad etilgan", className: "bg-red-100 text-red-600" },
+};
+
+export const REQUEST_STATUS_OPTIONS = [
+  { label: "Kutilmoqda", value: "pending" },
+  { label: "Tasdiqlangan", value: "approved" },
+  { label: "Rad etilgan", value: "rejected" },
+  { label: "Barchasi", value: "" },
+];
+
+export const REQUEST_KIND_OPTIONS = [
+  { label: "Barchasi", value: "" },
+  { label: "Toifa o'zgartirish", value: "category" },
+  { label: "Ustama haq", value: "bonus" },
+];
+
+// Zayavkalar bo'limining ichki tablari
+export const REQUESTS_TABS = [
+  { value: "requests", label: "Zayavkalar" },
+  { value: "audit", label: "O'zgarishlar tarixi" },
+];

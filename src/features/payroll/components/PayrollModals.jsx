@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import InputField from "@/shared/components/ui/input/InputField";
+import InputNumber from "@/shared/components/ui/input/InputNumber";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 
@@ -188,7 +189,7 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
         !isEdit && (
           <div className="space-y-1.5">
             <p className="text-sm font-medium text-gray-700">Xodim</p>
-            <Select
+            <Select searchable
               value={staffId}
               placeholder="Xodimni tanlang"
               onChange={(v) => setField("staffId", v)}
@@ -200,7 +201,7 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
 
       <InputField
         min="0"
-        type="number"
+        type="amount"
         name="fixedAmount"
         label="Fiksa oylik (ixtiyoriy)"
         value={fixedAmount}
@@ -216,7 +217,7 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
         <p className="text-sm font-medium text-gray-700">
           KPI toifasi (dars soati bo'yicha, ixtiyoriy)
         </p>
-        <Select
+        <Select searchable
           value={categoryId}
           placeholder={categories.length ? "Toifani tanlang" : "Sozlamalarda toifa yo'q"}
           onChange={(v) => setField("categoryId", v)}
@@ -288,18 +289,17 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
               </button>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Select
+              <Select searchable
                 value={a.type}
                 onChange={(v) => updateAllowance(i, "type", v)}
                 options={ALLOWANCE_TYPE_OPTIONS}
               />
-              <input
-                type="number"
-                min="0"
+              <InputNumber
+                scale={a.type === "percent" ? 2 : 0}
                 value={a.value}
                 placeholder={a.type === "percent" ? "10" : "200000"}
                 onChange={(e) => updateAllowance(i, "value", e.target.value)}
-                className="h-9 rounded-lg border border-gray-200 px-2 text-sm outline-none focus:border-primary"
+                className="h-9 border-gray-200 text-sm"
               />
             </div>
             {Number(a.value) > 0 && (
@@ -413,7 +413,7 @@ const SalaryCategoryForm = ({ close, isLoading, setIsLoading, category }) => {
       <InputField
         required
         min="0"
-        type="number"
+        type="amount"
         name="perHourRate"
         label="1 dars soatiga (KPI stavka)"
         value={perHourRate}
@@ -513,7 +513,7 @@ const SalaryPaymentForm = ({ close, isLoading, setIsLoading, staff }) => {
       <InputField
         required
         min="1"
-        type="number"
+        type="amount"
         name="amount"
         label="Summa"
         value={amount}
@@ -558,7 +558,7 @@ const SalaryPaymentForm = ({ close, isLoading, setIsLoading, staff }) => {
 
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Pul qayerdan chiqdi</p>
-        <Select
+        <Select searchable
           value={resolvedAccount}
           placeholder="To'lov turini tanlang"
           onChange={(v) => setField("accountId", v)}

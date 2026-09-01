@@ -130,6 +130,7 @@ import DiscountsPage from "@/features/finance/pages/DiscountsPage";
 import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
 import ExternalIncomePage from "@/features/externalIncome/pages/ExternalIncomePage";
 import PayrollPage from "@/features/payroll/pages/PayrollPage";
+import PayrollRequestsPage from "@/features/payroll/pages/PayrollRequestsPage";
 import ExpensesPage from "@/features/expenses/pages/ExpensesPage";
 import FinanceReportsPage from "@/features/financeReports/pages/FinanceReportsPage";
 
@@ -365,6 +366,7 @@ const Routes = () => {
             <Route path="accounts" element={<AccountsPage />} />
             <Route path="income" element={<ExternalIncomePage />} />
             <Route path="payroll" element={<PayrollPage />} />
+            <Route path="salary-requests" element={<PayrollRequestsPage />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="tariffs" element={<TariffsPage />} />
             <Route path="discounts" element={<DiscountsPage />} />

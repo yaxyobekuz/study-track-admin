@@ -1,6 +1,40 @@
 // HTTP
 import http from "@/shared/api/http";
 
+/** Bo'limlar (staff / teaching). */
+export const departmentsAPI = {
+  getAll: (params) => http.get("/payroll/departments", { params }),
+  create: (data) => http.post("/payroll/departments", data),
+  update: (id, data) => http.put(`/payroll/departments/${id}`, data),
+  remove: (id) => http.delete(`/payroll/departments/${id}`),
+};
+
+/** Lavozimlar (staff bo'lim ichida) + maosh. */
+export const positionsAPI = {
+  getAll: (params) => http.get("/payroll/positions", { params }),
+  create: (data) => http.post("/payroll/positions", data),
+  update: (id, data) => http.put(`/payroll/positions/${id}`, data),
+  remove: (id) => http.delete(`/payroll/positions/${id}`),
+};
+
+/** Hisoblangan oyliklar (admin ko'rinishlari) + biriktirish. */
+export const payrollViewAPI = {
+  staff: (params) => http.get("/payroll/view/staff", { params }),
+  teachers: (params) => http.get("/payroll/view/teachers", { params }),
+  assign: (staffId, data) => http.patch(`/payroll/staff/${staffId}/assign`, data),
+};
+
+/**
+ * Oylik zayavkalari — o'qituvchi/xodim TOIFA yoki USTAMA so'raydi, admin
+ * ko'rib chiqadi. Tasdiq oylikka ta'sir qiladi (toifa biriktirish / ustama).
+ * Audit — oylik strukturasidagi har bir o'zgarish qaydi (kim/qachon/eski/yangi).
+ */
+export const payrollRequestsAPI = {
+  getAll: (params) => http.get("/payroll-requests", { params }),
+  review: (id, data) => http.post(`/payroll-requests/${id}/review`, data),
+  getAudit: (params) => http.get("/payroll-requests/audit", { params }),
+};
+
 /** Malaka toifasi katalogi — soatlik KPI stavka (sozlamalar). */
 export const salaryCategoriesAPI = {
   getAll: (params) => http.get("/payroll/categories", { params }),

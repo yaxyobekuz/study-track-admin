@@ -26,6 +26,14 @@ import {
   VoidSalaryPaymentModal,
   CancelPayrollEntryModal,
 } from "../components/PayrollModals";
+import {
+  DepartmentModal,
+  PositionModal,
+  CategoryV2Modal,
+  AssignStaffModal,
+} from "../components/PayrollV2Modals";
+import StaffDepartmentView from "../components/StaffDepartmentView";
+import TeachingDepartmentView from "../components/TeachingDepartmentView";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -46,6 +54,8 @@ import {
   ENTRY_STATUS_OPTIONS,
   ENTRY_TABLE_COLUMNS,
   PAYROLL_TABS,
+  PAYROLL_MAIN_TABS,
+  DIRECTION_OPTIONS,
   RULE_TABLE_COLUMNS,
   SALARY_TYPE_META,
   CATEGORY_TABLE_COLUMNS,
@@ -58,6 +68,7 @@ import {
   useCloseSalary,
   useArchiveCategory,
   useDeleteCategory,
+  useDeleteDepartment,
 } from "../queries/payroll.mutations";
 
 /**
@@ -67,29 +78,23 @@ import {
  * Shu tufayli "kimga qancha qarzdormiz" degan savolga javob bor.
  */
 const PayrollPage = () => {
-  const [tab, setTab] = useState("entries");
+  const [tab, setTab] = useState("structure");
 
-  const tabs = PAYROLL_TABS.map((item) => ({
+  const tabs = PAYROLL_MAIN_TABS.map((item) => ({
     ...item,
-    content:
-      item.value === "entries" ? (
-        <EntriesView />
-      ) : item.value === "rules" ? (
-        <RulesView />
-      ) : (
-        <CategoriesView />
-      ),
+    content: item.value === "structure" ? <StructureView /> : <EntriesView />,
   }));
 
   return (
     <div className="space-y-4">
-      <TabsButtons
-        items={tabs}
-        value={tab}
-        onChange={setTab}
-        contentClassName="mt-4"
-      />
+      <TabsButtons items={tabs} value={tab} onChange={setTab} contentClassName="mt-4" />
 
+      {/* Struktura modallari */}
+      <DepartmentModal />
+      <PositionModal />
+      <CategoryV2Modal />
+      <AssignStaffModal />
+      {/* Majburiyat/to'lov modallari */}
       <SalaryRuleModal />
       <SalaryCategoryModal />
       <SalaryPaymentModal />
@@ -98,6 +103,86 @@ const PayrollPage = () => {
     </div>
   );
 };
+
+// ─────────────────────────────────────────────
+// STRUKTURA — Yo'nalish × Bo'lim → dinamik kontent
+// ─────────────────────────────────────────────
+
+const StructureView = () => {
+  const { openModal } = useModal();
+  const [direction, setDirection] = useState("salary");
+  const [departmentId, setDepartmentId] = useState("");
+  const [month, setMonth] = useState(monthKeyToInputValue(currentMonthKey()));
+  const monthKey = inputValueToMonthKey(month);
+
+  const { data: departments = [] } = useQuery(payrollQueries.departments());
+  const { mutate: deleteDepartment } = useDeleteDepartment();
+
+  const department = departments.find((d) => d.id === departmentId);
+
+  const handleDeleteDept = () => {
+    if (!department) return;
+    if (!window.confirm(`"${department.name}" bo'limini o'chirasizmi?`)) return;
+    deleteDepartment(department.id, {
+      onSuccess: () => { toast.success("O'chirildi"); setDepartmentId(""); },
+      onError: (err) => toast.error(err.response?.data?.message || "Xatolik"),
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Filterlar */}
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-gray-500">Yo'nalish</p>
+          <Select triggerClassName="min-w-44" value={direction} options={DIRECTION_OPTIONS} onChange={setDirection} />
+        </div>
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-gray-500">Bo'lim</p>
+          <Select searchable triggerClassName="min-w-52" value={departmentId} placeholder="Bo'limni tanlang"
+            onChange={setDepartmentId}
+            options={departments.map((d) => ({ label: `${d.name} (${d.kind === "staff" ? "lavozim" : "toifa"})`, value: d.id }))}
+          />
+        </div>
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-gray-500">Oy</p>
+          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
+            className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary" />
+        </div>
+
+        <div className="ml-auto flex items-center gap-2">
+          {department && (
+            <Can do="payroll.assign">
+              <Button variant="outline" onClick={handleDeleteDept}><Trash2 className="size-4" /></Button>
+            </Can>
+          )}
+          <Can do="payroll.assign">
+            <Button onClick={() => openModal("department", {})}><Plus /> Bo'lim</Button>
+          </Can>
+        </div>
+      </div>
+
+      {/* Kontent */}
+      {direction === "bonus" ? (
+        <BonusInfo />
+      ) : !department ? (
+        <Card className="py-12 text-center text-gray-500">Yuqoridan bo'lim tanlang</Card>
+      ) : department.kind === "staff" ? (
+        <StaffDepartmentView department={department} month={monthKey} />
+      ) : (
+        <TeachingDepartmentView department={department} month={monthKey} />
+      )}
+    </div>
+  );
+};
+
+// Ustama haq yo'nalishi — to'liq ko'rinish Zayavka fazasida ulanadi
+const BonusInfo = () => (
+  <Card className="py-10 text-center text-gray-500">
+    Ustama haqlar — o'qituvchilardan kelgan tasdiqlangan zayavkalar asosida.
+    Ustama yo'nalishi "Zayavkalar" bo'limi bilan bog'liq.
+  </Card>
+);
 
 // ─────────────────────────────────────────────
 // Oyliklar — majburiyatlar va to'lovlar
@@ -160,7 +245,7 @@ const EntriesView = () => {
             className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
           />
 
-          <Select
+          <Select searchable
             triggerClassName="min-w-40"
             value={status}
             options={ENTRY_STATUS_OPTIONS}
@@ -538,7 +623,7 @@ const CategoriesView = () => {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Select
+          <Select searchable
             triggerClassName="min-w-40"
             value={status}
             options={CATEGORY_STATUS_OPTIONS}
