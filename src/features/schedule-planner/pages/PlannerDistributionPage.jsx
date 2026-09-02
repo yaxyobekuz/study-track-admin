@@ -2,21 +2,21 @@
 import { toast } from "sonner";
 
 // React
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 // Icons
-import { Check, CloudDownload, Eraser, Eye, Save, Table2 } from "lucide-react";
+import { Table2 } from "lucide-react";
 
 // Components
-import Button from "@/shared/components/ui/button/Button";
-import Switch from "@/shared/components/ui/switch/Switch";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import LoaderCard from "@/shared/components/ui/LoaderCard";
 import DistributionGrid from "../components/DistributionGrid";
-import SubjectSplitRows from "../components/SubjectSplitRows";
+import SubjectSplitModal from "../components/SubjectSplitModal";
+import DistributionToolbar from "../components/DistributionToolbar";
 
 // Hooks
 import useAuth from "@/shared/hooks/useAuth";
+import useModal from "@/shared/hooks/useModal";
 import usePermissions from "@/shared/hooks/usePermissions";
 import useDistributionSheet from "../hooks/useDistributionSheet";
 
@@ -25,12 +25,8 @@ import { useClasses } from "@/features/classes/queries/classes.queries";
 import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 
 // Queries
-import { useQuery } from "@tanstack/react-query";
-import { plannerQueries, usePlannerDistribution } from "../queries/planner.queries";
-import { useSaveDistribution, useSavePlannerLoad } from "../queries/planner.mutations";
-
-// Utils
-import { formatDateTimeUz } from "@/shared/utils/date.utils";
+import { usePlannerDistribution } from "../queries/planner.queries";
+import { useSaveDistribution } from "../queries/planner.mutations";
 
 /**
  * "DARS TAQSIMOTI" TABI.
@@ -44,8 +40,9 @@ import { formatDateTimeUz } from "@/shared/utils/date.utils";
  *   1. localStorage — DOIMIY va avtomatik, FILIALGA bog'langan kalit bilan.
  *   2. Server — IXTIYORIY, faqat "Saqlash" tugmasi bosilganda.
  *
- * ⚠️ FAN QATORI OSTIDAGI TAQSIMOT esa boshqacha: u to'g'ridan-to'g'ri
- * SERVERGA yoziladi ("Asosiy" tabdagi yuklama jadvaliga). Ataylab: varaqdagi
+ * ⚠️ FAN NOMI BOSILGANDA OCHILADIGAN TAQSIMOT esa boshqacha: u
+ * to'g'ridan-to'g'ri SERVERGA yoziladi ("Asosiy" tabdagi yuklama
+ * jadvaliga) — qarang `SubjectSplitModal`. Ataylab: varaqdagi
  * raqam — TALAB ("5-A da matematikadan 4 soat"), taqsimot esa "kim beradi"
  * degan javob va u jadval shakllantirishning haqiqiy kirimi. Brauzer
  * xotirasida qolsa, generator uni ko'rmasdi.
@@ -53,6 +50,7 @@ import { formatDateTimeUz } from "@/shared/utils/date.utils";
 const PlannerDistributionPage = () => {
   const { user } = useAuth();
   const { can } = usePermissions();
+  const { openModal } = useModal();
   const canSaveToServer = can("planner.distribution");
 
   const { data: classes = [], isLoading: classesLoading } = useClasses();
@@ -87,37 +85,6 @@ const PlannerDistributionPage = () => {
 
   const [editStructure, setEditStructure] = useState(false);
   const [active, setActive] = useState(null);
-  // Ochiq fan qatori — BITTA. Ikkitasi ochiq bo'lsa jadval "sig'adigan bitta
-  // sahifa" bo'lishdan to'xtardi va qaysi taqsimot qaysi fanniki ekani
-  // chalkashardi.
-  const [expandedRow, setExpandedRow] = useState(null);
-
-  // Yuklama faqat KERAK BO'LGANDA so'raladi: varaqni to'ldirish uchun bu
-  // ma'lumot kerak emas, u esa beshta jadvalni o'qiydi.
-  const { data: loads, isLoading: loadsLoading } = useQuery({
-    ...plannerQueries.loads(),
-    enabled: Boolean(expandedRow),
-  });
-
-  const { mutateAsync: savePlannerLoad } = useSavePlannerLoad();
-
-  const handleSaveSplit = useCallback(
-    (payload) =>
-      savePlannerLoad(payload).catch((err) => {
-        toast.error(
-          err.response?.data?.message || "Taqsimotni saqlashda xatolik",
-        );
-        // Qayta tashlaymiz — panel qoralamani orqaga qaytarishi kerak.
-        throw err;
-      }),
-    [savePlannerLoad],
-  );
-
-  const toggleExpanded = useCallback(
-    (subjectId) =>
-      setExpandedRow((prev) => (prev === subjectId ? null : subjectId)),
-    [],
-  );
 
   const hiddenCount = sheet.hiddenColumns.length + sheet.hiddenRows.length;
 
@@ -130,34 +97,47 @@ const PlannerDistributionPage = () => {
     else toast.success(parts[0]);
   };
 
-  const handleSave = () =>
-    saveToServer(sheet, {
-      onSuccess: () => {
-        markSaved();
-        toast.success("Varaq serverga saqlandi");
-      },
-      onError: (err) =>
-        toast.error(err.response?.data?.message || "Saqlashda xatolik"),
-    });
+  const handleSave = useCallback(
+    () =>
+      saveToServer(sheet, {
+        onSuccess: () => {
+          markSaved();
+          toast.success("Varaq serverga saqlandi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Saqlashda xatolik"),
+      }),
+    [saveToServer, sheet, markSaved],
+  );
+
+  // ⌘S / Ctrl+S — varaqli ekranlarda odat bo'lgan qisqartma.
+  //
+  // ⚠️ Brauzerning o'z "sahifani saqlash" oynasi bu yerda faqat xalaqit
+  // beradi, shuning uchun hodisa to'xtatiladi. Ruxsat yo'q bo'lsa esa
+  // umuman ulanmaydi: to'xtatib qo'yib, evaziga hech narsa qilmaslik —
+  // eng yomon variant.
+  useEffect(() => {
+    if (!canSaveToServer) return;
+
+    const onKeyDown = (event) => {
+      if (event.key !== "s" || !(event.metaKey || event.ctrlKey)) return;
+      event.preventDefault();
+      if (!isSaving) handleSave();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [canSaveToServer, isSaving, handleSave]);
 
   const handleLoadFromServer = () => {
     if (!serverCopy?.data) return;
-    const ok = window.confirm(
-      "Serverdagi nusxa yuklansinmi? Bu brauzerdagi joriy varaqni almashtiradi.",
-    );
-    if (!ok) return;
     sheetState.replaceSheet(serverCopy.data);
     toast.success("Serverdagi nusxa yuklandi");
   };
 
   const handleClear = () => {
-    const ok = window.confirm(
-      "Barcha dars soatlari tozalansinmi? Sinf va fan ro'yxati tizimdan keladi, ular tegilmaydi.",
-    );
-    if (ok) {
-      sheetState.clearValues();
-      toast.success("Soatlar tozalandi");
-    }
+    sheetState.clearValues();
+    toast.success("Soatlar tozalandi");
   };
 
   if (classesLoading || subjectsLoading) {
@@ -180,69 +160,21 @@ const PlannerDistributionPage = () => {
 
   return (
     <div className="space-y-2.5">
-      {/* Asboblar paneli — bitta qatorda, jadvalga ko'proq joy qolishi uchun */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <div className="flex items-center gap-1.5 text-sm">
-          <Table2 size={16} strokeWidth={1.5} className="text-gray-400" />
-          <span className="text-gray-500">Jami:</span>
-          <span className="font-semibold text-gray-900">{totals.grand}</span>
-          <span className="text-gray-500">soat ·</span>
-          <span className="font-semibold text-gray-900">{totals.students}</span>
-          <span className="text-gray-500">o`quvchi ·</span>
-          <span className="text-gray-500">
-            {visibleRows.length} fan × {visibleColumns.length} sinf
-          </span>
-        </div>
-
-        <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">
-          <Check size={13} strokeWidth={2} />
-          Brauzerda saqlanmoqda
-        </span>
-
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <Switch checked={editStructure} onChange={setEditStructure} />
-          Yashirish rejimi
-        </label>
-
-        {hiddenCount > 0 && (
-          <button
-            type="button"
-            onClick={sheetState.showAll}
-            className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-0.5 text-xs text-amber-800 hover:bg-amber-100"
-          >
-            <Eye size={13} strokeWidth={2} />
-            {hiddenCount} ta yashirilgan — hammasini ko`rsatish
-          </button>
-        )}
-
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          {serverCopy?.data && (
-            <span className="text-xs text-gray-500">
-              Serverda: {formatDateTimeUz(serverCopy.updatedAt)}
-            </span>
-          )}
-
-          {serverCopy?.data && (
-            <Button variant="outline" size="sm" onClick={handleLoadFromServer}>
-              <CloudDownload className="size-4" strokeWidth={1.5} />
-              Serverdan yuklash
-            </Button>
-          )}
-
-          <Button variant="secondary" size="sm" onClick={handleClear}>
-            <Eraser className="size-4" strokeWidth={1.5} />
-            Soatlarni tozalash
-          </Button>
-
-          {canSaveToServer && (
-            <Button size="sm" onClick={handleSave} disabled={isSaving}>
-              <Save className="size-4" strokeWidth={1.5} />
-              Saqlash{dirtyForServer ? " *" : ""}
-              {isSaving && "..."}
-            </Button>
-          )}
-        </div>
-      </div>
+      <DistributionToolbar
+        totals={totals}
+        savedAt={serverCopy?.data ? serverCopy.updatedAt : null}
+        isSaving={isSaving}
+        dirtyForServer={dirtyForServer}
+        canSave={canSaveToServer}
+        onSave={handleSave}
+        onClear={handleClear}
+        hiddenCount={hiddenCount}
+        onShowAll={sheetState.showAll}
+        editStructure={editStructure}
+        onEditStructureChange={setEditStructure}
+        hasServerCopy={Boolean(serverCopy?.data)}
+        onLoadFromServer={handleLoadFromServer}
+      />
 
       <DistributionGrid
         columns={visibleColumns}
@@ -250,27 +182,24 @@ const PlannerDistributionPage = () => {
         values={sheet.values}
         totals={totals}
         active={active}
-        expandedRowId={expandedRow}
         editStructure={editStructure}
         onValueChange={sheetState.setValue}
         onManyValues={sheetState.setManyValues}
         onActiveChange={setActive}
-        onToggleExpand={toggleExpanded}
-        renderRowPanel={(row) => (
-          <SubjectSplitRows
-            subject={row}
-            columns={visibleColumns}
-            values={sheet.values}
-            loadRows={loads?.rows ?? []}
-            isLoading={loadsLoading}
-            canEdit={can("planner.loads")}
-            onSave={handleSaveSplit}
-            onClose={() => setExpandedRow(null)}
-          />
-        )}
+        onOpenSplit={(row) => openModal("plannerSubjectSplit", { subject: row })}
         onToggleColumn={sheetState.toggleColumn}
         onToggleRow={sheetState.toggleRow}
         onPasteReport={handlePasteReport}
+      />
+
+      {/* Fan nomi bosilganda ochiladi. Varaq (`values`) localStorage'da
+          yashaydi, so'rovda emas — shuning uchun u modal ma'lumotiga emas,
+          PROP sifatida beriladi: modal ma'lumoti yopilgandan keyin ham
+          saqlanib qolib, eskirgan varaqni ko'rsatardi. */}
+      <SubjectSplitModal
+        columns={visibleColumns}
+        values={sheet.values}
+        canEdit={can("planner.loads")}
       />
     </div>
   );

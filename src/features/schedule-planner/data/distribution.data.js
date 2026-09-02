@@ -37,3 +37,38 @@ export const createEmptySheet = () => ({
   hiddenRows: [],
   rev: 0,
 });
+
+/**
+ * ASBOBLAR PANELIDAGI SAQLANISH INDIKATORI.
+ *
+ * Uchala holat ATAYLAB ajratilgan: "brauzerda bor, serverda yo'q" bilan
+ * "serverga saqlangan" bir xil ko'rinsa, odam varaqni boshqa kompyuterda
+ * ochib, ishini topolmay qolardi. Rang esa faqat bezak emas — u yagona
+ * savolga javob beradi: "ishim yo'qolmaydimi?".
+ */
+export const SAVE_STATES = {
+  // Serverdagi nusxadan farq qiladigan o'zgarish bor.
+  unsaved: {
+    label: "Saqlanmagan",
+    hint: "O'zgarishlar brauzerda turibdi. Serverga yozish uchun Saqlash tugmasini bosing.",
+    className: "bg-amber-50 text-amber-700",
+    dotClassName: "bg-amber-500",
+    pulse: true,
+  },
+  // Serverdagi nusxa joriy varaq bilan bir xil.
+  saved: {
+    label: "Saqlangan",
+    hint: "Varaq serverda — istalgan kompyuterdan ochiladi.",
+    className: "bg-emerald-50 text-emerald-700",
+    dotClassName: "bg-emerald-500",
+    pulse: false,
+  },
+  // Serverda nusxa umuman yo'q — varaq faqat shu brauzerda.
+  localOnly: {
+    label: "Brauzerda",
+    hint: "Varaq hozircha faqat shu brauzerda saqlanmoqda, serverga yozilmagan.",
+    className: "bg-gray-100 text-gray-600",
+    dotClassName: "bg-gray-400",
+    pulse: false,
+  },
+};

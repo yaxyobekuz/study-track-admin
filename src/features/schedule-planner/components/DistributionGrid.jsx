@@ -1,8 +1,8 @@
 // React
-import { Fragment, useCallback, useLayoutEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 
 // Icons
-import { ChevronRight, EyeOff } from "lucide-react";
+import { EyeOff, Users } from "lucide-react";
 
 // Components
 import DistributionCell from "./DistributionCell";
@@ -79,11 +79,12 @@ const TILE_TOTAL = "rounded-lg py-1 text-center font-semibold text-slate-800";
  * ham) — ko'p ustunli jadvalning o'rtasida "men qaysi fan va qaysi sinf
  * ustidaman?" degan savol bir qarashda hal bo'lsin.
  *
- * Fan nomi bosilganda o'sha qator OSTIDA o'qituvchilar taqsimoti ochiladi
- * (`renderRowPanel`). U shu jadvalning o'z qatorlari bo'lib chiziladi —
- * shuning uchun o'qituvchi kataklari yuqoridagi fan qatoridagi sinf
- * ustunlariga aynan to'g'ri keladi. Bir vaqtda FAQAT BITTA qator ochiq
- * bo'ladi (holat ota komponentda).
+ * Fan nomi bosilganda o'qituvchilar bo'yicha taqsimot KENG OYNADA ochiladi
+ * (`onOpenSplit`). Ilgari u shu jadvalning ichida, fan qatori ostida
+ * chizilardi — kataklar sinf ustunlariga to'g'ri tushsin uchun. Lekin shu
+ * moslik uchun barcha 25 sinf ustunini chizishga to'g'ri kelardi, holbuki
+ * bitta fanda odatda 6-10 sinfda soat bor. Oynada esa faqat kerakli
+ * sinflar ko'rsatiladi — qarang: `SubjectSplitModal`.
  */
 const DistributionGrid = ({
   columns,
@@ -91,13 +92,11 @@ const DistributionGrid = ({
   values,
   totals,
   active,
-  expandedRowId,
   editStructure,
   onValueChange,
   onManyValues,
   onActiveChange,
-  onToggleExpand,
-  renderRowPanel,
+  onOpenSplit,
   onToggleColumn,
   onToggleRow,
   onPasteReport,
@@ -395,91 +394,79 @@ const DistributionGrid = ({
           {/* Fan qatorlari */}
           {rows.map((row, rowIndex) => {
             const rowActive = active?.row === rowIndex;
-            const expanded = expandedRowId === row.id;
 
             return (
-              <Fragment key={row.id}>
-                <tr>
-                  <td className={cn(STICKY_LEFT, GAP, "bg-white")}>
-                    <div
-                      className={cn(
-                        TILE_LABEL,
-                        "flex items-center gap-1 relative",
-                        expanded
-                          ? "bg-slate-700 text-white"
-                          : rowActive
-                            ? "bg-primary text-white"
-                            : "bg-slate-100",
-                      )}
+              <tr key={row.id}>
+                <td className={cn(STICKY_LEFT, GAP, "bg-white")}>
+                  <div
+                    className={cn(
+                      TILE_LABEL,
+                      "flex items-center gap-1 relative",
+                      rowActive ? "bg-primary text-white" : "bg-slate-100",
+                    )}
+                  >
+                    {/* Fan nomi — TUGMA: o'qituvchilar bo'yicha taqsimot
+                        oynasini ochadi. Yashirish tugmasi bilan YONMA-YON
+                        turadi, ichida emas: ichma-ich <button> yaroqsiz HTML
+                        va ikkinchi tugma bosilmay qolardi. */}
+                    <button
+                      type="button"
+                      onClick={() => onOpenSplit(row)}
+                      title={`${row.name} — o'qituvchilar bo'yicha taqsimot`}
+                      className="flex min-w-0 flex-1 items-center gap-1 text-left"
                     >
-                      {/* Fan nomi — TUGMA: ostida o'qituvchilar taqsimoti
-                          ochiladi. Yashirish tugmasi bilan YONMA-YON turadi,
-                          ichida emas: ichma-ich <button> yaroqsiz HTML va
-                          ikkinchi tugma bosilmay qolardi. */}
+                      <Users
+                        size={12}
+                        strokeWidth={2.5}
+                        className="shrink-0 opacity-40"
+                      />
+                      <span className="block flex-1 truncate">{row.name}</span>
+                    </button>
+
+                    {editStructure && (
                       <button
                         type="button"
-                        onClick={() => onToggleExpand(row.id)}
-                        title={`${row.name} — o'qituvchilar bo'yicha taqsimot`}
-                        className="flex min-w-0 flex-1 items-center gap-1 text-left"
+                        title="Qatorni yashirish"
+                        onClick={() => onToggleRow(row.id)}
+                        className={cn(
+                          "absolute right-0 rounded-lg bg-black p-1.5 text-white hover:scale-125 transition-transform",
+                        )}
                       >
-                        <ChevronRight
-                          size={12}
-                          strokeWidth={2.5}
-                          className={cn(
-                            "shrink-0 transition-transform",
-                            expanded ? "rotate-90" : "opacity-40",
-                          )}
-                        />
-                        <span className="block flex-1 truncate">{row.name}</span>
+                        <EyeOff size={10} strokeWidth={2.5} />
                       </button>
+                    )}
+                  </div>
+                </td>
 
-                      {editStructure && (
-                        <button
-                          type="button"
-                          title="Qatorni yashirish"
-                          onClick={() => onToggleRow(row.id)}
-                          className={cn(
-                            "absolute right-0 rounded-lg bg-black p-1.5 text-white hover:scale-125 transition-transform",
-                          )}
-                        >
-                          <EyeOff size={10} strokeWidth={2.5} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                {columns.map((column, colIndex) => (
+                  <DistributionCell
+                    key={column.id}
+                    subjectId={row.id}
+                    classId={column.id}
+                    rowIndex={rowIndex}
+                    colIndex={colIndex}
+                    value={values[cellKey(row.id, column.id)]}
+                    highlighted={rowActive || active?.col === colIndex}
+                    isActive={rowActive && active?.col === colIndex}
+                    onChange={onValueChange}
+                    onKeyDown={handleKeyDown}
+                    onPaste={handlePaste}
+                    onFocus={handleFocus}
+                  />
+                ))}
 
-                  {columns.map((column, colIndex) => (
-                    <DistributionCell
-                      key={column.id}
-                      subjectId={row.id}
-                      classId={column.id}
-                      rowIndex={rowIndex}
-                      colIndex={colIndex}
-                      value={values[cellKey(row.id, column.id)]}
-                      highlighted={rowActive || active?.col === colIndex}
-                      isActive={rowActive && active?.col === colIndex}
-                      onChange={onValueChange}
-                      onKeyDown={handleKeyDown}
-                      onPaste={handlePaste}
-                      onFocus={handleFocus}
-                    />
-                  ))}
-
-                  <td className={cn(STICKY_RIGHT, GAP, "bg-white")}>
-                    <div
-                      className={cn(
-                        TILE_TOTAL,
-                        "tabular-nums",
-                        rowActive ? "bg-emerald-300" : "bg-emerald-100",
-                      )}
-                    >
-                      {totals.byRow[row.id]}
-                    </div>
-                  </td>
-                </tr>
-
-                {expanded && renderRowPanel?.(row)}
-              </Fragment>
+                <td className={cn(STICKY_RIGHT, GAP, "bg-white")}>
+                  <div
+                    className={cn(
+                      TILE_TOTAL,
+                      "tabular-nums",
+                      rowActive ? "bg-emerald-300" : "bg-emerald-100",
+                    )}
+                  >
+                    {totals.byRow[row.id]}
+                  </div>
+                </td>
+              </tr>
             );
           })}
         </tbody>

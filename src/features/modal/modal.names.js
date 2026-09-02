@@ -162,6 +162,9 @@ export const MODAL_NAMES = [
   "editAssignment",
   "deleteAssignment",
 
+  // Dars jadvalini rejalashtirish
+  "plannerSubjectSplit",
+
   // Changelog
   "createChangelog",
   "editChangelog",
