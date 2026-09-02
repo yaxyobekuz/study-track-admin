@@ -20,9 +20,10 @@ import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Data & queries
-import { ARCHIVE_TABS } from "../data/usersTabs.data";
+import { ARCHIVE_TABS, resolveTab } from "../data/usersTabs.data";
 import { usersQueries } from "../queries/users.queries";
 
 const PAGE_SIZE = 32;
@@ -39,6 +40,11 @@ const PAGE_SIZE = 32;
  * komponent o'qiydi. Shu tufayli har qanday ro'yxat holatini link qilsa
  * bo'ladi.
  *
+ * Tab ro'yxati sahifadan keladi. Ro'yxatdan BOSHQA narsa ko'rsatadigan tab
+ * (masalan xodimlarning "Hisobotlar" tabi) `tabPanels` orqali beriladi: u
+ * ochilganda qidiruv, jadval va sahifalash o'rniga o'sha panel chiziladi va
+ * ro'yxat so'rovi umuman yuborilmaydi.
+ *
  * @param {object} props
  * @param {"staff"|"student"} props.variant
  * @param {string} props.title
@@ -46,6 +52,8 @@ const PAGE_SIZE = 32;
  * @param {string[]} props.columns - jadval sarlavhalari
  * @param {(user: object, ctx: {isArchived: boolean}) => React.ReactNode} props.renderRow
  * @param {React.ReactNode} [props.filters] - qo'shimcha filtr elementlari
+ * @param {{value: string, label: string, permission?: string}[]} [props.tabs]
+ * @param {Record<string, React.ReactNode>} [props.tabPanels] - ro'yxat o'rniga chiziladigan tablar
  * @param {string} [props.emptyText]
  * @param {string} [props.emptyArchivedText]
  */
@@ -56,21 +64,28 @@ const UsersListView = ({
   columns,
   renderRow,
   filters = null,
+  tabs = ARCHIVE_TABS,
+  tabPanels = {},
   emptyText = "Foydalanuvchilar topilmadi",
   emptyArchivedText = "Arxivlangan foydalanuvchilar yo'q",
 }) => {
   const navigate = useNavigate();
   const { openModal } = useModal();
+  const { can } = usePermissions();
   const isStudentList = variant === "student";
+
+  // Ruxsati bo'lmagan tab umuman ko'rinmaydi — `StaffDetail` bilan bir xil
+  // qoida. URL'da o'sha tab qolsa `resolveTab` uni birinchisiga qaytaradi.
+  const visibleTabs = tabs.filter((tab) => can(tab.permission));
 
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
   const search = searchParams.get("search") || "";
   const roleFilter = searchParams.get("role") || "";
   const classFilter = searchParams.get("class") || "";
-  const activeTab =
-    searchParams.get("tab") === "archived" ? "archived" : "main";
+  const activeTab = resolveTab(visibleTabs, searchParams.get("tab"));
   const isArchived = activeTab === "archived";
+  const activePanel = tabPanels[activeTab] ?? null;
 
   // Qidiruv inputi darhol yangilanadi, URL esa 300ms dan keyin
   const [searchInput, setSearchInput] = useState(search);
@@ -106,14 +121,17 @@ const UsersListView = ({
 
   const handleTabChange = (value) =>
     setSearchParams((prev) => {
-      if (value === "archived") prev.set("tab", "archived");
-      else prev.delete("tab");
+      if (value === visibleTabs[0].value) prev.delete("tab");
+      else prev.set("tab", value);
       prev.delete("page");
+      // Panel o'z filtrlarini URL'ga yozadi (masalan hisobotning `month`i) —
+      // ro'yxatga qaytganda ular osilib qolmasligi kerak
+      if (!tabPanels[value]) prev.delete("month");
       return prev;
     });
 
-  const { data, isLoading } = useQuery(
-    usersQueries.list({
+  const { data, isLoading } = useQuery({
+    ...usersQueries.list({
       page,
       limit: PAGE_SIZE,
       // "staff" — rol emas, guruh: server uni o'quvchilardan boshqa hamma deb
@@ -124,7 +142,9 @@ const UsersListView = ({
       ...(isStudentList && classFilter && { class: classFilter }),
       ...(isArchived && { archived: true }),
     }),
-  );
+    // Panel ochiq bo'lsa ro'yxat ko'rinmaydi — so'rov ham yuborilmaydi
+    enabled: !activePanel,
+  });
 
   const users = data?.data ?? [];
   const pagination = data?.pagination;
@@ -144,104 +164,108 @@ const UsersListView = ({
         )}
       </div>
 
-      {/* Asosiy / Arxivlangan */}
+      {/* Asosiy / Arxivlangan / (Hisobotlar) */}
       <TabsButtons
-        items={ARCHIVE_TABS}
+        items={visibleTabs}
         value={activeTab}
         onChange={handleTabChange}
       />
 
-      {/* Toolbar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Input
-          autoFocus
-          type="search"
-          value={searchInput}
-          className="sm:flex-1"
-          placeholder="Ism, familiya yoki username bo'yicha qidirish..."
-          onChange={(e) => handleSearchChange(e.target.value)}
-        />
+      {activePanel ?? (
+        <>
+          {/* Toolbar */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Input
+              autoFocus
+              type="search"
+              value={searchInput}
+              className="sm:flex-1"
+              placeholder="Ism, familiya yoki username bo'yicha qidirish..."
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
 
-        {filters}
+            {filters}
 
-        <div className="flex items-center gap-3 sm:shrink-0">
-          <Can do="users.export">
-            <Button
-              variant="secondary"
-              className="flex-1 sm:flex-none"
-              onClick={() => openModal("exportUsers")}
-            >
-              <Download />
-              <span className="sm:hidden">Yuklab olish</span>
-            </Button>
-          </Can>
-
-          <Can do="users.create">
-            <Button asChild className="flex-1 sm:flex-none">
-              <Link
-                to={`/users/new?role=${isStudentList ? "student" : "staff"}`}
-              >
-                <Plus />
-                {isStudentList ? "Yangi o'quvchi" : "Yangi xodim"}
-              </Link>
-            </Button>
-          </Can>
-        </div>
-      </div>
-
-      {/* Jadval */}
-      {isLoading ? (
-        <div className="py-8 text-center text-gray-500">Yuklanmoqda...</div>
-      ) : users.length === 0 ? (
-        <Card className="text-center">
-          <p className="text-sm text-gray-500">
-            {isArchived ? emptyArchivedText : emptyText}
-          </p>
-        </Card>
-      ) : (
-        <div className="overflow-x-auto rounded-2xl bg-white">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr>
-                {columns.map((column, index) => (
-                  <th
-                    key={column || index}
-                    className="px-4 py-3 text-left text-white font-medium whitespace-nowrap"
-                  >
-                    {column}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody>
-              {users.map((user) => (
-                <tr
-                  key={user.id}
-                  onClick={() => navigate(`/users/${user.id}`)}
-                  className="border-t border-gray-100 cursor-pointer hover:bg-gray-50"
+            <div className="flex items-center gap-3 sm:shrink-0">
+              <Can do="users.export">
+                <Button
+                  variant="secondary"
+                  className="flex-1 sm:flex-none"
+                  onClick={() => openModal("exportUsers")}
                 >
-                  {renderRow(user, { isArchived })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+                  <Download />
+                  <span className="sm:hidden">Yuklab olish</span>
+                </Button>
+              </Can>
 
-      {pagination && pagination.totalPages > 1 && (
-        <div className="overflow-x-auto pb-1.5">
-          <Pagination
-            maxPageButtons={5}
-            showPageNumbers
-            onPageChange={goToPage}
-            className="min-w-max"
-            currentPage={pagination.page}
-            totalPages={pagination.totalPages}
-            hasNextPage={pagination.hasNextPage}
-            hasPrevPage={pagination.hasPrevPage}
-          />
-        </div>
+              <Can do="users.create">
+                <Button asChild className="flex-1 sm:flex-none">
+                  <Link
+                    to={`/users/new?role=${isStudentList ? "student" : "staff"}`}
+                  >
+                    <Plus />
+                    {isStudentList ? "Yangi o'quvchi" : "Yangi xodim"}
+                  </Link>
+                </Button>
+              </Can>
+            </div>
+          </div>
+
+          {/* Jadval */}
+          {isLoading ? (
+            <div className="py-8 text-center text-gray-500">Yuklanmoqda...</div>
+          ) : users.length === 0 ? (
+            <Card className="text-center">
+              <p className="text-sm text-gray-500">
+                {isArchived ? emptyArchivedText : emptyText}
+              </p>
+            </Card>
+          ) : (
+            <div className="overflow-x-auto rounded-2xl bg-white">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr>
+                    {columns.map((column, index) => (
+                      <th
+                        key={column || index}
+                        className="px-4 py-3 text-left text-white font-medium whitespace-nowrap"
+                      >
+                        {column}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {users.map((user) => (
+                    <tr
+                      key={user.id}
+                      onClick={() => navigate(`/users/${user.id}`)}
+                      className="border-t border-gray-100 cursor-pointer hover:bg-gray-50"
+                    >
+                      {renderRow(user, { isArchived })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {pagination && pagination.totalPages > 1 && (
+            <div className="overflow-x-auto pb-1.5">
+              <Pagination
+                maxPageButtons={5}
+                showPageNumbers
+                onPageChange={goToPage}
+                className="min-w-max"
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                hasNextPage={pagination.hasNextPage}
+                hasPrevPage={pagination.hasPrevPage}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

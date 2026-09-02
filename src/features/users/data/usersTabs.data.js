@@ -11,6 +11,22 @@ export const ARCHIVE_TABS = [
   { value: "archived", label: "Arxivlangan" },
 ];
 
+/**
+ * Xodimlar sahifasining tablari — arxiv filtri + hisobot.
+ *
+ * "Hisobotlar" ro'yxatning uchinchi filtri EMAS: u qatorlar o'rniga butun
+ * shtat manzarasini chizadi. Shuning uchun u ro'yxat tablari bilan bitta
+ * qatorda tursa ham, alohida ruxsat talab qiladi (`permission`) va
+ * `UsersListView` uni panel sifatida ochadi.
+ *
+ * O'quvchilar sahifasida bunday tab yo'q — ular uchun alohida "Statistika"
+ * bo'limi bor.
+ */
+export const STAFF_LIST_TABS = [
+  ...ARCHIVE_TABS,
+  { value: "reports", label: "Hisobotlar", permission: "users.reports" },
+];
+
 // ── Detal sahifaning ichki tablari ────────────────
 //
 // Har bir tab `value` bo'yicha URL'ga yoziladi (`?tab=finance`), shuning uchun
