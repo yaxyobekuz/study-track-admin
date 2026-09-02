@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import Select from "@/shared/components/ui/select/Select";
 import UsersListView from "../components/UsersListView";
 import UserRowActions from "../components/UserRowActions";
+import StaffReportPanel from "../components/reports/StaffReportPanel";
 
 // Hooks
 import { useRoles } from "@/features/roles/queries/roles.queries";
@@ -16,12 +17,16 @@ import {
   getInitials,
   getRoleBadgeClass,
 } from "../data/users.data";
+import { STAFF_LIST_TABS } from "../data/usersTabs.data";
 
 /**
  * Xodimlar sahifasi — o'quvchilardan boshqa barcha rollar.
  *
  * Xodim uchun muhim ustunlar: roli va ish vaqti (davomat shu asosda
  * hisoblanadi). Tanga va sinf ustunlari bu yerda ma'nosiz, shuning uchun yo'q.
+ *
+ * Ro'yxatdan tashqari "Hisobotlar" tabi ham bor — u qatorlarni emas, butun
+ * shtat manzarasini ko'rsatadi (`users.reports` ruxsati bilan).
  */
 const StaffPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -51,6 +56,8 @@ const StaffPage = () => {
       title="Xodimlar"
       description="O'qituvchilar, adminlar va boshqa xodimlar"
       columns={STAFF_TABLE_COLUMNS}
+      tabs={STAFF_LIST_TABS}
+      tabPanels={{ reports: <StaffReportPanel /> }}
       emptyText="Xodimlar topilmadi"
       emptyArchivedText="Arxivlangan xodimlar yo'q"
       filters={

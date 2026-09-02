@@ -28,6 +28,18 @@ export const usersQueries = {
     }),
 
   /**
+   * Xodimlar bo'limining "Hisobotlar" tabi — tanlangan oy kesimidagi
+   * shtat manzarasi (`users.reports` ruxsati talab qilinadi).
+   */
+  report: ({ month, year }) =>
+    queryOptions({
+      queryKey: [...usersKeys.all, "report", { month, year }],
+      queryFn: () =>
+        usersAPI.getReport({ month, year }).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /**
    * All users, short form (id, fullName, role, …). Ungated reference list for
    * pickers that must work for any authenticated user (unlike `useTeachers`,
    * which is owner-gated). Filter by role client-side where needed.
