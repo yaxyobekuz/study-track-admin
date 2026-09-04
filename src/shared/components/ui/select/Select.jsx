@@ -30,6 +30,26 @@ const EMPTY_VALUE = "__empty__";
 const toInner = (value) => (value === "" ? EMPTY_VALUE : value);
 const toOuter = (value) => (value === EMPTY_VALUE ? "" : value);
 
+/**
+ * ⚠️ ALMASHTIRISH FAQAT `""` VARIANTI BOR RO'YXATDA.
+ *
+ * Filtrlarda `""` haqiqiy variant ("Barcha xonalar") va u `__empty__`
+ * bo'lib ro'yxatga tushadi — almashtirish shu yerda kerak.
+ *
+ * FORMALARDA esa bunday variant YO'Q: `""` "hali tanlanmagan" degani.
+ * Uni `__empty__` ga aylantirsak, Radix mos variantni topolmay trigger'ni
+ * BO'SH ko'rsatadi — placeholder ham, tanlangan qiymat ham chiqmaydi va
+ * foydalanuvchi tanlagich umuman ishlamayapti deb o'ylaydi.
+ * Radix placeholder'ni faqat `undefined` da ko'rsatadi, shuning uchun
+ * bunday holatda qiymat almashtirilmaydi.
+ */
+const resolveValue = (value, options) => {
+  if (value === undefined) return undefined;
+  if (value !== "") return value;
+
+  return options.some((opt) => opt.value === "") ? EMPTY_VALUE : undefined;
+};
+
 const Select = ({
   onChange,
   onOpenChange,
@@ -56,7 +76,7 @@ const Select = ({
       {...props}
       // Spread'dan KEYIN: boshqarilayotgan qiymat ham almashtirilishi shart,
       // aks holda tanlangan variant trigger'da ko'rinmay qolardi
-      value={value === undefined ? undefined : toInner(value)}
+      value={resolveValue(value, options)}
     >
       {/* Trigger */}
       <SelectTrigger
