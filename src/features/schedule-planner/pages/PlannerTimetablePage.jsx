@@ -17,8 +17,7 @@ import Select from "@/shared/components/ui/select/Select";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import LoaderCard from "@/shared/components/ui/LoaderCard";
 import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
-import TimetableGrid from "../components/TimetableGrid";
-import TimetableDayMatrix from "../components/TimetableDayMatrix";
+import TimetableBoard from "../components/TimetableBoard";
 import UnplacedList from "../components/UnplacedList";
 
 // Hooks
@@ -32,16 +31,22 @@ import { usePlannerRun, usePlannerRuns } from "../queries/planner.queries";
 import { useUpdateLesson } from "../queries/planner.mutations";
 
 // Helpers
-import { indexLessons, slotState, toBusySet, busyKey } from "../helpers/planner.helpers";
+import { indexLessons, slotState, toBusySet } from "../helpers/planner.helpers";
 
-// Data
-import { DAY_LABEL, TIMETABLE_VIEWS } from "../data/planner.data";
+/** "Barcha sinf" filtri — sinf id'lari bilan chalkashmaydigan qiymat. */
+const ALL = "all";
 
 /**
  * "Dars jadvali" tab — shakllantirilgan variantning natijasi.
  *
- * Bu jadval AMALDAGI dars jadvali EMAS: bu yerda qilingan ko'chirish
+ * ⚠️ Bu AMALDAGI dars jadvali EMAS: bu yerda qilingan ko'chirish
  * `/schedules` ga tegmaydi.
+ *
+ * KO'RINISH BITTA, FILTR BITTA. Ilgari uchta ko'rinish bor edi ("Sinf
+ * bo'yicha / O'qituvchi bo'yicha / Umumiy") va ularning har biri boshqacha
+ * chizilardi — foydalanuvchi avval "qaysi ko'rinishda qarayman" degan
+ * savolni hal qilishi kerak edi. Endi savol bitta va tabiiy: QAYSI SINF?
+ * "Barcha" — hamma sinf yonma-yon, sinf tanlansa — o'sha sinfning haftasi.
  */
 const PlannerTimetablePage = () => {
   const navigate = useNavigate();
@@ -55,10 +60,6 @@ const PlannerTimetablePage = () => {
   const { data: run, isLoading } = usePlannerRun(runId);
   const { mutate: updateLesson } = useUpdateLesson();
 
-  const [view, setView] = useState("class");
-  const [classId, setClassId] = useState(null);
-  const [teacherId, setTeacherId] = useState(null);
-  const [day, setDay] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
 
   // Esc — tanlovni bekor qiladi.
@@ -73,6 +74,7 @@ const PlannerTimetablePage = () => {
   const lessons = useMemo(() => run?.lessons ?? [], [run]);
   const days = useMemo(() => run?.days ?? [], [run]);
   const periods = useMemo(() => run?.periods ?? [], [run]);
+  const classes = useMemo(() => run?.classes ?? [], [run]);
 
   const byClass = useMemo(() => indexLessons(lessons, (l) => l.class.id), [lessons]);
   const byTeacher = useMemo(
@@ -81,14 +83,41 @@ const PlannerTimetablePage = () => {
   );
   const busySet = useMemo(() => toBusySet(run?.busy ?? []), [run]);
 
-  const activeClass = classId ?? run?.classes?.[0]?.id ?? null;
-  const activeTeacher = teacherId ?? run?.teachers?.[0]?.id ?? null;
-  const activeDay = day ?? days[0] ?? null;
+  // Filtr URL'da: sahifa yangilanganda yoki havola ulashilganda o'sha sinf
+  // ochilib turadi. Variant tanlovi ham shu yerda — ikkalasi bir-birini
+  // o'chirib yubormasligi uchun mavjud parametrlar nusxalanadi.
+  const rawFilter = params.get("class") || ALL;
+  const classFilter =
+    rawFilter !== ALL && !classes.some((cls) => cls.id === rawFilter)
+      ? ALL
+      : rawFilter;
+
+  const setParam = (key, value) => {
+    const next = new URLSearchParams(params);
+    next.set(key, value);
+    setParams(next);
+    setSelectedId(null);
+  };
+
+  const visibleClasses =
+    classFilter === ALL
+      ? classes
+      : classes.filter((cls) => cls.id === classFilter);
 
   const selected = lessons.find((l) => l.id === selectedId) ?? null;
 
-  const handleCellClick = (cellDay, order, lesson) => {
-    // Tanlangan dars yo'q — bosilgan darsni tanlaymiz.
+  const lessonAt = (classId, day, order) =>
+    byClass.get(`${classId}|${day}|${order}`) ?? null;
+
+  // ⚠️ Belgilar FAQAT tanlangan darsning O'Z sinfi ustunida yonadi.
+  // Aks holda "Barcha" ko'rinishida boshqa sinfning bo'sh katagi ham yashil
+  // bo'lib, u yerga ko'chirish mumkindek tuyulardi.
+  const stateAt = (classId, day, order) => {
+    if (!selected || classId !== selected.class.id) return null;
+    return slotState({ selected, day, order, byClass, byTeacher, busySet });
+  };
+
+  const handleSlotClick = (classId, day, order, lesson) => {
     if (!selected) {
       if (lesson && canEdit) setSelectedId(lesson.id);
       return;
@@ -100,27 +129,35 @@ const PlannerTimetablePage = () => {
       return;
     }
 
+    // Dars faqat O'Z sinfi ichida ko'chadi. Boshqa sinfning darsi bosilsa —
+    // uni tanlaymiz (bu tabiiy harakat: "endi buni ko'chiraman").
+    if (classId !== selected.class.id) {
+      if (lesson) setSelectedId(lesson.id);
+      else toast.error("Dars faqat o'z sinfi ichida ko'chiriladi");
+      return;
+    }
+
     const state = slotState({
       selected,
-      day: cellDay,
+      day,
       order,
       byClass,
       byTeacher,
       busySet,
     });
 
+    if (state === "current") {
+      setSelectedId(null);
+      return;
+    }
+
     if (state === "blocked") {
-      // Boshqa sinfning darsini bosgan bo'lsa — o'shani tanlaymiz.
-      if (lesson && lesson.class.id !== selected.class.id) {
-        setSelectedId(lesson.id);
-        return;
-      }
       toast.error("Bu katakka ko'chirib bo'lmaydi");
       return;
     }
 
     updateLesson(
-      { runId, lessonId: selected.id, data: { day: cellDay, order } },
+      { runId, lessonId: selected.id, data: { day, order } },
       {
         onSuccess: (res) => {
           setSelectedId(null);
@@ -174,85 +211,31 @@ const PlannerTimetablePage = () => {
     );
   }
 
-  // Ko'rinishga qarab gridga beriladigan darslar.
-  const cellFor = (cellDay, order) => {
-    if (view === "teacher") {
-      return byTeacher.get(`${activeTeacher}|${cellDay}|${order}`) ?? null;
-    }
-    return byClass.get(`${activeClass}|${cellDay}|${order}`) ?? null;
-  };
-
-  const stateFor = (cellDay, order) => {
-    // O'qituvchi ko'rinishida band kataklar shtrixlanadi — jadvalda bo'sh
-    // ko'ringan katak aslida bo'sh emasligi darrov ko'rinsin.
-    if (view === "teacher" && busySet.has(busyKey(activeTeacher, cellDay, order))) {
-      return "busy";
-    }
-    if (!selected) return null;
-    return slotState({
-      selected,
-      day: cellDay,
-      order,
-      byClass,
-      byTeacher,
-      busySet,
-    });
-  };
-
   return (
-    <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="space-y-3">
+      {/* Sinf filtri + variant. Ikkalasi yonma-yon: "qaysi sinf" va
+          "qaysi variant" — sahifadagi yagona ikki savol. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <TabsButtons
+          value={classFilter}
+          onChange={(value) => setParam("class", value)}
+          className="max-w-full"
+          listClassName="max-w-full hidden-scrollbar"
+          items={[
+            { value: ALL, label: "Barcha" },
+            ...classes.map((cls) => ({ value: cls.id, label: cls.name })),
+          ]}
+        />
+
         <Select
           value={runId}
-          triggerClassName="min-w-44"
-          onChange={(value) => {
-            setParams({ run: value });
-            setSelectedId(null);
-          }}
+          triggerClassName="min-w-40 rounded-full"
+          onChange={(value) => setParam("run", value)}
           options={runs.map((item) => ({
             label: `${item.name} · ${item.stats?.fillRate ?? 0}%`,
             value: item.id,
           }))}
         />
-
-        <TabsButtons value={view} onChange={setView} items={TIMETABLE_VIEWS} />
-
-        {view === "class" && (
-          <Select
-            value={activeClass}
-            onChange={setClassId}
-            triggerClassName="min-w-36"
-            options={(run?.classes ?? []).map((cls) => ({
-              label: cls.name,
-              value: cls.id,
-            }))}
-          />
-        )}
-
-        {view === "teacher" && (
-          <Select
-            value={activeTeacher}
-            onChange={setTeacherId}
-            triggerClassName="min-w-48"
-            options={(run?.teachers ?? []).map((teacher) => ({
-              label: teacher.fullName,
-              value: teacher.id,
-            }))}
-          />
-        )}
-
-        {view === "all" && (
-          <Select
-            value={activeDay}
-            onChange={setDay}
-            triggerClassName="min-w-36"
-            options={days.map((value) => ({
-              label: DAY_LABEL[value] ?? value,
-              value,
-            }))}
-          />
-        )}
 
         <div className="ml-auto flex gap-2">
           <Button variant="outline" size="sm" onClick={() => window.print()}>
@@ -273,7 +256,7 @@ const PlannerTimetablePage = () => {
             {selected.subject.name} · {selected.class.name}
           </span>
           <span className="text-gray-600">
-            Yashil katakka bosing — ko'chadi, sariqqa bosing — almashadi.
+            Yashil katakka bosing — ko`chadi, sariqqa bosing — almashadi.
           </span>
           <button
             type="button"
@@ -285,47 +268,32 @@ const PlannerTimetablePage = () => {
         </div>
       )}
 
-      {/* Jadval */}
-      {view === "all" ? (
-        <TimetableDayMatrix
-          classes={run?.classes ?? []}
-          periods={periods}
-          lessonAt={(id, order) =>
-            byClass.get(`${id}|${activeDay}|${order}`) ?? null
-          }
-        />
-      ) : (
-        <TimetableGrid
-          days={days}
-          periods={periods}
-          canEdit={canEdit}
-          cellFor={cellFor}
-          stateFor={stateFor}
-          selectedId={selectedId}
-          onCellClick={handleCellClick}
-          onTogglePin={handleTogglePin}
-          secondaryOf={(lesson) =>
-            view === "teacher" ? lesson.class.name : lesson.teacher.fullName
-          }
-        />
-      )}
+      <TimetableBoard
+        classes={visibleClasses}
+        days={days}
+        periods={periods}
+        canEdit={canEdit}
+        lessonAt={lessonAt}
+        stateAt={stateAt}
+        selectedId={selectedId}
+        onSlotClick={handleSlotClick}
+        onTogglePin={handleTogglePin}
+      />
 
       {/* Statistika + joylashmaganlar */}
       <Card className="space-y-4">
         <div className="flex flex-wrap gap-2 text-sm">
           <Stat label="Joylashtirildi" value={`${run?.stats?.placed ?? 0} dars`} />
-          <Stat label="To'ldirilgan" value={`${run?.stats?.fillRate ?? 0}%`} />
+          <Stat label="To`ldirilgan" value={`${run?.stats?.fillRate ?? 0}%`} />
           <Stat label="Sinf oynasi" value={run?.stats?.classGaps ?? 0} />
-          <Stat label="O'qituvchi oynasi" value={run?.stats?.teacherGaps ?? 0} />
+          <Stat label="O`qituvchi oynasi" value={run?.stats?.teacherGaps ?? 0} />
         </div>
 
         <UnplacedList
           items={run?.unplaced ?? []}
-          classes={run?.classes ?? []}
+          classes={classes}
           subjects={[
-            ...new Map(
-              lessons.map((l) => [l.subject.id, l.subject]),
-            ).values(),
+            ...new Map(lessons.map((l) => [l.subject.id, l.subject])).values(),
           ]}
           teachers={run?.teachers ?? []}
         />

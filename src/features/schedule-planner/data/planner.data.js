@@ -23,13 +23,6 @@ export const AVAILABILITY_VIEWS = [
   { value: "teacher", label: "O'qituvchi bo'yicha" },
 ];
 
-/** "Dars jadvali" tabidagi uch ko'rinish. */
-export const TIMETABLE_VIEWS = [
-  { value: "class", label: "Sinf bo'yicha" },
-  { value: "teacher", label: "O'qituvchi bo'yicha" },
-  { value: "all", label: "Umumiy" },
-];
-
 /**
  * Sozlamalar tabidagi cheklovlar.
  *
