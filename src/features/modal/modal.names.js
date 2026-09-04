@@ -53,6 +53,24 @@ export const MODAL_NAMES = [
   // Stats
   "studentStats",
 
+  // Inventar (moddiy-texnik baza)
+  "inventoryCategory",
+  "inventoryItem",
+  "inventoryLocation",
+  "inventoryAddStock",
+  "inventoryRepair",
+  "inventoryWriteOff",
+  "inventoryAdjust",
+  "inventoryTransfer",
+  "inventoryOpenCheck",
+  "inventoryDamage",
+  "inventoryCharge",
+  "inventoryWaive",
+  "inventoryCancelDamage",
+  "inventoryCancelCharge",
+  "inventoryDamagePayment",
+  "inventoryVoidPayment",
+
   // Market
   "addDeliveryImage",
   "deleteMarketProduct",

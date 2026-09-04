@@ -32,6 +32,9 @@ export const SECTIONS = {
   INCOME: "income",
   PAYROLL: "payroll",
   EXPENSES: "expenses",
+  INVENTORY: "inventory",
+  MONITORING: "monitoring",
+  DAMAGES: "damages",
   HOLIDAYS: "holidays",
   MONITORS: "monitors",
   CHANGELOG: "changelog",
@@ -383,6 +386,67 @@ export const PERMISSION_SECTIONS = [
     ],
   },
   {
+    // MODDIY-TEXNIK BAZA — xatlov: qaysi xonada nima va nechta bor.
+    //
+    // Moliyadan ALOHIDA guruh: xo'jalik mudiri partani sanaydi, lekin
+    // maktabning qarzdorlik registrini ko'rmasligi kerak. Teskarisi ham
+    // to'g'ri — kassirga jihoz katalogi kerak emas.
+    //
+    // Amallar ATAYLAB mayda: xatlovga jihoz KIRITISH (`stock`) va uni
+    // HISOBDAN CHIQARISH (`writeoff`) — ikki xil og'irlikdagi amal.
+    key: SECTIONS.INVENTORY,
+    label: "Moddiy-texnik baza",
+    group: "Inventar",
+    actions: [
+      A.view,
+      { key: "catalog", label: "Jihoz katalogini boshqarish" },
+      { key: "locations", label: "Xonalarni boshqarish" },
+      { key: "stock", label: "Xatlovga jihoz kiritish" },
+      { key: "transfer", label: "Xonalar orasida ko'chirish" },
+      { key: "repair", label: "Ta'mirlanganini belgilash" },
+      { key: "writeoff", label: "Hisobdan chiqarish" },
+      { key: "adjust", label: "Qo'lda to'g'rilash" },
+      A.export,
+      A.settings,
+    ],
+  },
+  {
+    // KUNLIK MONITORING — hisobotni SINF RAHBARI yoki OSHXONA MUDIRI
+    // yuboradi, xo'jalik mudiri emas. Shuning uchun `inventory` dan
+    // alohida: hisobot berish huquqi butun katalogni va hisobdan chiqarish
+    // tugmasini ochib bermasligi kerak.
+    key: SECTIONS.MONITORING,
+    label: "Kunlik monitoring",
+    group: "Inventar",
+    actions: [
+      A.view,
+      { key: "submit", label: "Hisobot yuborish" },
+      A.delete,
+      { key: "reports", label: "Hisobotlar" },
+    ],
+  },
+  {
+    // MODDIY ZARAR VA UNDIRUV — pulga tegadigan qism.
+    //
+    // Amallar ATAYLAB mayda va bu `finance` bilan bir xil mulohaza:
+    // zararni QAYD ETADIGAN odam uni aybdorga YOZA olmasligi, aybdorga
+    // yozadigan odam esa undiruvni BEKOR QILA olmasligi kerak.
+    key: SECTIONS.DAMAGES,
+    label: "Moddiy zarar",
+    group: "Inventar",
+    actions: [
+      A.view,
+      { key: "create", label: "Zarar qayd etish" },
+      { key: "charge", label: "Aybdorga yozish" },
+      { key: "waive", label: "Maktab hisobidan deb belgilash" },
+      { key: "cancel", label: "Zarar / qarzni bekor qilish" },
+      { key: "pay", label: "Undiruvni qabul qilish" },
+      { key: "void", label: "Undiruvni bekor qilish" },
+      { key: "reports", label: "Hisobotlar" },
+      A.export,
+    ],
+  },
+  {
     key: SECTIONS.HOLIDAYS,
     label: "Dam olish kunlari",
     group: "Boshqaruv",
@@ -569,6 +633,12 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/finance", key: "finance.view" },
   { prefix: "/finance/main/tariffs", key: "tariffs.view" },
   { prefix: "/finance/main/discounts", key: "discounts.view" },
+  // Inventar bo'limiga kirish `inventory.view` bilan; monitoring va zarar
+  // tablari esa o'z kalitini talab qiladi (eng UZUN mos prefiks yutadi).
+  { prefix: "/inventory", key: "inventory.view" },
+  { prefix: "/inventory/checks", key: "monitoring.view" },
+  { prefix: "/inventory/damages", key: "damages.view" },
+  { prefix: "/inventory/debtors", key: "damages.view" },
   { prefix: "/holidays", key: "holidays.view" },
   { prefix: "/monitors", key: "monitors.view" },
   { prefix: "/changelog", key: "changelog.view" },
