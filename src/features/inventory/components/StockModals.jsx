@@ -397,7 +397,7 @@ const WriteOffForm = ({ close, isLoading, setIsLoading, stock }) => {
         onChange={(e) => setField("note", e.target.value)}
       />
 
-      <Button type="submit" variant="destructive" disabled={isLoading || !quantity}>
+      <Button type="submit" disabled={isLoading || !quantity}>
         Hisobdan chiqarish
       </Button>
     </InputGroup>

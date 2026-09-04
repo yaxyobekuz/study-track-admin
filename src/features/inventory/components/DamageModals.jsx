@@ -573,7 +573,9 @@ const ReasonForm = ({ close, isLoading, setIsLoading, config }) => {
         onChange={(e) => setReason(e.target.value)}
       />
 
-      <Button type="submit" variant={config.variant} disabled={isLoading || !reason.trim()}>
+      {/* Kodbaza konvensiyasi: buzuvchi amalda ham oddiy tugma, yopish
+          uchun `secondary` (ReasonModal bilan bir xil) */}
+      <Button type="submit" disabled={isLoading || !reason.trim()}>
         {config.submitLabel}
       </Button>
     </InputGroup>
@@ -630,7 +632,6 @@ const CancelDamageBody = ({ damage, ...rest }) => {
           "qator yoziladi va hodisa hisobotdan chiqadi.",
         placeholder: "Xato kiritilgan — jihoz sinmagan",
         submitLabel: "Bekor qilish",
-        variant: "destructive",
         summary: <DamageSummary damage={damage} />,
       }}
     />
@@ -659,7 +660,6 @@ const CancelChargeBody = ({ charge, ...rest }) => {
           "qaytadi. To'lov tushgan qarzni bekor qilib bo'lmaydi.",
         placeholder: "Aybdor noto'g'ri aniqlangan",
         submitLabel: "Bekor qilish",
-        variant: "destructive",
         summary: (
           <div className="rounded-xl bg-gray-50 p-3 text-sm">
             <p className="font-medium text-gray-900">{charge.personName}</p>
@@ -695,7 +695,6 @@ const VoidPaymentBody = ({ payment, ...rest }) => {
           "qoldig'i. Qisman bekor qilish yo'q.",
         placeholder: "Chek xato kiritilgan",
         submitLabel: "Bekor qilish",
-        variant: "destructive",
         summary: (
           <div className="rounded-xl bg-gray-50 p-3 text-sm">
             <p className="font-medium text-gray-900">
