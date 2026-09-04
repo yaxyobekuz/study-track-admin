@@ -20,8 +20,10 @@ const TabsLinks = ({
   activeClassName = "",
   end = true,
 }) => {
-  if (!items.length) return null;
+  // Hook har doim bir xil tartibda chaqiriladi — erta `return` dan OLDIN
   const { pathname } = useLocation();
+
+  if (!items.length) return null;
 
   return (
     <nav role="tablist" className={cn(LIST_CLASS, className)}>

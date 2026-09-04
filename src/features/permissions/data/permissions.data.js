@@ -639,6 +639,9 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/inventory/checks", key: "monitoring.view" },
   { prefix: "/inventory/damages", key: "damages.view" },
   { prefix: "/inventory/debtors", key: "damages.view" },
+  // Sozlamalar sahifasi faqat `inventory.settings` bilan: tab ham shu kalit
+  // bilan yashiriladi, sidebar va guard undan farq qilmasligi kerak
+  { prefix: "/inventory/settings", key: "inventory.settings" },
   { prefix: "/holidays", key: "holidays.view" },
   { prefix: "/monitors", key: "monitors.view" },
   { prefix: "/changelog", key: "changelog.view" },

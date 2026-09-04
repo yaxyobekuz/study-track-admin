@@ -17,7 +17,6 @@ import useObjectState from "@/shared/hooks/useObjectState";
 // Queries
 import { inventoryQueries } from "../queries/inventory.queries";
 import { useUpdateInventorySettings } from "../queries/inventory.mutations";
-import { financeQueries } from "@/features/finance/queries/finance.queries";
 
 /**
  * INVENTAR SOZLAMALARI.
@@ -43,7 +42,7 @@ const SettingsPage = () => {
 };
 
 const SettingsForm = ({ settings }) => {
-  const { data: accounts = [] } = useQuery(financeQueries.activeAccounts());
+  const { data: accounts = [] } = useQuery(inventoryQueries.paymentAccounts());
   const { mutate: updateSettings, isPending } = useUpdateInventorySettings();
 
   const {

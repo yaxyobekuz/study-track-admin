@@ -19,6 +19,7 @@ import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
@@ -44,13 +45,22 @@ import { inventoryQueries } from "../queries/inventory.queries";
  * uchun ro'yxat ham alohida.
  */
 const DebtorsPage = () => {
-  const [tab, setTab] = useState("people");
+  const { can } = usePermissions();
 
+  // Odam kesimi — HISOBOT (`damages.reports`): bitta ekranda butun maktabning
+  // qarzdorlari. Qarzlar va undiruvlar registri esa `damages.view` bilan.
+  // Ruxsatsiz tab yashiriladi — bo'sh "Qarzdor yo'q" ko'rsatishdan ko'ra.
   const tabs = [
-    { value: "people", label: "Qarzdorlar", content: <DebtorList /> },
+    can("damages.reports") && {
+      value: "people",
+      label: "Qarzdorlar",
+      content: <DebtorList />,
+    },
     { value: "charges", label: "Qarzlar", content: <ChargeList /> },
     { value: "payments", label: "Undiruvlar", content: <PaymentList /> },
-  ];
+  ].filter(Boolean);
+
+  const [tab, setTab] = useState(() => tabs[0].value);
 
   return <TabsButtons items={tabs} value={tab} onChange={setTab} contentClassName="mt-4" />;
 };

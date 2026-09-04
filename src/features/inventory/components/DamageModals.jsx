@@ -37,7 +37,6 @@ import {
   useWaiveDamage,
 } from "../queries/inventory.mutations";
 import { usersQueries } from "@/features/users/queries/users.queries";
-import { financeQueries } from "@/features/finance/queries/finance.queries";
 import { damagesAPI } from "../api/inventory.api";
 
 const showError = (err) =>
@@ -398,7 +397,7 @@ export const DamagePaymentModal = () => (
  * "bu pul qaysi zararlarga ketadi" degan savolga javob oladi.
  */
 const DamagePaymentForm = ({ close, isLoading, setIsLoading, personId, personName }) => {
-  const { data: accounts = [] } = useQuery(financeQueries.activeAccounts());
+  const { data: accounts = [] } = useQuery(inventoryQueries.paymentAccounts());
   const { data: settings } = useQuery(inventoryQueries.settings());
   const { data: summary } = useQuery(inventoryQueries.personDebt(personId));
   const { mutate: createPayment } = useCreateDamagePayment();

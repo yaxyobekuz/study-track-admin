@@ -62,8 +62,14 @@ export const checksAPI = {
   // IDEMPOTENT: shu kun uchun varaq bo'lsa o'sha qaytadi
   open: (data) => http.post("/inventory-checks", data),
   updateLines: (id, data) => http.put(`/inventory-checks/${id}/lines`, data),
+  // ⚠️ `multipart/form-data` sarlavhasi MAJBURIY: http mijozining standart
+  // sarlavhasi `application/json`, u bilan axios FormData'ni JSON'ga aylantirib
+  // yuboradi va fayllar jimgina yo'qoladi (kodbazadagi boshqa yuklashlar
+  // bilan bir xil qoida).
   attachFiles: (id, lineId, formData) =>
-    http.post(`/inventory-checks/${id}/lines/${lineId}/attachments`, formData),
+    http.post(`/inventory-checks/${id}/lines/${lineId}/attachments`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
   submit: (id, data) => http.post(`/inventory-checks/${id}/submit`, data),
   remove: (id) => http.delete(`/inventory-checks/${id}`),
 };
@@ -77,8 +83,12 @@ export const checksAPI = {
 export const damagesAPI = {
   getAll: (params) => http.get("/damages", { params }),
   getById: (id) => http.get(`/damages/${id}`),
-  // Rasm biriktirilishi mumkin — FormData bilan yuboriladi
-  create: (formData) => http.post("/damages", formData),
+  // Rasm biriktirilishi mumkin — FormData bilan yuboriladi. Sarlavha
+  // majburiy: `checksAPI.attachFiles` dagi izohga qarang.
+  create: (formData) =>
+    http.post("/damages", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
   waive: (id, reason) => http.post(`/damages/${id}/waive`, { reason }),
   unwaive: (id) => http.post(`/damages/${id}/unwaive`),
   cancel: (id, reason) => http.post(`/damages/${id}/cancel`, { reason }),
@@ -107,4 +117,7 @@ export const inventoryReportsAPI = {
   getDebtors: (params) => http.get("/inventory/reports/debtors", { params }),
   getSettings: () => http.get("/inventory/settings"),
   updateSettings: (data) => http.put("/inventory/settings", data),
+  // Faol to'lov turlari — faqat id va nom (kassa qoldig'i yo'q). Undiruv
+  // oynasi va standart to'lov turi tanlagichi uchun; `finance.view` shart emas.
+  getPaymentAccounts: () => http.get("/inventory/payment-accounts"),
 };

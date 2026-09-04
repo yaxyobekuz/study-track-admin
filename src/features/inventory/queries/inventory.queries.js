@@ -195,4 +195,20 @@ export const inventoryQueries = {
       queryFn: () => inventoryReportsAPI.getSettings().then((r) => r.data.data),
       staleTime: 5 * 60 * 1000,
     }),
+
+  /**
+   * To'lov turlari tanlagichi — `{ id, name }` ro'yxati.
+   *
+   * Moliya bo'limidagi `financeQueries.activeAccounts()` EMAS: u `finance.view`
+   * talab qiladi va qoldiqni ham qaytaradi. Undiruvni qabul qiladigan
+   * xodimga kassa qoldig'i ko'rsatilmaydi — shuning uchun inventarning o'z
+   * qisqa ro'yxati.
+   */
+  paymentAccounts: () =>
+    queryOptions({
+      queryKey: [...inventoryKeys.all, "payment-accounts"],
+      queryFn: () =>
+        inventoryReportsAPI.getPaymentAccounts().then((r) => r.data.items ?? []),
+      staleTime: 10 * 60 * 1000,
+    }),
 };

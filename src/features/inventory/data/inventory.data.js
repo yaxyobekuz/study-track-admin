@@ -8,9 +8,22 @@
  * saqlanadi — `permissions.js` bilan bir xil kelishuv.
  */
 
-/** Bo'limning tab sahifalari. Tartib ISH CHASTOTASI bo'yicha. */
+/**
+ * Bo'limning tab sahifalari. Tartib ISH CHASTOTASI bo'yicha.
+ *
+ * HAR BIR tabda `can` bor — inventar uchta ruxsat bo'limiga bo'lingan
+ * (`inventory` / `monitoring` / `damages`) va faqat kunlik hisobot yuboradigan
+ * sinf rahbariga "Xatlov" yoki "Katalog" tabi ko'rinmasligi kerak: ochilsa
+ * server baribir rad etadi, ya'ni tab bo'sh sahifaga olib borardi.
+ */
 export const INVENTORY_TABS = [
-  { to: "/inventory/overview", label: "Umumiy", title: "Inventar", exact: false },
+  {
+    to: "/inventory/overview",
+    label: "Umumiy",
+    title: "Inventar",
+    can: "inventory.view",
+    exact: false,
+  },
   {
     to: "/inventory/checks",
     label: "Kunlik hisobot",
@@ -32,8 +45,20 @@ export const INVENTORY_TABS = [
     can: "damages.view",
     exact: false,
   },
-  { to: "/inventory/stock", label: "Xatlov", title: "Inventar", exact: false },
-  { to: "/inventory/catalog", label: "Katalog", title: "Inventar", exact: false },
+  {
+    to: "/inventory/stock",
+    label: "Xatlov",
+    title: "Inventar",
+    can: "inventory.view",
+    exact: false,
+  },
+  {
+    to: "/inventory/catalog",
+    label: "Katalog",
+    title: "Inventar",
+    can: "inventory.view",
+    exact: false,
+  },
   {
     to: "/inventory/settings",
     label: "Sozlamalar",

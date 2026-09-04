@@ -15,9 +15,13 @@ import {
 import { useQuery } from "@tanstack/react-query";
 
 // Components
+import Can from "@/shared/components/guards/Can";
 import Card from "@/shared/components/ui/Card";
 import Table, { Td, Tr } from "@/shared/components/ui/Table";
 import EmptyState from "@/shared/components/ui/EmptyState";
+
+// Hooks
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
@@ -34,8 +38,16 @@ import { inventoryQueries } from "../queries/inventory.queries";
  * "kim hisobot bermadi" ro'yxati kun davomida eng ko'p kerak bo'ladigan blok.
  */
 const OverviewPage = () => {
+  const { can } = usePermissions();
+
   const { data: summary, isLoading } = useQuery(inventoryQueries.summary());
-  const { data: pending } = useQuery(inventoryQueries.pendingChecks());
+  // "Kim hisobot bermadi" — `monitoring.view` bilan. Ruxsat bo'lmasa so'rov
+  // yuborilmaydi: aks holda 403 "hamma yubordi" degan yolg'on yashil blokka
+  // aylanardi.
+  const { data: pending } = useQuery({
+    ...inventoryQueries.pendingChecks(),
+    enabled: can("monitoring.view"),
+  });
   const { data: byLocation = [] } = useQuery(inventoryQueries.byLocation({ limit: 8 }));
   const { data: byItem = [] } = useQuery(inventoryQueries.byItem({ limit: 8 }));
 
@@ -108,49 +120,51 @@ const OverviewPage = () => {
       </Card>
 
       {/* ── Bugungi monitoring intizomi ── */}
-      <Card>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 className="font-semibold text-gray-900">Bugungi hisobotlar</h2>
-            <p className="mt-0.5 text-xs text-gray-500">
-              {summary.monitoring.submittedToday} / {summary.monitoring.totalLocations} xona
-              hisobot berdi
-            </p>
+      <Can do="monitoring.view">
+        <Card>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="font-semibold text-gray-900">Bugungi hisobotlar</h2>
+              <p className="mt-0.5 text-xs text-gray-500">
+                {summary.monitoring.submittedToday} / {summary.monitoring.totalLocations} xona
+                hisobot berdi
+              </p>
+            </div>
+
+            <Link
+              to="/inventory/checks"
+              className="inline-flex items-center gap-1 text-sm font-medium text-primary"
+            >
+              Hisobotlar
+              <ArrowRight className="size-3.5" />
+            </Link>
           </div>
 
-          <Link
-            to="/inventory/checks"
-            className="inline-flex items-center gap-1 text-sm font-medium text-primary"
-          >
-            Hisobotlar
-            <ArrowRight className="size-3.5" />
-          </Link>
-        </div>
-
-        {!pending || pending.pendingCount === 0 ? (
-          <div className="mt-4 rounded-xl bg-green-50 p-3 text-sm text-green-800">
-            Barcha xonalar bugungi hisobotni yubordi.
-          </div>
-        ) : (
-          <div className="mt-4 space-y-2">
-            {pending.locations.map((location) => (
-              <div
-                key={location.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-50 px-3 py-2"
-              >
-                <span className="text-sm font-medium text-amber-900">{location.name}</span>
-                <span className="text-xs text-amber-700">
-                  {location.responsible
-                    ? `Mas'ul: ${location.responsible.firstName} ${
-                        location.responsible.lastName ?? ""
-                      }`.trim()
-                    : "Mas'ul belgilanmagan"}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
+          {!pending || pending.pendingCount === 0 ? (
+            <div className="mt-4 rounded-xl bg-green-50 p-3 text-sm text-green-800">
+              Barcha xonalar bugungi hisobotni yubordi.
+            </div>
+          ) : (
+            <div className="mt-4 space-y-2">
+              {pending.locations.map((location) => (
+                <div
+                  key={location.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-50 px-3 py-2"
+                >
+                  <span className="text-sm font-medium text-amber-900">{location.name}</span>
+                  <span className="text-xs text-amber-700">
+                    {location.responsible
+                      ? `Mas'ul: ${location.responsible.firstName} ${
+                          location.responsible.lastName ?? ""
+                        }`.trim()
+                      : "Mas'ul belgilanmagan"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </Can>
 
       {/* ── Kesimlar ── */}
       <div className="grid gap-4 xl:grid-cols-2">

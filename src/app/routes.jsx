@@ -142,6 +142,7 @@ import PayrollPage from "@/features/payroll/pages/PayrollPage";
 
 // Pages - Inventar (moddiy-texnik baza)
 import InventoryLayout from "@/features/inventory/layouts/InventoryLayout";
+import InventoryIndex from "@/features/inventory/layouts/InventoryIndex";
 import InventoryOverviewPage from "@/features/inventory/pages/OverviewPage";
 import InventoryStockPage from "@/features/inventory/pages/StockPage";
 import InventoryChecksPage from "@/features/inventory/pages/ChecksPage";
@@ -403,7 +404,8 @@ const Routes = () => {
           {/* INVENTAR — moddiy-texnik baza. Bitta sahifa, ichida tablar
               (moliya bo'limi bilan bir xil shakl). */}
           <Route path="/inventory" element={<InventoryLayout />}>
-            <Route index element={<Navigate to="/inventory/overview" replace />} />
+            {/* Ruxsati bor birinchi tab — monitoring-only xodim ham kiradi */}
+            <Route index element={<InventoryIndex />} />
             <Route path="overview" element={<InventoryOverviewPage />} />
             <Route path="checks" element={<InventoryChecksPage />} />
             {/* Varaq — tab ichida, chunki u ham monitoring oqimining qismi */}
