@@ -139,6 +139,17 @@ import DiscountsPage from "@/features/finance/pages/DiscountsPage";
 import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
 import ExternalIncomePage from "@/features/externalIncome/pages/ExternalIncomePage";
 import PayrollPage from "@/features/payroll/pages/PayrollPage";
+
+// Pages - Inventar (moddiy-texnik baza)
+import InventoryLayout from "@/features/inventory/layouts/InventoryLayout";
+import InventoryOverviewPage from "@/features/inventory/pages/OverviewPage";
+import InventoryStockPage from "@/features/inventory/pages/StockPage";
+import InventoryChecksPage from "@/features/inventory/pages/ChecksPage";
+import InventoryCheckDetailPage from "@/features/inventory/pages/CheckDetailPage";
+import InventoryDamagesPage from "@/features/inventory/pages/DamagesPage";
+import InventoryDebtorsPage from "@/features/inventory/pages/DebtorsPage";
+import InventoryCatalogPage from "@/features/inventory/pages/CatalogPage";
+import InventorySettingsPage from "@/features/inventory/pages/SettingsPage";
 import ExpensesPage from "@/features/expenses/pages/ExpensesPage";
 import FinanceReportsPage from "@/features/financeReports/pages/FinanceReportsPage";
 
@@ -387,6 +398,21 @@ const Routes = () => {
               path="students"
               element={<Navigate to="/finance/main/overview" replace />}
             />
+          </Route>
+
+          {/* INVENTAR — moddiy-texnik baza. Bitta sahifa, ichida tablar
+              (moliya bo'limi bilan bir xil shakl). */}
+          <Route path="/inventory" element={<InventoryLayout />}>
+            <Route index element={<Navigate to="/inventory/overview" replace />} />
+            <Route path="overview" element={<InventoryOverviewPage />} />
+            <Route path="checks" element={<InventoryChecksPage />} />
+            {/* Varaq — tab ichida, chunki u ham monitoring oqimining qismi */}
+            <Route path="checks/:id" element={<InventoryCheckDetailPage />} />
+            <Route path="damages" element={<InventoryDamagesPage />} />
+            <Route path="debtors" element={<InventoryDebtorsPage />} />
+            <Route path="stock" element={<InventoryStockPage />} />
+            <Route path="catalog" element={<InventoryCatalogPage />} />
+            <Route path="settings" element={<InventorySettingsPage />} />
           </Route>
 
           {/* Hisobotlar bosh sahifaga ko'chdi — eski havola yo'naltiriladi */}

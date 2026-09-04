@@ -16,6 +16,7 @@ import {
   BadgeDollarSign,
   Crown,
   Wallet,
+  Boxes,
 } from "lucide-react";
 
 // Router
@@ -245,6 +246,43 @@ const navItems = [
       {
         title: "Asosiy",
         url: "/finance/main",
+      },
+    ],
+  },
+  {
+    // INVENTAR — moliyadan alohida guruh: xo'jalik mudiri partani sanaydi,
+    // lekin maktabning qarzdorlik registrini ko'rmasligi kerak.
+    title: "Inventar",
+    icon: Boxes,
+    isActive: false,
+    items: [
+      {
+        title: "Umumiy",
+        url: "/inventory/overview",
+      },
+      {
+        title: "Kunlik hisobot",
+        url: "/inventory/checks",
+      },
+      {
+        title: "Zararlar",
+        url: "/inventory/damages",
+      },
+      {
+        title: "Qarzdorlar",
+        url: "/inventory/debtors",
+      },
+      {
+        title: "Xatlov",
+        url: "/inventory/stock",
+      },
+      {
+        title: "Katalog",
+        url: "/inventory/catalog",
+      },
+      {
+        title: "Sozlamalar",
+        url: "/inventory/settings",
       },
     ],
   },
