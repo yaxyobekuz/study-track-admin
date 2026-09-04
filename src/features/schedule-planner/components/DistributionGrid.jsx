@@ -231,9 +231,17 @@ const DistributionGrid = ({
   if (columns.length === 0 || rows.length === 0) return null;
 
   return (
+    // ⚠️ w-max va max-w-full IKKALASI ham kerak:
+    //   w-max      — jadval tor bo'lsa quti unga yopishadi, o'ng tomonda
+    //                bo'sh oq maydon qolmaydi;
+    //   max-w-full — jadval keng bo'lsa quti KONTEYNERDAN CHIQIB KETMAYDI,
+    //                balki o'z ichida aylanadi. Busiz butun sahifa o'ngga
+    //                suriladigan bo'lib qolardi va yopishib turadigan
+    //                ustunlar hech qachon ishlamasdi — aylanish quti ichida
+    //                emas, sahifada bo'lardi.
     <div
       ref={rootRef}
-      className="relative max-h-[calc(100svh-15rem)] overflow-auto rounded-2xl bg-white p-1 w-max hidden-scrollbar shadow"
+      className="relative max-h-[calc(100svh-15rem)] max-w-full overflow-auto rounded-2xl bg-white p-1 w-max hidden-scrollbar shadow"
     >
       <table className="min-w-0 border-separate border-spacing-0 text-xs">
         <thead>

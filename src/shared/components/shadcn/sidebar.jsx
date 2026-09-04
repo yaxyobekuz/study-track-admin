@@ -328,7 +328,21 @@ const SidebarInset = React.forwardRef(({ className, ...props }, ref) => {
     <main
       ref={ref}
       className={cn(
-        "relative flex w-full flex-1 flex-col",
+        // MAJBURIY: min-w-0.
+        //
+        // Bu <main> yon panel bilan bitta flex qatorida turadi. Flex
+        // elementining min-width i sukut bo'yicha auto, ya'ni u O'Z ICHIDAGI
+        // eng keng narsaga qarab cho'ziladi va konteynerdan chiqib ketadi.
+        // Oqibati ikkita: ichkaridagi har qanday overflow-x-auto ishlamay
+        // qoladi (element allaqachon sig'ib turibdi, demak aylantirish
+        // kerak emas) va butun SAHIFA o'ngga suriladigan bo'lib qoladi —
+        // yon panel joyida turadi, kontent esa ekrandan chiqib ketadi.
+        //
+        // min-w-0 bilan <main> haqiqiy kengligida qoladi va keng jadvallar
+        // o'z ichida aylanadi. Kengligi qat'iy bloklar (w-max kabi)
+        // avvalgidek ko'rinib turaveradi: <main> da overflow yo'q, ya'ni
+        // hech narsa kesilmaydi, sahifa o'sha bloknigina surib ko'rsatadi.
+        "relative flex w-full min-w-0 flex-1 flex-col",
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         className,
       )}
