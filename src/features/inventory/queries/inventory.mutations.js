@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   catalogAPI,
   stockAPI,
+  transfersAPI,
   checksAPI,
   damagesAPI,
   inventoryReportsAPI,
@@ -156,10 +157,16 @@ export const useAdjustStock = () => {
   });
 };
 
-export const useTransferStock = () => {
+/**
+ * O'TKAZMA AKTI — bir aktda bir nechta jihoz, qaysi xonaga va KIMGA.
+ *
+ * Eski `useTransferStock` shu nomga ko'chirildi: u bitta jihozni
+ * ko'chirardi va "kimga topshirildi" degan savolga javob bermasdi.
+ */
+export const useCreateTransfer = () => {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: (data) => stockAPI.transfer(data).then((r) => r.data.data),
+    mutationFn: (data) => transfersAPI.create(data).then((r) => r.data.data),
     onSuccess: invalidate,
   });
 };

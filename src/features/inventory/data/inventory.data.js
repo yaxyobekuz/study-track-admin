@@ -90,6 +90,55 @@ export const DAMAGE_KINDS = [
   { value: "missing", label: "Yo'qolgan" },
 ];
 
+/**
+ * ZARAR SABABI — turdan (`kind`) MUSTAQIL ikkinchi o'lchov.
+ *
+ * Tur xatlovga TA'SIRNI bildiradi (singani xonada qoladi, yo'qolgani
+ * chiqadi), sabab esa NIMA BO'LGANINI. Server ularni alohida saqlaydi
+ * (`InventoryDamageReason`) va sabab turga mos kelishini tekshiradi —
+ * ro'yxatlar shu sababli ikkiga bo'lingan.
+ *
+ * ⚠️ `server/src/helpers/inventory.helpers.js` dagi `DAMAGE_REASON_LABELS`
+ * va `REASONS_BY_KIND` bilan QO'LDA SINXRON (fayl sarlavhasidagi izoh).
+ */
+export const DAMAGE_REASONS = [
+  { value: "broken", label: "Sindi" },
+  { value: "expired", label: "Yaroqlilik muddati tugadi" },
+  { value: "worn_out", label: "Eskirdi" },
+  { value: "misused", label: "Noto'g'ri foydalanildi" },
+  { value: "lost", label: "Yo'qoldi" },
+  { value: "stolen", label: "O'g'irlandi" },
+  { value: "other", label: "Boshqa" },
+];
+
+export const DAMAGE_REASON_LABELS = Object.fromEntries(
+  DAMAGE_REASONS.map((r) => [r.value, r.label]),
+);
+
+/**
+ * Qaysi sabab qaysi turda tanlanishi mumkin.
+ *
+ * "Yaroqlilik muddati tugadi" va "Boshqa" IKKALASIDA ham bor: muddati
+ * tugagan piyola xonada turaveradi (singan safida), tugagan sut esa
+ * tashlab yuboriladi (yo'qolgan safida).
+ */
+export const REASONS_BY_KIND = {
+  broken: ["broken", "expired", "worn_out", "misused", "other"],
+  missing: ["lost", "stolen", "expired", "other"],
+};
+
+/** Tanlagich variantlari — tur bo'yicha filtrlangan. */
+export const reasonOptionsFor = (kind) =>
+  DAMAGE_REASONS.filter((r) => REASONS_BY_KIND[kind]?.includes(r.value));
+
+/** "Boshqa" tanlanganda izoh MAJBURIY (server ham shuni talab qiladi). */
+export const REASONS_REQUIRING_NOTE = ["other"];
+
+export const DAMAGE_REASON_OPTIONS = [
+  { value: "", label: "Barcha sabablar" },
+  ...DAMAGE_REASONS,
+];
+
 export const DAMAGE_STATUS_OPTIONS = [
   { value: "", label: "Barcha holatlar" },
   { value: "pending", label: "Aybdor aniqlanmagan" },
@@ -145,6 +194,16 @@ export const DAMAGE_COLUMNS = [
   { label: "Yozilgan", align: "right" },
   "Holat",
   "",
+];
+
+export const TRANSFER_COLUMNS = [
+  "Sana",
+  "Qayerdan",
+  "Qayerga",
+  "Kimga topshirildi",
+  { label: "Jihoz turi", align: "right" },
+  { label: "Soni", align: "right" },
+  "Izoh",
 ];
 
 export const CHARGE_COLUMNS = [

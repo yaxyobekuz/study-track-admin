@@ -25,7 +25,14 @@ import useObjectState from "@/shared/hooks/useObjectState";
 import { formatMoney } from "@/shared/utils/formatMoney";
 
 // Data & queries
-import { DAMAGE_KINDS, NO_ADVANCE_HINT, SEALED_HINT } from "../data/inventory.data";
+import {
+  DAMAGE_KINDS,
+  NO_ADVANCE_HINT,
+  REASONS_BY_KIND,
+  REASONS_REQUIRING_NOTE,
+  SEALED_HINT,
+  reasonOptionsFor,
+} from "../data/inventory.data";
 import { inventoryQueries } from "../queries/inventory.queries";
 import {
   useCancelCharge,
@@ -65,15 +72,39 @@ const DamageForm = ({ close, isLoading, setIsLoading }) => {
   const { data: settings } = useQuery(inventoryQueries.settings());
   const { mutate: createDamage } = useCreateDamage();
 
-  const { locationId, itemId, kind, quantity, occurredAt, description, setField } =
-    useObjectState({
-      locationId: "",
-      itemId: "",
-      kind: "broken",
-      quantity: "1",
-      occurredAt: todayInputValue(),
-      description: "",
-    });
+  const {
+    locationId,
+    itemId,
+    kind,
+    reason,
+    quantity,
+    occurredAt,
+    description,
+    setField,
+  } = useObjectState({
+    locationId: "",
+    itemId: "",
+    kind: "broken",
+    reason: "broken",
+    quantity: "1",
+    occurredAt: todayInputValue(),
+    description: "",
+  });
+
+  /**
+   * Tur almashganda sabab ham tekshiriladi.
+   *
+   * Sabablar turga bog'langan (`REASONS_BY_KIND`): "yo'qoldi" ni singan
+   * buyumga qo'yib bo'lmaydi. Tur almashganda eski sabab yaroqsiz bo'lib
+   * qolsa — server rad etardi, shuning uchun shu yerda birinchi mos
+   * variantga tushiriladi.
+   */
+  const changeKind = (value) => {
+    setField("kind", value);
+    if (!REASONS_BY_KIND[value]?.includes(reason)) {
+      setField("reason", REASONS_BY_KIND[value]?.[0] ?? "");
+    }
+  };
 
   const [files, setFiles] = useState([]);
 
@@ -91,7 +122,7 @@ const DamageForm = ({ close, isLoading, setIsLoading }) => {
     setIsLoading(true);
 
     createDamage(
-      { locationId, itemId, kind, quantity, occurredAt, description, files },
+      { locationId, itemId, kind, reason, quantity, occurredAt, description, files },
       {
         onSuccess: () => {
           close();
@@ -104,6 +135,9 @@ const DamageForm = ({ close, isLoading, setIsLoading }) => {
   };
 
   const photoRequired = settings?.requirePhoto && files.length === 0;
+  // "Boshqa" izohsiz ma'nosiz — server ham rad etadi
+  const noteRequired =
+    REASONS_REQUIRING_NOTE.includes(reason) && !description.trim();
 
   return (
     <InputGroup as="form" onSubmit={handleSubmit}>
@@ -135,16 +169,29 @@ const DamageForm = ({ close, isLoading, setIsLoading }) => {
 
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Zarar turi</p>
-        <Select
-          value={kind}
-          onChange={(v) => setField("kind", v)}
-          options={DAMAGE_KINDS}
-        />
+        <Select value={kind} onChange={changeKind} options={DAMAGE_KINDS} />
         <p className="text-xs text-gray-500">
           {kind === "missing"
             ? "Yo'qolgan buyum xatlovdan CHIQADI — jami miqdor kamayadi."
             : "Singan buyum xonada qoladi, lekin yaroqsizlar safiga o'tadi."}
         </p>
+      </div>
+
+      {/* Sabab — turdan MUSTAQIL o'lchov: tur xatlovga ta'sirni,
+          sabab esa nima bo'lganini bildiradi */}
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Sabab</p>
+        <Select
+          value={reason}
+          placeholder="Nima bo'ldi?"
+          onChange={(v) => setField("reason", v)}
+          options={reasonOptionsFor(kind)}
+        />
+        {REASONS_REQUIRING_NOTE.includes(reason) && (
+          <p className="text-xs text-amber-600">
+            "Boshqa" tanlanganda tafsilot yozilishi shart.
+          </p>
+        )}
       </div>
 
       <InputField
@@ -182,7 +229,15 @@ const DamageForm = ({ close, isLoading, setIsLoading }) => {
 
       <Button
         type="submit"
-        disabled={isLoading || !locationId || !itemId || !quantity || photoRequired}
+        disabled={
+          isLoading ||
+          !locationId ||
+          !itemId ||
+          !quantity ||
+          !reason ||
+          noteRequired ||
+          photoRequired
+        }
       >
         Qayd etish
       </Button>

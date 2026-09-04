@@ -50,8 +50,20 @@ export const stockAPI = {
   repair: (data) => http.post("/inventory/stocks/repair", data),
   writeOff: (data) => http.post("/inventory/stocks/write-off", data),
   adjust: (data) => http.post("/inventory/stocks/adjust", data),
-  transfer: (data) => http.post("/inventory/stocks/transfer", data),
   getMovements: (params) => http.get("/inventory/movements", { params }),
+};
+
+/**
+ * O'TKAZMA — topshirish-qabul qilish akti.
+ *
+ * Xatlovdan alohida, chunki o'tkazma HUJJAT: bir aktda bir nechta jihoz,
+ * qaysi xonaga va KIMGA topshirilgani, izohi bilan. Miqdor daftariga
+ * qatorlar baribir yoziladi — akt ularning konteksti.
+ */
+export const transfersAPI = {
+  getAll: (params) => http.get("/inventory/transfers", { params }),
+  getById: (id) => http.get(`/inventory/transfers/${id}`),
+  create: (data) => http.post("/inventory/transfers", data),
 };
 
 /** Kunlik monitoring hisoboti. */
@@ -113,6 +125,9 @@ export const inventoryReportsAPI = {
   getSummary: (params) => http.get("/inventory/summary", { params }),
   getByLocation: (params) => http.get("/inventory/reports/locations", { params }),
   getByItem: (params) => http.get("/inventory/reports/items", { params }),
+  // "Nega yo'qotdik" kesimi — jihoz kesimi "nima sinadi" degan savolga
+  // javob beradi, bu esa "nega" degan savolga
+  getByReason: (params) => http.get("/inventory/reports/reasons", { params }),
   getMonitoring: (params) => http.get("/inventory/reports/monitoring", { params }),
   getDebtors: (params) => http.get("/inventory/reports/debtors", { params }),
   getSettings: () => http.get("/inventory/settings"),

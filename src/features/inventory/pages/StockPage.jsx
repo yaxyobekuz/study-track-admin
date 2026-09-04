@@ -2,7 +2,16 @@
 import { useState } from "react";
 
 // Icons
-import { Boxes, Plus, Wrench, Trash2, ArrowLeftRight, SlidersHorizontal, History } from "lucide-react";
+import {
+  Boxes,
+  Plus,
+  Wrench,
+  Trash2,
+  ArrowLeftRight,
+  SlidersHorizontal,
+  History,
+  User,
+} from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -25,7 +34,11 @@ import { cn } from "@/shared/utils/cn";
 import { formatDateUz } from "@/shared/utils/date.utils";
 
 // Data & queries
-import { MOVEMENT_COLUMNS, STOCK_COLUMNS } from "../data/inventory.data";
+import {
+  MOVEMENT_COLUMNS,
+  STOCK_COLUMNS,
+  TRANSFER_COLUMNS,
+} from "../data/inventory.data";
 import { inventoryQueries } from "../queries/inventory.queries";
 
 /**
@@ -40,6 +53,10 @@ const StockPage = () => {
 
   const tabs = [
     { value: "stock", label: "Xatlov", content: <StockList /> },
+    // O'tkazmalar HARAKATLAR TARIXIDAN alohida tab: daftarda bitta akt
+    // to'rtta bog'lanmagan qator bo'lib ko'rinardi ("10 ta parta chiqdi",
+    // "10 ta parta kirdi", ...) va "kimga topshirildi" umuman ko'rinmasdi
+    { value: "transfers", label: "O'tkazmalar", content: <TransferList /> },
     { value: "movements", label: "Harakatlar tarixi", content: <MovementList /> },
   ];
 
@@ -109,7 +126,7 @@ const StockList = () => {
           <Can do="inventory.transfer">
             <Button variant="outline" onClick={() => openModal("inventoryTransfer", {})}>
               <ArrowLeftRight />
-              Ko'chirish
+              O'tkazish
             </Button>
           </Can>
 
@@ -246,6 +263,119 @@ const StockList = () => {
 // ─────────────────────────────────────────────
 // Miqdor daftari
 // ─────────────────────────────────────────────
+
+/**
+ * O'TKAZMALAR REGISTRI — topshirish-qabul qilish aktlari.
+ *
+ * ⚠️ Bekor qilish tugmasi YO'Q va bu ataylab: daftar append-only, ya'ni
+ * "bekor qilish" baribir ikkita yangi qator yozardi va faqat asl aktni
+ * ko'rinmas qilardi. Xato o'tkazma TESKARI o'tkazma bilan tuzatiladi.
+ */
+const TransferList = () => {
+  const [page, setPage] = useState(1);
+  const [locationId, setLocationId] = useState("");
+
+  const { data, isLoading } = useQuery(
+    inventoryQueries.transfers({
+      page,
+      limit: 30,
+      // Xona filtri IKKALA tomonni ham qamraydi (kelgani ham, ketgani ham)
+      ...(locationId ? { locationId } : {}),
+    }),
+  );
+
+  const { data: locations = [] } = useQuery(inventoryQueries.activeLocations());
+  const items = data?.data ?? [];
+
+  return (
+    <div className="space-y-4">
+      <Select
+        triggerClassName="min-w-48"
+        value={locationId}
+        placeholder="Barcha xonalar"
+        onChange={(v) => {
+          setLocationId(v);
+          setPage(1);
+        }}
+        options={[
+          { label: "Barcha xonalar", value: "" },
+          ...locations.map((l) => ({ label: l.name, value: l.id })),
+        ]}
+      />
+
+      {isLoading ? (
+        <Card className="py-10 text-center text-gray-500">Yuklanmoqda...</Card>
+      ) : items.length === 0 ? (
+        <Card className="p-0 xs:p-0">
+          <EmptyState
+            icon={ArrowLeftRight}
+            title="O'tkazma yo'q"
+            description="Jihozlar boshqa xonaga o'tkazilganda akt shu yerda paydo bo'ladi."
+          />
+        </Card>
+      ) : (
+        <>
+          <Table columns={TRANSFER_COLUMNS}>
+            {items.map((transfer) => (
+              <Tr key={transfer.id}>
+                <Td className="text-gray-500">{formatDateUz(transfer.occurredAt)}</Td>
+
+                <Td className="text-gray-900">{transfer.fromLocationName}</Td>
+
+                <Td className="font-medium text-gray-900">
+                  {transfer.toLocationName}
+                  {/* Satrlar aktning o'zida keladi — tafsilot ekrani
+                      uchun alohida so'rov kerak emas */}
+                  <span className="block text-xs font-normal text-gray-400">
+                    {transfer.lines
+                      ?.map((l) => `${l.itemName} × ${l.quantity}`)
+                      .join(", ")}
+                  </span>
+                </Td>
+
+                <Td className="text-gray-500">
+                  {transfer.toPersonName ? (
+                    <span className="inline-flex items-center gap-1">
+                      <User className="size-3.5 text-gray-400" />
+                      {transfer.toPersonName}
+                    </span>
+                  ) : (
+                    "—"
+                  )}
+                </Td>
+
+                <Td align="right" className="text-gray-500">
+                  {transfer.linesCount}
+                </Td>
+
+                <Td align="right" className="font-semibold text-gray-900">
+                  {transfer.totalQuantity}
+                </Td>
+
+                <Td nowrap={false} className="max-w-xs text-xs text-gray-400">
+                  {transfer.note || "—"}
+                </Td>
+              </Tr>
+            ))}
+          </Table>
+
+          <p className="text-xs text-gray-500">
+            O'tkazma akti bekor qilinmaydi: xato bo'lsa teskari o'tkazma
+            qilinadi va izohda sababi yoziladi.
+          </p>
+
+          {data?.pagination?.totalPages > 1 && (
+            <Pagination
+              currentPage={page}
+              totalPages={data.pagination.totalPages}
+              onPageChange={setPage}
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
+};
 
 const MovementList = () => {
   const [page, setPage] = useState(1);

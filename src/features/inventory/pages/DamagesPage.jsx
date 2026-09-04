@@ -30,6 +30,7 @@ import { formatDateUz } from "@/shared/utils/date.utils";
 // Data & queries
 import {
   DAMAGE_COLUMNS,
+  DAMAGE_REASON_OPTIONS,
   DAMAGE_STATUS_OPTIONS,
   SEALED_HINT,
   getDamageStatusBadge,
@@ -55,6 +56,7 @@ const DamagesPage = () => {
 
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
+  const [reason, setReason] = useState("");
   const [locationId, setLocationId] = useState("");
 
   const { data, isLoading } = useQuery(
@@ -62,6 +64,7 @@ const DamagesPage = () => {
       page,
       limit: 20,
       ...(status ? { status } : {}),
+      ...(reason ? { reason } : {}),
       ...(locationId ? { locationId } : {}),
     }),
   );
@@ -103,6 +106,19 @@ const DamagesPage = () => {
               setPage(1);
             }}
             options={DAMAGE_STATUS_OPTIONS}
+          />
+
+          {/* Sabab kesimi — "nega yo'qotdik" degan savol "kim to'laydi"
+              dan alohida javob talab qiladi */}
+          <Select
+            triggerClassName="min-w-48"
+            value={reason}
+            placeholder="Barcha sabablar"
+            onChange={(v) => {
+              setReason(v);
+              setPage(1);
+            }}
+            options={DAMAGE_REASON_OPTIONS}
           />
         </div>
 
@@ -165,8 +181,12 @@ const DamagesPage = () => {
 
                   <Td className="font-medium text-gray-900">
                     {damage.itemName}
+                    {/* Yorliqlar SERVERDAN tayyor keladi (`kindLabel` /
+                        `reasonLabel`) — enum kalitini yorliqqa aylantirish
+                        frontendning ishi emas */}
                     <span className="block text-xs font-normal text-gray-400">
                       {damage.kindLabel}
+                      {damage.reasonLabel && ` · ${damage.reasonLabel}`}
                     </span>
                   </Td>
 

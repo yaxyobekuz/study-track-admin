@@ -8,6 +8,7 @@ import { createQueryKeys } from "@/shared/lib/query";
 import {
   catalogAPI,
   stockAPI,
+  transfersAPI,
   checksAPI,
   damagesAPI,
   inventoryReportsAPI,
@@ -90,6 +91,21 @@ export const inventoryQueries = {
       queryKey: [...stockKey, "movements", params],
       queryFn: () => stockAPI.getMovements(params).then((r) => r.data),
       placeholderData: keepPreviousData,
+    }),
+
+  // ── O'tkazmalar (topshirish-qabul qilish aktlari) ──
+  transfers: (params) =>
+    queryOptions({
+      queryKey: [...stockKey, "transfers", params],
+      queryFn: () => transfersAPI.getAll(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  transfer: (id) =>
+    queryOptions({
+      queryKey: [...stockKey, "transfer", id],
+      queryFn: () => transfersAPI.getById(id).then((r) => r.data.data),
+      enabled: Boolean(id),
     }),
 
   // ── Kunlik monitoring ──────────────────────
@@ -175,6 +191,12 @@ export const inventoryQueries = {
     queryOptions({
       queryKey: [...reportsKey, "items", params],
       queryFn: () => inventoryReportsAPI.getByItem(params).then((r) => r.data.items ?? []),
+    }),
+
+  byReason: (params) =>
+    queryOptions({
+      queryKey: [...reportsKey, "reasons", params],
+      queryFn: () => inventoryReportsAPI.getByReason(params).then((r) => r.data.items ?? []),
     }),
 
   monitoringReport: (params) =>

@@ -25,10 +25,15 @@ import { inventoryQueries } from "../queries/inventory.queries";
 import {
   useAddStock,
   useAdjustStock,
+  useCreateTransfer,
   useRepairStock,
-  useTransferStock,
   useWriteOffStock,
 } from "../queries/inventory.mutations";
+
+// Qabul qiluvchi xodim tanlagichi — ro'yxat uzun bo'lishi mumkin,
+// shuning uchun qidiruvli `Combobox` (`ChargeForm` bilan bir xil naqsh)
+import Combobox from "@/shared/components/form/combobox";
+import { usersQueries } from "@/features/users/queries/users.queries";
 
 const showError = (err) =>
   toast.error(err.response?.data?.message || "Xatolik yuz berdi");
@@ -511,65 +516,132 @@ const AdjustForm = ({ close, isLoading, setIsLoading, stock }) => {
 };
 
 // ─────────────────────────────────────────────
-// Xonalar orasida ko'chirish
+// O'TKAZMA — TOPSHIRISH-QABUL QILISH AKTI
 // ─────────────────────────────────────────────
 
+/**
+ * Bir aktda BIR NECHTA jihoz, qaysi xonaga va KIMGA topshirilgani bilan.
+ *
+ * Avval bu forma bitta jihozni ko'chirardi va "kimga topshirildi" degan
+ * savolga javob bermasdi — javobgarlik faqat izoh matnida qolardi.
+ * Ko'p qatorli shakl `AddStockForm` naqshidan olingan: amalda "1-A dan
+ * 2-B ga 10 ta parta va 20 ta stul" bitta hodisa.
+ */
 export const TransferModal = () => (
-  <ResponsiveModal name="inventoryTransfer" title="Boshqa xonaga ko'chirish">
+  <ResponsiveModal
+    name="inventoryTransfer"
+    title="Jihozlarni o'tkazish"
+    className="max-w-2xl"
+  >
     <TransferForm />
   </ResponsiveModal>
 );
 
+const emptyTransferLine = () => ({ itemId: "", quantity: "", brokenQuantity: "" });
+
+const fullNameOf = (user) => `${user.firstName} ${user.lastName ?? ""}`.trim();
+
 const TransferForm = ({ close, isLoading, setIsLoading }) => {
   const { data: locations = [] } = useQuery(inventoryQueries.activeLocations());
-  const { mutate: transfer } = useTransferStock();
+  const { data: allUsers = [] } = useQuery(usersQueries.allShort());
+  const { mutate: createTransfer } = useCreateTransfer();
 
-  const {
-    fromLocationId,
-    toLocationId,
-    itemId,
-    quantity,
-    brokenQuantity,
-    occurredAt,
-    note,
-    setField,
-  } = useObjectState({
-    fromLocationId: "",
-    toLocationId: "",
-    itemId: "",
-    quantity: "",
-    brokenQuantity: "",
-    occurredAt: todayInputValue(),
-    note: "",
-  });
+  const { fromLocationId, toLocationId, toPersonId, occurredAt, note, setField } =
+    useObjectState({
+      fromLocationId: "",
+      toLocationId: "",
+      toPersonId: "",
+      occurredAt: todayInputValue(),
+      note: "",
+    });
 
-  // Manba xonaning xatlovi — faqat u yerda BOR jihozlarni ko'chirish mumkin
+  const [lines, setLines] = useState([emptyTransferLine()]);
+
+  // Manba xonaning xatlovi — faqat u yerda BOR jihozni o'tkazish mumkin
   const { data: sourceStock } = useQuery({
     ...inventoryQueries.stockByLocation(fromLocationId),
     enabled: Boolean(fromLocationId),
   });
 
   const availableItems = sourceStock?.items ?? [];
-  const selected = availableItems.find((s) => s.itemId === itemId);
+  const stockOf = (itemId) => availableItems.find((s) => s.itemId === itemId);
+
+  const setLine = (index, key, value) =>
+    setLines((prev) => prev.map((l, i) => (i === index ? { ...l, [key]: value } : l)));
+
+  /**
+   * Jihoz almashtirilganda miqdorlar TOZALANADI.
+   *
+   * "Shundan yaroqsizlari" maydoni faqat xonada yaroqsizi bor jihozda
+   * ko'rinadi. Foydalanuvchi 3 deb yozib, keyin yaroqsizi yo'q jihozga
+   * almashtirsa, maydon ekrandan yo'qolardi-yu qiymat holatda qolib
+   * serverga ketardi — u esa "yaroqsizlar soni manfiy bo'lib qoladi"
+   * deb rad etardi va foydalanuvchi sababini ko'rmasdi.
+   */
+  const changeItem = (index, itemId) =>
+    setLines((prev) =>
+      prev.map((l, i) => (i === index ? { itemId, quantity: "", brokenQuantity: "" } : l)),
+    );
+
+  const addLine = () => setLines((prev) => [...prev, emptyTransferLine()]);
+
+  const removeLine = (index) =>
+    setLines((prev) => (prev.length === 1 ? prev : prev.filter((_, i) => i !== index)));
+
+  // Manba xona almashsa qatorlar TOZALANADI — aks holda eski xonaning
+  // jihozlari ro'yxatda qolib, server "bu xatlovda bunday jihoz yo'q"
+  // degan xatoni qaytarardi
+  const changeSource = (value) => {
+    setField("fromLocationId", value);
+    setLines([emptyTransferLine()]);
+    if (value === toLocationId) setField("toLocationId", "");
+  };
+
+  const filled = lines.filter((l) => l.itemId && Number(l.quantity) > 0);
+
+  // O'quvchiga topshirib bo'lmaydi — server ham rad etadi, lekin tanlagichda
+  // umuman ko'rinmagani tushunarliroq
+  const staffOptions = allUsers
+    .filter((u) => u.role !== "student")
+    .map((u) => ({ label: fullNameOf(u), value: u.id }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Miqdor xatlovdagidan oshib ketmasin — server baribir tekshiradi,
+    // lekin xato tranzaksiya boshlangandan keyin emas, shu yerda chiqsin
+    const tooMuch = filled.find((l) => {
+      const stock = stockOf(l.itemId);
+      return stock && Number(l.quantity) > stock.quantity;
+    });
+    if (tooMuch) {
+      const stock = stockOf(tooMuch.itemId);
+      toast.error(`"${stock.itemName}": xonada ${stock.quantity} ta bor`);
+      return;
+    }
+
     setIsLoading(true);
 
-    transfer(
+    createTransfer(
       {
         fromLocationId,
         toLocationId,
-        itemId,
-        quantity: Number(quantity),
-        brokenQuantity: Number(brokenQuantity) || 0,
+        toPersonId: toPersonId || undefined,
         occurredAt,
         note,
+        lines: filled.map((l) => ({
+          itemId: l.itemId,
+          quantity: Number(l.quantity),
+          brokenQuantity: Number(l.brokenQuantity) || 0,
+        })),
       },
       {
-        onSuccess: () => {
+        onSuccess: (transfer) => {
           close();
-          toast.success("Jihoz ko'chirildi");
+          toast.success(
+            `${transfer.linesCount} ta jihoz turi o'tkazildi` +
+              (transfer.toPersonName ? ` — ${transfer.toPersonName}` : ""),
+          );
         },
         onError: showError,
         onSettled: () => setIsLoading(false),
@@ -579,68 +651,119 @@ const TransferForm = ({ close, isLoading, setIsLoading }) => {
 
   return (
     <InputGroup as="form" onSubmit={handleSubmit}>
-      <div className="space-y-1.5">
-        <p className="text-sm font-medium text-gray-700">Qaysi xonadan</p>
-        <Select
-          value={fromLocationId}
-          placeholder="Xonani tanlang"
-          onChange={(v) => {
-            setField("fromLocationId", v);
-            setField("itemId", "");
-          }}
-          options={locations.map((l) => ({ label: l.name, value: l.id }))}
-        />
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium text-gray-700">Qaysi xonadan</p>
+          <Select
+            value={fromLocationId}
+            placeholder="Xonani tanlang"
+            triggerClassName="w-full"
+            onChange={changeSource}
+            options={locations.map((l) => ({ label: l.name, value: l.id }))}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium text-gray-700">Qaysi xonaga</p>
+          <Select
+            value={toLocationId}
+            placeholder="Xonani tanlang"
+            triggerClassName="w-full"
+            onChange={(v) => setField("toLocationId", v)}
+            options={locations
+              .filter((l) => l.id !== fromLocationId)
+              .map((l) => ({ label: l.name, value: l.id }))}
+          />
+        </div>
       </div>
 
-      <div className="space-y-1.5">
-        <p className="text-sm font-medium text-gray-700">Jihoz</p>
-        <Select
-          value={itemId}
-          placeholder={fromLocationId ? "Jihozni tanlang" : "Avval xonani tanlang"}
-          onChange={(v) => setField("itemId", v)}
-          options={availableItems.map((s) => ({
-            label: `${s.itemName} (${s.quantity} ta)`,
-            value: s.itemId,
-          }))}
-        />
-      </div>
-
-      <div className="space-y-1.5">
-        <p className="text-sm font-medium text-gray-700">Qaysi xonaga</p>
-        <Select
-          value={toLocationId}
-          placeholder="Xonani tanlang"
-          onChange={(v) => setField("toLocationId", v)}
-          options={locations
-            .filter((l) => l.id !== fromLocationId)
-            .map((l) => ({ label: l.name, value: l.id }))}
-        />
-      </div>
-
-      <InputField
-        required
-        min="1"
-        type="number"
-        name="quantity"
-        label="Miqdor"
-        value={quantity}
-        max={selected?.quantity}
-        description={selected ? `Mavjud: ${selected.quantity} ta` : ""}
-        onChange={(e) => setField("quantity", e.target.value)}
+      <Combobox
+        name="toPersonId"
+        label="Kimga topshirildi (ixtiyoriy)"
+        value={toPersonId}
+        options={staffOptions}
+        placeholder="Xodimni tanlang"
+        searchPlaceholder="Ism bo'yicha qidirish"
+        emptyText="Xodim topilmadi"
+        onChange={(v) => setField("toPersonId", v)}
       />
 
-      {selected?.brokenQuantity > 0 && (
-        <InputField
-          min="0"
-          type="number"
-          name="brokenQuantity"
-          label="Shundan yaroqsizlari"
-          value={brokenQuantity}
-          max={selected.brokenQuantity}
-          description={`Manba xonada ${selected.brokenQuantity} ta yaroqsiz bor`}
-          onChange={(e) => setField("brokenQuantity", e.target.value)}
-        />
-      )}
+      {/* ── Jihozlar ── */}
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-gray-700">Jihozlar</p>
+
+        {lines.map((line, index) => {
+          const stock = stockOf(line.itemId);
+
+          return (
+            <div key={index} className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <Select
+                  value={line.itemId}
+                  placeholder={fromLocationId ? "Jihozni tanlang" : "Avval xonani tanlang"}
+                  triggerClassName="w-full"
+                  onChange={(v) => changeItem(index, v)}
+                  options={availableItems.map((s) => ({
+                    label: `${s.itemName} (${s.quantity} ta)`,
+                    value: s.itemId,
+                  }))}
+                />
+                {stock?.brokenQuantity > 0 && (
+                  <p className="mt-1 text-xs text-amber-600">
+                    Xonada {stock.brokenQuantity} ta yaroqsiz bor
+                  </p>
+                )}
+              </div>
+
+              <input
+                min="1"
+                type="number"
+                placeholder="Soni"
+                max={stock?.quantity}
+                value={line.quantity}
+                onChange={(e) => setLine(index, "quantity", e.target.value)}
+                className="w-20 rounded-xl border border-gray-200 px-2 py-2 text-sm"
+              />
+
+              {/* Yaroqsizlari — ko'chirilayotgan miqdor ICHIDA. Xonada
+                  yaroqsiz bo'lmasa maydon ham kerak emas. */}
+              {stock?.brokenQuantity > 0 && (
+                <input
+                  min="0"
+                  type="number"
+                  title="Shundan yaroqsizlari"
+                  placeholder="Yaroqsiz"
+                  max={Math.min(stock.brokenQuantity, Number(line.quantity) || 0)}
+                  value={line.brokenQuantity}
+                  onChange={(e) => setLine(index, "brokenQuantity", e.target.value)}
+                  className="w-24 rounded-xl border border-gray-200 px-2 py-2 text-sm"
+                />
+              )}
+
+              <button
+                type="button"
+                title="Qatorni olib tashlash"
+                onClick={() => removeLine(index)}
+                disabled={lines.length === 1}
+                className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-30"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          );
+        })}
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={addLine}
+          disabled={!fromLocationId}
+        >
+          <Plus />
+          Qator qo'shish
+        </Button>
+      </div>
 
       <InputField
         required
@@ -654,16 +777,22 @@ const TransferForm = ({ close, isLoading, setIsLoading }) => {
 
       <InputField
         name="note"
-        label="Izoh (ixtiyoriy)"
+        label="Izoh"
         value={note}
+        placeholder="Nima uchun o'tkazilyapti?"
         onChange={(e) => setField("note", e.target.value)}
       />
 
+      <p className="rounded-xl bg-gray-50 p-3 text-xs text-gray-600">
+        O'tkazma bekor qilinmaydi: xato bo'lsa teskari o'tkazma qilinadi va
+        izohda sababi yoziladi.
+      </p>
+
       <Button
         type="submit"
-        disabled={isLoading || !fromLocationId || !toLocationId || !itemId || !quantity}
+        disabled={isLoading || !fromLocationId || !toLocationId || filled.length === 0}
       >
-        Ko'chirish
+        {filled.length > 0 ? `${filled.length} ta jihozni o'tkazish` : "O'tkazish"}
       </Button>
     </InputGroup>
   );

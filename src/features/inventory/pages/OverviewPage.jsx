@@ -50,6 +50,7 @@ const OverviewPage = () => {
   });
   const { data: byLocation = [] } = useQuery(inventoryQueries.byLocation({ limit: 8 }));
   const { data: byItem = [] } = useQuery(inventoryQueries.byItem({ limit: 8 }));
+  const { data: byReason = [] } = useQuery(inventoryQueries.byReason());
 
   if (isLoading) {
     return <Card className="py-10 text-center text-gray-500">Yuklanmoqda...</Card>;
@@ -257,6 +258,45 @@ const OverviewPage = () => {
           )}
         </Card>
       </div>
+
+      {/* ── NEGA YO'QOTDIK ──
+          Jihoz kesimi "nima sinadi" degan savolga javob beradi, bu esa
+          "nega" degan savolga. Ikkalasi boshqa qarorga olib boradi: ko'p
+          sinadigan jihozni sifatliroqqa almashtirish kerak, yaroqlilik
+          muddati tez-tez tugaydiganini esa kamroq sotib olish kerak. */}
+      {byReason.some((row) => row.count > 0) && (
+        <Card className="p-0 xs:p-0">
+          <div className="px-4 pt-4 xs:px-5 xs:pt-5">
+            <h2 className="font-semibold text-gray-900">Nega yo'qotdik</h2>
+            <p className="mt-0.5 text-xs text-gray-500">
+              Zarar sabablari bo'yicha kesim
+            </p>
+          </div>
+
+          <Table
+            className="mt-3 rounded-none"
+            columns={[
+              "Sabab",
+              { label: "Hodisa", align: "right" },
+              { label: "Soni", align: "right" },
+              { label: "Zarar", align: "right" },
+            ]}
+          >
+            {byReason
+              .filter((row) => row.count > 0)
+              .map((row) => (
+                <Tr key={row.reason}>
+                  <Td className="font-medium text-gray-900">{row.reasonLabel}</Td>
+                  <Td className="text-right text-gray-500">{row.count}</Td>
+                  <Td className="text-right text-gray-500">{row.quantity}</Td>
+                  <Td className="text-right font-semibold text-gray-900">
+                    {formatMoney(row.amount)}
+                  </Td>
+                </Tr>
+              ))}
+          </Table>
+        </Card>
+      )}
     </div>
   );
 };

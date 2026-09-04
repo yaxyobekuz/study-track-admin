@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 // Components
 import Can from "@/shared/components/guards/Can";
 import Card from "@/shared/components/ui/Card";
+import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 
 // Utils
@@ -24,7 +25,11 @@ import { formatMoney } from "@/shared/utils/formatMoney";
 import { formatDateUz } from "@/shared/utils/date.utils";
 
 // Data & queries
-import { CHECK_SUBMIT_HINT } from "../data/inventory.data";
+import {
+  CHECK_SUBMIT_HINT,
+  REASONS_REQUIRING_NOTE,
+  reasonOptionsFor,
+} from "../data/inventory.data";
 import { inventoryQueries } from "../queries/inventory.queries";
 import {
   useAttachCheckFiles,
@@ -83,6 +88,11 @@ const CheckSheet = ({ check }) => {
           brokenQuantity: line.brokenQuantity || "",
           missingQuantity: line.missingQuantity || "",
           repairedQuantity: line.repairedQuantity || "",
+          // Sabab har bir tur uchun ALOHIDA: bitta satrda "3 tasi sindi,
+          // 1 tasi yo'qoldi" bo'lishi mumkin va ular boshqa-boshqa zarar
+          // hodisasiga aylanadi
+          brokenReason: line.brokenReason || "",
+          missingReason: line.missingReason || "",
           note: line.note || "",
         },
       ]),
@@ -97,6 +107,8 @@ const CheckSheet = ({ check }) => {
         brokenQuantity: Number(values.brokenQuantity) || 0,
         missingQuantity: Number(values.missingQuantity) || 0,
         repairedQuantity: Number(values.repairedQuantity) || 0,
+        brokenReason: values.brokenReason || "",
+        missingReason: values.missingReason || "",
         note: values.note,
       })),
     [draft],
@@ -121,7 +133,48 @@ const CheckSheet = ({ check }) => {
     );
   };
 
+  /**
+   * Sabab MAJBURIY tekshiruvi — server ham tekshiradi, lekin bu yerda
+   * BARCHA yetishmayotgan satrlar bitta xabarda chiqadi va varaq
+   * serverga bormasdan turib to'g'rilanadi.
+   *
+   * Nomlar `check.lines` dan olinadi: `draft` faqat kalit → qiymat
+   * lug'ati va jihoz nomini bilmaydi.
+   */
+  const missingReasons = useMemo(() => {
+    const nameByLineId = new Map((check.lines ?? []).map((l) => [l.id, l.itemName]));
+    const problems = [];
+
+    for (const line of linesPayload) {
+      const name = nameByLineId.get(line.id) ?? "Jihoz";
+
+      if (line.brokenQuantity > 0 && !line.brokenReason) {
+        problems.push(`"${name}" — singan sababi`);
+      }
+      if (line.missingQuantity > 0 && !line.missingReason) {
+        problems.push(`"${name}" — yo'qolgan sababi`);
+      }
+
+      // "Boshqa" izohsiz ma'nosiz — hisobot "boshqa: 47 ta" degan
+      // javobsiz qatorga aylanmasin
+      const needsNote =
+        (line.brokenQuantity > 0 && REASONS_REQUIRING_NOTE.includes(line.brokenReason)) ||
+        (line.missingQuantity > 0 && REASONS_REQUIRING_NOTE.includes(line.missingReason));
+
+      if (needsNote && !line.note?.trim()) {
+        problems.push(`"${name}" — "Boshqa" uchun izoh`);
+      }
+    }
+
+    return problems;
+  }, [linesPayload, check.lines]);
+
   const handleSubmit = () => {
+    if (missingReasons.length > 0) {
+      toast.error(`Sabab to'ldirilmagan: ${missingReasons.join(", ")}`);
+      return;
+    }
+
     if (!window.confirm(CHECK_SUBMIT_HINT + "\n\nHisobot yuborilsinmi?")) return;
 
     submitCheck(
@@ -226,6 +279,9 @@ const CheckSheet = ({ check }) => {
                   Ta'mirlangani
                 </th>
                 <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-white">
+                  Sabab
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-left font-medium text-white">
                   Izoh
                 </th>
               </tr>
@@ -275,6 +331,13 @@ const CheckSheet = ({ check }) => {
                       disabled={isSealed || line.expectedBroken === 0}
                       tone="green"
                       onChange={(v) => setValue(line.id, "repairedQuantity", v)}
+                    />
+
+                    <ReasonCell
+                      line={line}
+                      values={values}
+                      disabled={isSealed}
+                      onChange={(key, v) => setValue(line.id, key, v)}
                     />
 
                     <td className="px-4 py-3">
@@ -328,6 +391,72 @@ const TONE_CLASS = {
   amber: "focus:border-amber-400",
   red: "focus:border-red-400",
   green: "focus:border-green-400",
+};
+
+/**
+ * SABAB KATAGI — "nima bo'ldi" degan savolga javob.
+ *
+ * Tanlagich faqat tegishli MIQDOR kiritilganda ko'rinadi: 40 ta satrning
+ * hammasida ikkita bo'sh tanlagich turgan varaq o'qib bo'lmas bo'lardi,
+ * mas'ul shaxs esa o'zgargan bir-ikkita satrni qidirib topa olmasdi.
+ *
+ * Ikkala tanlagich ham bir vaqtda chiqishi mumkin: bitta satrda "3 tasi
+ * sindi, 1 tasi yo'qoldi" bo'lsa, ular boshqa-boshqa zarar hodisasiga
+ * aylanadi va sabablari ham boshqa bo'lishi kerak.
+ */
+const ReasonCell = ({ line, values, disabled, onChange }) => {
+  const hasBroken = Number(values.brokenQuantity) > 0;
+  const hasMissing = Number(values.missingQuantity) > 0;
+
+  // Muhrlangan varaqda yorliq serverdan tayyor keladi — enum kalitini
+  // qayta yorliqqa aylantirish frontendning ishi emas
+  if (disabled) {
+    const labels = [line.brokenReasonLabel, line.missingReasonLabel].filter(Boolean);
+
+    return (
+      <td className="px-4 py-3">
+        {labels.length > 0 ? (
+          <span className="text-sm text-gray-700">{labels.join(" · ")}</span>
+        ) : (
+          <span className="text-gray-300">—</span>
+        )}
+      </td>
+    );
+  }
+
+  if (!hasBroken && !hasMissing) {
+    return (
+      <td className="px-4 py-3 text-center">
+        <span className="text-xs text-gray-300">—</span>
+      </td>
+    );
+  }
+
+  return (
+    <td className="px-4 py-3">
+      <div className="space-y-1.5">
+        {hasBroken && (
+          <Select
+            value={values.brokenReason ?? ""}
+            placeholder="Nega yaroqsiz?"
+            triggerClassName="h-9 w-full min-w-44 text-sm"
+            onChange={(v) => onChange("brokenReason", v)}
+            options={reasonOptionsFor("broken")}
+          />
+        )}
+
+        {hasMissing && (
+          <Select
+            value={values.missingReason ?? ""}
+            placeholder="Nega yo'q?"
+            triggerClassName="h-9 w-full min-w-44 text-sm"
+            onChange={(v) => onChange("missingReason", v)}
+            options={reasonOptionsFor("missing")}
+          />
+        )}
+      </div>
+    </td>
+  );
 };
 
 /** Raqam katagi — bo'sh qiymat 0 bilan bir xil ma'noni bildiradi. */
