@@ -1,3 +1,6 @@
+// React
+import { useRef } from "react";
+
 // Toast
 import { toast } from "sonner";
 
@@ -230,6 +233,33 @@ export const LocationModal = () => (
   </ResponsiveModal>
 );
 
+/**
+ * Sinf nomidan xona nomi.
+ *
+ * Sinf nomi ikki xil yoziladi — "1-A" va "1-A sinf". Ikkinchisiga "sinf"
+ * so'zini yana qo'shsak "1-A sinf sinf xonasi" chiqardi.
+ */
+const roomNameForClass = (className = "") => {
+  const base = className.trim();
+  if (!base) return "";
+  return /sinf$/i.test(base) ? `${base} xonasi` : `${base} sinf xonasi`;
+};
+
+/**
+ * Xona qo'shish/tahrirlash.
+ *
+ * ── SINFDAN TANLASH ≠ QO'LDA YOZISH ──────────
+ *
+ * Maktabda sinflar allaqachon ro'yxatga olingan, shuning uchun har bir
+ * sinf xonasining nomini qaytadan terish ortiqcha ish va xato manbai
+ * ("1-A sinf xonasi" va "1A sinf xonsi" ikki xil xona bo'lib qolardi).
+ * Sinf tanlansa nom AVTOMAT to'ladi.
+ *
+ * Lekin qo'lda yozish YO'Q QILINMAYDI: oshxona, ombor, yo'lak — bularning
+ * sinfi yo'q. Shuning uchun nom baribir oddiy matn maydoni bo'lib qoladi
+ * va foydalanuvchi bir marta tekkanidan keyin avtomatika unga qayta
+ * tegmaydi (`autoName`).
+ */
 const LocationForm = ({ close, isLoading, setIsLoading, location }) => {
   const { mutate: create } = useCreateLocation();
   const { mutate: update } = useUpdateLocation();
@@ -240,17 +270,83 @@ const LocationForm = ({ close, isLoading, setIsLoading, location }) => {
   // hujjatlashtirilgan ishlatilish usuli.
   const { data: allUsers = [] } = useQuery(usersQueries.allShort());
   const { data: classes = [] } = useQuery(classesQueries.list());
+  // Mavjud xonalar — sinf yonida "xonasi bor" belgisini chiqarish va band
+  // nomni avtomat qo'ymaslik uchun. Server nomni UNIQUE qiladi, ya'ni
+  // tayyor to'ldirilgan nom bilan yiqilish foydalanuvchiga tushunarsiz
+  // xato bo'lib ko'rinardi.
+  const { data: locations = [] } = useQuery(inventoryQueries.activeLocations());
 
   const staff = allUsers.filter((u) => u.role !== "student");
 
-  const { name, type, classId, responsibleId, note, sortOrder, setField } = useObjectState({
-    name: location?.name ?? "",
-    type: location?.type ?? "classroom",
-    classId: location?.classId ?? "",
-    responsibleId: location?.responsibleId ?? "",
-    note: location?.note ?? "",
-    sortOrder: location?.sortOrder ?? 0,
-  });
+  const { name, type, classId, responsibleId, note, sortOrder, setField, setFields } =
+    useObjectState({
+      name: location?.name ?? "",
+      type: location?.type ?? "classroom",
+      classId: location?.classId ?? "",
+      responsibleId: location?.responsibleId ?? "",
+      note: location?.note ?? "",
+      sortOrder: location?.sortOrder ?? 0,
+    });
+
+  // Oxirgi AVTOMAT qo'yilgan nom. Maydondagi matn shundan farq qilsa —
+  // demak uni odam yozgan va avtomatika unga tegmaydi.
+  const autoName = useRef("");
+
+  // Bir sinfda bir nechta xona bo'lishi MUMKIN (sinf xonasi + laboratoriya),
+  // shuning uchun variant o'chirilmaydi — faqat belgilanadi.
+  const classIdsWithRoom = new Set(
+    locations.filter((l) => l.classId && l.id !== location?.id).map((l) => l.classId),
+  );
+  // ⚠️ Arxivlangan xonalar bu ro'yxatda YO'Q, server esa nomni ular bilan
+  // birga UNIQUE qiladi. O'sha kamdan-kam holatda serverning aniq matnli
+  // xatosi ishlaydi — har modal ochilishida ikkinchi so'rov yuborish bu
+  // foyda uchun juda qimmat.
+  const takenNames = new Set(
+    locations
+      .filter((l) => l.id !== location?.id)
+      .map((l) => l.name.trim().toLowerCase()),
+  );
+
+  // Faol bo'lmagan sinf yangi xonaga taklif qilinmaydi, lekin tahrirdagi
+  // xona o'shanga bog'langan bo'lsa ro'yxatdan tushib qolmasligi kerak —
+  // aks holda saqlashda biriktirish jimgina uzilardi.
+  const classOptions = classes
+    .filter((c) => c.isActive !== false || c.id === location?.classId)
+    .map((c) => ({
+      value: c.id,
+      label: classIdsWithRoom.has(c.id) ? `${c.name} — xonasi bor` : c.name,
+    }));
+
+  const suggestedName = roomNameForClass(
+    classes.find((c) => c.id === classId)?.name,
+  );
+  // Yozilgan nom bandmi? Serverning UNIQUE xatosini OLDINDAN aytish
+  // "Saqlash" bosgandan keyin chiqadigan toastdan yaxshiroq.
+  const typedName = name.trim().toLowerCase();
+  const nameTaken = Boolean(typedName) && takenNames.has(typedName);
+
+  // Sinf tanlandi-yu, tayyor nom band bo'lgani uchun QO'YILMADI — maydon
+  // nega bo'sh qolganini tushuntiradi. Nom yozilgan bo'lsa `nameTaken`
+  // gapiradi, ya'ni tahrirdagi xonaga yolg'on ogohlantirish chiqmaydi.
+  const suggestionTaken =
+    !typedName &&
+    Boolean(suggestedName) &&
+    takenNames.has(suggestedName.toLowerCase());
+
+  /** Sinf tanlandi: biriktirish + (nom bo'sh yoki avtomat bo'lsa) nomni to'ldirish. */
+  const handleClassChange = (value) => {
+    const isAuto = !name.trim() || name === autoName.current;
+    if (!isAuto) {
+      setField("classId", value);
+      return;
+    }
+
+    const suggested = roomNameForClass(classes.find((c) => c.id === value)?.name);
+    const nextName = suggested && !takenNames.has(suggested.toLowerCase()) ? suggested : "";
+
+    autoName.current = nextName;
+    setFields({ classId: value, name: nextName });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -280,13 +376,46 @@ const LocationForm = ({ close, isLoading, setIsLoading, location }) => {
 
   return (
     <InputGroup as="form" onSubmit={handleSubmit}>
+      {/* Sinf NOMDAN OLDIN: u nomni to'ldiradigan yorliq, ixtiyoriy qadam */}
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Sinf (ixtiyoriy)</p>
+        <Select
+          value={classId}
+          placeholder="Tanlanmagan"
+          onChange={handleClassChange}
+          options={[{ label: "Tanlanmagan", value: "" }, ...classOptions]}
+        />
+        <p className="text-xs text-gray-500">
+          Mavjud sinfni tanlasangiz xona nomi avtomat to'ladi. Oshxona, ombor
+          kabi xonalarning sinfi yo'q — nomini quyida qo'lda yozing.
+        </p>
+      </div>
+
       <InputField
         required
         name="name"
         label="Xona nomi"
         value={name}
         placeholder="1-A sinf xonasi"
-        onChange={(e) => setField("name", e.target.value)}
+        description={
+          nameTaken ? (
+            <span className="text-amber-700">
+              "{name.trim()}" nomli xona allaqachon bor — boshqa nom bering
+            </span>
+          ) : suggestionTaken ? (
+            <span className="text-amber-700">
+              "{suggestedName}" nomli xona allaqachon bor — bu xonaga boshqa
+              nom bering
+            </span>
+          ) : (
+            ""
+          )
+        }
+        onChange={(e) => {
+          // Qo'lda yozildi — avtomatika bu matnga boshqa tegmaydi
+          autoName.current = null;
+          setField("name", e.target.value);
+        }}
       />
 
       <div className="space-y-1.5">
@@ -295,19 +424,6 @@ const LocationForm = ({ close, isLoading, setIsLoading, location }) => {
           value={type}
           onChange={(v) => setField("type", v)}
           options={LOCATION_TYPES.map((t) => ({ label: t.label, value: t.value }))}
-        />
-      </div>
-
-      <div className="space-y-1.5">
-        <p className="text-sm font-medium text-gray-700">Sinf (ixtiyoriy)</p>
-        <Select
-          value={classId}
-          placeholder="Tanlanmagan"
-          onChange={(v) => setField("classId", v)}
-          options={[
-            { label: "Tanlanmagan", value: "" },
-            ...classes.map((c) => ({ label: c.name, value: c.id })),
-          ]}
         />
       </div>
 
