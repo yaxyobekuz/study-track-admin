@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // Components
-import Input from "@/shared/components/ui/input/Input";
+import InputField from "@/shared/components/ui/input/InputField";
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
@@ -42,20 +42,20 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
   return (
     <form onSubmit={handleCreateSubject} className="space-y-3.5">
-      <Input
+      <InputField
         required
         name="name"
         value={name}
         label="Fan nomi"
-        onChange={(v) => setField("name", v)}
+        onChange={(e) => setField("name", e.target.value)}
       />
 
-      <Input
+      <InputField
         type="textarea"
         name="description"
         value={description}
         label="Tavsif (ixtiyoriy)"
-        onChange={(v) => setField("description", v)}
+        onChange={(e) => setField("description", e.target.value)}
       />
 
       <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
