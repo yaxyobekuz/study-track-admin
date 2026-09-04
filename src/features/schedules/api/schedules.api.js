@@ -4,6 +4,8 @@ export const schedulesAPI = {
   getByClass: (classId) => http.get(`/schedules/class/${classId}`),
   getByDay: (classId, day) => http.get(`/schedules/class/${classId}/day/${day}`),
   getBySubject: (subjectId) => http.get(`/schedules/subject/${subjectId}`),
+  // O'qituvchining haftalik yuklamasi — profil sahifasi uchun
+  getTeacherWorkload: (teacherId) => http.get(`/schedules/teacher/${teacherId}`),
   getMyToday: () => http.get("/schedules/my-today"),
   getAllToday: () => http.get("/schedules/all-today"),
   exportByClass: (classId) =>

@@ -40,6 +40,19 @@ export const schedulesQueries = {
       enabled: Boolean(subjectId),
     }),
 
+  /**
+   * Bitta o'qituvchining haftalik yuklamasi (profil sahifasi):
+   * jami soat, sinflar kesimi, haftalik jadval va — `payroll.view` bo'lsa —
+   * joriy oylik. Oylik maydonini SERVER kesadi, bu yerda emas.
+   */
+  teacherWorkload: (teacherId) =>
+    queryOptions({
+      queryKey: [...schedulesKeys.all, "teacher", teacherId, "workload"],
+      queryFn: () =>
+        schedulesAPI.getTeacherWorkload(teacherId).then((r) => r.data.data),
+      enabled: Boolean(teacherId),
+    }),
+
   /** Current user's lessons for today → array of lessons. */
   myToday: () =>
     queryOptions({

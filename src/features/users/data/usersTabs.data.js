@@ -33,10 +33,22 @@ export const STAFF_LIST_TABS = [
 // sahifani ochiq tab bilan birga link qilib yuborish mumkin.
 
 // `permission` — tab ko'rinishi uchun talab qilinadigan ruxsat kaliti.
-// Berilmasa tab hammaga ochiq. `StaffDetail` shu maydonga qarab ro'yxatni
+// Berilmasa tab hammaga ochiq. `roles` — tab qaysi rollarga ma'noli
+// (berilmasa hammaga). `StaffDetail` shu ikki maydonga qarab ro'yxatni
 // filtrlaydi (`usersTabs.data.js` — statik ma'lumot, filtr esa komponentda).
 export const STAFF_DETAIL_TABS = [
   { value: "main", label: "Asosiy" },
+  // Dars yuklamasi FAQAT o'qituvchida: jadvalga faqat `teacher` roli
+  // qo'yiladi (`validateScheduleSubjects`), ya'ni boshqa xodimda bu tab
+  // doim bo'sh turardi.
+  {
+    value: "workload",
+    label: "Dars jadvali",
+    permission: "schedules.view",
+    roles: ["teacher"],
+  },
+  // Oylik — barcha xodimda bor (o'quvchida yo'q, u StudentDetail'da).
+  { value: "payroll", label: "Oylik", permission: "payroll.view" },
   // Ruxsatlar HAR FILIALDA alohida bo'lgani uchun bu tab ichida avval
   // filial tanlanadi. Biriktirish ham shu yerda — "qayerda ishlaydi" va
   // "u yerda nima qila oladi" bir-biridan ajralmaydi.
