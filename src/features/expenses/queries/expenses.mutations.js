@@ -8,7 +8,7 @@ import { expenseKeys } from "./expenses.queries";
 // Xarajat KASSAGA tegadi, ya'ni to'lov turlari qoldig'i va moliya hisobotlari
 // ham eskiradi. Shuning uchun uch bo'lim birga yangilanadi.
 import { financeKeys } from "@/features/finance/queries/finance.queries";
-import { reportKeys } from "@/features/financeReports/queries/financeReports.queries";
+import { dashboardKeys } from "@/features/financeDashboard/queries/financeDashboard.queries";
 
 const useInvalidate = () => {
   const queryClient = useQueryClient();
@@ -16,7 +16,7 @@ const useInvalidate = () => {
   return () => {
     queryClient.invalidateQueries({ queryKey: expenseKeys.all });
     queryClient.invalidateQueries({ queryKey: financeKeys.all });
-    queryClient.invalidateQueries({ queryKey: reportKeys.all });
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
   };
 };
 

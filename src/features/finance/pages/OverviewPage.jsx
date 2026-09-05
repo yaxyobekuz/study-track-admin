@@ -328,7 +328,7 @@ const OverviewPage = () => {
                   )}
                 </Td>
 
-                <Td className="font-medium">
+                <Td align="right" className="font-medium">
                   {formatMoney(invoice.amount)}
                   {invoice.isProrated && (
                     <span className="block text-xs font-normal text-blue-600">
@@ -337,9 +337,11 @@ const OverviewPage = () => {
                   )}
                 </Td>
 
-                <Td className="text-green-600">{formatMoney(invoice.paidAmount)}</Td>
+                <Td align="right" className="text-green-600">
+                  {formatMoney(invoice.paidAmount)}
+                </Td>
 
-                <Td>
+                <Td align="right">
                   {isCancelled ? (
                     <span className="text-gray-400">—</span>
                   ) : (

@@ -205,6 +205,7 @@ const ExpenseList = () => {
                 <Td className="text-gray-500">{expense.accountName ?? "—"}</Td>
 
                 <Td
+                  align="right"
                   className={cn(
                     "font-semibold",
                     expense.isVoided ? "text-gray-400 line-through" : "text-green-700",
@@ -314,7 +315,7 @@ const CategoriesPanel = () => {
               <Tr key={category.id}>
                 <Td className="font-medium text-gray-900">{category.name}</Td>
 
-                <Td className="text-gray-500">
+                <Td align="right" className="text-gray-500">
                   {category.usageCount > 0 ? `${category.usageCount} ta` : "—"}
                 </Td>
 

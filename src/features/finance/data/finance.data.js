@@ -109,9 +109,9 @@ export const INVOICE_STATUS_OPTIONS = [
 export const INVOICE_TABLE_COLUMNS = [
   "O'quvchi",
   "Tarif",
-  "Summa",
-  "To'langan",
-  "Qarz",
+  { label: "Summa", align: "right" },
+  { label: "To'langan", align: "right" },
+  { label: "Qarz", align: "right" },
   "",
 ];
 
@@ -144,8 +144,8 @@ export const DISCOUNT_STATUS_OPTIONS = [
 export const DISCOUNT_TABLE_COLUMNS = [
   "Chegirma",
   "Turi",
-  "Miqdori",
-  "O'quvchilar",
+  { label: "Miqdori", align: "right" },
+  { label: "O'quvchilar", align: "right" },
   "Holat",
   "",
 ];
@@ -153,7 +153,7 @@ export const DISCOUNT_TABLE_COLUMNS = [
 export const DISCOUNT_ASSIGNMENT_TABLE_COLUMNS = [
   "O'quvchi",
   "Chegirma",
-  "Miqdori",
+  { label: "Miqdori", align: "right" },
   "Davr",
   "Holat",
   "",
@@ -192,16 +192,16 @@ export const ACCOUNT_ENTRY_TABLE_COLUMNS = [
   "Sana",
   "Turi",
   "Izoh",
-  "Summa",
-  "Qoldiq",
+  { label: "Summa", align: "right" },
+  { label: "Qoldiq", align: "right" },
 ];
 
 export const TRANSFER_TABLE_COLUMNS = [
   "Sana",
   "Qayerdan",
   "Qayerga",
-  "Summa",
-  "Komissiya",
+  { label: "Summa", align: "right" },
+  { label: "Komissiya", align: "right" },
   "",
 ];
 
@@ -211,7 +211,7 @@ export const PAYMENT_TABLE_COLUMNS = [
   "Chek",
   "Sana",
   "O'quvchi",
-  "Summa",
+  { label: "Summa", align: "right" },
   "Taqsimlandi",
   "To'lov turi",
   "",
@@ -264,7 +264,7 @@ export const DEBTOR_TABLE_COLUMNS = [
   "O'quvchi",
   "To'lanmagan oylar",
   "Eng eski qarz",
-  "Qarz",
+  { label: "Qarz", align: "right" },
   "",
 ];
 

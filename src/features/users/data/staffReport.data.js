@@ -71,7 +71,7 @@ export const KPI_ACCENTS = {
 /**
  * Diagramma ranglari. Ma'no biriktirilgan — yashil DOIM "faol", kulrang
  * DOIM "arxivlangan". Aks holda bir sahifada bir xil rang ikki narsani
- * bildirib qolardi (`financeReports.data.js` bilan bir xil qoida).
+ * bildirib qolardi (`financeDashboard.data.js` bilan bir xil qoida).
  */
 export const CHART_COLORS = {
   active: "#22c55e",

@@ -8,7 +8,7 @@ import { payrollKeys } from "./payroll.queries";
 // Oylik to'lovi KASSAGA tegadi, ya'ni to'lov turlari qoldig'i va moliya
 // hisobotlari ham eskiradi.
 import { financeKeys } from "@/features/finance/queries/finance.queries";
-import { reportKeys } from "@/features/financeReports/queries/financeReports.queries";
+import { dashboardKeys } from "@/features/financeDashboard/queries/financeDashboard.queries";
 
 const useInvalidate = () => {
   const queryClient = useQueryClient();
@@ -16,7 +16,7 @@ const useInvalidate = () => {
   return () => {
     queryClient.invalidateQueries({ queryKey: payrollKeys.all });
     queryClient.invalidateQueries({ queryKey: financeKeys.all });
-    queryClient.invalidateQueries({ queryKey: reportKeys.all });
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
   };
 };
 

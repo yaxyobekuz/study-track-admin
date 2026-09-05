@@ -16,14 +16,20 @@ import {
 
 // Keys
 import { financeKeys } from "./finance.queries";
+import { dashboardKeys } from "@/features/financeDashboard/queries/financeDashboard.queries";
 
 /**
  * Narx yoki biriktirish o'zgarsa, hisoblangan summalar ham eskiradi
  * (ro'yxat, detal, oylik varaqa) — shuning uchun invalidatsiya butun
  * moliya bo'limi bo'yicha.
  */
-const invalidateFinance = (qc) =>
+const invalidateFinance = (qc) => {
   qc.invalidateQueries({ queryKey: financeKeys.all });
+  // Rahbar dashboardi ham AYNAN shu raqamlarni koʻrsatadi (tushum, qarz,
+  // kassa qoldigʻi) — uni yangilamasak, toʻlov qabul qilingandan keyin
+  // dashboard eski raqamda turib qolardi.
+  qc.invalidateQueries({ queryKey: dashboardKeys.all });
+};
 
 // ── Tariflar katalogi ────────────────────────
 

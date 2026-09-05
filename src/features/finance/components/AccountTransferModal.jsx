@@ -40,8 +40,14 @@ const todayInputValue = () => {
  * oldin ko'radi — aks holda bank ushlab qolgan pul "yo'qolgan"dek
  * ko'rinardi.
  */
+// Uchta ikki ustunli qator bor (qayerdan/qayerga, summa/komissiya,
+// sana/izoh) — sukutdagi `max-w-md` da ular siqilib qolardi.
 const AccountTransferModal = () => (
-  <ResponsiveModal name="accountTransfer" title="To'lov turlari orasida o'tkazma">
+  <ResponsiveModal
+    name="accountTransfer"
+    title="To'lov turlari orasida o'tkazma"
+    className="max-w-lg"
+  >
     <Content />
   </ResponsiveModal>
 );
@@ -63,6 +69,7 @@ const Content = ({ close, isLoading, setIsLoading, fromAccount }) => {
     });
 
   const source = accounts.find((a) => a.id === fromAccountId);
+  const target = accounts.find((a) => a.id === toAccountId);
   const received = Math.max(0, Number(amount || 0) - Number(fee || 0));
 
   const handleSubmit = (e) => {
@@ -100,32 +107,41 @@ const Content = ({ close, isLoading, setIsLoading, fromAccount }) => {
     );
   };
 
-  const accountOptions = accounts.map((a) => ({
-    label: `${a.name} — ${formatMoney(a.balance)}`,
-    value: a.id,
-  }));
+  // ⚠️ Variant yorlig'ida FAQAT NOM turadi. Radix tanlangan variantni
+  // trigger'ga o'sha holicha ko'chiradi, ya'ni "nom — qoldiq" ko'rinishi
+  // ikki ustunli tor maydonga sig'masdi. Qoldiq esa yo'qolmaydi — u
+  // tanlagich OSTIDA, tanlangan hisob bo'yicha ko'rsatiladi.
+  const accountOptions = accounts.map((a) => ({ label: a.name, value: a.id }));
 
   return (
     <InputGroup onSubmit={handleSubmit} as="form">
+      {/* `min-w-0` — grid ustuni tanlagich matniga qarab kerilib
+          ketmasligi uchun (ustunning sukut minimal kengligi = min-content) */}
       <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
-        <div className="space-y-1.5">
+        <div className="min-w-0 space-y-1.5">
           <p className="text-sm font-medium text-gray-700">Qayerdan</p>
           <Select
             value={fromAccountId}
             options={accountOptions}
-            placeholder="To'lov turini tanlang"
+            placeholder="Tanlang"
             onChange={(v) => setField("fromAccountId", v)}
           />
+          <p className="truncate text-xs text-gray-400">
+            {source ? `Qoldiq: ${formatMoney(source.balance)}` : "\u00a0"}
+          </p>
         </div>
 
-        <div className="space-y-1.5">
+        <div className="min-w-0 space-y-1.5">
           <p className="text-sm font-medium text-gray-700">Qayerga</p>
           <Select
             value={toAccountId}
-            placeholder="To'lov turini tanlang"
+            placeholder="Tanlang"
             onChange={(v) => setField("toAccountId", v)}
             options={accountOptions.filter((o) => o.value !== fromAccountId)}
           />
+          <p className="truncate text-xs text-gray-400">
+            {target ? `Qoldiq: ${formatMoney(target.balance)}` : "\u00a0"}
+          </p>
         </div>
       </div>
 

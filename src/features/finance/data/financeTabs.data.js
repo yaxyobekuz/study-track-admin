@@ -13,6 +13,15 @@
 
 export const MAIN_TABS = [
   {
+    // Rahbar dashboardi BIRINCHI turadi: bo'limga kirgan odam avval "ishlar
+    // qanday ketyapti" ni ko'radi, keyin registrga tushadi.
+    to: "/finance/main/dashboard",
+    label: "Dashboard",
+    title: "Moliya",
+    can: "reports.view",
+    exact: false,
+  },
+  {
     to: "/finance/main/overview",
     label: "Umumiy",
     title: "Moliya",

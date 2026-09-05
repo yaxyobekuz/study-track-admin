@@ -224,10 +224,14 @@ const EntriesView = () => {
                   </Td>
 
                   <Td className="text-gray-500">{entry.monthLabel}</Td>
-                  <Td className="font-medium">{formatMoney(entry.amount)}</Td>
-                  <Td className="text-green-600">{formatMoney(entry.paidAmount)}</Td>
+                  <Td align="right" className="font-medium">
+                    {formatMoney(entry.amount)}
+                  </Td>
+                  <Td align="right" className="text-green-600">
+                    {formatMoney(entry.paidAmount)}
+                  </Td>
 
-                  <Td>
+                  <Td align="right">
                     {isCancelled ? (
                       <span className="text-gray-400">—</span>
                     ) : (
@@ -378,7 +382,7 @@ const RulesView = () => {
                     )}
                   </Td>
 
-                  <Td className="font-medium">{formatMoney(rule.amount)}</Td>
+                  <Td align="right" className="font-medium">{formatMoney(rule.amount)}</Td>
                   <Td nowrap={false} className="text-gray-500">
                     {rule.periodLabel}
                     {rule.note && (

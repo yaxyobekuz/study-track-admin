@@ -128,6 +128,8 @@ import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettin
 
 // Moliya (Finance) - layout & route-level pages
 import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
+import FinanceIndex from "@/features/finance/layouts/FinanceIndex";
+import FinanceDashboardPage from "@/features/financeDashboard/pages/FinanceDashboardPage";
 import OverviewPage from "@/features/finance/pages/OverviewPage";
 import DebtorsPage from "@/features/finance/pages/DebtorsPage";
 import PaymentsPage from "@/features/finance/pages/PaymentsPage";
@@ -152,7 +154,6 @@ import InventoryDebtorsPage from "@/features/inventory/pages/DebtorsPage";
 import InventoryCatalogPage from "@/features/inventory/pages/CatalogPage";
 import InventorySettingsPage from "@/features/inventory/pages/SettingsPage";
 import ExpensesPage from "@/features/expenses/pages/ExpensesPage";
-import FinanceReportsPage from "@/features/financeReports/pages/FinanceReportsPage";
 
 // Pages - Leads
 import LeadDetailPage from "@/features/leads/pages/LeadDetailPage";
@@ -185,7 +186,10 @@ const Routes = () => {
               qilib qo'ysak, har bir yo'l uning tarmog'idan o'tishga urinardi. */}
           <Route element={<HomeLayout />}>
             <Route path="/" element={<DashboardPage />} />
-            <Route path="/reports" element={<FinanceReportsPage />} />
+            {/* Bosh sahifadagi "Moliya" tabi — moliya boʻlimidagi
+                "Dashboard" tabi bilan AYNI sahifa. Ikki kirish nuqtasi,
+                bitta ekran. */}
+            <Route path="/reports" element={<FinanceDashboardPage />} />
           </Route>
 
           {/* Profile */}
@@ -376,10 +380,10 @@ const Routes = () => {
 
           {/* Asosiy sahifa + uning tablari */}
           <Route path="/finance/main" element={<FinanceMainLayout />}>
-            <Route
-              index
-              element={<Navigate to="/finance/main/overview" replace />}
-            />
+            {/* Ruxsati bor birinchi tab — kassir dashboardga tushib qolmaydi */}
+            <Route index element={<FinanceIndex />} />
+            {/* Rahbar dashboardi — moliya bo'limining bosh ekrani */}
+            <Route path="dashboard" element={<FinanceDashboardPage />} />
             <Route path="overview" element={<OverviewPage />} />
             <Route path="debtors" element={<DebtorsPage />} />
             <Route path="payments" element={<PaymentsPage />} />
@@ -420,7 +424,7 @@ const Routes = () => {
           {/* Hisobotlar bosh sahifaga ko'chdi — eski havola yo'naltiriladi */}
           <Route
             path="/finance/reports"
-            element={<Navigate to="/reports" replace />}
+            element={<Navigate to="/finance/main/dashboard" replace />}
           />
 
           {/* Tarif detali - layoutdan tashqarida: contentga to'liq egalik qiladi */}

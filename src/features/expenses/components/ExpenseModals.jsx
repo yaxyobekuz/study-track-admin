@@ -10,6 +10,7 @@ import InputGroup from "@/shared/components/ui/input/InputGroup";
 import InputField from "@/shared/components/ui/input/InputField";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
+import Switch from "@/shared/components/ui/switch/Switch";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
@@ -259,7 +260,10 @@ const CategoryForm = ({ close, isLoading, setIsLoading, category }) => {
   const { mutate: createCategory } = useCreateCategory();
   const { mutate: updateCategory } = useUpdateCategory();
 
-  const { name, setField } = useObjectState({ name: category?.name ?? "" });
+  const { name, excludeFromEbitda, setField } = useObjectState({
+    name: category?.name ?? "",
+    excludeFromEbitda: category?.excludeFromEbitda ?? false,
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -275,8 +279,10 @@ const CategoryForm = ({ close, isLoading, setIsLoading, category }) => {
       onSettled: () => setIsLoading(false),
     };
 
-    if (isEdit) updateCategory({ id: category.id, data: { name } }, handlers);
-    else createCategory({ name }, handlers);
+    const payload = { name, excludeFromEbitda };
+
+    if (isEdit) updateCategory({ id: category.id, data: payload }, handlers);
+    else createCategory(payload, handlers);
   };
 
   return (
@@ -291,10 +297,31 @@ const CategoryForm = ({ close, isLoading, setIsLoading, category }) => {
         onChange={(e) => setField("name", e.target.value)}
       />
 
+      {/* EBITDA — sof foyda + foiz, soliq va amortizatsiya. Tizimda ular
+          alohida jadvalda emas, oddiy xarajat qatori bo'lib yotadi, shuning
+          uchun "operatsion emas" qarori KATEGORIYA darajasida beriladi. */}
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-100 p-3">
+        <Switch
+          checked={excludeFromEbitda}
+          onChange={(value) => setField("excludeFromEbitda", value)}
+        />
+        <span className="min-w-0">
+          <span className="block text-sm font-medium text-gray-700">
+            EBITDA hisobidan chiqarilsin
+          </span>
+          <span className="block text-xs text-gray-500">
+            Soliq va amortizatsiya uchun. Belgilangan kategoriyadagi xarajatlar
+            moliya dashboardidagi EBITDA qatoriga qaytarib qo'shiladi.
+          </span>
+        </span>
+      </label>
+
       {isEdit && (
         <p className="rounded-xl bg-gray-50 p-3 text-xs text-gray-500">
           Nomni o'zgartirish o'tgan yozuvlarga ta'sir qilmaydi: har bir xarajat
           o'z kategoriyasi nomini yozilgan paytdagi ko'rinishida saqlaydi.
+          EBITDA bayrog'i esa JORIY qaror — uni o'zgartirish o'tgan oylarning
+          EBITDA raqamini ham qayta hisoblaydi.
         </p>
       )}
 

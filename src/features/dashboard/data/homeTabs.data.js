@@ -1,11 +1,17 @@
 // Bosh sahifaning tab sahifalari.
 //
-// `exact: true` — "Asosiy" tabi FAQAT `/` da aktiv bo'lishi kerak. Aks holda
-// `/reports` da ham u yoqilib qolardi, chunki har qanday yo'l `/` bilan
+// `exact: true` — "Asosiy" tabi FAQAT `/` da aktiv boʻlishi kerak. Aks holda
+// `/reports` da ham u yoqilib qolardi, chunki har qanday yoʻl `/` bilan
 // boshlanadi.
 //
-// `can` — ixtiyoriy ruxsat kaliti. Berilgan bo'lsa, tab faqat o'sha ruxsatga
-// ega xodimga ko'rinadi.
+// `can` — ixtiyoriy ruxsat kaliti. Berilgan boʻlsa, tab faqat oʻsha ruxsatga
+// ega xodimga koʻrinadi.
+//
+// ⚠️ "Moliya" tabi va moliya boʻlimidagi "Dashboard" tabi AYNI BIR sahifani
+// ochadi (`FinanceDashboardPage`). Ikki kirish nuqtasi ataylab: rahbar bosh
+// sahifadan chiqmasdan koʻradi, moliyachi esa oʻz boʻlimida topadi. Ikkita
+// BOSHQACHA ekran esa yoʻq — bir xil raqamni ikki xil koʻrinishda
+// koʻrsatish ishonchni yoʻqotardi.
 
 export const HOME_TABS = [
   {

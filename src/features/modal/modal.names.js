@@ -156,6 +156,9 @@ export const MODAL_NAMES = [
   "voidExpense",
   "expenseCategory",
 
+  // Moliya - rahbar dashboardi (oylik reja/byudjet)
+  "financeTargets",
+
   // Moliya - ta'til
   "markVacation",
 

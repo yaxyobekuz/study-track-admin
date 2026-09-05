@@ -12,14 +12,20 @@ export const PAYROLL_TABS = [
 export const ENTRY_TABLE_COLUMNS = [
   "Xodim",
   "Oy",
-  "Hisoblangan",
-  "To'langan",
-  "Qoldiq",
+  { label: "Hisoblangan", align: "right" },
+  { label: "To'langan", align: "right" },
+  { label: "Qoldiq", align: "right" },
   "Holat",
   "",
 ];
 
-export const RULE_TABLE_COLUMNS = ["Xodim", "Oylik", "Davr", "Holat", ""];
+export const RULE_TABLE_COLUMNS = [
+  "Xodim",
+  { label: "Oylik", align: "right" },
+  "Davr",
+  "Holat",
+  "",
+];
 
 /** Majburiyat holati uchun badge. */
 export const ENTRY_STATUS_META = {

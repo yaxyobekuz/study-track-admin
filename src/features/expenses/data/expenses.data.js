@@ -14,13 +14,13 @@ export const EXPENSE_TABLE_COLUMNS = [
   "Kategoriya",
   "Kimga",
   "To'lov turi",
-  "Summa",
+  { label: "Summa", align: "right" },
   "",
 ];
 
 export const CATEGORY_TABLE_COLUMNS = [
   "Kategoriya",
-  "Yozuvlar",
+  { label: "Yozuvlar", align: "right" },
   "Holat",
   "",
 ];

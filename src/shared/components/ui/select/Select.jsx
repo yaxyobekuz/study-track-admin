@@ -79,9 +79,15 @@ const Select = ({
       value={resolveValue(value, options)}
     >
       {/* Trigger */}
+      {/* ⚠️ `w-full min-w-0` — tanlagich hech qachon konteyneridan
+          KENGROQ bo'lib ketmasligi uchun. Trigger'da `whitespace-nowrap`
+          turibdi, ya'ni uzun variant nomi (masalan "Uzcard terminal —
+          237 329 000 so'm") grid ustunini kerib yuborardi va yonidagi
+          maydon ustiga chiqib ketardi. `min-w-0` bo'lsa matn `line-clamp`
+          bilan qisqaradi. */}
       <SelectTrigger
         className={cn(
-          "h-10 bg-white text-base outline-2 outline-primary md:text-sm",
+          "h-10 w-full min-w-0 bg-white text-base outline-2 outline-primary md:text-sm",
           triggerClassName,
         )}
       >

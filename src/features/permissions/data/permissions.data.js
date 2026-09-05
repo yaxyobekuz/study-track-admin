@@ -337,9 +337,15 @@ export const PERMISSION_SECTIONS = [
     // ko'rish huquqi (`finance.view`) bilan birga berilmaydi: kassirga kunlik
     // ish uchun registr kerak, butun maktabning moliyaviy manzarasi emas.
     key: SECTIONS.REPORTS,
-    label: "Moliya hisobotlari",
+    label: "Moliya hisobotlari va dashboard",
     group: "Moliya",
-    actions: [A.view],
+    actions: [
+      A.view,
+      // REJA (byudjet) — ko'rishdan ALOHIDA. Rejani o'zgartirish
+      // "bajarilish 78%" ni "bajarilish 100%" ga aylantiradigan yagona
+      // tugma, ya'ni hisobotni chiroyli qilib qo'yish yo'li.
+      { key: "plan", label: "Reja (byudjet) belgilash" },
+    ],
   },
   {
     // Tashqi kirim — o'quvchi to'lovi BO'LMAGAN pul (ijara, sotuv, homiylik).
@@ -627,6 +633,7 @@ const ROUTE_PERMISSIONS = [
   // qo'shimcha o'z kalitini talab qiladi (eng UZUN mos prefiks yutadi).
   // Moliya hisobotlari bosh sahifaning "Moliya" tabida
   { prefix: "/reports", key: "reports.view" },
+  { prefix: "/finance/main/dashboard", key: "reports.view" },
   { prefix: "/finance/main/income", key: "income.view" },
   { prefix: "/finance/main/payroll", key: "payroll.view" },
   { prefix: "/finance/main/expenses", key: "expenses.view" },

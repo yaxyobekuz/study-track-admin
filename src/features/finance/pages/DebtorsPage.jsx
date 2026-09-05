@@ -254,7 +254,7 @@ const DebtorsPage = () => {
                   </Td>
 
 
-                  <Td className="font-semibold text-red-600">
+                  <Td align="right" className="font-semibold text-red-600">
                     {formatMoney(debtor.debt)}
                   </Td>
 

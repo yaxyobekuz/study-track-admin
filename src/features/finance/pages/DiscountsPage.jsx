@@ -219,9 +219,9 @@ const DiscountsPage = () => {
                     {DISCOUNT_TYPE_LABELS[discount.type]}
                   </Td>
 
-                  <Td className="font-medium">{discount.valueLabel}</Td>
+                  <Td align="right" className="font-medium">{discount.valueLabel}</Td>
 
-                  <Td className="text-gray-500">{discount.studentCount ?? 0} ta</Td>
+                  <Td align="right" className="text-gray-500">{discount.studentCount ?? 0} ta</Td>
 
                   <Td>
                     {discount.isArchived ? (
@@ -376,7 +376,7 @@ const AssignmentsView = ({ data, page, onPageChange, onDelete }) => {
 
               <Td className="text-gray-500">{assignment.discount?.name ?? "—"}</Td>
 
-              <Td className="font-medium">
+              <Td align="right" className="font-medium">
                 {assignment.discount?.valueLabel ?? "—"}
               </Td>
 
