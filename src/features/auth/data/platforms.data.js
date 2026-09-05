@@ -55,7 +55,7 @@ const platforms = [
     name: "Diagnostika o'quvchisi",
     isCurrent: false,
     animationData: statsBarEmojiAnimation,
-    href: "https://diagnostika.abdukarimovs.uz",
+    href: "https://diagnostika.abdukarimovs.uz/login",
   },
 ];
 
