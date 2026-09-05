@@ -33,6 +33,34 @@ const invalidateFinance = (qc) => {
 
 // ── Tariflar katalogi ────────────────────────
 
+// ── Yo'nalishlar (tarif ustidagi daraja) ─────
+
+export const useCreateDirection = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => tariffsAPI.createDirection(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useUpdateDirection = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      tariffsAPI.updateDirection(id, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useArchiveDirection = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isArchived }) =>
+      tariffsAPI.archiveDirection(id, isArchived).then((r) => r.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
 export const useCreateTariff = () => {
   const qc = useQueryClient();
   return useMutation({

@@ -1,3 +1,6 @@
+// React
+import { useState } from "react";
+
 // Toast
 import { toast } from "sonner";
 
@@ -10,10 +13,12 @@ import InputGroup from "@/shared/components/ui/input/InputGroup";
 import InputField from "@/shared/components/ui/input/InputField";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
+import Input from "@/shared/components/ui/input/Input";
 import Switch from "@/shared/components/ui/switch/Switch";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
@@ -46,9 +51,21 @@ export const ExpenseEntryModal = () => (
 );
 
 const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
+  const { can } = usePermissions();
   const { data: categories = [] } = useQuery(expenseQueries.activeCategories());
   const { data: accounts = [] } = useQuery(financeQueries.activeAccounts());
   const { mutate: createExpense } = useCreateExpense();
+  const { mutate: createCategory } = useCreateCategory();
+
+  // Katalogni o'zgartirish ALOHIDA huquq (server ham shuni tekshiradi):
+  // xarajat kirita oladigan har kim kategoriya o'ylab topa olmasligi kerak,
+  // aks holda bir necha oyda "Kommunal", "kommunal", "Kom. to'lov" paydo
+  // bo'lib, hisobot kesimi ma'nosini yo'qotardi.
+  const canManageCategories = can("expenses.categories");
+
+  // `null` — ro'yxatdan tanlash rejimi. Satr — yangi kategoriya rejimi.
+  const [newCategory, setNewCategory] = useState(null);
+  const isNewCategory = newCategory !== null;
 
   const { categoryId, accountId, amount, payee, note, occurredAt, setField } =
     useObjectState({
@@ -64,13 +81,11 @@ const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
   const resolvedCategory = categoryId || (categories.length === 1 ? categories[0].id : "");
   const resolvedAccount = accountId || (accounts.length === 1 ? accounts[0].id : "");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
+  /** Xarajatning o'zini yozish — kategoriya allaqachon aniq. */
+  const submitExpense = (targetCategoryId) =>
     createExpense(
       {
-        categoryId: resolvedCategory,
+        categoryId: targetCategoryId,
         accountId: resolvedAccount,
         amount,
         payee,
@@ -87,13 +102,45 @@ const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
         onSettled: () => setIsLoading(false),
       },
     );
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // ⚠️ IKKI QADAM, BITTA TUGMA: avval kategoriya yaratiladi, keyin
+    // xarajat unga yoziladi. Tranzaksiya emas va bo'lishi ham shart emas —
+    // kategoriya yaratilib, xarajat yozilmay qolsa, katalogda bo'sh
+    // kategoriya qoladi (zararsiz), teskarisi esa imkonsiz.
+    if (isNewCategory) {
+      const name = newCategory.trim();
+      if (!name) {
+        setIsLoading(false);
+        return toast.error("Kategoriya nomini kiriting");
+      }
+
+      return createCategory(
+        { name },
+        {
+          onSuccess: (created) => submitExpense(created.id),
+          onError: (err) => {
+            setIsLoading(false);
+            toast.error(
+              err.response?.data?.message || "Kategoriyani qo'shib bo'lmadi",
+            );
+          },
+        },
+      );
+    }
+
+    submitExpense(resolvedCategory);
   };
 
-  const blocked = categories.length === 0 || accounts.length === 0;
+  const blocked = accounts.length === 0;
+  const categoryReady = isNewCategory ? newCategory.trim().length > 0 : Boolean(resolvedCategory);
 
   return (
     <InputGroup onSubmit={handleSubmit} as="form">
-      {categories.length === 0 && (
+      {categories.length === 0 && !canManageCategories && (
         <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
           Faol kategoriya yo'q — avval "Sozlamalar" tabida kategoriya qo'shing.
         </p>
@@ -105,13 +152,47 @@ const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
       )}
 
       <div className="space-y-1.5">
-        <p className="text-sm font-medium text-gray-700">Kategoriya</p>
-        <Select
-          value={resolvedCategory}
-          placeholder="Kategoriyani tanlang"
-          onChange={(v) => setField("categoryId", v)}
-          options={categories.map((c) => ({ label: c.name, value: c.id }))}
-        />
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-medium text-gray-700">Kategoriya</p>
+
+          {/* Kategoriyani shu yerdan qo'shish — oynani yopib, boshqa tabga
+              o'tib, qaytib kelish zanjirini olib tashlaydi. To'liq katalog
+              baribir "Chiqimlar → Sozlamalar" da boshqariladi. */}
+          {canManageCategories && (
+            <button
+              type="button"
+              className="text-xs font-medium text-primary hover:underline"
+              onClick={() => setNewCategory(isNewCategory ? null : "")}
+            >
+              {isNewCategory ? "Ro'yxatdan tanlash" : "+ Yangi kategoriya"}
+            </button>
+          )}
+        </div>
+
+        {isNewCategory ? (
+          <>
+            <Input
+              autoFocus
+              name="newCategory"
+              value={newCategory}
+              placeholder="Masalan: Xavfsizlik xizmati"
+              onChange={(e) => setNewCategory(e.target.value)}
+            />
+            <p className="text-xs text-gray-400">
+              Yangi kategoriya katalogga qo'shiladi va keyingi xarajatlarda
+              ro'yxatda turadi.
+            </p>
+          </>
+        ) : (
+          <Select
+            value={resolvedCategory}
+            placeholder={
+              categories.length === 0 ? "Kategoriya yo'q" : "Kategoriyani tanlang"
+            }
+            onChange={(v) => setField("categoryId", v)}
+            options={categories.map((c) => ({ label: c.name, value: c.id }))}
+          />
+        )}
       </div>
 
       <InputField
@@ -167,7 +248,7 @@ const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
         type="submit"
         className="w-full"
         loading={isLoading}
-        disabled={blocked || !resolvedCategory || !resolvedAccount || !amount}
+        disabled={blocked || !categoryReady || !resolvedAccount || !amount}
       >
         Qayd etish
       </Button>

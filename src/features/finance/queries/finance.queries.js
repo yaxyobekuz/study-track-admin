@@ -35,6 +35,17 @@ const settingsKey = [...financeKeys.all, "settings"];
 
 export const financeQueries = {
   /** Tariflar katalogi (sahifalangan) → `{ data, pagination }`. */
+  /**
+   * Yo'nalishlar — tarif ustidagi daraja.
+   * `staleTime` uzun: katalog kuniga bir marta ham o'zgarmaydi.
+   */
+  directionList: (params) =>
+    queryOptions({
+      queryKey: [...tariffsKey, "directions", params],
+      queryFn: () => tariffsAPI.getDirections(params).then((r) => r.data),
+      staleTime: 10 * 60 * 1000,
+    }),
+
   tariffList: (params) =>
     queryOptions({
       queryKey: [...tariffsKey, "list", params],

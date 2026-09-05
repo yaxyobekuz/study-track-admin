@@ -18,6 +18,7 @@ import Button from "@/shared/components/ui/button/Button";
 import useObjectState from "@/shared/hooks/useObjectState";
 
 // Utils
+import { cn } from "@/shared/utils/cn";
 import { formatMoney } from "@/shared/utils/formatMoney";
 import {
   currentMonthKey,
@@ -36,6 +37,7 @@ import {
   usePreviewSalaryPayment,
   useVoidSalaryPayment,
   useCancelEntry,
+  useRegenerateEntry,
 } from "../queries/payroll.mutations";
 import { NO_ADVANCE_HINT, PAYROLL_SEAL_HINT } from "../data/payroll.data";
 
@@ -362,12 +364,30 @@ export const CancelPayrollEntryModal = () => (
   </ResponsiveModal>
 );
 
+/**
+ * QAYTA SHAKLLANTIRISH — bekor qilinganini qaytarish yoki oylik qoidasi
+ * to'g'rilangandan keyin summani yangilash.
+ *
+ * ⚠️ Oylik passi bekor qilingan majburiyatni QAYTA YOZMAYDI (u qaror,
+ * bo'shliq emas), shuning uchun qaytarishning yagona yo'li shu oyna.
+ */
+export const RegeneratePayrollEntryModal = () => (
+  <ResponsiveModal
+    name="regeneratePayrollEntry"
+    title="Majburiyatni qayta shakllantirish"
+  >
+    <ReasonForm kind="regenerate" />
+  </ResponsiveModal>
+);
+
 const ReasonForm = ({ close, isLoading, setIsLoading, kind, payment, entry }) => {
   const { mutate: voidPayment } = useVoidSalaryPayment();
   const { mutate: cancelEntry } = useCancelEntry();
+  const { mutate: regenerateEntry } = useRegenerateEntry();
 
   const { reason, setField } = useObjectState({ reason: "" });
   const target = kind === "payment" ? payment : entry;
+  const isRegenerate = kind === "regenerate";
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -376,7 +396,9 @@ const ReasonForm = ({ close, isLoading, setIsLoading, kind, payment, entry }) =>
     const handlers = {
       onSuccess: () => {
         close();
-        toast.success("Bekor qilindi");
+        toast.success(
+          isRegenerate ? "Majburiyat qayta shakllantirildi" : "Bekor qilindi",
+        );
       },
       onError: (err) =>
         toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
@@ -384,6 +406,7 @@ const ReasonForm = ({ close, isLoading, setIsLoading, kind, payment, entry }) =>
     };
 
     if (kind === "payment") voidPayment({ id: payment.id, reason }, handlers);
+    else if (isRegenerate) regenerateEntry({ id: entry.id, reason }, handlers);
     else cancelEntry({ id: entry.id, reason }, handlers);
   };
 
@@ -397,10 +420,17 @@ const ReasonForm = ({ close, isLoading, setIsLoading, kind, payment, entry }) =>
         </p>
       </div>
 
-      <p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800">
+      <p
+        className={cn(
+          "rounded-xl p-3 text-xs",
+          isRegenerate ? "bg-blue-50 text-blue-800" : "bg-amber-50 text-amber-800",
+        )}
+      >
         {kind === "payment"
           ? "Yozuv o'chirilmaydi — daftarga teskari qator yoziladi, kassa qoldig'i qaytadi va oylik yana qarzga o'tadi."
-          : PAYROLL_SEAL_HINT}
+          : isRegenerate
+            ? "Summa AMALDAGI oylik qoidasidan qayta hisoblanadi va majburiyat yana \"to'lanmagan\" holatiga o'tadi. Bekor qilingan bo'lsa — qaytariladi."
+            : PAYROLL_SEAL_HINT}
       </p>
 
       <InputField
@@ -414,12 +444,12 @@ const ReasonForm = ({ close, isLoading, setIsLoading, kind, payment, entry }) =>
 
       <Button
         type="submit"
-        variant="danger"
+        variant={isRegenerate ? "default" : "danger"}
         className="w-full"
         loading={isLoading}
         disabled={!reason.trim()}
       >
-        Bekor qilish
+        {isRegenerate ? "Qayta shakllantirish" : "Bekor qilish"}
       </Button>
     </InputGroup>
   );

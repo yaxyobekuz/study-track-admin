@@ -151,36 +151,76 @@ export const RevenueStructureCard = ({ data, isLoading, isError }) => {
  * so'rovdan ikkalasini ham beradi): ikki alohida hisob bo'lganda ular bir
  * kuni ajralib ketardi.
  */
-export const TopExpensesCard = ({ data, isLoading, isError }) => {
-  const items = data?.expenseStructure?.top ?? [];
+export const TopExpensesCard = ({ data, isLoading, isError, className }) => {
+  const structure = data?.expenseStructure;
+  const items = structure?.top ?? [];
   const max = items.reduce((acc, row) => Math.max(acc, Number(row.amount)), 0);
+  const shown = items.reduce((acc, row) => acc + Number(row.amount), 0);
 
   return (
     <DashboardCard
       title="Top 5 xarajat kategoriyasi"
-      hint="Pul eng ko'p qayerga ketdi"
+      hint="Pul eng ko'p qayerga ketdi · summalar so'mda"
       isLoading={isLoading}
       isError={isError}
       isEmpty={items.length === 0}
       emptyText="Bu oyda xarajat yozilmagan"
+      className={className}
+      footer={
+        structure && (
+          <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-xs">
+            <span className="text-gray-400">
+              Beshtasi jami xarajatning{" "}
+              <span className="font-semibold text-gray-700">
+                {Number(structure.total) > 0
+                  ? Math.round((shown / Number(structure.total)) * 100)
+                  : 0}
+                %
+              </span>{" "}
+              i
+            </span>
+            <span className="font-bold tabular-nums text-gray-900">
+              {formatMoney(String(shown), { withLabel: false })}
+            </span>
+          </div>
+        )
+      }
     >
-      <ul className="space-y-3">
+      <ul className="space-y-3.5">
         {items.map((row, index) => (
-          <li key={row.key}>
-            <div className="flex items-center justify-between gap-3 text-xs">
-              <span className="truncate font-medium text-gray-700">{row.label}</span>
-              <span className="shrink-0 tabular-nums text-gray-500">
-                {formatMoney(row.amount)}
-              </span>
-            </div>
-            <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-gray-100">
-              <div
-                className="h-full rounded-full transition-[width]"
-                style={{
-                  width: `${max > 0 ? (Number(row.amount) / max) * 100 : 0}%`,
-                  backgroundColor: PALETTE[index % PALETTE.length],
-                }}
-              />
+          <li key={row.key} className="flex items-center gap-3">
+            {/* Tartib raqami — ro'yxat "top" ekani ko'rinib tursin */}
+            <span
+              className="flex size-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold text-white"
+              style={{ backgroundColor: PALETTE[index % PALETTE.length] }}
+            >
+              {index + 1}
+            </span>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="truncate text-xs font-medium text-gray-700">
+                  {row.label}
+                </span>
+                <span className="shrink-0 text-sm font-bold tabular-nums text-gray-900">
+                  {formatMoney(row.amount, { withLabel: false })}
+                </span>
+              </div>
+
+              <div className="mt-1.5 flex items-center gap-2">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+                  <div
+                    className="h-full rounded-full transition-[width]"
+                    style={{
+                      width: `${max > 0 ? (Number(row.amount) / max) * 100 : 0}%`,
+                      backgroundColor: PALETTE[index % PALETTE.length],
+                    }}
+                  />
+                </div>
+                <span className="w-10 shrink-0 text-right text-[10px] tabular-nums text-gray-400">
+                  {row.share}%
+                </span>
+              </div>
             </div>
           </li>
         ))}

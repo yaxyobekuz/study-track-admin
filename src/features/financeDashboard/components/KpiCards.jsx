@@ -80,7 +80,7 @@ const KpiCards = ({ data, isLoading }) => {
         return (
           <div
             key={card.key}
-            className="relative overflow-hidden rounded-2xl bg-white p-4 xs:p-5"
+            className="relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5"
           >
             {/* Yumshoq rangli dog' — kartalarni ajratadi, raqamni bosmaydi */}
             <div
@@ -96,19 +96,24 @@ const KpiCards = ({ data, isLoading }) => {
               </p>
               <span
                 className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-xl text-white",
+                  "flex size-9 shrink-0 items-center justify-center rounded-xl text-white shadow-sm",
                   card.accent,
                 )}
               >
-                <Icon className="size-4" />
+                <Icon className="size-[18px]" />
               </span>
             </div>
 
-            <p className={cn("relative mt-2.5 text-xl font-bold xl:text-[22px]", card.tone)}>
+            <p
+              className={cn(
+                "relative mt-3 text-[22px] font-bold leading-tight tracking-tight xl:text-2xl",
+                card.tone,
+              )}
+            >
               {formatByUnit(row.value, row.unit)}
             </p>
 
-            <div className="relative mt-2 space-y-1 text-[11px]">
+            <div className="relative mt-3 space-y-1.5 border-t border-gray-100 pt-2.5 text-[11px]">
               {/* REJA — belgilanmagan bo'lsa qator umuman chizilmaydi:
                   "Reja: —" bo'sh joy egallab, hech narsa aytmasdi */}
               {row.plan != null && (

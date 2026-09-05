@@ -12,7 +12,11 @@ export const INCOME_TABS = [
 export const INCOME_TABLE_COLUMNS = [
   "Sana",
   "Kategoriya",
+  // ⚠️ "Kimdan" (to'lovchi) va "Mas'ul" (yig'ish kimning zimmasida) —
+  // BOSHQA-BOSHQA odam. Ikkalasi ham ustun bo'lishi kerak, aks holda
+  // "Bo'limlar bo'yicha yig'im" hisobotining manbasi ko'rinmay qolardi.
   "Kimdan",
+  "Mas'ul",
   "To'lov turi",
   { label: "Summa", align: "right" },
   "",

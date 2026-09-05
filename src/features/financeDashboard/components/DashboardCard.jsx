@@ -33,13 +33,24 @@ const DashboardCard = ({
   const state = isLoading ? "loading" : isError ? "error" : isEmpty ? "empty" : "ready";
 
   return (
-    <div className={cn("flex flex-col rounded-2xl bg-white p-4 xs:p-5", className)}>
+    <div
+      className={cn(
+        // `ring` — soyasiz chegara: dashboardda 18 ta karta yonma-yon
+        // turadi va soya berilsa ekran "iflos" bo'lib ketardi
+        "flex flex-col rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5",
+        className,
+      )}
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-gray-700">
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-gray-800">
             {title}
           </h3>
-          {hint && <p className="mt-0.5 text-xs font-normal normal-case text-gray-400">{hint}</p>}
+          {hint && (
+            <p className="mt-1 text-[11px] font-normal normal-case leading-snug text-gray-400">
+              {hint}
+            </p>
+          )}
         </div>
         {action}
       </div>

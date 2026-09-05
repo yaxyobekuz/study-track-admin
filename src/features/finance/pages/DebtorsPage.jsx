@@ -23,6 +23,7 @@ import Card from "@/shared/components/ui/Card";
 import Table, { Td, Tr } from "@/shared/components/ui/Table";
 import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
+import { Label } from "@/shared/components/shadcn/label";
 import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import Pagination from "@/shared/components/ui/Pagination";
@@ -154,31 +155,41 @@ const DebtorsPage = () => {
         />
       </div>
 
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-end gap-2">
-        <InputField
-          name="search"
-          type="search"
-          value={search}
-          placeholder="O'quvchini qidirish..."
-          className="min-w-52 flex-1"
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* FILTR PANELI — `PaymentsPage` bilan bir xil shakl: har maydon
+          o'ralgan (`Field` ichidagi `w-full` flex qatorini buzmasin) va
+          har birining yorlig'i bor */}
+      <div className="flex flex-wrap items-end gap-3 rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
+        <div className="min-w-56 flex-1">
+          <InputField
+            name="search"
+            type="search"
+            label="O'quvchi"
+            value={search}
+            placeholder="Ism yoki username..."
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
 
-        <SelectSearch
-          value={classId}
-          triggerClassName="min-w-44"
-          placeholder="Barcha sinflar"
-          onChange={(v) => setParam("classId", v)}
-          options={classes.map((c) => ({ label: c.name, value: c.id }))}
-        />
+        <div className="flex w-full flex-col gap-3 xs:w-48">
+          <Label htmlFor="classId">Sinf</Label>
+          <SelectSearch
+            id="classId"
+            value={classId}
+            placeholder="Barcha sinflar"
+            onChange={(v) => setParam("classId", v)}
+            options={classes.map((c) => ({ label: c.name, value: c.id }))}
+          />
+        </div>
 
-        <Select
-          value={sort}
-          triggerClassName="min-w-40"
-          options={DEBTOR_SORT_OPTIONS}
-          onChange={(v) => setParam("sort", v)}
-        />
+        <div className="flex w-full flex-col gap-3 xs:w-48">
+          <Label htmlFor="sort">Saralash</Label>
+          <Select
+            id="sort"
+            value={sort}
+            options={DEBTOR_SORT_OPTIONS}
+            onChange={(v) => setParam("sort", v)}
+          />
+        </div>
 
         {/* Faqat SHU SAHIFADAGI qarzdorlarga — butun ro'yxatga emas. Xodim
             kimga xabar ketishini ko'rib turgan bo'lishi kerak, "hammasi"

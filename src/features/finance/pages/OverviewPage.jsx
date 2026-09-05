@@ -1,5 +1,5 @@
 // React
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 // Router
 import { useSearchParams } from "react-router-dom";
@@ -8,13 +8,26 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 // Icons
-import { Ban, FileText, RotateCcw, Sparkles, RefreshCw } from "lucide-react";
+import {
+  Ban,
+  FileText,
+  PiggyBank,
+  Receipt,
+  RotateCcw,
+  Sparkles,
+  RefreshCw,
+  TrendingDown,
+  Wallet,
+} from "lucide-react";
 
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
 // Components
 import Card from "@/shared/components/ui/Card";
+
+// Utils
+import { cn } from "@/shared/utils/cn";
 import Can from "@/shared/components/guards/Can";
 import Table, { Td, Tr } from "@/shared/components/ui/Table";
 import Button from "@/shared/components/ui/button/Button";
@@ -37,7 +50,6 @@ import {
   GENERATE_BLOCKED_LABELS,
 
   INVOICE_STATUS_OPTIONS,
-  INVOICE_TABLE_COLUMNS,
 } from "../data/finance.data";
 import { financeQueries } from "../queries/finance.queries";
 import {
@@ -89,6 +101,28 @@ const OverviewPage = () => {
 
   const invoices = data?.data ?? [];
   const pagination = data?.pagination;
+
+  // ⚠️ TO'LOV TURI USTUNLARI DINAMIK. "Naqd" va "Plastik" — qotib qolgan
+  // ro'yxat emas: to'lov turlari katalogdan keladi va maktab istalgan
+  // vaqtda yangisini qo'shishi mumkin. Shuning uchun ustunlar ham
+  // katalogdan quriladi.
+  const accountColumns = useMemo(
+    () => (report?.items ?? []).map((account) => ({ id: account.id, name: account.name })),
+    [report],
+  );
+
+  const invoiceColumns = useMemo(
+    () => [
+      "O'quvchi",
+      "Tarif",
+      { label: "Summa", align: "right" },
+      { label: "To'langan", align: "right" },
+      ...accountColumns.map((account) => ({ label: account.name, align: "right" })),
+      { label: "Qarz", align: "right" },
+      "",
+    ],
+    [accountColumns],
+  );
 
   const { mutate: cancelInvoice } = useCancelInvoice();
   const { mutate: restoreInvoice } = useRestoreInvoice();
@@ -167,7 +201,7 @@ const OverviewPage = () => {
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
         <div className="flex flex-wrap items-center gap-2">
           <Select
             value={String(month)}
@@ -212,54 +246,55 @@ const OverviewPage = () => {
         </p>
       )}
 
-      {/* Yig'ma kartalar */}
+      {/* Yig'ma kartalar — moliya dashboardidagi KPI qatori bilan bir xil
+          shakl: rangli ikona, katta raqam, ostida izoh. Ikki ekranda ikki
+          xil karta uslubi bo'lsa, ular boshqa modulga tegishlidek ko'rinardi */}
       {summary && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <p className="text-xs text-gray-500">Hisoblangan</p>
-            <p className="mt-1 text-xl font-semibold text-gray-900">
-              {formatMoney(summary.totals.amount)}
-            </p>
-            <p className="mt-0.5 text-xs text-gray-500">
-              {summary.counts.invoiced} ta majburiyat
-              {Number(summary.totals.discountAmount) > 0 &&
-                ` · ${formatMoney(summary.totals.discountAmount)} chegirma`}
-              {/* Proratsiya farqi yorliqsiz g'oyib bo'lmasligi kerak:
-                  baza − proratsiya − chegirma = summa */}
-              {Number(summary.totals.prorationAmount) > 0 &&
-                ` · ${formatMoney(summary.totals.prorationAmount)} qisman oy`}
-            </p>
-          </Card>
+          <SummaryCard
+            icon={Receipt}
+            accent="bg-blue-500"
+            label="Hisoblangan"
+            value={formatMoney(summary.totals.amount)}
+            hint={
+              <>
+                {summary.counts.invoiced} ta majburiyat
+                {Number(summary.totals.discountAmount) > 0 &&
+                  ` · ${formatMoney(summary.totals.discountAmount)} chegirma`}
+                {/* Proratsiya farqi yorliqsiz g'oyib bo'lmasligi kerak:
+                    baza − proratsiya − chegirma = summa */}
+                {Number(summary.totals.prorationAmount) > 0 &&
+                  ` · ${formatMoney(summary.totals.prorationAmount)} qisman oy`}
+              </>
+            }
+          />
 
-          <Card>
-            <p className="text-xs text-gray-500">Yig'ilgan</p>
-            <p className="mt-1 text-xl font-semibold text-green-600">
-              {formatMoney(summary.totals.paid)}
-            </p>
-            <p className="mt-0.5 text-xs text-gray-500">
-              {summary.counts.paid} ta to'liq yopilgan
-            </p>
-          </Card>
+          <SummaryCard
+            icon={Wallet}
+            accent="bg-green-500"
+            label="Yig'ilgan"
+            value={formatMoney(summary.totals.paid)}
+            valueClassName="text-green-700"
+            hint={`${summary.counts.paid} ta to'liq yopilgan`}
+          />
 
-          <Card>
-            <p className="text-xs text-gray-500">Qarz</p>
-            <p className="mt-1 text-xl font-semibold text-red-600">
-              {formatMoney(summary.totals.debt)}
-            </p>
-            <p className="mt-0.5 text-xs text-gray-500">
-              {summary.counts.unpaid + summary.counts.partial} ta to'lanmagan
-            </p>
-          </Card>
+          <SummaryCard
+            icon={TrendingDown}
+            accent="bg-rose-500"
+            label="Qarz"
+            value={formatMoney(summary.totals.debt)}
+            valueClassName="text-red-600"
+            hint={`${summary.counts.unpaid + summary.counts.partial} ta to'lanmagan`}
+          />
 
-          <Card>
-            <p className="text-xs text-gray-500">Depozitda</p>
-            <p className="mt-1 text-xl font-semibold text-blue-600">
-              {formatMoney(summary.totals.deposits)}
-            </p>
-            <p className="mt-0.5 text-xs text-gray-500">
-              Oldindan to'langan, keyingi oylarga o'tadi
-            </p>
-          </Card>
+          <SummaryCard
+            icon={PiggyBank}
+            accent="bg-indigo-500"
+            label="Depozitda"
+            value={formatMoney(summary.totals.deposits)}
+            valueClassName="text-indigo-700"
+            hint="Oldindan to'langan, keyingi oylarga o'tadi"
+          />
         </div>
       )}
 
@@ -302,7 +337,7 @@ const OverviewPage = () => {
           />
         </Card>
       ) : (
-        <Table columns={INVOICE_TABLE_COLUMNS}>
+        <Table columns={invoiceColumns}>
           {invoices.map((invoice) => {
 
             const isCancelled = invoice.status === "cancelled";
@@ -340,6 +375,25 @@ const OverviewPage = () => {
                 <Td align="right" className="text-green-600">
                   {formatMoney(invoice.paidAmount)}
                 </Td>
+
+                {/* To'lov turi kesimi — qaysi puldan qanchasi kelgani.
+                    Nol summa "0" emas, "—" bilan ko'rsatiladi: nol raqami
+                    ustunni to'ldirib, ko'zni chalg'itardi */}
+                {accountColumns.map((account) => {
+                  const paid = invoice.paidByAccount?.find(
+                    (row) => row.accountId === account.id,
+                  );
+
+                  return (
+                    <Td key={account.id} align="right" className="text-gray-500">
+                      {paid ? (
+                        formatMoney(paid.amount, { withLabel: false })
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
+                    </Td>
+                  );
+                })}
 
                 <Td align="right">
                   {isCancelled ? (
@@ -411,5 +465,43 @@ const OverviewPage = () => {
     </div>
   );
 };
+
+/**
+ * Yig'ma karta — rangli ikona, katta raqam va ostida izoh.
+ *
+ * Moliya dashboardidagi KPI qatori bilan bir xil shakl: bir bo'limda ikki
+ * xil karta uslubi bo'lsa, foydalanuvchi ular boshqa modulga tegishli deb
+ * o'ylardi.
+ */
+const SummaryCard = ({ icon: Icon, accent, label, value, hint, valueClassName }) => (
+  <div className="relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5">
+    <div className={cn("absolute -right-7 -top-7 size-24 rounded-full opacity-10", accent)} />
+
+    <div className="relative flex items-start justify-between gap-2">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+        {label}
+      </p>
+      <span
+        className={cn(
+          "flex size-9 shrink-0 items-center justify-center rounded-xl text-white shadow-sm",
+          accent,
+        )}
+      >
+        <Icon className="size-[18px]" />
+      </span>
+    </div>
+
+    <p
+      className={cn(
+        "relative mt-3 text-[22px] font-bold leading-tight tracking-tight text-gray-900",
+        valueClassName,
+      )}
+    >
+      {value}
+    </p>
+
+    {hint && <p className="relative mt-1.5 text-[11px] text-gray-400">{hint}</p>}
+  </div>
+);
 
 export default OverviewPage;

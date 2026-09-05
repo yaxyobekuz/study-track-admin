@@ -37,6 +37,21 @@ export const dashboardQueries = {
       queryFn: () => financeDashboardAPI.getTargets(params).then((r) => r.data.data),
       staleTime: STALE,
     }),
+
+  expenseBudgets: (params) =>
+    queryOptions({
+      queryKey: [...dashboardKeys.all, "expense-budgets", params],
+      queryFn: () =>
+        financeDashboardAPI.getExpenseBudgets(params).then((r) => r.data.data),
+      staleTime: STALE,
+    }),
+
+  incomePlans: (params) =>
+    queryOptions({
+      queryKey: [...dashboardKeys.all, "income-plans", params],
+      queryFn: () => financeDashboardAPI.getIncomePlans(params).then((r) => r.data.data),
+      staleTime: STALE,
+    }),
 };
 
 /**
@@ -52,6 +67,33 @@ export const useSaveTargets = () => {
 
   return useMutation({
     mutationFn: (data) => financeDashboardAPI.saveTargets(data).then((r) => r.data.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: dashboardKeys.all }),
+  });
+};
+
+/**
+ * Xarajat limitlarini saqlash.
+ *
+ * Butun dashboard invalidatsiya qilinadi: limit "Xarajat limitlari"
+ * kartasida ham, dashboarddagi ixcham kesimida ham ishtirok etadi.
+ */
+export const useSaveExpenseBudgets = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) =>
+      financeDashboardAPI.saveExpenseBudgets(data).then((r) => r.data.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: dashboardKeys.all }),
+  });
+};
+
+/** Yig'ish rejasini saqlash. */
+export const useSaveIncomePlans = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) =>
+      financeDashboardAPI.saveIncomePlans(data).then((r) => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: dashboardKeys.all }),
   });
 };

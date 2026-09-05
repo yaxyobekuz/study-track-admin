@@ -79,15 +79,17 @@ const Select = ({
       value={resolveValue(value, options)}
     >
       {/* Trigger */}
-      {/* ⚠️ `w-full min-w-0` — tanlagich hech qachon konteyneridan
-          KENGROQ bo'lib ketmasligi uchun. Trigger'da `whitespace-nowrap`
-          turibdi, ya'ni uzun variant nomi (masalan "Uzcard terminal —
-          237 329 000 so'm") grid ustunini kerib yuborardi va yonidagi
-          maydon ustiga chiqib ketardi. `min-w-0` bo'lsa matn `line-clamp`
-          bilan qisqaradi. */}
+      {/* ⚠️ `min-w-0` — tanlagich konteyneridan KENGROQ bo'lib ketmasligi
+          uchun. Trigger'da `whitespace-nowrap` turibdi, ya'ni uzun variant
+          nomi ("Uzcard terminal — 237 329 000 so'm") grid ustunini kerib
+          yuborardi. `min-w-0` bo'lsa matn `line-clamp` bilan qisqaradi.
+          ⚠️ `w-full` QO'YILMAYDI: trigger `display:flex`, ya'ni blok
+          konteynerda o'zi to'liq kenglikni oladi. Flex qatorda (toolbar
+          filtrlari) esa `w-full` har bir tanlagichni alohida satrga
+          tushirib yuborardi. */}
       <SelectTrigger
         className={cn(
-          "h-10 w-full min-w-0 bg-white text-base outline-2 outline-primary md:text-sm",
+          "h-10 min-w-0 bg-white text-base outline-2 outline-primary md:text-sm",
           triggerClassName,
         )}
       >

@@ -1,9 +1,13 @@
 // Toast
 import { toast } from "sonner";
 
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
+
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 import { useUpdateTariff } from "../queries/finance.mutations";
+import { financeQueries } from "../queries/finance.queries";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -25,9 +29,19 @@ const EditTariffModal = () => (
 const Content = ({ close, isLoading, setIsLoading, tariff }) => {
   const { mutate: updateTariff } = useUpdateTariff();
 
-  const { name, description, isActive, setField } = useObjectState({
+  // Yo'nalishlar katalogi — faqat FAOLLARI tanlanadi
+  const { data: directionsData } = useQuery(
+    financeQueries.directionList({ status: "active" }),
+  );
+  const directionOptions = (directionsData?.items ?? []).map((item) => ({
+    label: item.name,
+    value: item.id,
+  }));
+
+  const { name, description, directionId, isActive, setField } = useObjectState({
     name: tariff?.name ?? "",
     description: tariff?.description ?? "",
+    directionId: tariff?.directionId ?? "",
     isActive: tariff?.isActive ?? true,
   });
 
@@ -38,7 +52,9 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
     setIsLoading(true);
 
     updateTariff(
-      { id: tariff.id, data: { name, description, isActive } },
+      // ⚠️ `directionId: ""` — yo'nalishni OLIB TASHLASH. `undefined`
+      // bo'lsa server maydonga umuman tegmasdi.
+      { id: tariff.id, data: { name, description, directionId, isActive } },
       {
         onSuccess: () => {
           close();
@@ -60,6 +76,23 @@ const Content = ({ close, isLoading, setIsLoading, tariff }) => {
         label="Tarif nomi"
         onChange={(e) => setField("name", e.target.value)}
       />
+
+      {/* YO'NALISH — tarif ustidagi daraja. Ixtiyoriy: biriktirilmagan
+          tarif hisobotda o'z nomi bilan turadi. */}
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Yo'nalish (ixtiyoriy)</p>
+        <Select
+          value={directionId}
+          placeholder="Tanlanmagan"
+          options={directionOptions}
+          onChange={(v) => setField("directionId", v)}
+        />
+        <p className="text-xs text-gray-400">
+          Hisobotda tariflar shu yo'nalish ostida guruhlanadi — masalan
+          "Bog'cha (to'liq kun)" va "Bog'cha (yarim kun)" bitta "Bog'cha"
+          qatoriga qo'shiladi.
+        </p>
+      </div>
 
       <InputField
         name="description"

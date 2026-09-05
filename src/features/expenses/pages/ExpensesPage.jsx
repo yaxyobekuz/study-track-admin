@@ -110,7 +110,8 @@ const ExpenseList = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Filtr paneli */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
         <div className="flex flex-wrap items-center gap-2">
           <Select
             triggerClassName="min-w-44"

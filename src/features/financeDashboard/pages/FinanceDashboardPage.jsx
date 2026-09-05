@@ -23,12 +23,21 @@ import {
 } from "../components/StructureCards";
 import { BudgetCard, DirectionsCard, PnlCard } from "../components/TableCards";
 import {
+  BudgetEditButton,
+  ExpenseBudgetCard,
+  IncomePlanCard,
+  IncomePlanEditButton,
+  PricingCard,
+} from "../components/BudgetCards";
+import {
   AccountsCard,
   RecentOperationsCard,
   ScorecardCard,
   TopDebtorsCard,
 } from "../components/SideCards";
 import { TargetsModal } from "../components/TargetsModal";
+import { ExpenseBudgetModal } from "../components/ExpenseBudgetModal";
+import { IncomePlanModal } from "../components/IncomePlanModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -189,13 +198,19 @@ const FinanceDashboardPage = () => {
         <DebtAgingCard {...state} />
       </div>
 
-      {/* ── 5-qator: yo'nalishlar natijasi (keng) + bank hisoblari ───── */}
+      {/* ── 5-qator: narx intizomi (keng) + top 5 xarajat ───────────── */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <PricingCard {...state} className="xl:col-span-2" />
+        <TopExpensesCard {...state} />
+      </div>
+
+      {/* ── 6-qator: yo'nalishlar natijasi (keng) + bank hisoblari ───── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <DirectionsCard {...state} className="xl:col-span-2" />
         <AccountsCard {...state} />
       </div>
 
-      {/* ── 6-qator: byudjet ijrosi (keng) + top 5 xarajat ───────────── */}
+      {/* ── 7-qator: byudjet ijrosi (keng) + xarajat limitlari ───────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <BudgetCard
           {...state}
@@ -212,23 +227,46 @@ const FinanceDashboardPage = () => {
             ) : null
           }
         />
-        <TopExpensesCard {...state} />
+        <ExpenseBudgetCard
+          {...state}
+          action={
+            canPlan ? (
+              <BudgetEditButton
+                onClick={() => openModal("expenseBudgets", { month: Number(month) })}
+              />
+            ) : null
+          }
+        />
       </div>
 
-      {/* ── 7-qator: maktab KPI ko'rsatkichlari ──────────────────────── */}
+      {/* ── 8-qator: bo'limlar bo'yicha yig'im (to'liq kenglik) ─────── */}
+      <IncomePlanCard
+        {...state}
+        action={
+          canPlan ? (
+            <IncomePlanEditButton
+              onClick={() => openModal("incomePlans", { month: Number(month) })}
+            />
+          ) : null
+        }
+      />
+
+      {/* ── 9-qator: maktab KPI ko'rsatkichlari ──────────────────────── */}
       <ScorecardCard
         data={scorecard.data}
         isLoading={scorecard.isLoading}
         isError={scorecard.isError}
       />
 
-      {/* ── 8-qator: so'nggi operatsiyalar (keng) + eng katta qarzdorlar ─ */}
+      {/* ── 10-qator: so'nggi operatsiyalar (keng) + eng katta qarzdorlar ─ */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <RecentOperationsCard {...state} className="xl:col-span-2" />
         <TopDebtorsCard {...state} />
       </div>
 
       <TargetsModal />
+      <ExpenseBudgetModal />
+      <IncomePlanModal />
     </div>
   );
 };

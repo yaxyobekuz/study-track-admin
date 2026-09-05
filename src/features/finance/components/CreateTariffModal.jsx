@@ -1,12 +1,17 @@
 // Toast
 import { toast } from "sonner";
 
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
+
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 import { useCreateTariff } from "../queries/finance.mutations";
+import { financeQueries } from "../queries/finance.queries";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
+import Select from "@/shared/components/ui/select/Select";
 import InputField from "@/shared/components/ui/input/InputField";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
@@ -27,10 +32,20 @@ const CreateTariffModal = () => (
 const Content = ({ close, isLoading, setIsLoading }) => {
   const { mutate: createTariff } = useCreateTariff();
 
-  const { name, description, startMonth, monthlyAmount, setField } =
+  // Yo'nalishlar katalogi — faqat FAOLLARI tanlanadi
+  const { data: directionsData } = useQuery(
+    financeQueries.directionList({ status: "active" }),
+  );
+  const directionOptions = (directionsData?.items ?? []).map((item) => ({
+    label: item.name,
+    value: item.id,
+  }));
+
+  const { name, description, directionId, startMonth, monthlyAmount, setField } =
     useObjectState({
       name: "",
       description: "",
+      directionId: "",
       // Birinchi narx odatda joriy oydan boshlanadi
       startMonth: monthKeyToInputValue(currentMonthKey()),
       monthlyAmount: "",
@@ -44,6 +59,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       {
         name,
         description,
+        directionId: directionId || undefined,
         // Narx bo'sh bo'lsa tarif narxsiz yaratiladi — bu qonuniy,
         // narxni keyin "Narxni o'zgartirish" orqali qo'shsa bo'ladi.
         initialVersion: monthlyAmount
@@ -75,6 +91,23 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         placeholder="Masalan: Standart 1-4 sinf"
         onChange={(e) => setField("name", e.target.value)}
       />
+
+      {/* YO'NALISH — tarif ustidagi daraja. Ixtiyoriy: biriktirilmagan
+          tarif hisobotda o'z nomi bilan turadi. */}
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Yo'nalish (ixtiyoriy)</p>
+        <Select
+          value={directionId}
+          placeholder="Tanlanmagan"
+          options={directionOptions}
+          onChange={(v) => setField("directionId", v)}
+        />
+        <p className="text-xs text-gray-400">
+          Hisobotda tariflar shu yo'nalish ostida guruhlanadi — masalan
+          "Bog'cha (to'liq kun)" va "Bog'cha (yarim kun)" bitta "Bog'cha"
+          qatoriga qo'shiladi.
+        </p>
+      </div>
 
       <InputField
         name="description"

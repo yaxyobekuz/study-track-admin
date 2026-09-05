@@ -24,6 +24,7 @@ import {
   SalaryPaymentModal,
   VoidSalaryPaymentModal,
   CancelPayrollEntryModal,
+  RegeneratePayrollEntryModal,
 } from "../components/PayrollModals";
 
 // Hooks
@@ -78,6 +79,7 @@ const PayrollPage = () => {
       <SalaryPaymentModal />
       <VoidSalaryPaymentModal />
       <CancelPayrollEntryModal />
+      <RegeneratePayrollEntryModal />
     </div>
   );
 };
@@ -113,12 +115,32 @@ const EntriesView = () => {
       { month: monthKey },
       {
         onSuccess: (result) => {
+          const { alreadyExists, cancelled, noSalary, archived } = result.skipped;
+
+          // ⚠️ "Allaqachon shakllantirilgan" YETARLI EMAS: shakllantirish
+          // idempotent, ya'ni uni qayta bosish YANGI xodimlarga majburiyat
+          // yaratadi. Nima bo'lgani va NIMA BO'LMAGANI aytilmasa,
+          // foydalanuvchi tugma umuman ishlamadi deb o'ylardi.
           if (result.created > 0) {
             toast.success(
               `${result.monthLabel}: ${result.created} ta oylik shakllantirildi`,
             );
-          } else if (result.skipped.alreadyExists > 0) {
-            toast.info("Bu oy allaqachon shakllantirilgan");
+          } else if (alreadyExists > 0 || cancelled > 0) {
+            toast.info(
+              `${result.monthLabel}: yangi majburiyat yo'q — ${alreadyExists} ta allaqachon bor` +
+                (cancelled > 0 ? `, ${cancelled} tasi bekor qilingan` : ""),
+              cancelled > 0
+                ? {
+                    description:
+                      "Bekor qilinganini qaytarish uchun qatordagi \u201cQayta shakllantirish\u201d tugmasidan foydalaning.",
+                  }
+                : undefined,
+            );
+          } else if (noSalary > 0 || archived > 0) {
+            toast.warning(
+              `Majburiyat yaratilmadi: ${noSalary} ta xodimda oylik qoidasi yo'q` +
+                (archived > 0 ? `, ${archived} tasi arxivlangan` : ""),
+            );
           } else {
             toast.warning("Oylik belgilangan xodim topilmadi");
           }
@@ -131,7 +153,8 @@ const EntriesView = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Filtr paneli */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="month"
@@ -251,6 +274,24 @@ const EntriesView = () => {
 
                   <Td>
                     <div className="flex items-center justify-end gap-1">
+                      {/* QAYTA SHAKLLANTIRISH — bekor qilinganini qaytarish
+                          yoki qoida to'g'rilangandan keyin summani yangilash.
+                          To'lov tushgan qatorda ko'rinmaydi: summani
+                          o'zgartirish taqsimotni yolg'onga aylantirardi. */}
+                      {Number(entry.paidAmount) === 0 && (
+                        <Can do="payroll.generate">
+                          <button
+                            title="Qayta shakllantirish"
+                            onClick={() =>
+                              openModal("regeneratePayrollEntry", { entry })
+                            }
+                            className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600"
+                          >
+                            <RefreshCw className="size-3.5" />
+                          </button>
+                        </Can>
+                      )}
+
                       {!isCancelled && entry.status !== "paid" && (
                         <>
                           <Can do="payroll.pay">

@@ -66,6 +66,15 @@ export const useGeneratePayroll = () => {
   });
 };
 
+export const useRegenerateEntry = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ id, reason }) =>
+      payrollAPI.regenerateEntry(id, reason).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
 export const useCancelEntry = () => {
   const invalidate = useInvalidate();
   return useMutation({

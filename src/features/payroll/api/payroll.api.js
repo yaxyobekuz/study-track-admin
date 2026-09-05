@@ -23,6 +23,10 @@ export const payrollAPI = {
   getStaffEntries: (staffId) => http.get(`/payroll/staff/${staffId}`),
   generate: (data) => http.post("/payroll/generate", data),
   cancelEntry: (id, reason) => http.post(`/payroll/${id}/cancel`, { reason }),
+  // Bekor qilinganini qaytarish yoki qoida to'g'rilangandan keyin summani
+  // yangilash — oylik passi bunday qatorga tegmaydi
+  regenerateEntry: (id, reason) =>
+    http.post(`/payroll/${id}/regenerate`, { reason }),
 
   getPayments: (params) => http.get("/payroll/payments", { params }),
   previewPayment: (data) => http.post("/payroll/payments/preview", data),

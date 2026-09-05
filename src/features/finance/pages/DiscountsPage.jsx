@@ -138,7 +138,7 @@ const DiscountsPage = () => {
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
         <TabsButtons
           items={VIEW_TABS}
           value={view}

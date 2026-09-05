@@ -152,12 +152,16 @@ export const MODAL_NAMES = [
   "salaryPayment",
   "voidSalaryPayment",
   "cancelPayrollEntry",
+  "regeneratePayrollEntry",
   "expense",
   "voidExpense",
   "expenseCategory",
 
   // Moliya - rahbar dashboardi (oylik reja/byudjet)
   "financeTargets",
+  "expenseBudgets",
+  "incomePlans",
+  "tariffDirections",
 
   // Moliya - ta'til
   "markVacation",

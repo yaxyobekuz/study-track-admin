@@ -22,6 +22,18 @@ export const financeDashboardAPI = {
 
   /** Oylik rejani saqlash. Body: { month, items: [{ metric, planValue, actualValue }] } */
   saveTargets: (data) => http.put("/finance-reports/targets", data),
+
+  /** Xarajat kategoriyalari bo'yicha oylik limit. Params: { month } */
+  getExpenseBudgets: (params) => http.get("/finance-reports/expense-budgets", { params }),
+
+  /** Limitlarni saqlash. Body: { month, items: [{ categoryId, limitAmount }] } */
+  saveExpenseBudgets: (data) => http.put("/finance-reports/expense-budgets", data),
+
+  /** Mas'ul × kirim turi bo'yicha yig'ish rejasi. Params: { month } */
+  getIncomePlans: (params) => http.get("/finance-reports/income-plans", { params }),
+
+  /** Rejani saqlash. Body: { month, items: [{ responsibleId, categoryId, targetAmount, studentCount }] } */
+  saveIncomePlans: (data) => http.put("/finance-reports/income-plans", data),
 };
 
 export default financeDashboardAPI;

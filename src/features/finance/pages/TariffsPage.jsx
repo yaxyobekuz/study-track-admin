@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 // Icons
-import { Plus, Pencil, Archive, ArchiveRestore, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, Layers, Pencil, Plus, Trash2 } from "lucide-react";
 
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
@@ -18,6 +18,7 @@ import Select from "@/shared/components/ui/select/Select";
 import Pagination from "@/shared/components/ui/Pagination";
 import CreateTariffModal from "../components/CreateTariffModal";
 import EditTariffModal from "../components/EditTariffModal";
+import TariffDirectionsModal from "../components/TariffDirectionsModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -105,12 +106,24 @@ const TariffsPage = () => {
           onChange={(v) => setParam("status", v)}
         />
 
-        <Can do="tariffs.create">
-          <Button onClick={() => openModal("createTariff")}>
-            <Plus />
-            Yangi tarif
-          </Button>
-        </Can>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Yo'nalishlar katalogi — tariflar bilan bitta joyda: yo'nalish
+              tarifdan tashqarida ma'nosiz, alohida sahifa ochish esa uni
+              topib bo'lmaydigan qilib qo'yardi */}
+          <Can do="tariffs.create">
+            <Button variant="outline" onClick={() => openModal("tariffDirections")}>
+              <Layers className="size-4" />
+              Yo'nalishlar
+            </Button>
+          </Can>
+
+          <Can do="tariffs.create">
+            <Button onClick={() => openModal("createTariff")}>
+              <Plus />
+              Yangi tarif
+            </Button>
+          </Can>
+        </div>
       </div>
 
       {isLoading ? (
@@ -152,6 +165,16 @@ const TariffsPage = () => {
                         <p className="text-xs text-gray-500 line-clamp-1">
                           {tariff.description}
                         </p>
+                      )}
+                    </td>
+
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {tariff.direction ? (
+                        <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                          {tariff.direction.name}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-300">Belgilanmagan</span>
                       )}
                     </td>
 
@@ -245,6 +268,7 @@ const TariffsPage = () => {
       {/* Modals */}
       <CreateTariffModal />
       <EditTariffModal />
+      <TariffDirectionsModal />
     </div>
   );
 };

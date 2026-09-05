@@ -1,3 +1,6 @@
+// React
+import { useState } from "react";
+
 // Toast
 import { toast } from "sonner";
 
@@ -10,15 +13,18 @@ import InputGroup from "@/shared/components/ui/input/InputGroup";
 import InputField from "@/shared/components/ui/input/InputField";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
+import Input from "@/shared/components/ui/input/Input";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
 
 // Queries
 import { financeQueries } from "@/features/finance/queries/finance.queries";
+import { usersQueries } from "@/features/users/queries/users.queries";
 import { incomeQueries } from "../queries/externalIncome.queries";
 import {
   useCreateIncome,
@@ -45,32 +51,60 @@ export const IncomeEntryModal = () => (
 );
 
 const IncomeForm = ({ close, isLoading, setIsLoading }) => {
+  const { can } = usePermissions();
   const { data: categories = [] } = useQuery(incomeQueries.activeCategories());
   const { data: accounts = [] } = useQuery(financeQueries.activeAccounts());
+  // Mas'ul xodim ro'yxati — `allShort` ruxsatga bog'liq emas, o'quvchilar
+  // mijozda filtrlanadi (server ham rad etadi)
+  const { data: people = [] } = useQuery(usersQueries.allShort());
   const { mutate: createIncome } = useCreateIncome();
+  const { mutate: createCategory } = useCreateCategory();
 
-  const { categoryId, accountId, amount, payer, note, occurredAt, setField } =
-    useObjectState({
-      categoryId: "",
-      accountId: "",
-      amount: "",
-      payer: "",
-      note: "",
-      occurredAt: todayInputValue(),
-    });
+  // Katalogni o'zgartirish ALOHIDA huquq — xarajat tomonidagi bilan bir xil
+  const canManageCategories = can("income.categories");
+
+  // `null` — ro'yxatdan tanlash rejimi. Satr — yangi kategoriya rejimi.
+  const [newCategory, setNewCategory] = useState(null);
+  const isNewCategory = newCategory !== null;
+
+  const {
+    categoryId,
+    accountId,
+    responsibleId,
+    amount,
+    payer,
+    note,
+    occurredAt,
+    setField,
+  } = useObjectState({
+    categoryId: "",
+    accountId: "",
+    responsibleId: "",
+    amount: "",
+    payer: "",
+    note: "",
+    occurredAt: todayInputValue(),
+  });
+
+  const staffOptions = people
+    .filter((person) => person.role !== "student")
+    .map((person) => ({
+      label:
+        person.fullName || `${person.firstName ?? ""} ${person.lastName ?? ""}`.trim(),
+      value: person.id,
+    }));
 
   // Bitta variant bo'lsa tanlash shart emas — kassirning ishini qisqartiradi
   const resolvedCategory = categoryId || (categories.length === 1 ? categories[0].id : "");
   const resolvedAccount = accountId || (accounts.length === 1 ? accounts[0].id : "");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
+  /** Kirimning o'zini yozish — kategoriya allaqachon aniq. */
+  const submitIncome = (targetCategoryId) =>
     createIncome(
       {
-        categoryId: resolvedCategory,
+        categoryId: targetCategoryId,
         accountId: resolvedAccount,
+        responsibleId: responsibleId || undefined,
         amount,
         payer,
         note,
@@ -86,13 +120,45 @@ const IncomeForm = ({ close, isLoading, setIsLoading }) => {
         onSettled: () => setIsLoading(false),
       },
     );
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // ⚠️ IKKI QADAM, BITTA TUGMA (xarajat oynasi bilan bir xil): avval
+    // kategoriya yaratiladi, keyin kirim unga yoziladi.
+    if (isNewCategory) {
+      const name = newCategory.trim();
+      if (!name) {
+        setIsLoading(false);
+        return toast.error("Kategoriya nomini kiriting");
+      }
+
+      return createCategory(
+        { name },
+        {
+          onSuccess: (created) => submitIncome(created.id),
+          onError: (err) => {
+            setIsLoading(false);
+            toast.error(
+              err.response?.data?.message || "Kategoriyani qo'shib bo'lmadi",
+            );
+          },
+        },
+      );
+    }
+
+    submitIncome(resolvedCategory);
   };
 
-  const blocked = categories.length === 0 || accounts.length === 0;
+  const blocked = accounts.length === 0;
+  const categoryReady = isNewCategory
+    ? newCategory.trim().length > 0
+    : Boolean(resolvedCategory);
 
   return (
     <InputGroup onSubmit={handleSubmit} as="form">
-      {categories.length === 0 && (
+      {categories.length === 0 && !canManageCategories && (
         <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
           Faol kategoriya yo'q — avval "Sozlamalar" tabida kategoriya qo'shing.
         </p>
@@ -104,13 +170,44 @@ const IncomeForm = ({ close, isLoading, setIsLoading }) => {
       )}
 
       <div className="space-y-1.5">
-        <p className="text-sm font-medium text-gray-700">Kategoriya</p>
-        <Select
-          value={resolvedCategory}
-          placeholder="Kategoriyani tanlang"
-          onChange={(v) => setField("categoryId", v)}
-          options={categories.map((c) => ({ label: c.name, value: c.id }))}
-        />
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-medium text-gray-700">Kategoriya</p>
+
+          {canManageCategories && (
+            <button
+              type="button"
+              className="text-xs font-medium text-primary hover:underline"
+              onClick={() => setNewCategory(isNewCategory ? null : "")}
+            >
+              {isNewCategory ? "Ro'yxatdan tanlash" : "+ Yangi kategoriya"}
+            </button>
+          )}
+        </div>
+
+        {isNewCategory ? (
+          <>
+            <Input
+              autoFocus
+              name="newCategory"
+              value={newCategory}
+              placeholder="Masalan: Yozgi lager"
+              onChange={(e) => setNewCategory(e.target.value)}
+            />
+            <p className="text-xs text-gray-400">
+              Yangi kategoriya katalogga qo'shiladi va keyingi kirimlarda
+              ro'yxatda turadi.
+            </p>
+          </>
+        ) : (
+          <Select
+            value={resolvedCategory}
+            placeholder={
+              categories.length === 0 ? "Kategoriya yo'q" : "Kategoriyani tanlang"
+            }
+            onChange={(v) => setField("categoryId", v)}
+            options={categories.map((c) => ({ label: c.name, value: c.id }))}
+          />
+        )}
       </div>
 
       <InputField
@@ -146,6 +243,24 @@ const IncomeForm = ({ close, isLoading, setIsLoading }) => {
         onChange={(e) => setField("occurredAt", e.target.value)}
       />
 
+      {/* MAS'UL XODIM — bu pulni yig'ish kimning zimmasida.
+          ⚠️ "Kimdan" (to'lovchi) bilan chalkashmasin: ular boshqa-boshqa
+          odam. "Bo'limlar bo'yicha yig'im" hisoboti aynan shu maydonga
+          tayanadi, shuning uchun izohda ham shu aytilgan. */}
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Mas'ul xodim (ixtiyoriy)</p>
+        <Select
+          value={responsibleId}
+          placeholder="Tanlanmagan"
+          options={staffOptions}
+          onChange={(v) => setField("responsibleId", v)}
+        />
+        <p className="text-xs text-gray-400">
+          Bu pulni yig'ish kimning zimmasida — "Bo'limlar bo'yicha yig'im"
+          hisobotida shu bo'yicha guruhlanadi.
+        </p>
+      </div>
+
       <InputField
         name="payer"
         label="Kimdan (ixtiyoriy)"
@@ -166,7 +281,7 @@ const IncomeForm = ({ close, isLoading, setIsLoading }) => {
         type="submit"
         className="w-full"
         loading={isLoading}
-        disabled={blocked || !resolvedCategory || !resolvedAccount || !amount}
+        disabled={blocked || !categoryReady || !resolvedAccount || !amount}
       >
         Qayd etish
       </Button>

@@ -18,6 +18,7 @@ import Card from "@/shared/components/ui/Card";
 import Can from "@/shared/components/guards/Can";
 import Table, { Td, Tr } from "@/shared/components/ui/Table";
 import Select from "@/shared/components/ui/select/Select";
+import { Label } from "@/shared/components/shadcn/label";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import Pagination from "@/shared/components/ui/Pagination";
 import InputField from "@/shared/components/ui/input/InputField";
@@ -122,44 +123,60 @@ const PaymentsPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-end gap-2">
-        <InputField
-          name="search"
-          type="search"
-          value={search}
-          placeholder="O'quvchini qidirish..."
-          className="min-w-52 flex-1"
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* FILTR PANELI.
+          ⚠️ Har bir maydon O'RAB QO'YILGAN. `Field` (shadcn) ichida
+          `w-full` bor, ya'ni o'ralmagan `InputField` flex qatorida 100%
+          kenglikni egallab, har biri alohida satrga tushib ketardi.
+          O'rovchi div esa flex elementi bo'lib, kengligini o'zi belgilaydi. */}
+      <div className="flex flex-wrap items-end gap-3 rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
+        <div className="min-w-56 flex-1">
+          <InputField
+            name="search"
+            type="search"
+            label="O'quvchi"
+            value={search}
+            placeholder="Ism yoki username..."
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
 
-        <InputField
-          type="date"
-          name="from"
-          label="Dan"
-          value={range.from}
-          onChange={(e) =>
-            setRange((prev) => ({ ...prev, from: e.target.value }))
-          }
-        />
+        <div className="w-full xs:w-44">
+          <InputField
+            type="date"
+            name="from"
+            label="Dan"
+            value={range.from}
+            onChange={(e) =>
+              setRange((prev) => ({ ...prev, from: e.target.value }))
+            }
+          />
+        </div>
 
-        <InputField
-          type="date"
-          name="to"
-          label="Gacha"
-          value={range.to}
-          onChange={(e) =>
-            setRange((prev) => ({ ...prev, to: e.target.value }))
-          }
-        />
+        <div className="w-full xs:w-44">
+          <InputField
+            type="date"
+            name="to"
+            label="Gacha"
+            value={range.to}
+            onChange={(e) =>
+              setRange((prev) => ({ ...prev, to: e.target.value }))
+            }
+          />
+        </div>
 
-        <Select
-          value={accountId}
-          triggerClassName="min-w-44"
-          placeholder="Barcha to'lov turlari"
-          onChange={(v) => setParam("accountId", v)}
-          options={accounts.map((a) => ({ label: a.name, value: a.id }))}
-        />
+        {/* Tanlagichda o'z yorlig'i yo'q — `Field` bilan bir xil bo'shliq
+            (`gap-3`) qo'lda beriladi, aks holda yonidagi maydonlardan
+            past-baland turib qolardi */}
+        <div className="flex w-full flex-col gap-3 xs:w-52">
+          <Label htmlFor="accountId">To'lov turi</Label>
+          <Select
+            id="accountId"
+            value={accountId}
+            placeholder="Barchasi"
+            onChange={(v) => setParam("accountId", v)}
+            options={accounts.map((a) => ({ label: a.name, value: a.id }))}
+          />
+        </div>
       </div>
 
       {totals && (

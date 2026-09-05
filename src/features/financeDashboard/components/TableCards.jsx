@@ -162,7 +162,12 @@ export const PnlCard = ({ data, isLoading, isError, className }) => {
  */
 export const BudgetCard = ({ data, isLoading, isError, action, className }) => {
   const rows = data?.budget ?? [];
-  const hasAnyPlan = rows.some((row) => row.plan != null);
+  // Rahbar qo'lda qo'shgan qatorlar — katalog qatorlaridan KEYIN va
+  // chiziq bilan ajratilgan holda: ular tizimdan hisoblanmaydi, ya'ni
+  // ularga boshqacha ishonch darajasi bilan qaraladi
+  const customRows = data?.customBudget ?? [];
+  const hasAnyPlan =
+    rows.some((row) => row.plan != null) || customRows.length > 0;
 
   return (
     <DashboardCard
@@ -178,6 +183,31 @@ export const BudgetCard = ({ data, isLoading, isError, action, className }) => {
       isEmpty={rows.length === 0}
       bodyClassName="overflow-x-auto"
       className={className}
+      footer={
+        hasAnyPlan && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-3 text-xs">
+            <span className="text-gray-400">
+              {rows.filter((row) => row.rate != null).length} ta ko'rsatkichdan{" "}
+              <span className="font-semibold text-green-600">
+                {
+                  rows.filter(
+                    (row) =>
+                      row.rate != null &&
+                      (row.inverse ? row.rate <= 100 : row.rate >= 95),
+                  ).length
+                }
+              </span>{" "}
+              tasi rejada
+            </span>
+            <span className="text-gray-400">
+              Reja belgilanmagan:{" "}
+              <span className="font-semibold text-gray-700">
+                {rows.filter((row) => row.plan == null).length}
+              </span>
+            </span>
+          </div>
+        )
+      }
     >
       <MiniTable
         columns={[
@@ -196,7 +226,7 @@ export const BudgetCard = ({ data, isLoading, isError, action, className }) => {
               {row.plan == null ? "—" : cellValue(row.plan, row.unit)}
             </MiniTd>
 
-            <MiniTd align="right" className="font-semibold text-gray-900">
+            <MiniTd align="right" className="text-sm font-bold text-gray-900">
               {cellValue(row.actual, row.unit)}
             </MiniTd>
 
@@ -224,7 +254,7 @@ export const BudgetCard = ({ data, isLoading, isError, action, className }) => {
                 <span className="text-gray-300">—</span>
               ) : (
                 <div className="flex items-center justify-end gap-2">
-                  <div className="hidden h-1.5 w-14 overflow-hidden rounded-full bg-gray-100 sm:block">
+                  <div className="hidden h-2 w-16 overflow-hidden rounded-full bg-gray-100 sm:block">
                     <div
                       className={cn(
                         "h-full rounded-full",
@@ -239,6 +269,72 @@ export const BudgetCard = ({ data, isLoading, isError, action, className }) => {
                       planTone(row.rate, { inverse: row.inverse }),
                     )}
                   >
+                    {row.rate}%
+                  </span>
+                </div>
+              )}
+            </MiniTd>
+          </MiniTr>
+        ))}
+
+        {customRows.map((row, index) => (
+          <MiniTr
+            key={row.key}
+            className={index === 0 ? "border-t-2 border-gray-200" : undefined}
+          >
+            <MiniTd className="text-gray-600">
+              {row.label}
+              <span
+                className="ml-1.5 text-[10px] text-gray-300"
+                title="Tizimda hisoblanmaydi — qiymat qo'lda kiritilgan"
+              >
+                qo'lda
+              </span>
+            </MiniTd>
+
+            <MiniTd align="right" className="text-gray-400">
+              {cellValue(row.plan, row.unit)}
+            </MiniTd>
+
+            <MiniTd align="right" className="text-sm font-bold text-gray-900">
+              {row.actual == null ? (
+                <span className="text-gray-300">—</span>
+              ) : (
+                cellValue(row.actual, row.unit)
+              )}
+            </MiniTd>
+
+            <MiniTd align="right">
+              {row.diff == null ? (
+                <span className="text-gray-300">—</span>
+              ) : (
+                <span
+                  className={cn(
+                    Number(row.diff) === 0
+                      ? "text-gray-400"
+                      : Number(row.diff) > 0
+                        ? "text-green-600"
+                        : "text-red-600",
+                  )}
+                >
+                  {Number(row.diff) > 0 ? "+" : ""}
+                  {cellValue(row.diff, row.unit)}
+                </span>
+              )}
+            </MiniTd>
+
+            <MiniTd align="right">
+              {row.rate == null ? (
+                <span className="text-gray-300">—</span>
+              ) : (
+                <div className="flex items-center justify-end gap-2">
+                  <div className="hidden h-2 w-16 overflow-hidden rounded-full bg-gray-100 sm:block">
+                    <div
+                      className={cn("h-full rounded-full", planBarTone(row.rate))}
+                      style={{ width: `${Math.min(Math.max(row.rate, 0), 100)}%` }}
+                    />
+                  </div>
+                  <span className={cn("font-semibold", planTone(row.rate))}>
                     {row.rate}%
                   </span>
                 </div>

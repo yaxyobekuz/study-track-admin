@@ -12,6 +12,14 @@ export const tariffsAPI = {
   delete: (id) => http.delete(`/tariffs/${id}`),
   getTimeline: (id) => http.get(`/tariffs/${id}/timeline`),
 
+  // YO'NALISHLAR — tarif ustidagi daraja. `/tariffs/directions` yo'li
+  // ATAYLAB katalog ichida: yo'nalish tarifdan tashqarida ma'nosiz.
+  getDirections: (params) => http.get("/tariffs/directions", { params }),
+  createDirection: (data) => http.post("/tariffs/directions", data),
+  updateDirection: (id, data) => http.put(`/tariffs/directions/${id}`, data),
+  archiveDirection: (id, isArchived) =>
+    http.patch(`/tariffs/directions/${id}/archive`, { isArchived }),
+
   // Narx versiyalari
   getVersions: (id, params) => http.get(`/tariffs/${id}/versions`, { params }),
   addVersion: (id, data) => http.post(`/tariffs/${id}/versions`, data),

@@ -69,6 +69,8 @@ export const getPeriodStatus = (startMonth, endMonth, currentMonth) => {
 /** Tariflar ro'yxati jadvalining sarlavhalari. */
 export const TARIFF_TABLE_COLUMNS = [
   "Tarif",
+  // Yo'nalish — tarif ustidagi daraja. Hisobot shu kesimda guruhlanadi.
+  "Yo'nalish",
   "Joriy oylik narx",
   "Amal qilish davri",
   "O'quvchilar",
@@ -106,6 +108,14 @@ export const INVOICE_STATUS_OPTIONS = [
   { label: "Bekor qilingan", value: "cancelled" },
 ];
 
+/**
+ * ⚠️ REGISTR USTUNLARI DINAMIK QURILADI (`OverviewPage`): "To'langan" dan
+ * keyin har bir TO'LOV TURI uchun alohida ustun qo'shiladi. To'lov turlari
+ * katalogdan keladi, ya'ni ularni bu yerda qotirib bo'lmaydi.
+ *
+ * Bu ro'yxat zaxira sifatida qoladi — to'lov turlari hali yuklanmaganda
+ * jadval baribir to'g'ri chiziladi.
+ */
 export const INVOICE_TABLE_COLUMNS = [
   "O'quvchi",
   "Tarif",
