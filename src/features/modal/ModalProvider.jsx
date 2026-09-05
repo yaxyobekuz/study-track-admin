@@ -14,6 +14,7 @@ const EMPTY_ENTRY = { isOpen: false, data: {}, isLoading: false };
  * Merges `incoming` onto `base` only when it's a real object.
  * Radix's `onOpenChange` passes a boolean, so guard against non-objects
  * (mirrors the old slice's `data || {}` behaviour — a plain close keeps data).
+ * Faqat YOPISH va `updateData` uchun: ochilish ma'lumotni ALMASHTIRADI.
  */
 const mergeData = (base, incoming) =>
   incoming && typeof incoming === "object"
@@ -32,13 +33,29 @@ const reducer = (state, action) => {
   const current = state[name] || EMPTY_ENTRY;
 
   switch (type) {
+    // ⚠️ OCHILISHDA MA'LUMOT ALMASHTIRILADI, QO'SHILMAYDI.
+    //
+    // Yopilganda `data` ATAYLAB saqlanadi (yopilish animatsiyasi paytida
+    // oyna hamon chizilib turadi va bo'sh holatga tushib ketmasligi
+    // kerak). Ochilishda ham qo'shilsa, tahrirdan keyin ochilgan
+    // "Qo'shish" oynasi eski yozuv bilan to'lib turardi va SAQLASH o'sha
+    // yozuvni ustiga yozardi: `openModal("inventoryItem", {})` avvalgi
+    // `{ item }` ni O'CHIRMASDI, forma esa `item` bor-yo'qligiga qarab
+    // yaratish/tahrirlash rejimini tanlaydi.
+    //
+    // `openModal(name)` (ma'lumotsiz) esa avvalgi holatni SAQLAYDI:
+    // "Qo'shish" tugmalarining aksari shu shaklda chaqiradi va ularda
+    // umuman `data` bo'lmaydi.
     case "open":
       return {
         ...state,
         [name]: {
           isOpen: true,
           isLoading: current.isLoading,
-          data: mergeData(current.data, action.data),
+          data:
+            action.data && typeof action.data === "object"
+              ? action.data
+              : current.data,
         },
       };
 

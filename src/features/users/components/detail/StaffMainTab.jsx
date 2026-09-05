@@ -9,6 +9,7 @@ import EditStaffSubjectsModal from "../EditStaffSubjectsModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import useCanManageUser from "../../hooks/useCanManageUser";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Helpers & utils
@@ -32,6 +33,8 @@ import {
  */
 const StaffMainTab = ({ user }) => {
   const { openModal } = useModal();
+  // Egalik darvozasi — o'qituvchi xodimni umuman tahrirlay olmaydi
+  const canManage = useCanManageUser(user);
   const { data: roles = [] } = useRoles();
 
   const hasCustomSchedule = Boolean(user.workStartTime && user.workEndTime);
@@ -66,6 +69,7 @@ const StaffMainTab = ({ user }) => {
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <InfoCard
           title="Ish jadvali"
+          canEdit={canManage}
           onEdit={() => openModal("editWorkSchedule", user)}
         >
           {hasCustomSchedule ? (
@@ -143,6 +147,7 @@ const StaffMainTab = ({ user }) => {
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <InfoCard
           title="Fanlar"
+          canEdit={canManage}
           onEdit={() => openModal("editStaffSubjects", user)}
         >
           {subjects.length > 0 ? (

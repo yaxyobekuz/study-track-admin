@@ -24,6 +24,12 @@ export const catalogAPI = {
   updateItem: (id, data) => http.put(`/inventory/items/${id}`, data),
   archiveItem: (id, isArchived) =>
     http.patch(`/inventory/items/${id}/archive`, { isArchived }),
+  // ⚠️ O'CHIRISH ARXIVLASH EMAS: arxivlash jihozni tanlagichlardan olib
+  // tashlaydi-yu tarixni saqlaydi, o'chirish esa yozuvning O'ZI bo'lmasligi
+  // kerakligini bildiradi (kiritish xatosi). Tarixi bor jihozni server rad
+  // etadi — shuning uchun tugmadan OLDIN `getItemUsage` o'qiladi.
+  deleteItem: (id) => http.delete(`/inventory/items/${id}`),
+  getItemUsage: (id) => http.get(`/inventory/items/${id}/usage`),
 
   getLocations: (params) => http.get("/inventory/locations", { params }),
   getActiveLocations: () => http.get("/inventory/locations/active"),
@@ -37,10 +43,17 @@ export const catalogAPI = {
 /**
  * XATLOV va miqdor daftari.
  *
- * ⚠️ `updateStock` YO'Q va bo'lmasligi ham kerak: miqdor faqat DAFTAR
- * orqali o'zgaradi (qo'shish / ta'mirlash / hisobdan chiqarish /
- * ko'chirish / to'g'rilash). To'g'ridan-to'g'ri yozish daftar bilan
- * xatlovni bir-biriga to'g'ri kelmaydigan qilib qo'yardi.
+ * ⚠️ `update` miqdorni TO'G'RIDAN-TO'G'RI YOZMAYDI. Oyna aniq qiymat
+ * yuboradi ("hozir 1 → 3"), server esa farqni LOCK ostida hisoblab
+ * daftarga `adjustment` qatori sifatida yozadi. Miqdorning yagona
+ * haqiqat manbai daftar bo'lib qoladi: to'g'ridan-to'g'ri yozish daftar
+ * bilan xatlovni bir-biriga to'g'ri kelmaydigan qilib qo'yardi.
+ *
+ * ⚠️ O'sha `update` bilan XONA va JIHOZ ham almashtiriladi. Juftlik
+ * o'zgarsa bu tahrir emas, KO'CHIRISH bo'ladi (`@@unique([locationId,
+ * itemId])` — boshqa juftlik boshqa QATOR): daftarga ikkita qator
+ * tushadi (`transfer_out` + `transfer_in`) va javobda BOSHQA qator
+ * qaytadi. Javobdagi `moved` shu ikki holatni ajratadi.
  */
 export const stockAPI = {
   getAll: (params) => http.get("/inventory/stocks", { params }),
@@ -50,6 +63,12 @@ export const stockAPI = {
   repair: (data) => http.post("/inventory/stocks/repair", data),
   writeOff: (data) => http.post("/inventory/stocks/write-off", data),
   adjust: (data) => http.post("/inventory/stocks/adjust", data),
+  update: (id, data) => http.put(`/inventory/stocks/${id}`, data),
+  // ⚠️ axios'da DELETE TANASI `{ data }` ichida yuboriladi — ikkinchi
+  // argument sifatida berilsa u konfiguratsiya deb qabul qilinadi va
+  // sabab serverga umuman yetib bormaydi (server esa uni MAJBURIY qiladi).
+  remove: (id, data) => http.delete(`/inventory/stocks/${id}`, { data }),
+  getUsage: (id) => http.get(`/inventory/stocks/${id}/usage`),
   getMovements: (params) => http.get("/inventory/movements", { params }),
 };
 

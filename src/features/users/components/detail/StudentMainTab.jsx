@@ -10,6 +10,7 @@ import EditStudentClassesModal from "../EditStudentClassesModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import useCanManageUser from "../../hooks/useCanManageUser";
 
 // Utils
 import { formatDateUZ } from "@/shared/utils/date.utils";
@@ -25,6 +26,8 @@ import { getGenderLabel } from "../../data/users.data";
  */
 const StudentMainTab = ({ user }) => {
   const { openModal } = useModal();
+  // Egalik darvozasi — o'qituvchi faqat o'zi qo'shgan o'quvchini tahrirlaydi
+  const canManage = useCanManageUser(user);
 
   const classes = user.classes ?? [];
 
@@ -46,6 +49,7 @@ const StudentMainTab = ({ user }) => {
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <InfoCard
           title="Sinflar"
+          canEdit={canManage}
           onEdit={() => openModal("editStudentClasses", user)}
         >
           {classes.length > 0 ? (

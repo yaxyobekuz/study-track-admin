@@ -87,6 +87,20 @@ export const useUpdateItem = () => {
   });
 };
 
+/**
+ * KATALOGDAN O'CHIRISH — arxivlash EMAS.
+ *
+ * Tarixi bor jihozni server rad etadi, shuning uchun oyna avval
+ * `itemUsage` ni o'qiydi. Bu yerda faqat chaqiruv qoladi.
+ */
+export const useDeleteItem = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (id) => catalogAPI.deleteItem(id).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
 export const useArchiveItem = () => {
   const invalidate = useInvalidate();
   return useMutation({
@@ -149,10 +163,50 @@ export const useWriteOffStock = () => {
   });
 };
 
+/**
+ * FARQ bilan to'g'rilash ("-1").
+ *
+ * `useUpdateStock` (aniq qiymat) qo'shilgandan keyin ham SAQLANADI:
+ * serverda `POST /stocks/adjust` o'z joyida turibdi va oynadan tashqari
+ * chaqiruvlar unga tayanadi.
+ */
 export const useAdjustStock = () => {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: (data) => stockAPI.adjust(data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+/**
+ * XATLOV QATORINI TAHRIRLASH — ANIQ MIQDOR ("hozir 1 → 3").
+ *
+ * ⚠️ Javob IKKI XIL bo'ladi va `moved` ularni ajratadi:
+ *   - `moved: false` → o'sha qator yangilandi, `movement` bitta yoki `null`;
+ *   - `moved: true`  → qator KO'CHIRILDI, `data.id` BOSHQA qatorniki
+ *     (nishon juftlik), `from` esa ko'chishdan oldingi holat.
+ * Shu sababli `useInvalidate` butun bo'limni yangilaydi: eski qator endi
+ * nol miqdorli va ro'yxatdan umuman tushib qolishi mumkin.
+ */
+export const useUpdateStock = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ id, data }) => stockAPI.update(id, data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+/**
+ * XATLOV QATORINI O'CHIRISH — hisobdan chiqarish EMAS.
+ *
+ * Sabab MAJBURIY va u DELETE tanasida ketadi (`stockAPI.remove` dagi
+ * izohga qarang). Pul yoki muhrlangan hujjat bog'langan qatorni server
+ * rad etadi — oyna avval `stockUsage` ni o'qiydi.
+ */
+export const useDeleteStock = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ id, reason }) => stockAPI.remove(id, { reason }).then((r) => r.data.data),
     onSuccess: invalidate,
   });
 };

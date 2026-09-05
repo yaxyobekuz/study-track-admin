@@ -4,6 +4,9 @@ import useModal from "@/shared/hooks/useModal";
 // Components
 import InfoCard, { InfoRows } from "./InfoCard";
 
+// Hooks
+import useCanManageUser from "../../hooks/useCanManageUser";
+
 // Data
 import { getInitials, getRoleBadgeClass } from "../../data/users.data";
 
@@ -20,11 +23,14 @@ import { getInitials, getRoleBadgeClass } from "../../data/users.data";
  * @param {{label: string, value: React.ReactNode}[]} props.rows
  */
 const UserBasicInfoCard = ({ user, roleLabel, rows }) => {
+  // Egalik darvozasi — o'qituvchi faqat o'zi qo'shgan o'quvchini tahrirlaydi
+  const canManage = useCanManageUser(user);
   const { openModal } = useModal();
 
   return (
     <InfoCard
       title="Asosiy ma'lumot"
+      canEdit={canManage}
       onEdit={() => openModal("editUserBasic", user)}
     >
       <div className="grid gap-6 lg:grid-cols-2 lg:gap-10 lg:divide-x lg:divide-gray-100">

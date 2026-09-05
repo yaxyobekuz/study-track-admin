@@ -130,6 +130,7 @@ import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettin
 import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
 import FinanceIndex from "@/features/finance/layouts/FinanceIndex";
 import FinanceDashboardPage from "@/features/financeDashboard/pages/FinanceDashboardPage";
+import AcademicDashboardPage from "@/features/academicDashboard/pages/AcademicDashboardPage";
 import OverviewPage from "@/features/finance/pages/OverviewPage";
 import DebtorsPage from "@/features/finance/pages/DebtorsPage";
 import PaymentsPage from "@/features/finance/pages/PaymentsPage";
@@ -190,6 +191,9 @@ const Routes = () => {
                 "Dashboard" tabi bilan AYNI sahifa. Ikki kirish nuqtasi,
                 bitta ekran. */}
             <Route path="/reports" element={<FinanceDashboardPage />} />
+            {/* Bosh sahifadagi "Ta'lim" tabi — o'quv bo'limining
+                dashboardi. Moliya tabi bilan bir xil shakl. */}
+            <Route path="/education" element={<AcademicDashboardPage />} />
           </Route>
 
           {/* Profile */}

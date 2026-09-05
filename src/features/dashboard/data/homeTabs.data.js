@@ -25,4 +25,13 @@ export const HOME_TABS = [
     can: "reports.view",
     exact: false,
   },
+  // "Ta'lim" — moliyaning akademik ko'zgusi. Ikkalasi bosh sahifadan
+  // ochiladi, chunki rahbar uchun ular BITTA savolning ikki yarmi:
+  // "pul qanday" va "o'qish qanday".
+  {
+    to: "/education",
+    label: "Ta'lim",
+    can: "education.view",
+    exact: false,
+  },
 ];

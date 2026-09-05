@@ -5,7 +5,16 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Icons
-import { Plus, Pencil, Archive, ArchiveRestore, Boxes, Tags, DoorOpen } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Archive,
+  ArchiveRestore,
+  Trash2,
+  Boxes,
+  Tags,
+  DoorOpen,
+} from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -295,11 +304,17 @@ const ItemsPanel = () => {
                 </Td>
 
                 <Td>
+                  {/* ⚠️ O'chirish FAQAT jihozlarda. Toifa va xonaga
+                      qo'shilmadi: ular bir nechta jihozni va butun xatlov
+                      tarixini ushlab turadi — u yerda arxivlash yagona
+                      to'g'ri amal (serverda ham `delete` yo'q). */}
                   <RowActions
                     can="inventory.catalog"
                     isArchived={item.isArchived}
                     onEdit={() => openModal("inventoryItem", { item })}
                     onArchive={() => handleArchive(item)}
+                    onDelete={() => openModal("inventoryDeleteItem", { item })}
+                    deleteCan="inventory.delete"
                   />
                 </Td>
               </Tr>
@@ -430,7 +445,15 @@ const PanelHeader = ({ status, onStatusChange, action }) => (
   </div>
 );
 
-const RowActions = ({ can, isArchived, onEdit, onArchive }) => (
+/**
+ * Qator amallari.
+ *
+ * `onDelete` IXTIYORIY va o'z ruxsatiga ega (`deleteCan`): o'chirish
+ * arxivlash bilan bir xil og'irlikda emas — arxivlash tarixni saqlaydi,
+ * o'chirish esa yozuvning O'ZI bo'lmasligi kerakligini bildiradi. Shuning
+ * uchun katalogni boshqara oladigan xodim avtomatik o'chira olmaydi.
+ */
+const RowActions = ({ can, isArchived, onEdit, onArchive, onDelete, deleteCan }) => (
   <div className="flex items-center justify-end gap-1">
     <Can do={can}>
       <button
@@ -453,6 +476,18 @@ const RowActions = ({ can, isArchived, onEdit, onArchive }) => (
         )}
       </button>
     </Can>
+
+    {onDelete && (
+      <Can do={deleteCan}>
+        <button
+          title="O'chirish"
+          onClick={onDelete}
+          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+        >
+          <Trash2 className="size-3.5" />
+        </button>
+      </Can>
+    )}
   </div>
 );
 

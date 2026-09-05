@@ -2,7 +2,7 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 // Components
-import DashboardCard from "./DashboardCard";
+import DashboardCard from "@/shared/components/dashboard/DashboardCard";
 
 // Utils
 import { cn } from "@/shared/utils/cn";

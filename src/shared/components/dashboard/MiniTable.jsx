@@ -4,6 +4,9 @@ import { cn } from "@/shared/utils/cn";
 /**
  * Dashboard kartasi ichidagi IXCHAM jadval.
  *
+ * ⚠️ SHARED — `DashboardCard` bilan bir sababdan: moliya va ta'lim
+ * dashboardlaridagi jadvallar bir xil o'qilishi kerak.
+ *
  * ⚠️ Global `index.css` da `thead` uchun BAZAVIY qoidalar bor: ko'k fon,
  * oq matn, `px-6 py-3` va `text-center`. Ular ro'yxat sahifalari uchun
  * to'g'ri, lekin dashboard kartasi ichida to'rtta ko'k plash bir-birining

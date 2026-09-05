@@ -56,6 +56,7 @@ export const MODAL_NAMES = [
   // Inventar (moddiy-texnik baza)
   "inventoryCategory",
   "inventoryItem",
+  "inventoryDeleteItem",
   "inventoryLocation",
   "inventoryAddStock",
   "inventoryRepair",

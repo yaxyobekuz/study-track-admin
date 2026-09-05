@@ -8,7 +8,7 @@ import {
   Wrench,
   Trash2,
   ArrowLeftRight,
-  SlidersHorizontal,
+  Pencil,
   History,
   User,
 } from "lucide-react";
@@ -28,6 +28,7 @@ import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
@@ -73,6 +74,16 @@ const StockPage = () => {
 
 const StockList = () => {
   const { openModal } = useModal();
+  const { can } = usePermissions();
+
+  // ⚠️ `inventory.delete` SERVERDA MUSTAQIL kalit (`inventory.routes.js`:
+  // `DELETE /stocks/:id` → `INVENTORY_DELETE`), ya'ni faqat o'chirish
+  // huquqi berilgan xodim ham bo'lishi mumkin. O'chirish ko'rinishi esa
+  // tahrirlash oynasi ICHIDA yashaydi, shuning uchun qalam tugmasi
+  // IKKALA kalitning birortasi bilan ham chizilishi kerak — aks holda
+  // `delete` amalda `adjust` ga qaram bo'lib qolardi va server ruxsat
+  // beradigan amalni birorta paneldan bajarib bo'lmasdi.
+  const canEditRow = can("inventory.adjust") || can("inventory.delete");
 
   const [page, setPage] = useState(1);
   const [locationId, setLocationId] = useState("");
@@ -233,14 +244,19 @@ const StockList = () => {
                       />
                     </Can>
 
-                    <Can do="inventory.adjust">
+                    {/* Tahrirlash oynasi ichida O'CHIRISH ko'rinishi ham bor
+                        (`inventory.delete` ostida) — qatorga ikkita alohida
+                        tugma qo'yish jadvalni shovqin bilan to'ldirardi.
+                        Shu sababli tugma IKKALA kalitning birortasi bilan
+                        ham chiziladi (yuqoridagi `canEditRow` izohi). */}
+                    {canEditRow && (
                       <IconButton
-                        title="Qo'lda to'g'rilash"
-                        icon={SlidersHorizontal}
+                        title="Tahrirlash"
+                        icon={Pencil}
                         className="hover:bg-gray-100 hover:text-gray-600"
                         onClick={() => openModal("inventoryAdjust", { stock })}
                       />
-                    </Can>
+                    )}
                   </div>
                 </Td>
               </Tr>

@@ -16,6 +16,10 @@ import Can from "@/shared/components/guards/Can";
  * @param {string} props.title
  * @param {() => void} [props.onEdit] - berilsa qalam tugmasi chiziladi
  * @param {string} [props.editPermission] - qalamni ko'rsatish uchun ruxsat
+ * @param {boolean} [props.canEdit] - EGALIK darvozasi (ruxsatga QO'SHIMCHA).
+ *   O'qituvchi faqat o'zi qo'shgan o'quvchini tahrirlaydi — `useCanManageUser`
+ *   ga qarang. Ruxsat "shu amalni qila olasanmi", egalik esa "aynan shu
+ *   odamga tega olasanmi" degan savolga javob beradi.
  * @param {{label: string, value: React.ReactNode}[]} [props.rows]
  * @param {React.ReactNode} [props.children] - `rows` o'rniga erkin kontent
  * @param {string} [props.className]
@@ -24,6 +28,7 @@ const InfoCard = ({
   title,
   onEdit,
   editPermission = "users.update",
+  canEdit = true,
   rows,
   children,
   className = "",
@@ -32,7 +37,7 @@ const InfoCard = ({
     <div className="flex items-start justify-between gap-3">
       <h2 className="font-semibold text-gray-900">{title}</h2>
 
-      {onEdit && (
+      {onEdit && canEdit && (
         <Can do={editPermission}>
           <button
             type="button"

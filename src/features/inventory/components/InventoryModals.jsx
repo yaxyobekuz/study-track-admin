@@ -1,6 +1,7 @@
 // Katalog
 import {
   CategoryModal,
+  DeleteItemModal,
   ItemModal,
   LocationModal,
 } from "./CatalogModals";
@@ -8,7 +9,7 @@ import {
 // Xatlov
 import {
   AddStockModal,
-  AdjustModal,
+  EditStockModal,
   RepairModal,
   TransferModal,
   WriteOffModal,
@@ -40,13 +41,14 @@ const InventoryModals = () => (
     {/* Katalog */}
     <CategoryModal />
     <ItemModal />
+    <DeleteItemModal />
     <LocationModal />
 
     {/* Xatlov */}
     <AddStockModal />
     <RepairModal />
     <WriteOffModal />
-    <AdjustModal />
+    <EditStockModal />
     <TransferModal />
 
     {/* Kunlik monitoring */}

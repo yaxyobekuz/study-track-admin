@@ -2,8 +2,8 @@
 import { AlertTriangle, CheckCircle2, SlidersHorizontal } from "lucide-react";
 
 // Components
-import DashboardCard from "./DashboardCard";
-import MiniTable, { MiniTd, MiniTr } from "./MiniTable";
+import DashboardCard from "@/shared/components/dashboard/DashboardCard";
+import MiniTable, { MiniTd, MiniTr } from "@/shared/components/dashboard/MiniTable";
 
 // Utils
 import { cn } from "@/shared/utils/cn";

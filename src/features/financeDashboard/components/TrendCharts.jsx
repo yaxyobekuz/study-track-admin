@@ -13,7 +13,7 @@ import {
 } from "recharts";
 
 // Components
-import DashboardCard from "./DashboardCard";
+import DashboardCard from "@/shared/components/dashboard/DashboardCard";
 import MoneyTooltip from "./MoneyTooltip";
 
 // Utils

@@ -28,6 +28,7 @@ import {
   useUpdateCategory,
   useCreateItem,
   useUpdateItem,
+  useDeleteItem,
   useCreateLocation,
   useUpdateLocation,
 } from "../queries/inventory.mutations";
@@ -219,6 +220,113 @@ const ItemForm = ({ close, isLoading, setIsLoading, item }) => {
       >
         {item ? "Saqlash" : "Qo'shish"}
       </Button>
+    </InputGroup>
+  );
+};
+
+// ─────────────────────────────────────────────
+// Jihozni KATALOGDAN o'chirish
+// ─────────────────────────────────────────────
+
+/**
+ * O'CHIRISH — ARXIVLASH EMAS.
+ *
+ * Arxivlash jihozni tanlagichlardan olib tashlaydi, lekin tarixni
+ * saqlaydi: o'tgan zararlar, aktlar va hisobotlar unga ishora qilib
+ * turaveradi. O'chirish esa KIRITISH XATOSI uchun — "Proyekter" deb xato
+ * yozilgan, ikki marta kiritilgan, sinab ko'rilgan qator.
+ *
+ * ⚠️ Nima to'sib turgani tugmani bosishdan OLDIN o'qiladi (`itemUsage`):
+ * to'siqni serverning xato xabari sifatida ko'rsatish kech bo'lardi va
+ * xodim har safar boshqa sababni ko'rib chalkashardi (server hammasini
+ * BITTA ro'yxatda qaytaradi — shuning uchun ular ham birga chiziladi).
+ */
+export const DeleteItemModal = () => (
+  <ResponsiveModal name="inventoryDeleteItem" title="Jihozni o'chirish">
+    <DeleteItemForm />
+  </ResponsiveModal>
+);
+
+const DeleteItemForm = ({ close, isLoading, setIsLoading, item }) => {
+  const { data: usage, isLoading: isChecking } = useQuery(
+    inventoryQueries.itemUsage(item?.id),
+  );
+  const { mutate: deleteItem } = useDeleteItem();
+
+  const handleDelete = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    deleteItem(item.id, {
+      onSuccess: (result) => {
+        close();
+        toast.success(`"${result.name}" o'chirildi`);
+      },
+      onError: showError,
+      onSettled: () => setIsLoading(false),
+    });
+  };
+
+  if (!item) return null;
+
+  if (isChecking || !usage) {
+    return <p className="py-6 text-center text-sm text-gray-500">Tekshirilmoqda...</p>;
+  }
+
+  return (
+    <InputGroup as="form" onSubmit={handleDelete}>
+      <p className="rounded-xl bg-gray-50 p-3 text-sm text-gray-700">
+        <span className="font-medium">{item.name}</span>
+        <span className="block text-xs text-gray-500">
+          {usage.stockRows} ta xatlov qatori · {usage.totalQuantity} ta jami
+        </span>
+      </p>
+
+      {usage.canDelete ? (
+        <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+          <p className="font-medium">Jihoz butunlay o'chiriladi va qaytarilmaydi.</p>
+          <ul className="mt-1 list-inside list-disc text-xs">
+            <li>{usage.stockRows} ta xatlov qatori</li>
+            <li>{usage.movements} ta daftar yozuvi</li>
+            <li>{usage.draftCheckLines} ta qoralama hisobot qatori</li>
+          </ul>
+        </div>
+      ) : (
+        <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+          <p className="font-medium">Bu jihoz o'chirilmaydi:</p>
+          <ul className="mt-1 list-inside list-disc space-y-1 text-xs">
+            {usage.blockers.map((blocker, index) => (
+              <li key={index}>{blocker}</li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs">
+            O'chirish o'rniga ARXIVLANG: jihoz tanlagichlardan yo'qoladi,
+            tarixi esa joyida qoladi.
+          </p>
+        </div>
+      )}
+
+      <div className="flex flex-col-reverse gap-3 xs:flex-row xs:justify-end">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={close}
+          className="w-full xs:w-32"
+        >
+          Bekor qilish
+        </Button>
+
+        {usage.canDelete && (
+          <Button
+            type="submit"
+            variant="danger"
+            disabled={isLoading}
+            className="w-full xs:w-32"
+          >
+            O'chirish
+          </Button>
+        )}
+      </div>
     </InputGroup>
   );
 };

@@ -8,6 +8,11 @@ import { cn } from "@/shared/utils/cn";
  * Dashboard blokining yagona qobig'i — sarlavha, izoh, amal va uch holat
  * (yuklanmoqda / xato / bo'sh).
  *
+ * ⚠️ SHARED, chunki IKKI dashboard bor: moliya va ta'lim. Ular bir xil
+ * ko'rinishi shart — foydalanuvchi ikkalasini bitta tizim deb o'qiydi.
+ * Har biri o'z kartasini chizsa, birinchi kichik o'zgarishdayoq ikki
+ * ekran bir-biridan ajralib ketardi.
+ *
  * O'n uchta blok bir xil ramkada turishi kerak: dizaynda ular bir tekis
  * to'rga terilgan va har biri o'z "Yuklanmoqda..." ini chizsa, ekran
  * yuklanish paytida uzuq-yuluq ko'rinardi.

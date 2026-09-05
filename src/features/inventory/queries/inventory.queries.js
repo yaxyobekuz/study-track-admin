@@ -70,6 +70,21 @@ export const inventoryQueries = {
       enabled: Boolean(id),
     }),
 
+  /**
+   * JIHOZNI O'CHIRISHDAN OLDINGI TEKSHIRUV — "nima yo'qoladi va nima
+   * to'sib turibdi".
+   *
+   * Oyna tugmani bosishdan OLDIN o'qiydi: to'siqni serverning xato
+   * xabari sifatida ko'rsatish kech bo'lardi — foydalanuvchi sababni
+   * o'chirishga urinib ko'rgandan keyin bilib olardi.
+   */
+  itemUsage: (id) =>
+    queryOptions({
+      queryKey: [...catalogKey, "items", "usage", id],
+      queryFn: () => catalogAPI.getItemUsage(id).then((r) => r.data.data),
+      enabled: Boolean(id),
+    }),
+
   // ── Xatlov ─────────────────────────────────
   stocks: (params) =>
     queryOptions({
@@ -84,6 +99,14 @@ export const inventoryQueries = {
       queryKey: [...stockKey, "location", locationId, params],
       queryFn: () => stockAPI.getByLocation(locationId, params).then((r) => r.data.data),
       enabled: Boolean(locationId),
+    }),
+
+  /** Xatlov qatorini o'chirishdan oldingi tekshiruv (`itemUsage` bilan bir xil). */
+  stockUsage: (id) =>
+    queryOptions({
+      queryKey: [...stockKey, "usage", id],
+      queryFn: () => stockAPI.getUsage(id).then((r) => r.data.data),
+      enabled: Boolean(id),
     }),
 
   movements: (params) =>

@@ -24,6 +24,7 @@ import {
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import useCanManageUser from "../hooks/useCanManageUser";
 
 /**
  * Foydalanuvchi ustidagi harakatlar: parolni ko'rish tugmasi + qolgan hamma
@@ -41,6 +42,10 @@ import useModal from "@/shared/hooks/useModal";
  * @param {boolean} [props.isArchived] - arxiv ro'yxatidami (arxivdan qaytarish uchun)
  * @param {boolean} [props.showEdit] - "Tahrirlash" (detal sahifada keraksiz)
  * @param {string} [props.redirectAfterDelete] - o'chirilgandan keyingi manzil
+ *
+ * ⚠️ EGALIK: o'qituvchi faqat O'ZI QO'SHGAN o'quvchining amallarini
+ * ko'radi (`useCanManageUser`). Bu himoya emas — server har so'rovda
+ * tekshiradi; maqsad bosilganda 403 beradigan tugmani ko'rsatmaslik.
  */
 const UserRowActions = ({
   user,
@@ -50,9 +55,14 @@ const UserRowActions = ({
 }) => {
   const navigate = useNavigate();
   const { openModal } = useModal();
+  const canManage = useCanManageUser(user);
 
   const isStudent = user.role === "student";
   const isOwner = user.role === "owner";
+
+  // Boshqarish huquqi yo'q bo'lsa menyuning o'zi ham chizilmaydi: bo'sh
+  // uch nuqta "bosdim — hech narsa chiqmadi" degan taassurot qoldirardi
+  if (!canManage) return null;
 
   return (
     <div className="flex items-center justify-end gap-1">
