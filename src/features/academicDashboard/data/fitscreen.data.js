@@ -75,12 +75,19 @@
  *   O'qituvchilar KPI         36.5 sarlavha + 4×26           = 140.5 (4 qator)
  *   To'garaklar (2×2)         2×64 + 8 oraliq                = 136
  *   Olimpiada                 76 plitkalar + 20 ajratuvchi + 28 = 124 (1 yutuq)
- *   AI tahlil                 2×31 + 20 yorliq + 2×31        = 144 (2 + 2)
+ *   AI tahlil                 57 xulosa + 19 yorliq + 55 vazifa = 131 (1 + 1)
  *
  * (O'lchangan, 1280×960, yon panel ochiq, karta 325.3px: sahifa
  * surilmaydi, karta ichida surgich yo'q, kesilgan element yo'q.)
- * Eng talabchani — AI tahlil, 144px: chegarada 4.3px zaxira. Ikkinchi
- * o'rinda jadvallar (140.5, zaxira 7.8px). ⚠️ Jadval sarlavhasi 36.5 —
+ * Eng talabchani endi jadvallar (140.5, zaxira 7.8px).
+ * ⚠️ AI tahlil kartasi bu ro'yxatda BOSHQACHA o'qiladi: uning ikki
+ * plitkasi qat'iy balandlikda emas, qoldiq joyni to'ldiradi (`flex-1`),
+ * ya'ni 131px — TALAB emas, eng KAM zarur balandlik (matni kesilmasdan
+ * ko'rinishi uchun). Undan ortiq joy plitkalarga havo bo'lib qo'shiladi.
+ * Karta bittadan yozuv ko'rsatadi (`InsightsCard` → `INSIGHT_LIMIT`) va
+ * `useFitRows` ni ISHLATMAYDI.
+ *
+ * ⚠️ Jadval sarlavhasi 36.5 —
  * FAQAT so'zlar ustunga sig'sa: tor kartada (xl..2xl) katak bo'shlig'i
  * `px-1.5`, "A'lo va yaxshi" / "Topshiriq" ustunlari yashirin, aks holda
  * `break-words` sarlavhani 68-84px qilib, qatorni yarim kesardi

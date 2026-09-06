@@ -446,6 +446,12 @@ export const PERMISSION_SECTIONS = [
     group: "Inventar",
     actions: [
       A.view,
+      // ⚠️ DASHBOARD — `view` DAN ALOHIDA. `inventory.view` xatlov ekrani
+      // ("shu xonada nechta parta bor"), dashboard esa butun bo'limning
+      // kesimi va uning ichida PUL bor: bazaning qiymati, zarar summasi,
+      // qarzdorlik qoldig'i. Server tomonidagi izoh to'liqroq
+      // (`server/src/utils/permissions.js`).
+      { key: "dashboard", label: "Dashboard (umumiy tahlil)" },
       { key: "catalog", label: "Jihoz katalogini boshqarish" },
       { key: "locations", label: "Xonalarni boshqarish" },
       { key: "stock", label: "Xatlovga jihoz kiritish" },
@@ -690,9 +696,13 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/finance", key: "finance.view" },
   { prefix: "/finance/main/tariffs", key: "tariffs.view" },
   { prefix: "/finance/main/discounts", key: "discounts.view" },
+  // Inventar dashboardi bosh sahifaning "Inventar" tabida — moliya
+  // hisobotlari `/reports` da turgani bilan bir xil naqsh
+  { prefix: "/assets", key: "inventory.dashboard" },
   // Inventar bo'limiga kirish `inventory.view` bilan; monitoring va zarar
   // tablari esa o'z kalitini talab qiladi (eng UZUN mos prefiks yutadi).
   { prefix: "/inventory", key: "inventory.view" },
+  { prefix: "/inventory/dashboard", key: "inventory.dashboard" },
   { prefix: "/inventory/checks", key: "monitoring.view" },
   { prefix: "/inventory/damages", key: "damages.view" },
   { prefix: "/inventory/debtors", key: "damages.view" },

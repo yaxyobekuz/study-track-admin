@@ -34,4 +34,18 @@ export const HOME_TABS = [
     can: "education.view",
     exact: false,
   },
+  // "Inventar" — uchinchi yarim: "mulkimiz qanday". Moliya pulni,
+  // ta'lim o'qishni, inventar esa MODDIY BAZANI ko'rsatadi va uchalasi
+  // ham rahbarning bir ekrandan ochadigan savollari.
+  //
+  // ⚠️ `inventory.dashboard` — `inventory.view` DAN ALOHIDA kalit.
+  // Xatlov ekraniga kirish huquqi bu tabni ochmaydi: bu yerda bazaning
+  // pul qiymati va qarzdorlik qoldig'i turadi
+  // (`server/src/utils/permissions.js` dagi izoh).
+  {
+    to: "/assets",
+    label: "Inventar",
+    can: "inventory.dashboard",
+    exact: false,
+  },
 ];

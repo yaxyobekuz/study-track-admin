@@ -9,6 +9,29 @@
  * sudralib kirardi.
  */
 
+// Icons
+import { AlertTriangle, Info, Sparkles, TrendingUp } from "lucide-react";
+
+/**
+ * XULOSA OHANGI → IKONKA (rangi `dashboard.tokens.js` dagi `AI_TONE` da).
+ *
+ * ⚠️ Bu xarita IKKI joyda kerak: dashboarddagi "AI tahlil" kartasi va
+ * uning "Tavsiyalar arxivi" oynasi. Ikkalasida alohida yozilsa, bir kun
+ * kelib bitta ohang ikki xil ikonka bilan chizilardi.
+ *
+ * Shakl ranggacha ma'no beradi (o'sish strelkasi / undov / "i" / uchqun):
+ * rangni ajratmaydigan ko'z ham qaysi ohang ekanini ko'radi.
+ */
+export const TONE_ICON = {
+  positive: TrendingUp,
+  warning: AlertTriangle,
+  info: Info,
+  tip: Sparkles,
+};
+
+/** Noma'lum ohang kelsa yozuv YO'QOLMAYDI — neytral ko'rinishda chiziladi. */
+export const FALLBACK_ICON = Info;
+
 /**
  * Baholar taqsimoti rangi — 5 dan 1 gacha.
  *

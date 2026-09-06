@@ -17,6 +17,18 @@
  * server baribir rad etadi, ya'ni tab bo'sh sahifaga olib borardi.
  */
 export const INVENTORY_TABS = [
+  // ⚠️ DASHBOARD va bosh sahifadagi "Inventar" tabi AYNI BIR sahifani
+  // ochadi. Ikki kirish nuqtasi ataylab: rahbar bosh sahifadan
+  // chiqmasdan ko'radi, xo'jalik mudiri esa o'z bo'limida topadi.
+  // Moliya bo'limida "Moliya" tabi va "Dashboard" tabi ham shunday
+  // (`features/dashboard/data/homeTabs.data.js` dagi izoh).
+  {
+    to: "/inventory/dashboard",
+    label: "Dashboard",
+    title: "Inventar",
+    can: "inventory.dashboard",
+    exact: false,
+  },
   {
     to: "/inventory/overview",
     label: "Umumiy",

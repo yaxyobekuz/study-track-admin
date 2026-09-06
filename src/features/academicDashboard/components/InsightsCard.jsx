@@ -8,14 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 // Icons
-import {
-  AlertTriangle,
-  Check,
-  Info,
-  RefreshCw,
-  Sparkles,
-  TrendingUp,
-} from "lucide-react";
+import { Check, RefreshCw } from "lucide-react";
 
 // Components
 import DashboardCard from "@/shared/components/dashboard/DashboardCard";
@@ -23,7 +16,7 @@ import Can from "@/shared/components/guards/Can";
 import CardLink from "./CardLink";
 
 // Hooks
-import useFitRows from "@/shared/hooks/useFitRows";
+import useModal from "@/shared/hooks/useModal";
 import usePermissions from "@/shared/hooks/usePermissions";
 
 // Queries
@@ -37,99 +30,70 @@ import { cn } from "@/shared/utils/cn";
 import { formatDateUz, formatTimeUz } from "@/shared/utils/date.utils";
 
 // Data
-import { linkLabel } from "../data/academicDashboard.data";
-import { MOTION, T, TONE, contentDelay } from "../data/dashboard.tokens";
+import {
+  FALLBACK_ICON,
+  TONE_ICON,
+  linkLabel,
+} from "../data/academicDashboard.data";
+import {
+  AI_ROW,
+  AI_TONE,
+  MOTION,
+  T,
+  TONE,
+  contentDelay,
+} from "../data/dashboard.tokens";
 
 /**
- * Xulosaning "ohangi" → ikonka va rangli doira.
+ * Vazifaning shoshilinchligi → PLITKANING CHAP RELSI
+ * (`MOTION.priorityRail`).
  *
- * ⚠️ Server FAQAT `tone` yuboradi (`positive` / `warning` / `info` /
- * `tip`), matnni esa TAYYOR holda beradi. Frontend bu yerda hech narsa
- * yig'maydi va raqam formatlamaydi: jumla serverda tug'iladi
- * (qoidalar — `helpers/academicFacts.js`, model — `academicInsight.service.js`),
- * shuning uchun u bazasiz sinovda tekshiriladi va ikki panelda ikki xil
- * bo'lib qolmaydi.
- *
- * Ikonka `size-5` doira ichida (`bg-*-50`, ikonka `-500`): rangli doira
- * qatorni matndan ajratadi va qaysi ohang ekanini rangdan ham, shakldan
- * ham aytadi.
- */
-const TONES = {
-  positive: { icon: TrendingUp, className: "bg-emerald-50 text-emerald-500" },
-  warning: { icon: AlertTriangle, className: "bg-amber-50 text-amber-500" },
-  info: { icon: Info, className: "bg-blue-50 text-blue-500" },
-  tip: { icon: Sparkles, className: "bg-violet-50 text-violet-500" },
-};
-
-/** Noma'lum ohang kelsa qator YO'QOLMAYDI — neytral ko'rinishda chiziladi. */
-const FALLBACK_TONE = { icon: Info, className: "bg-slate-50 text-slate-400" };
-
-/**
- * Vazifaning shoshilinchligi → NUQTA (`MOTION.priorityDot`).
+ * ⚠️ Ilgari bu sarlavha yonidagi 6px NUQTA edi. Nuqta matn bilan bitta
+ * oqimda turgani uchun qator "ro'yxat elementi" emas, oddiy abzas bo'lib
+ * o'qilardi. Rels esa plitkaning butun balandligini egallaydi: u bir
+ * vaqtning o'zida qator QAYERDA BOSHLANIB QAYERDA TUGASHINI ko'rsatadi
+ * va ustuvorlikni aytadi.
  *
  * ⚠️ Rang YAGONA belgi emas: yonida `owner · muddat` satri turadi.
  * Faqat rangga tayangan holat rangni ajratmaydigan foydalanuvchi uchun
- * "uch xil bir xil qator" bo'lib qolardi. `high` nuqtasi NAFAS OLADI
+ * "uch xil bir xil qator" bo'lib qolardi. `high` relsi NAFAS OLADI
  * (breathe) — diqqat belgisi; hammasi harakat qilsa, hech biri ajralib
  * turmasdi.
  */
-const PRIORITY_FALLBACK = MOTION.priorityDot.low;
+const PRIORITY_FALLBACK = MOTION.priorityRail.low;
 
 /**
- * KARTAGA CHIQADIGAN QATORLAR SONINING YUQORI CHEGARASI.
+ * KARTAGA CHIQADIGAN YOZUVLAR SONI — HAR RO'YXATDAN BITTADAN.
  *
  * Server oltitagacha xulosa (`MAX_AI_INSIGHTS`) va beshtagacha vazifa
- * (`MAX_ACTIONS`) yuborishi mumkin. Kartada esa IKKITADAN oshmaydi:
- * dashboardning ma'nosi bir qarashda o'qiladigan xulosada, o'n bir qator
- * matn esa qo'shni kartalarni siqib, ekranni "maqola"ga aylantirardi.
+ * (`MAX_ACTIONS`) yuborishi mumkin. Kartada esa ENG MUHIM BITTASI
+ * ko'rinadi: qolganlari "Tavsiyalar arxivi (yana N ta)" havolasi ortida.
+ *
+ * ⚠️ NIMA UCHUN BITTADAN, IKKITADAN EMAS. Karta balandligi qat'iy
+ * (`fitscreen.data.js`), ya'ni yozuvlar soni va HAR BIR YOZUVGA
+ * beriladigan joy bir-birining hisobiga o'sadi. Ikkitadan bo'lganda har
+ * bir plitkaga 32px tegib, jumla ikki qatorda kesilardi — dashboard
+ * "yarim o'qilgan matn" ko'rsatardi. Bittadan bo'lganda plitka ~65px
+ * bo'ladi: xulosa uch qatorda, vazifa sarlavhasi ikki qatorda to'liq
+ * chiqadi. Bir qarashda o'qiladigan BITTA to'g'ri jumla — yarmi kesilgan
+ * ikkitadan yaxshi.
  *
  * ⚠️ Tartib SERVERDA hal qilingan va u MUHIMLIK bo'yicha: xulosalar
  * ogohlantirishdan boshlanadi (`warning` → `positive` → `info` → `tip`),
  * vazifalar esa `priority` bo'yicha saralangan. Shuning uchun bu yerda
- * QAYTA SARALASH YO'Q — birinchi ikkitasi allaqachon eng muhimlari.
- * Ikki joyda saralash bo'lsa, ular bir kun kelib bir-biriga zid tartib
- * berardi.
+ * QAYTA SARALASH YO'Q — birinchisi allaqachon eng muhimi. Ikki joyda
+ * saralash bo'lsa, ular bir kun kelib bir-biriga zid tartib berardi.
  *
- * ⚠️ `useFitRows` ga `max` sifatida ham shu qiymat beriladi va u
- * MA'LUMOTDAN HISOBLANMAYDI: hook `max` ni dastlabki qiymat sifatida
- * ishlatadi, ya'ni `ResizeObserver` yo'q muhitda (jsdom testi, juda eski
- * brauzer) aynan shu qaytadi. Ma'lumot kelgunicha ro'yxat bo'sh bo'lgani
- * uchun hisoblangan `max` u yerda abadiy birga yopishib qolardi.
+ * ⚠️ `useFitRows` bu kartada ENDI ISHLATILMAYDI. U "qoldiq joyga nechta
+ * QAT'IY balandlikdagi qator sig'adi" degan savolga javob berardi; bu
+ * yerda javob endi doim BITTA, ya'ni o'lchanadigan narsaning o'zi yo'q.
+ * Uning o'rniga plitkaning O'ZI qoldiq joyni to'ldiradi (`flex-1`):
+ * karta balandligi qanday bo'lmasin, ostida bo'sh joy ham qolmaydi,
+ * kesilgan yozuv ham chiqmaydi. (Hook boshqa kartalarda — jadvallar va
+ * yon kartalarda — avvalgidek ishlaydi.)
  */
-const INSIGHT_LIMIT = 2;
-const ACTION_LIMIT = 2;
-
-/**
- * Qatorning QAT'IY balandligi (px) — `h-[34px]` / `fitscreen:h-[31px]`
- * sinflari bilan BIR VAQTDA o'zgaradi.
- *
- * 31px = 12.5px matnning `leading-[15px]` dagi IKKI qatori (30px) + 1px
- * havo. Shuning uchun `fitscreen` da ustki `pt-*` OLIB TASHLANADI (`pt-0`):
- * u qolganda ikkinchi qator qat'iy balandlikdan chiqib, `overflow-hidden`
- * ostida qirqilardi. ⚠️ Matn `T.tableCell` (12.5px) — `leading-snug`
- * bilan ikki qator 34.4px bo'lib 31 ga SIG'MASDI, shuning uchun qator
- * balandligi bu yerda QAT'IY `leading-[15px]` bilan beriladi (o'lchov
- * qatori, tipografiya emas).
- *
- * ⚠️ NIMA UCHUN 31, 32 EMAS — O'LCHANGAN (Chrome, 1280×960, yon panel
- * ochiq): kartaning o'lchanadigan maydoni 147.2px. Ikki ro'yxat uni teng
- * bo'lishadi, o'rtada 20px bo'lim yorlig'i: (147.2 − 20) / 2 = 63.6px
- * har biriga. 32px da `floor(63.6 / 32) = 1` — ya'ni chegarada 1 + 1
- * qator; 31px da `floor(63.6 / 31) = 2` — 2 + 2 (zaxira 1.6px). Vazifa
- * qatori ham sig'adi: sarlavha `leading-[16px]` 16 + "kim · muddat"
- * `leading-[13px]` 13 = 29 ≤ 31.
- *
- * ⚠️ O'lchov konstantasi IKKALA rejim uchun 31: oddiy oqimda qator 34px
- * bo'lgani bilan hisob barqaror qoladi (`floor(2 × 34 / 31) = 2`), chunki
- * `max` baribir IKKITA.
- *
- * Qatorlar orasiga oraliq (`gap` / `space-y`) QO'SHILMAYDI: bir ekranli
- * bo'lmagan ekranda konteyner balandligi kontentning o'zidan kelib
- * chiqadi va `floor(n × 34 / 34) = n` barqaror nuqta bo'ladi. Oraliq
- * qo'shilsa bu hisob `n − 1` beradi va ro'yxat har renderda bittaga
- * qisqarib "so'nib" borardi.
- */
-const ROW_H = 31;
+const INSIGHT_LIMIT = 1;
+const ACTION_LIMIT = 1;
 
 /**
  * Matn kim yozgani — HALOL yorliq, `TONE.*.chip` ko'rinishida.
@@ -165,6 +129,15 @@ const SUCCESS_FLASH_MS = 1500;
 /**
  * HAFTALIK TAHLIL VA ISH REJASI.
  *
+ * ⚠️ Server FAQAT `tone` / `priority` yuboradi, MATNNI esa TAYYOR holda
+ * beradi. Frontend bu yerda hech narsa yig'maydi va raqam formatlamaydi:
+ * jumla serverda tug'iladi (qoidalar — `helpers/academicFacts.js`, model
+ * — `academicInsight.service.js`), shuning uchun u bazasiz sinovda
+ * tekshiriladi va ikki panelda ikki xil bo'lib qolmaydi. Ohang IKONKASI
+ * `academicDashboard.data.js` da (`TONE_ICON`), RANGI
+ * `dashboard.tokens.js` da (`AI_TONE`) — "Tavsiyalar arxivi" oynasi
+ * (`InsightsModal`) ham AYNAN shu manbadan oladi.
+ *
  * ⚠️ Bu karta `overview` dan OZIQLANMAYDI — o'z so'rovi bor
  * (`GET /education/insights`). Sabab: tahlil HAFTALIK va uning oyi
  * serverda hal qilinadi, dashboard sarlavhasidagi oy tanlagichi esa
@@ -196,6 +169,7 @@ const SUCCESS_FLASH_MS = 1500;
  */
 export const InsightsCard = ({ delay = 0 }) => {
   const { can } = usePermissions();
+  const { openModal } = useModal();
 
   const { data, isLoading, isError } = useQuery({
     ...academicQueries.insights(),
@@ -216,38 +190,12 @@ export const InsightsCard = ({ delay = 0 }) => {
   const allInsights = data?.insights ?? [];
   const allActions = data?.actions ?? [];
 
-  // ⚠️ QATOR SONI TAXMIN QILINMAYDI — O'LCHANADI. Ikki ro'yxat bo'sh joyni
-  // teng bo'lishadi (`flex-1`), `useFitRows` esa har biriga nechta qator
-  // SIG'ISHINI hisoblaydi: kichik kartada bittadan, kattasida ikkitadan.
-  // `max` tufayli IKKITADAN OSHMAYDI — bo'sh joy ko'p bo'lsa ham karta
-  // "matn devori"ga aylanmaydi.
-  //
-  // ⚠️ `min: 0` — ATAYLAB. `min: 1` o'lchovni BEKOR QILARDI: 29.5px joy
-  // qolganda ham 34px lik qator chizilib, uning pasti kesilardi. Endi
-  // qoida istisnosiz: sig'magan qator chizilmaydi, sig'magan bo'lim esa
-  // (yorlig'i bilan birga) umuman ochilmaydi.
-  //
-  // ⚠️ Bo'lim yorliqlari o'lchanadigan konteynerlardan TASHQARIDA va
-  // `shrink-0`: ular qator sonidan QAT'IY NAZAR chiziladi. Shu sababli
-  // `headerHeight` ham kerak emas va — muhimi — o'lchov halqasi barqaror
-  // qoladi. Yorliq o'lchanadigan konteynerga kiritilsa, bir ekranli
-  // BO'LMAGAN ekranda (konteyner balandligi kontentdan kelib chiqadigan
-  // holat) hisob `n − 1` berib, ro'yxat har renderda bittaga qisqarib
-  // "so'nib" borardi.
-  const [insightsRef, insightRows] = useFitRows({
-    rowHeight: ROW_H,
-    min: 0,
-    max: INSIGHT_LIMIT,
-  });
-
-  const [actionsRef, actionRows] = useFitRows({
-    rowHeight: ROW_H,
-    min: 0,
-    max: ACTION_LIMIT,
-  });
-
-  const insights = allInsights.slice(0, insightRows);
-  const actions = allActions.slice(0, actionRows);
+  // ⚠️ QATOR SONI O'LCHANMAYDI — u DOIM BITTA (`INSIGHT_LIMIT` izohi).
+  // Ikki ro'yxat bo'sh joyni teng bo'lishadi (`flex-1`) va plitkaning
+  // O'ZI o'sha joyni to'ldiradi: karta balandligi qanday bo'lmasin,
+  // ostida bo'sh joy ham qolmaydi, kesilgan yozuv ham chiqmaydi.
+  const insights = allInsights.slice(0, INSIGHT_LIMIT);
+  const actions = allActions.slice(0, ACTION_LIMIT);
 
   // Server sanani TAYYOR yorliq bilan beradi (`utc: true` bilan
   // formatlangan `@db.Date`). Yorliq kelmasa — mahalliy formatlovchi;
@@ -337,8 +285,11 @@ export const InsightsCard = ({ delay = 0 }) => {
       }
       action={
         <Can do="education.plan">
-          {/* Tugma `T.link` ko'rinishida (karta havolasi bilan bitta
-              oila); o'chirilgan holatda rang och, hover yo'q. */}
+          {/* Tugma `T.linkAi` ko'rinishida — `T.link` ning violet
+              varianti (karta havolasi bilan bitta oila, lekin kartaning
+              o'z rangida: neytral slate tugma gradient sirt ustida
+              "boshqa ekrandan kelib qolgandek" ko'rinardi).
+              O'chirilgan holatda rang och, hover yo'q. */}
           <button
             type="button"
             onClick={handleRefresh}
@@ -349,10 +300,10 @@ export const InsightsCard = ({ delay = 0 }) => {
                 : "Tahlilni qayta shakllantirish"
             }
             className={cn(
-              T.link,
+              T.linkAi,
               "shrink-0",
               refreshDisabled &&
-                "cursor-not-allowed text-slate-300 hover:bg-slate-50 hover:text-slate-300",
+                "cursor-not-allowed bg-violet-50/50 text-violet-300 ring-violet-100 hover:bg-violet-50/50 hover:text-violet-300",
             )}
           >
             {/* Muvaffaqiyatda qisqa ✓ (faqat opacity bilan kiradi — zoom
@@ -385,18 +336,30 @@ export const InsightsCard = ({ delay = 0 }) => {
       // ⚠️ Boshqa kartalar kabi PASTKI HAVOLA bilan: to'rda bu karta
       // qo'shnilari bilan bir qatorda turadi va havolasiz qoldirilsa,
       // qatorning pastki chizig'i buzilardi.
-      // ⚠️ Havola nomi HAR DOIM bir xil — maketdagi "Tavsiyalar arxivi".
-      // Ilgari u kesilmagan holatda "Batafsil statistika" ga almashardi:
-      // manzil bitta bo'la turib, foydalanuvchi ikki xil nom ko'rib, ikki
-      // xil sahifa bor deb o'ylardi.
+      //
+      // ⚠️ HAVOLA "TAVSIYALAR ARXIVI" OYNASINI ochadi (`InsightsModal`).
+      // Ilgari u `/statistics` ga — O'QUVCHILAR REYTINGI sahifasiga —
+      // olib borardi: nomi tavsiyalarni va'da qilib, butunlay boshqa
+      // ekran ochilardi. Manzil xato ekani ko'rinmasdi, chunki u sahifa
+      // ham "statistika" edi.
+      //
+      // ⚠️ Havola nomi HAR DOIM bir xil. Ilgari u kesilmagan holatda
+      // "Batafsil statistika" ga almashardi: manzil bitta bo'la turib,
+      // foydalanuvchi ikki xil nom ko'rib, ikki xil sahifa bor deb
+      // o'ylardi.
+      //
+      // ⚠️ Havola HAR DOIM bosiladi — `disabled` QO'YILMAYDI: `CardLink`
+      // ning o'chirilgan holati "ruxsatingiz yo'q" deb tooltip ko'rsatadi
+      // va u yuklanish paytida YOLG'ON bo'lardi. Yuklanish / xato / bo'sh
+      // holatni oynaning O'ZI chizadi.
       footer={
-        <CardLink to="/statistics">
+        <CardLink onClick={() => openModal("academicInsights")}>
           {linkLabel("Tavsiyalar arxivi", hiddenRows)}
         </CardLink>
       }
     >
       {/* Kirish: tana BITTA `fade-up`, kartadan 140ms keyin. `fade-up`
-          faqat transform/opacity — `useFitRows` o'lchovi o'zgarmaydi. */}
+          faqat transform/opacity — layout'ga tegmaydi. */}
       <div
         className={cn(
           "flex h-full min-h-0 flex-col overflow-hidden",
@@ -404,66 +367,84 @@ export const InsightsCard = ({ delay = 0 }) => {
         )}
         style={{ animationDelay: `${bodyDelay}ms` }}
       >
-        {/* ── Xulosalar ─────────────────────────────────────────────── */}
-        {allInsights.length > 0 && (
-          // O'LCHANADIGAN konteyner. `overflow-y-auto` bu yerda ham,
-          // kartaning hech qayerida ham YO'Q.
-          <div ref={insightsRef} className="min-h-0 flex-1 overflow-hidden">
-            {insights.map((row) => {
-              const tone = TONES[row.tone] ?? FALLBACK_TONE;
-              const Icon = tone.icon;
+        {/* ── Xulosa (eng muhim BITTASI) ────────────────────────────── */}
+        {insights.length > 0 && (
+          // ⚠️ PLITKANING O'ZI `flex-1`: u qoldiq joyni to'ldiradi.
+          // Ilgari bu yerda qat'iy balandlikdagi qatorlarni saqlaydigan
+          // O'LCHANADIGAN konteyner turardi; endi o'lchanadigan narsa
+          // yo'q (`INSIGHT_LIMIT` izohi), shuning uchun qatlam ham yo'q.
+          // `overflow-y-auto` bu yerda ham, kartaning hech qayerida ham
+          // YO'Q.
+          <div className="relative min-h-0 flex-1">
+            {(() => {
+              const row = insights[0];
+              const tone = AI_TONE[row.tone] ?? AI_TONE.neutral;
+              const Icon = TONE_ICON[row.tone] ?? FALLBACK_ICON;
 
               return (
-                // Balandlik o'zgarmaydi: 34/31px (`ROW_H` izohi).
-                <div
-                  key={row.id}
-                  className="flex h-[34px] items-start gap-2 pt-0.5 fitscreen:h-[31px] fitscreen:pt-0"
-                >
-                  {/* Ikonka rangli doira ichida: `size-5` doira, `size-3`
-                      ikonka. `mt-0.5` — doira matnning ikki qatori
-                      orasiga (30px) markazlashadi. */}
+                <>
+                  {/* PLITKA SIRTI — oqimdan tashqarida. `inset-y-*` bilan
+                      ichkariga surilgan 2px/1px bo'lim yorlig'i bilan
+                      orasidagi havoni beradi. Chegara ohang rangida. */}
                   <span
+                    aria-hidden
                     className={cn(
-                      "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full",
-                      tone.className,
+                      AI_ROW.tile,
+                      "inset-y-0.5 fitscreen:inset-y-px",
+                      tone.ring,
                     )}
-                  >
-                    <Icon className="size-3" />
-                  </span>
-                  {/* ⚠️ `line-clamp-2` — uzun matn qatorni cho'zib, qat'iy
-                      balandlikni yorib chiqmasligi uchun. To'liq matn
-                      `title` da qoladi. `leading-[15px]` — o'lchov qatori
-                      (31 = 2 × 15 + 1), `ROW_H` izohiga qarang. */}
-                  <p
-                    className={cn(T.tableCell, "line-clamp-2 leading-[15px]")}
-                    title={row.text}
-                  >
-                    {row.text}
-                  </p>
-                </div>
+                  />
+
+                  <div className="relative flex h-full items-center gap-2.5 overflow-hidden px-2.5 py-2 fitscreen:gap-2 fitscreen:px-2 fitscreen:py-1.5">
+                    {/* To'ldirilgan rangli doira, ichida oq belgi: qator
+                        QAYERDAN boshlanishini ko'rsatadigan lange. Ilgari
+                        doira `bg-*-50` edi va oq plitkada ko'rinmasdi. */}
+                    <span
+                      className={cn(
+                        AI_ROW.icon,
+                        "size-7 fitscreen:size-6",
+                        tone.icon,
+                      )}
+                    >
+                      <Icon className="size-3.5 fitscreen:size-3" />
+                    </span>
+
+                    {/* ⚠️ `line-clamp-3` — plitka balandligi qat'iy emas,
+                        lekin CHEKLANGAN (`flex-1`): uch qatordan uzun
+                        matn uni yorib chiqmasligi kerak. Hisob (fitscreen,
+                        plitka ~64px): 3 × `leading-[15px]` = 45 + `py-1.5`
+                        12 = 57 ≤ 64 ✓. To'liq matn `title` da qoladi. */}
+                    <p
+                      className={cn(
+                        T.tableCell,
+                        "min-w-0 line-clamp-3 leading-[17px] fitscreen:leading-[15px]",
+                      )}
+                      title={row.text}
+                    >
+                      {row.text}
+                    </p>
+                  </div>
+                </>
               );
-            })}
+            })()}
           </div>
         )}
 
         {/* ── Haftalik ish rejasi ───────────────────────────────────── */}
-        {allActions.length > 0 && (
+        {actions.length > 0 && (
           <>
             {/* Bo'lim belgisi: chap/o'ng ingichka chiziq + yorliq
-                (`T.sectionLabel` / `T.sectionRule`).
-                ⚠️ `fitscreen` da bo'lim 20px: `mt-1` 4 + `pt-[5px]` 5 +
-                11 satr — aynan shu 12px (32 → 20) ikkala ro'yxatga
-                bittadan qator qo'shadi: 2 xulosa + 2 vazifa. Ilgari 1px
-                `border-t` bor edi — chiziq endi yorliqning ikki yonida,
-                uning 1px i `pt` ga o'tdi; jami o'zgarmadi. */}
+                (`T.sectionLabel` / `T.sectionRule`). `shrink-0` — u ikki
+                plitka orasida qat'iy turadi, plitkalar esa qoldiq joyni
+                teng bo'lishadi. */}
             <div
               className={cn(
                 "flex shrink-0 items-center gap-2",
                 // Ajratuvchi oraliq FAQAT ustida xulosa bo'lganda: yolg'iz
-                // qolgan ro'yxat ustida u nimanidir ajratmasdi.
-                allInsights.length > 0
-                  ? "mt-1.5 pt-1.5 fitscreen:mt-1 fitscreen:pt-[5px]"
-                  : "pb-1 fitscreen:pb-0",
+                // qolgan plitka ustida u nimanidir ajratmasdi.
+                insights.length > 0
+                  ? "my-1.5 fitscreen:my-1"
+                  : "mb-1.5 fitscreen:mb-1",
               )}
             >
               <span className={T.sectionRule} />
@@ -478,42 +459,64 @@ export const InsightsCard = ({ delay = 0 }) => {
               <span className={T.sectionRule} />
             </div>
 
-            {/* O'LCHANADIGAN konteyner: balandligi ICHIDAGIDAN qat'iy
-                nazar qoldiq joyga teng (`flex-1` + `min-h-0`) */}
-            <div
-              ref={actionsRef}
-              className="mt-1 min-h-0 flex-1 overflow-hidden fitscreen:mt-0"
-            >
-              {actions.map((row) => (
-                <div
-                  key={row.id}
-                  className="flex h-[34px] items-start gap-2 pt-1 fitscreen:h-[31px] fitscreen:pt-0"
-                >
-                  {/* Nuqta sarlavhaning BIRINCHI QATORIGA (16px)
-                      tenglashtiriladi: `mt-[5px]` + 6px nuqta → markaz 8px. */}
-                  <span
-                    className={cn(
-                      "mt-[5px] shrink-0",
-                      MOTION.priorityDot[row.priority] ?? PRIORITY_FALLBACK,
-                    )}
-                  />
-                  <div className="min-w-0">
-                    {/* ⚠️ Sarlavha BIR QATOR (`truncate`): ostida "kim ·
-                        muddat" satri turadi va ikkalasi birgalikda qat'iy
-                        31px ga sig'ishi kerak (16 + 13 = 29). To'liq
-                        matn `title` da. */}
-                    <p
-                      className={cn(T.tableName, "truncate leading-[16px]")}
-                      title={row.title}
+            {/* Vazifa plitkasi — xulosa bilan bir xil qoidada: qoldiq
+                joyni to'ldiradi (`flex-1` + `min-h-0`). */}
+            <div className="relative min-h-0 flex-1">
+              {(() => {
+                const row = actions[0];
+
+                return (
+                  <>
+                    {/* Neytral chegara: ohang bu ro'yxatda yo'q,
+                        ustuvorlikni RELS aytadi. Rels plitkaning ICHIDA
+                        (`AI_ROW.rail` izohi: `overflow-hidden` uni
+                        yumaloq burchakka moslab kesadi). */}
+                    <span
+                      aria-hidden
+                      className={cn(
+                        AI_ROW.tile,
+                        AI_ROW.taskRing,
+                        "inset-y-0.5 fitscreen:inset-y-px",
+                      )}
                     >
-                      {row.title}
-                    </p>
-                    <p className={cn(T.valueMeta, "truncate leading-[13px]")}>
-                      {[row.owner, row.dueLabel].filter(Boolean).join(" · ")}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                      {/* USTUVORLIK RELSI — chap chekka, butun balandlik
+                          bo'ylab (`MOTION.priorityRail`). `high` nafas
+                          oladi. */}
+                      <span
+                        className={cn(
+                          AI_ROW.rail,
+                          MOTION.priorityRail[row.priority] ??
+                            PRIORITY_FALLBACK,
+                        )}
+                      />
+                    </span>
+
+                    <div className="relative flex h-full min-w-0 flex-col justify-center overflow-hidden pl-3 pr-2.5 py-2 fitscreen:pl-2.5 fitscreen:pr-2 fitscreen:py-1.5">
+                      {/* ⚠️ Sarlavha IKKI QATOR (`line-clamp-2`), ostida
+                          "kim · muddat". Hisob (fitscreen, plitka ~64px):
+                          2 × 15 + 13 + `py-1.5` 12 = 55 ≤ 64 ✓. To'liq
+                          matn `title` da. */}
+                      <p
+                        className={cn(
+                          T.tableName,
+                          "line-clamp-2 leading-[17px] fitscreen:leading-[15px]",
+                        )}
+                        title={row.title}
+                      >
+                        {row.title}
+                      </p>
+                      <p
+                        className={cn(
+                          T.valueMeta,
+                          "mt-0.5 truncate leading-[14px] fitscreen:mt-0 fitscreen:leading-[13px]",
+                        )}
+                      >
+                        {[row.owner, row.dueLabel].filter(Boolean).join(" · ")}
+                      </p>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </>
         )}

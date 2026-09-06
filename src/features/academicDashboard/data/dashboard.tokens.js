@@ -173,6 +173,17 @@ export const T = {
     "text-[11px] font-semibold text-slate-600 hover:text-slate-900 " +
     "bg-slate-50 hover:bg-slate-100 ring-1 ring-slate-200/60 " +
     "transition-colors duration-200 ease-out-quint",
+  /**
+   * AI kartasining amal tugmasi ("Yangilash") — `T.link` ning violet
+   * varianti. Karta o'z rangiga ega (gradient sirt, violet chegara,
+   * violet "AI" pill) va uning ichidagi neytral slate tugma o'sha
+   * rangdan TASHQARIDA turgandek ko'rinardi.
+   */
+  linkAi:
+    "inline-flex items-center gap-1 rounded-md px-2 py-1 " +
+    "text-[11px] font-semibold text-violet-700 hover:text-violet-800 " +
+    "bg-violet-50/80 hover:bg-violet-100 ring-1 ring-violet-200/70 " +
+    "transition-colors duration-200 ease-out-quint",
   linkArrow:
     "size-3 transition-transform duration-200 ease-out-quint " +
     "group-hover:translate-x-0.5",
@@ -230,6 +241,83 @@ export const TONE = {
 /** Raqam ostidagi 2px ton chizig'i — asosiy sinf, rangi TONE[x].bar. */
 export const TONE_BAR = "mt-0.5 h-0.5 w-full rounded-full";
 
+/* ──────────────── AI KARTASI — RO'YXAT PLITKALARI ──────────────── */
+
+/**
+ * AI tahlil kartasidagi ikkala ro'yxat (xulosalar va vazifalar) QATOR
+ * emas, PLITKA bilan chiziladi.
+ *
+ * ⚠️ NIMA UCHUN PLITKA. Ilgari qatorlar shunchaki matn satrlari edi:
+ * ikkita xulosa ham, vazifa ham bir xil oq fonda, orasida chiziq ham,
+ * oraliq ham yo'q. Natijada karta "ro'yxat" emas, ABZAS bo'lib
+ * o'qilardi — foydalanuvchining so'zi bilan "oddiy tekst taqdimoti".
+ * Har bir yozuvning o'z SIRTI (fon + chegara) bo'lgandagina ko'z
+ * "bular alohida-alohida narsalar" deb ajratadi.
+ *
+ * ⚠️ SIRT — ALOHIDA `absolute` QATLAM, oqimdagi element EMAS. Qator
+ * balandligi `useFitRows` hisobiga kiradi (`InsightsCard` dagi `ROW_H`):
+ * plitkani oqimga `my-*` bilan qo'yish har qatorga 2-4px qo'shib,
+ * kartadan bittadan yozuvni yeb qo'yardi. `inset-y-*` bilan esa
+ * plitkalar orasidagi HAVO qatorning O'Z balandligidan olinadi —
+ * o'lchov o'zgarmaydi.
+ *
+ * ⚠️ FON OQ, RANG faqat CHEGARADA va ikonkada. Kartaning o'zi allaqachon
+ * violet→cyan gradient: ustiga to'rtta ohangdagi (emerald, amber, blue,
+ * violet) rangli plitka qo'yilsa, ekran "kamalak" bo'lib, gradient ham,
+ * ohang ham o'qilmay qolardi.
+ */
+export const AI_ROW = {
+  /**
+   * Plitka sirti — ikkala ro'yxat uchun umumiy asos. Balandlik
+   * (`inset-y-*`) komponentda: u `ROW_H` bilan bir vaqtda o'zgaradi.
+   */
+  tile:
+    "pointer-events-none absolute inset-x-0 overflow-hidden rounded-lg " +
+    "bg-white/75 ring-1 shadow-[0_1px_1.5px_rgba(15,23,42,0.04)]",
+
+  /** Vazifa plitkasi — neytral chegara (ohangi yo'q, ustuvorligi relsda). */
+  taskRing: "ring-slate-200/70",
+
+  /**
+   * Ustuvorlik relsi — plitkaning chap chekkasidagi 3px chiziq
+   * (rangi `MOTION.priorityRail` dan).
+   *
+   * ⚠️ Rels plitkaning ICHIGA qo'yiladi, yonига emas: plitkaning chap
+   * burchagi 8px radius bilan ichkariga egiladi va tashqaridagi to'g'ri
+   * burchakli rels o'sha egrilikdan CHIQIB turardi. Shu sababli
+   * `AI_ROW.tile` da `overflow-hidden` bor — rels plitkaning shakliga
+   * qarab kesiladi va uning yumaloq burchagini o'zi oladi.
+   */
+  rail: "pointer-events-none absolute inset-y-0 left-0 w-[3px]",
+
+  /**
+   * Xulosa ikonkasi: TO'LDIRILGAN doira, ichida oq belgi. Ilgari fon
+   * `-50`, belgi `-500` edi — och doira oq plitkada deyarli ko'rinmasdi
+   * va qatorning "boshi" qayerdaligi bilinmasdi.
+   */
+  icon: "flex shrink-0 items-center justify-center rounded-full text-white",
+};
+
+/**
+ * XULOSA OHANGI → plitka chegarasi + ikonka doirasi.
+ *
+ * Ohang IKKI belgi bilan beriladi: doiraning rangi (to'q, to'ldirilgan)
+ * va plitka chegarasining rangi (och). Faqat ikonka rangli bo'lsa,
+ * ohang 12px lik doirachaga qamalib qolardi; faqat chegara bo'lsa —
+ * juda nozik. Ikkalasi birga qatorni butunlay "ohangli" qiladi.
+ *
+ * ⚠️ Ikonka MOSLAMASI (lucide komponenti) bu yerda EMAS, `InsightsCard`
+ * da: tokenlar faylida React import qilinmaydi.
+ */
+export const AI_TONE = {
+  positive: { ring: "ring-emerald-200/70", icon: "bg-emerald-500" },
+  warning: { ring: "ring-amber-200/80", icon: "bg-amber-500" },
+  info: { ring: "ring-blue-200/70", icon: "bg-blue-500" },
+  tip: { ring: "ring-violet-200/70", icon: "bg-violet-500" },
+  /** Noma'lum ohang kelsa qator YO'QOLMAYDI — neytral ko'rinishda chiziladi. */
+  neutral: { ring: "ring-slate-200/70", icon: "bg-slate-400" },
+};
+
 /* ─────────────────────────── HARAKAT ─────────────────────────── */
 
 /**
@@ -249,11 +337,24 @@ export const MOTION = {
   breathe: "motion-safe:animate-breathe",
   /** Jonli indikator nuqtasi — sarlavha panelida. */
   liveDot: "size-1.5 rounded-full bg-emerald-500 motion-safe:animate-breathe",
-  /** Ustuvorlik nuqtasi (AI ro'yxati). */
-  priorityDot: {
-    high: "size-1.5 rounded-full bg-rose-500 motion-safe:animate-breathe",
-    medium: "size-1.5 rounded-full bg-amber-500",
-    low: "size-1.5 rounded-full bg-slate-400",
+  /**
+   * Ustuvorlik RELSI — vazifa plitkasining chap chekkasidagi 3px chiziq
+   * (`AI_ROW.rail` bilan birga ishlatiladi).
+   *
+   * ⚠️ Ilgari bu 6px NUQTA edi va u sarlavha satrining ichida turardi:
+   * matn bilan bir oqimda bo'lgani uchun "ro'yxat" emas, "abzas" bo'lib
+   * o'qilardi. Rels esa plitkaning butun balandligini egallaydi — qator
+   * qayerda boshlanib qayerda tugashini KO'RSATADI va shu bilan bir
+   * vaqtda ustuvorlikni ham aytadi.
+   *
+   * ⚠️ Rang YAGONA belgi emas: relsning yonida "kim · muddat" satri
+   * turadi, `high` esa NAFAS OLADI (opacity 0.45↔1). Hammasi harakat
+   * qilsa hech biri ajralib turmasdi — shuning uchun faqat `high`.
+   */
+  priorityRail: {
+    high: "bg-rose-500 motion-safe:animate-breathe",
+    medium: "bg-amber-500",
+    low: "bg-slate-300",
   },
 };
 

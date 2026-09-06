@@ -28,6 +28,7 @@ import { InsightsCard } from "../components/InsightsCard";
 import { TargetsModal } from "../components/TargetsModal";
 import { AchievementsModal } from "../components/AchievementsModal";
 import { ClubsModal } from "../components/ClubsModal";
+import { InsightsModal } from "../components/InsightsModal";
 
 // Hooks
 import useAuth from "@/shared/hooks/useAuth";
@@ -448,6 +449,7 @@ const AcademicDashboardPage = () => {
       <TargetsModal />
       <AchievementsModal />
       <ClubsModal />
+      <InsightsModal />
     </>
   );
 };

@@ -131,6 +131,7 @@ import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
 import FinanceIndex from "@/features/finance/layouts/FinanceIndex";
 import FinanceDashboardPage from "@/features/financeDashboard/pages/FinanceDashboardPage";
 import AcademicDashboardPage from "@/features/academicDashboard/pages/AcademicDashboardPage";
+import InventoryDashboardPage from "@/features/inventoryDashboard/pages/InventoryDashboardPage";
 import OverviewPage from "@/features/finance/pages/OverviewPage";
 import DebtorsPage from "@/features/finance/pages/DebtorsPage";
 import PaymentsPage from "@/features/finance/pages/PaymentsPage";
@@ -194,6 +195,10 @@ const Routes = () => {
             {/* Bosh sahifadagi "Ta'lim" tabi — o'quv bo'limining
                 dashboardi. Moliya tabi bilan bir xil shakl. */}
             <Route path="/education" element={<AcademicDashboardPage />} />
+            {/* "Inventar" tabi — moddiy-texnik baza. Inventar
+                bo'limidagi "Dashboard" tabi bilan AYNI sahifa: ikki
+                kirish nuqtasi, bitta ekran (moliya bilan bir xil naqsh). */}
+            <Route path="/assets" element={<InventoryDashboardPage />} />
           </Route>
 
           {/* Profile */}
@@ -414,6 +419,8 @@ const Routes = () => {
           <Route path="/inventory" element={<InventoryLayout />}>
             {/* Ruxsati bor birinchi tab — monitoring-only xodim ham kiradi */}
             <Route index element={<InventoryIndex />} />
+            {/* Rahbar dashboardi — bo'limning tahliliy ekrani */}
+            <Route path="dashboard" element={<InventoryDashboardPage />} />
             <Route path="overview" element={<InventoryOverviewPage />} />
             <Route path="checks" element={<InventoryChecksPage />} />
             {/* Varaq — tab ichida, chunki u ham monitoring oqimining qismi */}

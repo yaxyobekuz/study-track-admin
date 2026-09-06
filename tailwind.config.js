@@ -103,6 +103,78 @@ export default {
           "0%": { transform: "scaleX(0)" },
           "100%": { transform: "scaleX(1)" },
         },
+
+        /**
+         * ─── INVENTAR DASHBOARDI ("Atlas") ─────────────────────────
+         *
+         * Alohida to'plam va bu ATAYLAB: ta'lim/moliya dashboardlari
+         * `fade-up` bilan kiradi (14px + scale), inventar esa BOSHQA
+         * vizual tilda — chuqurroq siljish va blur bilan. Ikkalasi bitta
+         * keyframe'ni bo'lishsa, birини sozlash ikkinchisini jimgina
+         * o'zgartirardi.
+         *
+         * ⚠️ Faqat transform / opacity / filter / stroke-dashoffset —
+         * layout'ga tegmaydi, GPU'da arzon. Cheksiz takror faqat
+         * `sheen` (hero yaltirashi) va `orbit` (jonli nuqta halqasi).
+         */
+
+        /** Blok kirishi — pastdan, biroz blur bilan (Apple naqshi). */
+        rise: {
+          "0%": { opacity: "0", transform: "translateY(22px)", filter: "blur(6px)" },
+          "60%": { filter: "blur(0)" },
+          "100%": { opacity: "1", transform: "translateY(0)", filter: "blur(0)" },
+        },
+
+        /** Yon tomondan kirish — jadval qatorlari va reyting ustunlari. */
+        "rise-x": {
+          "0%": { opacity: "0", transform: "translateX(-10px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+
+        /**
+         * HALQA TO'LISHI — SVG `stroke-dashoffset` bo'ylab.
+         * Boshlang'ich va yakuniy qiymat CSS o'zgaruvchisidan keladi
+         * (`--ring-from` / `--ring-to`), chunki har halqaning radiusi va
+         * foizi boshqa: keyframe'ni qattiq raqam bilan yozib bo'lmaydi.
+         */
+        "ring-fill": {
+          "0%": { strokeDashoffset: "var(--ring-from)" },
+          "100%": { strokeDashoffset: "var(--ring-to)" },
+        },
+
+        /** Chiziqli diagramma chizilishi — bir marta, kirishda. */
+        "draw-path": {
+          "0%": { strokeDashoffset: "var(--draw-length)" },
+          "100%": { strokeDashoffset: "0" },
+        },
+
+        /** Segment/ustun ochilishi — pastdan yuqoriga. */
+        "grow-y": {
+          "0%": { transform: "scaleY(0)" },
+          "100%": { transform: "scaleY(1)" },
+        },
+
+        /** Plitka paydo bo'lishi — treemap va issiqlik xaritasi. */
+        "pop-in": {
+          "0%": { opacity: "0", transform: "scale(0.88)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+
+        /**
+         * HERO YALTIRASHI — to'q kartaning ustidan sekin o'tadigan
+         * yorug'lik. 9 soniyada bir marta: tez-tez bo'lsa "bezak"
+         * bo'lib qolardi, umuman bo'lmasa to'q blok o'lik ko'rinardi.
+         */
+        sheen: {
+          "0%": { transform: "translateX(-120%) skewX(-12deg)" },
+          "100%": { transform: "translateX(320%) skewX(-12deg)" },
+        },
+
+        /** Jonli nuqta atrofidagi halqa — nafas oladi, "ping" EMAS. */
+        orbit: {
+          "0%, 100%": { opacity: "0.15", transform: "scale(1)" },
+          "50%": { opacity: "0.5", transform: "scale(1.6)" },
+        },
       },
       animation: {
         "fade-up": "fade-up 640ms cubic-bezier(0.22, 1, 0.36, 1) both",
@@ -110,6 +182,16 @@ export default {
         "shimmer-x": "shimmer-x 7s linear infinite",
         "float-y": "float-y 4.5s cubic-bezier(0.37, 0, 0.63, 1) infinite",
         "grow-x": "grow-x 800ms cubic-bezier(0.22, 1, 0.36, 1) both",
+
+        /* ─── Inventar dashboardi ("Atlas") ─── */
+        rise: "rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "rise-x": "rise-x 520ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "ring-fill": "ring-fill 1400ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "draw-path": "draw-path 1600ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "grow-y": "grow-y 700ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "pop-in": "pop-in 460ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        sheen: "sheen 9s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+        orbit: "orbit 3.2s cubic-bezier(0.37, 0, 0.63, 1) infinite",
       },
       /**
        * BIR EKRANLI REJIM — ta'lim dashboardi shu ekranda viewport
