@@ -10,37 +10,16 @@
  */
 
 /**
- * Ma'no biriktirilgan ranglar. Bir ekranda yashil doim "yaxshi natija",
- * qizil doim "past natija" bo'lishi kerak — aks holda ko'z ularni
- * boshqa-boshqa joyda boshqacha o'qiydi.
- */
-export const COLORS = {
-  grade: "#3b82f6",
-  previous: "#cbd5e1",
-  attendance: "#22c55e",
-  quality: "#8b5cf6",
-  task: "#06b6d4",
-  plan: "#94a3b8",
-};
-
-/** Ulush diagrammalari uchun (fan, sinf, daraja). */
-export const PALETTE = [
-  "#3b82f6",
-  "#22c55e",
-  "#f59e0b",
-  "#8b5cf6",
-  "#ef4444",
-  "#06b6d4",
-  "#ec4899",
-  "#f97316",
-  "#14b8a6",
-  "#6366f1",
-  "#a3a3a3",
-];
-
-/**
  * Baholar taqsimoti rangi — 5 dan 1 gacha.
+ *
  * ⚠️ Kalitlar server qaytaradigan `grade` raqami bilan bir xil.
+ *
+ * ⚠️ Ma'no biriktirilgan shkala: yashil doim "yaxshi natija", qizil doim
+ * "past natija". Halqa diagramma AYNAN SHU xaritani o'qiydi — bir vaqtlar
+ * `ChartCards.jsx` da o'z nusxasi turardi va u yerda "5" sariq, "1" esa
+ * binafsha edi: bitta ekranda ikkita bir-biriga zid shkala paydo bo'lib,
+ * bu yerdagi rangni to'g'rilagan odam diagrammada hech narsa
+ * o'zgarmaganini ko'rardi.
  */
 export const GRADE_COLORS = {
   5: "#22c55e",
@@ -82,6 +61,11 @@ export const formatByUnit = (value, unit, { fallback = "—" } = {}) => {
 
   if (unit === "percent") return `${number}%`;
   if (unit === "grade") return number.toFixed(2);
+  // ⚠️ BALL — FOIZ EMAS. O'qituvchilar KPI ustuni 0-100 oralig'idagi
+  // vaznlangan ball: uni "%" bilan yozsak, yonidagi "davomat 92%" bilan
+  // bir xil ma'noda o'qilib, "rejaning 87.3% i bajarilgan" degan yo'q
+  // faktga aylanardi.
+  if (unit === "score") return number.toFixed(1);
 
   // Sanoq — mingliklar ajratilgan holda ("1 255"). ⚠️ `toLocaleString`
   // ISHLATILMAYDI: natija muhit locale'iga bog'liq bo'lib qolardi
@@ -106,7 +90,7 @@ export const trendTone = (change, { inverse = false } = {}) => {
   const good = inverse ? value < 0 : value > 0;
   return {
     direction: value > 0 ? "up" : "down",
-    className: good ? "text-green-600" : "text-red-600",
+    className: good ? "text-green-700" : "text-red-600",
   };
 };
 
@@ -126,6 +110,13 @@ export const formatChange = (change, changeUnit = "percent") => {
 };
 
 /**
+ * ⚠️ Ton ranglari 700 pog'onada (600 emas): oq fonda 10-12.5px semibold
+ * matn uchun WCAG AA (≥4.5:1) — green-600 3.3:1, amber-600 3.2:1
+ * o'qilmasdi; green-700 5.0:1, amber-700 5.0:1, red-600 4.8:1.
+ * `dashboard.tokens.js` dagi `TONE.*.text` bilan bir pog'onada.
+ */
+
+/**
  * Reja bajarilishining "sog'lomligi".
  * Chegara moliya dashboardidagi bilan bir xil: 95% dan yuqorisi yaxshi,
  * 80% dan pasti xavotirli. Ikki ekranda ikki xil chegara bo'lsa, bir xil
@@ -135,24 +126,9 @@ export const planTone = (planRate) => {
   if (planRate == null) return "text-gray-400";
 
   const value = Number(planRate);
-  if (value >= 95) return "text-green-600";
-  if (value >= 80) return "text-amber-600";
+  if (value >= 95) return "text-green-700";
+  if (value >= 80) return "text-amber-700";
   return "text-red-600";
-};
-
-/**
- * Bajarilish chizig'ining rangi.
- *
- * ⚠️ Sinf nomlari TO'LIQ yoziladi (`planTone` natijasini `replace()` bilan
- * o'zgartirib emas): Tailwind sinflarni manba matnidan skanerlaydi va
- * yig'ilgan nom bilan hosil qilingan sinf CSS'ga umuman tushmaydi.
- */
-export const planBarTone = (planRate) => {
-  const tone = planTone(planRate);
-  if (tone === "text-green-600") return "bg-green-600";
-  if (tone === "text-amber-600") return "bg-amber-600";
-  if (tone === "text-red-600") return "bg-red-600";
-  return "bg-gray-300";
 };
 
 /**
@@ -163,9 +139,9 @@ export const gradeTone = (value) => {
   if (value == null) return "text-gray-400";
 
   const number = Number(value);
-  if (number >= 4.5) return "text-green-600";
+  if (number >= 4.5) return "text-green-700";
   if (number >= 4) return "text-blue-600";
-  if (number >= 3.5) return "text-amber-600";
+  if (number >= 3.5) return "text-amber-700";
   return "text-red-600";
 };
 
@@ -174,13 +150,23 @@ export const percentTone = (value) => {
   if (value == null) return "text-gray-400";
 
   const number = Number(value);
-  if (number >= 90) return "text-green-600";
-  if (number >= 75) return "text-amber-600";
+  if (number >= 90) return "text-green-700";
+  if (number >= 75) return "text-amber-700";
   return "text-red-600";
 };
 
 /**
- * KPI kartalarining tartibi va rangli fon urg'usi.
+ * KPI kartalarining tartibi, rangli fon urg'usi va qiymat rangi.
+ *
+ * ⚠️ BU YAGONA MANBA. `KpiCards.jsx` da bir vaqtlar o'z `ACCENTS` xaritasi
+ * turardi va ikkalasi allaqachon ajralib ketgan edi (olimpiada: bu yerda
+ * pushti, u yerda sariq) — rangni bu fayldan to'g'rilagan odam ekranda
+ * hech qanday o'zgarish ko'rmasdi. `accent` — kvadrat ikonkaning foni,
+ * `tone` — katta qiymatning rangi.
+ *
+ * ⚠️ Sinf nomlari TO'LIQ yoziladi: Tailwind sinflarni manba matnidan
+ * skanerlaydi va `bg-${x}-500` kabi yig'ilgan nom CSS'ga tushmaydi.
+ *
  * ⚠️ Kalitlar server `kpi` obyektidagi kalitlar bilan bir xil.
  */
 export const KPI_CARDS = [
@@ -188,8 +174,18 @@ export const KPI_CARDS = [
   { key: "averageGrade", label: "O'rtacha baho", accent: "bg-emerald-500", tone: "text-gray-900" },
   { key: "qualityRate", label: "A'lo va yaxshi", accent: "bg-violet-500", tone: "text-violet-700" },
   { key: "attendanceRate", label: "Davomat", accent: "bg-amber-500", tone: "text-gray-900" },
-  { key: "taskCompletion", label: "Topshiriq bajarish", accent: "bg-cyan-500", tone: "text-gray-900" },
-  { key: "achievements", label: "Olimpiada / musobaqa", accent: "bg-rose-500", tone: "text-gray-900" },
+  {
+    key: "taskCompletion",
+    label: "Topshiriq bajarish",
+    accent: "bg-cyan-500",
+    tone: "text-gray-900",
+  },
+  {
+    key: "achievements",
+    label: "Olimpiada / musobaqa",
+    accent: "bg-rose-500",
+    tone: "text-gray-900",
+  },
 ];
 
 /** Reja oynasidagi o'lchov birligi qo'shimchasi. */
@@ -198,3 +194,25 @@ export const UNIT_SUFFIX = {
   count: "ta",
   grade: "ball",
 };
+
+/**
+ * KESILGAN RO'YXAT SONINING YAGONA YOZILISHI (`CardLink` matni uchun).
+ *
+ * ⚠️ Son har doim YASHIRILGANLAR soni ("yana 4 ta"), JAMI emas. Ilgari
+ * jadval kartalari "yana N ta", yutuq va AI kartalari esa "(N ta)" deb
+ * yozardi: bir qatorda turgan ikki havolaning qavsi bir xil ko'rinib,
+ * maxraji boshqa bo'lardi — foydalanuvchi ikkalasini ham "yana shuncha
+ * bor" deb o'qirdi.
+ *
+ * Kesilmagan holatda son YOZILMAYDI: "(0 ta)" hech qanday yangi ma'lumot
+ * bermay, havolani shovqinga aylantirardi.
+ *
+ * ⚠️ Bu yerda (komponent faylida emas) — `CardLink.jsx` dan funksiya
+ * eksport qilinsa, Fast Refresh o'sha faylni qayta yuklay olmay qoladi.
+ *
+ * @param {string} label - havola matni
+ * @param {number} hidden - kartada KO'RINMAYOTGAN yozuvlar soni
+ * @returns {string}
+ */
+export const linkLabel = (label, hidden) =>
+  hidden > 0 ? `${label} (yana ${hidden} ta)` : label;

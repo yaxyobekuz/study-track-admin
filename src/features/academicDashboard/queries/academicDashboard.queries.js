@@ -24,6 +24,20 @@ export const academicQueries = {
       staleTime: STALE,
     }),
 
+  /**
+   * HAFTALIK TAHLIL — o'z so'rovi (dashboard `overview` idan CHIQMAYDI).
+   *
+   * ⚠️ PARAMETRSIZ va sarlavhadagi oy tanlagichiga BOG'LANMAGAN: tahlil
+   * HAFTALIK va uning oyi serverda hal qilinadi. Kalitga `month` qo'shilsa,
+   * oy almashtirilgan zahoti bir xil javob uchun yangi so'rov ketardi.
+   */
+  insights: () =>
+    queryOptions({
+      queryKey: [...academicKeys.all, "insights"],
+      queryFn: () => academicDashboardAPI.getInsights().then((r) => r.data.data),
+      staleTime: STALE,
+    }),
+
   targets: (params) =>
     queryOptions({
       queryKey: [...academicKeys.all, "targets", params],
@@ -119,3 +133,28 @@ export const useRemoveClubMember = () =>
   useAcademicMutation((data) =>
     academicDashboardAPI.removeClubMember(data).then((r) => r.data.data),
   );
+
+/**
+ * TAHLILNI QO'LDA YANGILASH.
+ *
+ * ⚠️ `useAcademicMutation` ISHLATILMAYDI — u butun feature'ni
+ * invalidatsiya qiladi, bu yerda esa faqat tahlil o'zgaradi: dashboardning
+ * og'ir `overview` so'rovini tugma bosilgani uchun qayta yubormaymiz.
+ *
+ * Javob — `getInsights` bilan bir xil shakl, shuning uchun u darhol keshga
+ * qo'yiladi (ekran tugma bosilishi bilan yangilanadi), so'ng kalit
+ * invalidatsiya qilinadi — server yozgan qator yagona haqiqat bo'lib qoladi.
+ */
+export const useRefreshInsights = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => academicDashboardAPI.refreshInsights().then((r) => r.data.data),
+    onSuccess: (data) => {
+      const { queryKey } = academicQueries.insights();
+
+      qc.setQueryData(queryKey, data);
+      qc.invalidateQueries({ queryKey });
+    },
+  });
+};

@@ -13,6 +13,23 @@ export const academicDashboardAPI = {
   /** Butun akademik manzara. Params: { month, compareMonth, trendMonths } */
   getOverview: (params) => http.get("/education/overview", { params }),
 
+  /**
+   * HAFTALIK TAHLIL — o'qish. Parametrsiz: hafta serverda hisoblanadi
+   * (Toshkent dushanbasi), oy ham serverda tanlanadi. Sarlavhadagi oy
+   * tanlagichiga BOG'LIQ EMAS — tahlil haftalik, ekrandagi oy emas.
+   *
+   * ⚠️ Bu so'rov bazaga HECH NARSA YOZMAYDI: snapshot bo'lmasa server
+   * jonli qoidalar natijasini qaytaradi (`source: "rules"`).
+   */
+  getInsights: () => http.get("/education/insights"),
+
+  /**
+   * Tahlilni QO'LDA qayta shakllantirish (ruxsat: `education.plan`).
+   * Javob — `getInsights` bilan AYNAN bir xil shakl.
+   * 10 daqiqa ichida ikkinchi marta chaqirilsa server 429 qaytaradi.
+   */
+  refreshInsights: () => http.post("/education/insights/refresh"),
+
   /** Oylik akademik reja. Params: { month } */
   getTargets: (params) => http.get("/education/targets", { params }),
 
