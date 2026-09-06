@@ -48,4 +48,38 @@ export const HOME_TABS = [
     can: "inventory.dashboard",
     exact: false,
   },
+  // "Faollik" — to'rtinchi savol: "tizimni KIM ishlatyapti".
+  //
+  // Moliya pulni, ta'lim o'qishni, inventar moddiy bazani ko'rsatadi —
+  // uchalasi ham NATIJA haqida. Bu esa JALB QILINGANLIK haqida:
+  // "4-A sinfning 25 ta ota-onasidan nechtasi botni ochdi", "qaysi
+  // o'qituvchi bir oydan beri tizimga kirmagan". Rahbar uchun bu ham
+  // bosh sahifadan ochiladigan savol, chunki qolgan uchtasining
+  // ishonchliligi aynan shunga bog'liq: ma'lumotni kim kiritadi.
+  //
+  // ⚠️ `/pulse` va `/activity` — AYNI sahifa. Tab HomeLayout ichida
+  // bo'lishi kerak (aks holda tab paneli yo'qoladi), sidebar havolasi
+  // esa undan tashqarida — shuning uchun ikki yo'l.
+  {
+    to: "/pulse",
+    label: "Faollik",
+    can: "activity.view",
+    exact: false,
+  },
+  // "Xavfsizlik" — beshinchi va oxirgi savol: "tizim ishonchlimi".
+  //
+  // Faollik "kim ishlatyapti" ni ko'rsatadi, bu esa "kim kirdi" ni.
+  // Ikkalasi qo'shni, lekin bir xil emas: birinchisi kadrlar qarori,
+  // ikkinchisi ishonch qarori — va rahbar uchun ikkinchisi ba'zan
+  // birinchisidan muhimroq ("kimningdir paroli tarqalganmi?").
+  //
+  // ⚠️ `/watch` va `/security` — AYNI sahifa. Tab HomeLayout ichida
+  // bo'lishi kerak, sidebar havolasi esa undan tashqarida (Faollik
+  // bilan bir xil naqsh).
+  {
+    to: "/watch",
+    label: "Xavfsizlik",
+    can: "security.view",
+    exact: false,
+  },
 ];

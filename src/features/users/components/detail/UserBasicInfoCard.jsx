@@ -7,6 +7,12 @@ import InfoCard, { InfoRows } from "./InfoCard";
 // Hooks
 import useCanManageUser from "../../hooks/useCanManageUser";
 
+// Queries
+import { useRoles } from "@/features/roles/queries/roles.queries";
+
+// Helpers
+import { getRoleLabel } from "@/shared/helpers/role.helpers";
+
 // Data
 import { getInitials, getRoleBadgeClass } from "../../data/users.data";
 
@@ -26,6 +32,13 @@ const UserBasicInfoCard = ({ user, roleLabel, rows }) => {
   // Egalik darvozasi — o'qituvchi faqat o'zi qo'shgan o'quvchini tahrirlaydi
   const canManage = useCanManageUser(user);
   const { openModal } = useModal();
+
+  // ⚠️ Asosiy rol yorlig'i `roleLabel` propи orqali TAYYOR keladi
+  // (chaqiruvchi uni o'zi hisoblaydi), qo'shimcha rollar esa bu yerda
+  // hal qilinadi: ular yangi maydon va barcha chaqiruvchilarga
+  // qo'shimcha prop tarqatish o'rniga karta o'zi katalogni o'qiydi.
+  const { data: roles = [] } = useRoles();
+  const roleLabelOf = (value) => getRoleLabel(value, roles);
 
   return (
     <InfoCard
@@ -51,6 +64,20 @@ const UserBasicInfoCard = ({ user, roleLabel, rows }) => {
               >
                 {roleLabel}
               </span>
+
+              {/* ⚠️ QO'SHIMCHA ROLLAR — asosiy rol yorlig'idan KEYIN va
+                  BOSHQA rangda (indigo). Bir xil rangda bo'lsa, "bu
+                  odamning roli qaysi biri" degan savol paydo bo'lardi:
+                  asosiy rol hisobotlarga ta'sir qiladi, qo'shimchasi
+                  esa faqat kirish huquqiga. */}
+              {(user.extraRoles ?? []).map((value) => (
+                <span
+                  key={value}
+                  className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700"
+                >
+                  {roleLabelOf(value)}
+                </span>
+              ))}
 
               {user.isArchived && (
                 <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">

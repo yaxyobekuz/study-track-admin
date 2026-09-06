@@ -17,6 +17,7 @@ import {
   Crown,
   Wallet,
   Boxes,
+  Radar,
 } from "lucide-react";
 
 // Router
@@ -311,6 +312,31 @@ const navItems = [
       {
         title: "O'zgarishlar tarixi",
         url: "/changelog",
+      },
+    ],
+  },
+  {
+    // NAZORAT — "Boshqaruv" dan ALOHIDA guruh va bu ataylab.
+    //
+    // "Boshqaruv" tizimni SOZLAYDI (rollar, ruxsatlar, dam olish
+    // kunlari, monitorlar). Bu ikkisi esa tizimni KUZATADI: kim
+    // foydalanyapti va kim kirdi. Ular sozlama emas, HISOBOT — va
+    // ikkalasi ham shaxsiy ma'lumot bilan ishlaydi (kimning qachon
+    // kirgani, qaysi IP dan). Bitta guruhga qo'shilsa, "sozlamalarga
+    // kira olsin" degan qaror jimgina "hammaning kirish tarixini
+    // ko'rsin" degan qarorga aylanardi.
+    title: "Nazorat",
+    url: "/activity",
+    icon: Radar,
+    isActive: false,
+    items: [
+      {
+        title: "Faollik",
+        url: "/activity",
+      },
+      {
+        title: "Xavfsizlik",
+        url: "/security",
       },
     ],
   },

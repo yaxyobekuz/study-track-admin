@@ -44,6 +44,8 @@ export const SECTIONS = {
   MESSAGES: "messages",
   SOCIAL: "social",
   LEADS: "leads",
+  ACTIVITY: "activity",
+  SECURITY: "security",
 };
 
 // Tez-tez takrorlanadigan amal nomlari
@@ -564,6 +566,47 @@ export const PERMISSION_SECTIONS = [
       { key: "taxonomy", label: "Manba / yo'nalish / kategoriya" },
     ],
   },
+  {
+    // FAOLLIK — "tizimdan KIM foydalanyapti?".
+    //
+    // ⚠️ `statistics.view` DAN ALOHIDA: statistika NATIJANI o'lchaydi
+    // (baho, davomat, tushum), faollik esa JALB QILINGANLIKNI — ota-ona
+    // botni ochdimi, o'qituvchi panelga kirdimi. Ikkinchisi kadrlar
+    // qarori.
+    //
+    // ⚠️ `roster` ALOHIDA AMAL. Umumiy foizni ko'rish huquqi
+    // FOYDALANMAYOTGANLARNING ISM-RO'YXATINI ochmasligi kerak:
+    // birinchisi hisobot, ikkinchisi aniq odamlar haqidagi ma'lumot va
+    // u bilan ota-onaga qo'ng'iroq qilinadi.
+    key: SECTIONS.ACTIVITY,
+    label: "Faollik",
+    group: "Nazorat",
+    actions: [
+      A.view,
+      { key: "roster", label: "Foydalanmayotganlar ro'yxati" },
+      { key: "sessions", label: "Foydalanuvchi tafsiloti" },
+      A.export,
+    ],
+  },
+  {
+    // XAVFSIZLIK — "hisobga KIM kirdi?".
+    //
+    // ⚠️ AMALLAR ATAYLAB MAYDA (moliyadagi bilan bir xil mantiq):
+    // `sessions` — IP va qurilma bilan ro'yxat (shaxsiy ma'lumot),
+    // `revoke` — birovni tizimdan CHIQARIB YUBORISH, `alerts` —
+    // ogohlantirishlarni yopish. `revoke` alohida turadi, chunki u
+    // boshqa odamning ochiq ishini uzadi.
+    key: SECTIONS.SECURITY,
+    label: "Xavfsizlik",
+    group: "Nazorat",
+    actions: [
+      A.view,
+      { key: "sessions", label: "Seanslar ro'yxati" },
+      { key: "revoke", label: "Seansni tugatish" },
+      { key: "alerts", label: "Ogohlantirishlarni boshqarish" },
+      A.export,
+    ],
+  },
 ];
 
 /** Barcha ruxsat kalitlari: ["users.view", "users.create", ...] */
@@ -715,6 +758,14 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/messages", key: "messages.view" },
   { prefix: "/social-networks", key: "social.view" },
   { prefix: "/leads", key: "leads.view" },
+  // Faollik va xavfsizlik — "Boshqaruv" guruhida, ikkalasi ham o'z
+  // bo'limi. Faollik bosh sahifaning tabida ham ochiladi (`/pulse`),
+  // moliya `/reports` da turgani bilan bir xil naqsh.
+  { prefix: "/pulse", key: "activity.view" },
+  { prefix: "/activity", key: "activity.view" },
+  { prefix: "/security", key: "security.view" },
+  // Bosh sahifadagi "Xavfsizlik" tabi — `/security` bilan ayni sahifa
+  { prefix: "/watch", key: "security.view" },
   { prefix: "/roles", key: "roles" },
   { prefix: "/permissions", key: "permissions" },
 ];

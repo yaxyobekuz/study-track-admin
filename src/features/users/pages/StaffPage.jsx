@@ -84,11 +84,30 @@ const StaffPage = () => {
           </td>
 
           <td className="px-4 py-3 whitespace-nowrap">
-            <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${getRoleBadgeClass(user.role)}`}
-            >
-              {getRoleLabel(user.role, roles)}
-            </span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${getRoleBadgeClass(user.role)}`}
+              >
+                {getRoleLabel(user.role, roles)}
+              </span>
+
+              {/* ⚠️ QO'SHIMCHA ROLLAR — "+2" chipi, ular ro'yxatda
+                  YOZILMAYDI. Ustun kengligi cheklangan va uchta yorliq
+                  qatorni sindirib yuborardi; aniq ro'yxat xodim
+                  kartasida turadi. Chip esa "bu odamda yana rol bor"
+                  degan signalni beradi — usiz ko'p rollilik
+                  ro'yxatda umuman ko'rinmasdi. */}
+              {(user.extraRoles?.length ?? 0) > 0 && (
+                <span
+                  title={user.extraRoles
+                    .map((value) => getRoleLabel(value, roles))
+                    .join(", ")}
+                  className="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-xs font-medium text-indigo-700"
+                >
+                  +{user.extraRoles.length}
+                </span>
+              )}
+            </div>
           </td>
 
           <td className="px-4 py-3 whitespace-nowrap text-gray-500">

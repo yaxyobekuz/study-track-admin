@@ -16,6 +16,12 @@ export const usersAPI = {
   exportUsers: (role) =>
     http.get("/users/export", { params: { role }, responseType: "blob" }),
 
+  // KO'P ROLLILIK — faqat OWNER (server `authorize(ROLES.OWNER)` bilan
+  // yopgan). To'liq ro'yxat yuboriladi, "qo'sh"/"olib tashla" emas:
+  // qisman amallarda ikkita parallel so'rov bir-birining natijasini
+  // yo'q qilardi.
+  setRoles: (id, extraRoles) => http.put(`/users/${id}/roles`, { extraRoles }),
+
   // Xodim qaysi filiallarda ishlaydi — har birida o'z roli va ruxsatlari bilan
   getBranches: (id) => http.get(`/users/${id}/branches`),
   attachBranch: (id, data) => http.post(`/users/${id}/branches`, data),

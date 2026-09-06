@@ -3,9 +3,11 @@ import InfoCard, { InfoRows } from "./InfoCard";
 import UserAccountCard from "./UserAccountCard";
 import UserBasicInfoCard from "./UserBasicInfoCard";
 import UserBranchesCard from "./UserBranchesCard";
+import UserRolesCard from "./UserRolesCard";
 import EditUserBasicModal from "../EditUserBasicModal";
 import EditWorkScheduleModal from "../EditWorkScheduleModal";
 import EditStaffSubjectsModal from "../EditStaffSubjectsModal";
+import EditUserRolesModal from "../EditUserRolesModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -170,6 +172,13 @@ const StaffMainTab = ({ user }) => {
         </InfoCard>
       </div>
 
+      {/* KO'P ROLLILIK — "Ruxsatlar" tabidan ALOHIDA va bu ataylab:
+          ruxsat "shu bo'limga kira olasanmi" degan mayda qaror, rol esa
+          "bu odam yana kim" degan katta qaror va uni faqat owner
+          qabul qiladi. Ikkalasi bitta ekranda tursa, ular bir xil
+          og'irlikda ko'rinardi. */}
+      <UserRolesCard user={user} />
+
       {/* Xodim qayerda ishlashi — faqat O'QISH uchun qisqa ro'yxat.
           Biriktirish va ruxsatlar "Ruxsatlar" tabida: ular bir-biridan
           ajralmaydi va ikki joyda takrorlanmasligi kerak. */}
@@ -179,6 +188,7 @@ const StaffMainTab = ({ user }) => {
       <EditUserBasicModal />
       <EditWorkScheduleModal />
       <EditStaffSubjectsModal />
+      <EditUserRolesModal />
     </div>
   );
 };

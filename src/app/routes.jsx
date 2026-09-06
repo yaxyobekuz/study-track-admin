@@ -132,6 +132,10 @@ import FinanceIndex from "@/features/finance/layouts/FinanceIndex";
 import FinanceDashboardPage from "@/features/financeDashboard/pages/FinanceDashboardPage";
 import AcademicDashboardPage from "@/features/academicDashboard/pages/AcademicDashboardPage";
 import InventoryDashboardPage from "@/features/inventoryDashboard/pages/InventoryDashboardPage";
+
+// Pages - Faollik va Xavfsizlik
+import ActivityDashboardPage from "@/features/activityDashboard/pages/ActivityDashboardPage";
+import SecurityPage from "@/features/security/pages/SecurityPage";
 import OverviewPage from "@/features/finance/pages/OverviewPage";
 import DebtorsPage from "@/features/finance/pages/DebtorsPage";
 import PaymentsPage from "@/features/finance/pages/PaymentsPage";
@@ -199,6 +203,21 @@ const Routes = () => {
                 bo'limidagi "Dashboard" tabi bilan AYNI sahifa: ikki
                 kirish nuqtasi, bitta ekran (moliya bilan bir xil naqsh). */}
             <Route path="/assets" element={<InventoryDashboardPage />} />
+            {/* "Faollik" tabi — tizimdan kim foydalanyapti. Moliya,
+                ta'lim va inventar "nima bo'lyapti" ni ko'rsatadi, bu esa
+                "kim ishlatyapti" ni: rahbar uchun bu to'rtinchi savol.
+
+                ⚠️ AYNI SAHIFA `/activity` da ham ochiladi (sidebar).
+                Ikki kirish nuqtasi, bitta ekran — moliya
+                (`/reports` + `/finance/main/dashboard`) va inventar
+                (`/assets` + `/inventory/dashboard`) bilan bir xil
+                naqsh. Yo'l ikkita, chunki tab HomeLayout ICHIDA
+                bo'lishi kerak, sidebar havolasi esa undan tashqarida. */}
+            <Route path="/pulse" element={<ActivityDashboardPage />} />
+            {/* "Xavfsizlik" tabi — sidebardagi `/security` bilan AYNI
+                sahifa. Ikki yo'l, bitta ekran (Faollik bilan bir xil
+                sabab: tab HomeLayout ichida bo'lishi shart). */}
+            <Route path="/watch" element={<SecurityPage />} />
           </Route>
 
           {/* Profile */}
@@ -224,6 +243,16 @@ const Routes = () => {
 
           {/* Filiallar */}
           <Route path="/branches" element={<BranchesPage />} />
+
+          {/* FAOLLIK — sidebar kirish nuqtasi (bosh sahifadagi
+              "Faollik" tabi bilan AYNI sahifa). */}
+          <Route path="/activity" element={<ActivityDashboardPage />} />
+
+          {/* XAVFSIZLIK — seanslar, kirish urinishlari, ogohlantirishlar.
+              Faollikdan ALOHIDA bo'lim: u "kim foydalanyapti" ni,
+              bu "hisobga kim kirdi" ni ko'rsatadi va shaxsiy ma'lumot
+              (IP, qurilma) bilan ishlaydi. */}
+          <Route path="/security" element={<SecurityPage />} />
 
           {/* Roles */}
           <Route path="/roles" element={<RolesPage />} />

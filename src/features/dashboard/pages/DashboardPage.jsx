@@ -12,6 +12,7 @@ import useModal from "@/shared/hooks/useModal";
 import Card from "@/shared/components/ui/Card";
 import CoinStats from "../components/CoinStats";
 import UsersStats from "../components/UsersStats";
+import BotActivityStats from "../components/BotActivityStats";
 import HolidayInfo from "../components/HolidayInfo";
 import PenaltyStats from "../components/PenaltyStats";
 import RecentExcuses from "../components/RecentExcuses";
@@ -60,6 +61,11 @@ const Dashboard = () => {
 
       {/* User Statistics */}
       <UsersStats />
+
+      {/* Bot faolligi — `UsersStats` dagi "Bot foydalanuvchilar" BOG'LANGAN
+          hisoblar sonini beradi, bu blok esa ularning qanchasi haqiqatan
+          FOYDALANAYOTGANINI. Ruxsati bo'lmaganda umuman chizilmaydi. */}
+      <BotActivityStats />
 
       {/* Coin Statistics */}
       <CoinStats />

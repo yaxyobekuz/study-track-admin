@@ -81,3 +81,21 @@ export const useDetachUserBranch = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
   });
 };
+
+/**
+ * QO'SHIMCHA ROLLARNI ALMASHTIRISH — faqat owner.
+ *
+ * ⚠️ `usersKeys.all` yangilanadi: rol o'zgarishi ro'yxatdagi yorliqni
+ * ham, detal sahifadagi kartani ham, ruxsatlar tabini ham
+ * o'zgartiradi (yangi rolning boshlang'ich ruxsatlari QO'SHILADI).
+ * Nozik invalidatsiya bu yerda ikkita ekranda ikki xil holat
+ * ko'rsatardi.
+ */
+export const useSetUserRoles = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, extraRoles }) =>
+      usersAPI.setRoles(id, extraRoles).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
+  });
+};

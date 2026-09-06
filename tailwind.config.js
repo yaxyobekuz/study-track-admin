@@ -175,6 +175,112 @@ export default {
           "0%, 100%": { opacity: "0.15", transform: "scale(1)" },
           "50%": { opacity: "0.5", transform: "scale(1.6)" },
         },
+
+        /**
+         * ─── FAOLLIK DASHBOARDI ("Puls") ───────────────────────────
+         *
+         * UCHINCHI to'plam va bu ham ATAYLAB. Ta'lim/moliya — oylik
+         * HISOBOT (`fade-up`), inventar — bazaning HOLATI (`rise`,
+         * blur bilan). Faollik esa JONLI SIGNAL: u "hozir" ni
+         * ko'rsatadi va harakat ham shu ma'noni tashishi kerak —
+         * pastdan emas, MARKAZDAN ochiladi.
+         *
+         * ⚠️ Cheksiz takror faqat ikkitasi: `pulse-ring` (jonli
+         * ko'rsatkich) va `drift` (hero fonidagi sekin nur). Uchinchisi
+         * qo'shilmaydi — ekranda uchta mustaqil takror harakat
+         * "reklama bannerи" ta'sirini beradi.
+         */
+
+        /** Blok kirishi — markazdan ochiladi, siljishsiz. */
+        wake: {
+          "0%": { opacity: "0", transform: "scale(0.97)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+
+        /** Qator kirishi — pastdan, qisqa masofa (ro'yxatlar uchun). */
+        "wake-up": {
+          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+
+        /**
+         * JONLI HALQA — "hozir" belgisining atrofida. `ping` EMAS:
+         * ping keskin va diqqatni tortib oladi, bu esa fon signali.
+         */
+        "pulse-ring": {
+          "0%": { opacity: "0.45", transform: "scale(1)" },
+          "70%, 100%": { opacity: "0", transform: "scale(2.4)" },
+        },
+
+        /** Hero fonidagi nur — juda sekin siljiydi (12s). */
+        drift: {
+          "0%, 100%": { transform: "translate3d(0, 0, 0)" },
+          "50%": { transform: "translate3d(6%, -4%, 0)" },
+        },
+
+        /** Ustun/segment to'lishi — chapdan o'ngga. */
+        sweep: {
+          "0%": { transform: "scaleX(0)" },
+          "100%": { transform: "scaleX(1)" },
+        },
+
+        /** Issiqlik xaritasi katakchasi — joyida paydo bo'ladi. */
+        "tick-in": {
+          "0%": { opacity: "0", transform: "scale(0.6)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+
+        /**
+         * ─── XAVFSIZLIK DASHBOARDI ("Sentinel") ────────────────────
+         *
+         * TO'RTINCHI to'plam. Bu yerdagi ma'no — KUZATUV: ekran
+         * "hammasi joyidami?" degan savolga javob beradi va harakat
+         * ham shuni aytishi kerak. Shu sababli yagona takrorlanuvchi
+         * harakat — `scan` (hero ustidan o'tadigan yorug'lik chizig'i).
+         *
+         * ⚠️ Ogohlantirish qatorlari CHAQNAMAYDI va TEBRANMAYDI:
+         * jiddiylik RANG va VAZN bilan beriladi. Chaqnayotgan qator
+         * "yong'in signali" bo'lib, ro'yxatni o'qib bo'lmas holga
+         * keltirardi.
+         */
+
+        /** Kuzatuv chizig'i — hero ustidan sekin o'tadi. */
+        scan: {
+          "0%": { transform: "translateY(-100%)", opacity: "0" },
+          "12%, 88%": { opacity: "1" },
+          "100%": { transform: "translateY(1200%)", opacity: "0" },
+        },
+
+        /** Ogohlantirish qatori — chapdan, jiddiylik chizig'i bilan. */
+        "alert-in": {
+          "0%": { opacity: "0", transform: "translateX(-6px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+
+        /**
+         * ─── JONLI KO'RSATKICHLAR (Puls + Sentinel) ────────────────
+         *
+         * ⚠️ UCHINCHI VA OXIRGI doimiy harakat. Fayl boshidagi qoida
+         * ("cheksiz takror faqat ikkitasi") shu ikki bo'lim uchun
+         * bittaga kengaytirildi va sabab aniq: ular JONLI SIGNAL
+         * ko'rsatadi — ekran "hozir" ni aytadi va butunlay qimirlamas
+         * bo'lsa, u qotib qolgan hisobotdan farq qilmasdi.
+         *
+         * Boshqa hech qayerda qo'llanmaydi va to'rtinchisi
+         * qo'shilmaydi: uchta mustaqil takror harakat bir-biri bilan
+         * raqobatlashib, ro'yxatdagi jiddiy qatorni ko'rishga xalaqit
+         * berardi.
+         */
+
+        /**
+         * TO'LGAN USTUN USTIDAN O'TADIGAN YORUG'LIK.
+         * Faqat ASOSIY ko'rsatkich ustunlarida (qamrov, jiddiylik) —
+         * har ustunda bo'lsa, ekran chaqnab turgan bo'lardi.
+         */
+        flow: {
+          "0%": { transform: "translateX(-130%)" },
+          "100%": { transform: "translateX(430%)" },
+        },
       },
       animation: {
         "fade-up": "fade-up 640ms cubic-bezier(0.22, 1, 0.36, 1) both",
@@ -192,6 +298,21 @@ export default {
         "pop-in": "pop-in 460ms cubic-bezier(0.22, 1, 0.36, 1) both",
         sheen: "sheen 9s cubic-bezier(0.4, 0, 0.2, 1) infinite",
         orbit: "orbit 3.2s cubic-bezier(0.37, 0, 0.63, 1) infinite",
+
+        /* ─── Faollik dashboardi ("Puls") ─── */
+        wake: "wake 560ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "wake-up": "wake-up 480ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "pulse-ring": "pulse-ring 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+        drift: "drift 12s cubic-bezier(0.37, 0, 0.63, 1) infinite",
+        sweep: "sweep 900ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "tick-in": "tick-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both",
+
+        /* ─── Xavfsizlik dashboardi ("Sentinel") ─── */
+        scan: "scan 7s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+        "alert-in": "alert-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both",
+
+        /* ─── Jonli ko'rsatkichlar ─── */
+        flow: "flow 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite",
       },
       /**
        * BIR EKRANLI REJIM — ta'lim dashboardi shu ekranda viewport
