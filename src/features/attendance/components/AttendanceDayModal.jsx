@@ -11,6 +11,36 @@ import {
   formatTimeUZ,
 } from "@/shared/utils/date.utils";
 
+// Data
+import { WORK_TIME_SOURCE } from "../data/attendance.data";
+
+/**
+ * Shu KUN uchun kutilgan ish vaqti.
+ *
+ * ⚠️ Dars jadvalidan ishlaydigan xodimda oyna HAR KUN BOSHQACHA, shuning
+ * uchun yozuvning o'z sanasidagi kun olinadi — umumiy diapazon emas.
+ *
+ * ⚠️ `Attendance.date` UTC yarim tunida yotadi, shuning uchun kun raqami
+ * `getUTCDay()` bilan o'qiladi: `getDay()` Toshkentdan boshqa mintaqada
+ * ochilganda kunni bir kunga surib yuborardi.
+ */
+const getExpectedWindow = (user, date) => {
+  const schedule = user?.effectiveSchedule;
+
+  if (schedule?.source === WORK_TIME_SOURCE.SCHEDULE) {
+    const day = new Date(date).getUTCDay();
+    const window = schedule.byDay?.[day];
+
+    if (!window?.startTime || !window?.endTime) return "Dars yo'q";
+    return `${window.startTime} — ${window.endTime}`;
+  }
+
+  const start = schedule?.workStartTime ?? user?.workStartTime;
+  const end = schedule?.workEndTime ?? user?.workEndTime;
+
+  return start && end ? `${start} — ${end}` : "Rol bo'yicha";
+};
+
 /**
  * Bir kunlik davomatning to'liq tafsiloti.
  *
@@ -50,10 +80,7 @@ const Content = ({ close, record, variant = "staff", user }) => {
     rows.push(
       {
         label: "Ish grafigi",
-        value:
-          user?.workStartTime && user?.workEndTime
-            ? `${user.workStartTime} — ${user.workEndTime}`
-            : "Rol bo'yicha",
+        value: getExpectedWindow(user, record.date),
       },
       { label: "Kelish", value: formatTimeUZ(record.checkIn) },
       { label: "Ketish", value: formatTimeUZ(record.checkOut) },

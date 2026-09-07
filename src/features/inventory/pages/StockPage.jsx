@@ -1,6 +1,9 @@
 // React
 import { useState } from "react";
 
+// Router
+import { useSearchParams } from "react-router-dom";
+
 // Icons
 import {
   Boxes,
@@ -11,6 +14,7 @@ import {
   Pencil,
   History,
   User,
+  X,
 } from "lucide-react";
 
 // TanStack Query
@@ -86,8 +90,41 @@ const StockList = () => {
   const canEditRow = can("inventory.adjust") || can("inventory.delete");
 
   const [page, setPage] = useState(1);
-  const [locationId, setLocationId] = useState("");
-  const [onlyBroken, setOnlyBroken] = useState(false);
+
+  // ⚠️ XONA FILTRI URL'DA, lokal holatda EMAS. Inventar dashboardidagi
+  // "Xonalar kesimi" bloki shu sahifaga TAYYOR filtr bilan keladi
+  // (`/inventory/stock?locationId=...`): rahbar xonani bosadi va
+  // darhol o'sha xonaning xatlovini ko'radi. Lokal `useState` bo'lsa,
+  // havola sahifani filtrsiz ochardi va xonani qo'lda qayta tanlash
+  // kerak bo'lardi — ya'ni blok bosiladigan ko'rinishda bo'lib,
+  // amalda hech qayerga olib bormasdi.
+  //
+  // Yon foydasi ikkita: filtrlangan ko'rinishni ulashish mumkin va
+  // "orqaga" tugmasi dashboardga qaytaradi.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const locationId = searchParams.get("locationId") ?? "";
+  const onlyBroken = searchParams.get("onlyBroken") === "true";
+
+  /**
+   * Filtrni URL'ga yozadi. Bo'sh qiymat parametrni O'CHIRADI —
+   * `?locationId=` ko'rinishidagi bo'sh dum qolsa, havola ulashilganda
+   * "filtr bor" degan taassurot berardi.
+   *
+   * ⚠️ `replace: true`: har bir tanlov brauzer tarixiga yangi qadam
+   * qo'shsa, "orqaga" tugmasi dashboardga emas, avvalgi filtrga
+   * qaytarardi.
+   */
+  const setFilter = (patch) => {
+    const next = new URLSearchParams(searchParams);
+
+    for (const [key, value] of Object.entries(patch)) {
+      if (value) next.set(key, String(value));
+      else next.delete(key);
+    }
+
+    setSearchParams(next, { replace: true });
+    setPage(1);
+  };
 
   const { data, isLoading } = useQuery(
     inventoryQueries.stocks({
@@ -111,10 +148,7 @@ const StockList = () => {
             triggerClassName="min-w-48"
             value={locationId}
             placeholder="Barcha xonalar"
-            onChange={(v) => {
-              setLocationId(v);
-              setPage(1);
-            }}
+            onChange={(v) => setFilter({ locationId: v })}
             options={[
               { label: "Barcha xonalar", value: "" },
               ...locations.map((l) => ({ label: l.name, value: l.id })),
@@ -123,14 +157,24 @@ const StockList = () => {
 
           <Button
             variant={onlyBroken ? "default" : "outline"}
-            onClick={() => {
-              setOnlyBroken((v) => !v);
-              setPage(1);
-            }}
+            onClick={() => setFilter({ onlyBroken: onlyBroken ? "" : "true" })}
           >
             <Wrench />
             Faqat yaroqsizlar
           </Button>
+
+          {/* Tozalash — filtr URL'da turgani uchun u sahifa
+              yangilanganda ham qolib ketadi: chiqib ketish yo'li
+              ko'rinib turishi kerak */}
+          {isFiltered && (
+            <Button
+              variant="ghost"
+              onClick={() => setFilter({ locationId: "", onlyBroken: "" })}
+            >
+              <X />
+              Tozalash
+            </Button>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

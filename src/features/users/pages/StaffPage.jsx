@@ -18,6 +18,36 @@ import {
   getRoleBadgeClass,
 } from "../data/users.data";
 import { STAFF_LIST_TABS } from "../data/usersTabs.data";
+import { WORK_TIME_SOURCE } from "@/features/attendance/data/attendance.data";
+
+/**
+ * Ish vaqti ustuni.
+ *
+ * ⚠️ Dars jadvalidan olinadigan xodimda bu HAFTALIK DIAPAZON (eng erta
+ * boshlanish — eng kech tugash), bitta kunning oynasi emas. Belgisiz
+ * ko'rsatilsa, "har kuni shu vaqtda" deb o'qilardi — shuning uchun yonida
+ * manba nishonchasi turadi, kun-kunga ajratilgani esa xodim kartasida.
+ */
+const WorkTimeCell = ({ schedule }) => {
+  const { workStartTime, workEndTime, source } = schedule ?? {};
+
+  if (!workStartTime || !workEndTime) return "—";
+
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span>{`${workStartTime}–${workEndTime}`}</span>
+
+      {source === WORK_TIME_SOURCE.SCHEDULE && (
+        <span
+          title="Dars jadvalidan olinadi — haftadagi eng erta va eng kech vaqt"
+          className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
+        >
+          jadval
+        </span>
+      )}
+    </span>
+  );
+};
 
 /**
  * Xodimlar sahifasi — o'quvchilardan boshqa barcha rollar.
@@ -111,10 +141,7 @@ const StaffPage = () => {
           </td>
 
           <td className="px-4 py-3 whitespace-nowrap text-gray-500">
-            {user.effectiveSchedule?.workStartTime &&
-            user.effectiveSchedule?.workEndTime
-              ? `${user.effectiveSchedule.workStartTime}–${user.effectiveSchedule.workEndTime}`
-              : "—"}
+            <WorkTimeCell schedule={user.effectiveSchedule} />
           </td>
 
           <td className="px-4 py-3 text-gray-500">{user.penaltyPoints ?? 0}</td>

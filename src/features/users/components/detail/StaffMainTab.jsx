@@ -25,7 +25,61 @@ import { getGenderLabel } from "../../data/users.data";
 import {
   WEEK_DAY_NAMES,
   WORK_DAYS_OPTIONS,
+  WORK_TIME_SOURCE,
 } from "@/features/attendance/data/attendance.data";
+
+/**
+ * Dars jadvalidan hisoblangan ish vaqti.
+ *
+ * ⚠️ Kunlar KUN-KUNGA ko'rsatiladi, umumiy "08:30–14:20" bilan EMAS: dars
+ * jadvalida har kun boshqacha va bitta diapazon "seshanba soat 8 da kelishi
+ * kerak" degan noto'g'ri xulosaga olib kelardi.
+ */
+const LessonScheduleView = ({ schedule }) => {
+  const byDay = schedule?.byDay ?? {};
+  const days = Object.keys(byDay)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  if (schedule?.scheduleMissing || days.length === 0) {
+    return (
+      <div className="space-y-2">
+        <p className="text-sm text-gray-500">
+          Ish vaqti dars jadvalidan olinadi.
+        </p>
+        <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
+          Dars jadvalida bu o'qituvchining darsi yo'q — ish vaqti aniqlanmaydi
+          va davomat talab qilinmaydi. Jadvalga dars qo'yilishi bilan ish vaqti
+          o'zi paydo bo'ladi.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-gray-500">
+        Ish vaqti dars jadvalidan olinadi — birinchi darsdan oxirgi darsgacha.
+      </p>
+
+      <ul className="space-y-1.5">
+        {days.map((day) => (
+          <li key={day} className="flex items-center justify-between text-sm">
+            <span className="text-gray-500">{WEEK_DAY_NAMES[day]}</span>
+            <span className="text-gray-900">
+              {byDay[day].startTime && byDay[day].endTime
+                ? `${byDay[day].startTime}–${byDay[day].endTime}`
+                : "vaqti belgilanmagan"}
+              <span className="ml-2 text-xs text-gray-400">
+                {byDay[day].lessonCount} dars
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
 /**
  * Xodimning "Asosiy" tabi — o'qish uchun kartalar, tahrirlash esa har bir
@@ -41,7 +95,16 @@ const StaffMainTab = ({ user }) => {
   const canManage = useCanManageUser(user);
   const { data: roles = [] } = useRoles();
 
-  const hasCustomSchedule = Boolean(user.workStartTime && user.workEndTime);
+  // Ish vaqti dars jadvalidan olinadimi — bu boshqa ikki rejimni ISTISNO
+  // qiladi, shuning uchun eng oldin tekshiriladi.
+  const fromLessons = user.workTimeSource === WORK_TIME_SOURCE.SCHEDULE;
+  const hasCustomSchedule =
+    !fromLessons && Boolean(user.workStartTime && user.workEndTime);
+
+  // Dars jadvalidan hisoblangan oyna serverdan tayyor keladi
+  // (`effectiveSchedule`): panel uni qayta hisoblamaydi, aks holda davomat
+  // bilan ekran boshqa-boshqa vaqt ko'rsatib qolardi.
+  const lessonSchedule = fromLessons ? user.effectiveSchedule : null;
   const subjects = user.subjects ?? [];
   const workDays = user.workDays ?? [];
 
@@ -76,7 +139,9 @@ const StaffMainTab = ({ user }) => {
           canEdit={canManage}
           onEdit={() => openModal("editWorkSchedule", user)}
         >
-          {hasCustomSchedule ? (
+          {fromLessons ? (
+            <LessonScheduleView schedule={lessonSchedule} />
+          ) : hasCustomSchedule ? (
             <div className="space-y-4">
               <InfoRows
                 rows={[

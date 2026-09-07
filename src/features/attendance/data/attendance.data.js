@@ -147,6 +147,22 @@ export const REVIEW_ACTION_OPTIONS = [
   { label: "Rad etish", value: "rejected" },
 ];
 
+/**
+ * ISH VAQTI MANBAI — serverdagi `WorkTimeSource` enumining ko'zgusi.
+ *
+ * `manual`   — qo'lda kiritilgan vaqt (bo'sh bo'lsa rol standarti).
+ * `schedule` — DARS JADVALIDAN: kunning birinchi darsi boshlanishi ish
+ *              boshlanishi, oxirgi darsi tugashi ish tugashi. Darsi yo'q kun
+ *              ish kuni sanalmaydi.
+ *
+ * ⚠️ `schedule` faqat O'QITUVCHIGA qo'yiladi — server ham shuni talab qiladi
+ * (dars jadvalida o'qituvchidan boshqa hech kim turolmaydi).
+ */
+export const WORK_TIME_SOURCE = {
+  MANUAL: "manual",
+  SCHEDULE: "schedule",
+};
+
 export const WORK_DAYS_OPTIONS = [
   { label: "Ya", value: 0 },
   { label: "Du", value: 1 },

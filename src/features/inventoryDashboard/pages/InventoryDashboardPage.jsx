@@ -18,6 +18,7 @@ import DamageFlow from "../components/DamageFlow";
 import MonitoringCard from "../components/MonitoringCard";
 import { CategoryTreemap, ReasonBreakdown } from "../components/BreakdownCards";
 import { LocationRadar, LocationRanking } from "../components/LocationCards";
+import LocationInventory from "../components/LocationInventory";
 import { ActivityFeed, DebtorsPanel, ItemsRanking } from "../components/ListCards";
 
 // Hooks
@@ -200,15 +201,27 @@ const InventoryDashboardPage = () => {
 
         <DamageFlow {...state} delay={gridDelay(2)} className="lg:col-span-2 xl:col-span-12" />
 
-        <LocationRanking {...state} delay={gridDelay(3)} className="xl:col-span-4" />
-        <CategoryTreemap {...state} delay={gridDelay(4)} className="xl:col-span-4" />
-        <LocationRadar {...state} delay={gridDelay(5)} className="xl:col-span-4" />
+        {/* ⚠️ XONALAR KESIMI — REYTINGDAN OLDIN va butun kenglikda.
+            Uning ostidagi uchta blok tanlangan xonalarni ko'rsatadi
+            ("eng ko'p zarar", "eng qimmat baza"), bu esa HAMMASINI —
+            ya'ni ro'yxat avval to'liq ko'rinadi, keyin kesimlarga
+            bo'linadi. Teskari tartibda ekran "sakkizta xona bor"
+            degan taassurot qoldirardi. */}
+        <LocationInventory
+          {...state}
+          delay={gridDelay(3)}
+          className="lg:col-span-2 xl:col-span-12"
+        />
 
-        <MonitoringCard {...state} delay={gridDelay(6)} className="xl:col-span-5" />
-        <ItemsRanking {...state} delay={gridDelay(7)} className="xl:col-span-4" />
-        <DebtorsPanel {...state} delay={gridDelay(8)} className="xl:col-span-3" />
+        <LocationRanking {...state} delay={gridDelay(4)} className="xl:col-span-4" />
+        <CategoryTreemap {...state} delay={gridDelay(5)} className="xl:col-span-4" />
+        <LocationRadar {...state} delay={gridDelay(6)} className="xl:col-span-4" />
 
-        <ActivityFeed {...state} delay={gridDelay(9)} className="lg:col-span-2 xl:col-span-12" />
+        <MonitoringCard {...state} delay={gridDelay(7)} className="xl:col-span-5" />
+        <ItemsRanking {...state} delay={gridDelay(8)} className="xl:col-span-4" />
+        <DebtorsPanel {...state} delay={gridDelay(9)} className="xl:col-span-3" />
+
+        <ActivityFeed {...state} delay={gridDelay(10)} className="lg:col-span-2 xl:col-span-12" />
       </div>
     </div>
   );
