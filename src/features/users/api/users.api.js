@@ -8,6 +8,10 @@ export const usersAPI = {
   getById: (id) => http.get(`/users/${id}`),
   create: (data) => http.post("/users", data),
   update: (id, data) => http.put(`/users/${id}`, data),
+  // Telefon raqamlari — ALOHIDA endpoint va alohida ruxsat (`users.phone`):
+  // `PUT /users/:id` bu maydonlarni e'tiborsiz qoldiradi. Xom (maskali)
+  // qiymat yuborilsa ham bo'ladi — server normalizatsiya qiladi.
+  updatePhone: (id, data) => http.put(`/users/${id}/phone`, data),
   delete: (id) => http.delete(`/users/${id}`),
   archive: (id, data) => http.put(`/users/${id}/archive`, data),
   restore: (id) => http.put(`/users/${id}/restore`),

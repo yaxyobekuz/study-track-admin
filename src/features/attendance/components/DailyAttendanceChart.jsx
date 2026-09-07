@@ -32,20 +32,27 @@ const ChartTooltip = ({ active, payload }) => {
       <p className="font-semibold text-gray-800">{d.day}-kun</p>
       <p className="text-gray-600">
         Davomat: <b>{d.percent == null ? "-" : `${d.percent}%`}</b>
+        {d.expected > 0 && (
+          <span className="text-gray-400">
+            {" "}
+            (kelgan {d.came ?? 0} / kutilgan {d.expected})
+          </span>
+        )}
       </p>
       <p className="text-green-600">Keldi: {d.present}</p>
       <p className="text-yellow-600">Kech keldi: {d.late}</p>
       <p className="text-red-600">Kelmadi: {d.absent}</p>
       <p className="text-blue-600">Sababli: {d.excused}</p>
+      <p className="text-gray-500">Belgilanmagan: {d.unmarked ?? 0}</p>
     </div>
   );
 };
 
 /**
  * Oy ichida kun bo'yicha davomat grafigi (chiziqli).
- * Har bir status (Keldi / Kech keldi / Kelmadi / Sababli) alohida chiziq.
+ * Har bir status (Keldi / Kech keldi / Kelmadi / Sababli / Belgilanmagan) alohida chiziq.
  * Ma'lumoti yo'q kunlarda chiziq uziladi (bo'sh joy).
- * @param {Array} byDay - [{ date, day, percent, present, late, absent, excused, total }]
+ * @param {Array} byDay - [{ date, day, percent, present, late, absent, excused, unmarked, came, expected, total }]
  */
 const DailyAttendanceChart = ({ byDay = [] }) => {
   const hasData = byDay.some((d) => d.total > 0);

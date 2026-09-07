@@ -24,6 +24,21 @@ export const useUpdateUser = () => {
   });
 };
 
+/**
+ * Telefon raqamlarini yangilash (`users.phone` ruxsati).
+ *
+ * `usersKeys.all` eskiradi: raqam ro'yxat ustunida ham, detal kartasida ham
+ * ko'rinadi — biri yangilanib, ikkinchisi eski qolmasin.
+ */
+export const useUpdateUserPhone = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      usersAPI.updatePhone(id, data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
+  });
+};
+
 export const useDeleteUser = () => {
   const qc = useQueryClient();
   return useMutation({

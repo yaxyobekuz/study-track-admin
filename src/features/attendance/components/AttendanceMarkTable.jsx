@@ -5,6 +5,7 @@ import { cn } from "@/shared/utils/cn";
 import Input from "@/shared/components/ui/input/Input";
 import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
+import CallButton from "@/shared/components/ui/CallButton";
 
 // Data
 import { MARK_STATUS_OPTIONS, MARK_SELECTED_COLORS } from "../data/attendance.data";
@@ -14,9 +15,10 @@ import { reasonsForRole } from "../data/absenceReason.data";
  * Davomat belgilash/o'zgartirish jadvali (boshqariladigan komponent).
  * O'quvchilar va xodimlar uchun bir xil dizaynda ishlatiladi.
  *
- * @param {Array} people - [{ id, name, subtitle, role, originalStatus, originalReasonId, originalNote }]
+ * @param {Array} people - [{ id, name, subtitle, role, phone, parentPhone, originalStatus, originalReasonId, originalNote }]
  * @param {Object} marks - { [id]: { status, absenceReasonId, note } }
  * @param {Array} reasons - barcha aktiv "Kelmaslik sabablari" (rol bo'yicha filtrlash uchun)
+ * @param {boolean} showPhone - "Telefon" ustuni (qo'ng'iroq tugmasi) - o'quvchilar uchun
  * @param {Function} onStatusChange - (id, status) => void
  * @param {Function} onReasonChange - (id, absenceReasonId) => void
  * @param {Function} onNoteChange - (id, note) => void
@@ -25,6 +27,7 @@ const AttendanceMarkTable = ({
   people = [],
   marks = {},
   reasons = [],
+  showPhone = false,
   onStatusChange,
   onReasonChange,
   onNoteChange,
@@ -43,6 +46,7 @@ const AttendanceMarkTable = ({
         <thead>
           <tr>
             <th className="text-left px-4 py-3">Foydalanuvchi</th>
+            {showPhone && <th className="text-left px-4 py-3">Telefon</th>}
             <th className="text-left px-4 py-3">Holat</th>
             <th className="text-left px-4 py-3">Sabab</th>
           </tr>
@@ -80,6 +84,17 @@ const AttendanceMarkTable = ({
                     <p className="text-xs text-gray-500">{person.subtitle}</p>
                   )}
                 </td>
+
+                {/* Telefon (o'quvchi va ota-ona) - qo'ng'iroq tugmasi */}
+                {showPhone && (
+                  <td className="px-4 py-3">
+                    <CallButton
+                      compact
+                      phone={person.phone}
+                      parentPhone={person.parentPhone}
+                    />
+                  </td>
+                )}
 
                 {/* Holat tugmalari */}
                 <td className="px-4 py-3">

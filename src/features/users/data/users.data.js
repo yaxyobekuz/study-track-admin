@@ -23,6 +23,7 @@ export const STAFF_TABLE_COLUMNS = [
 export const STUDENT_TABLE_COLUMNS = [
   "O'quvchi",
   "Sinflar",
+  "Telefon",
   "Tangalar",
   "Jarimalar",
   "",
@@ -56,4 +57,43 @@ export const getInitials = (user) => {
   const first = user?.firstName?.[0] ?? user?.fullName?.[0] ?? "";
   const last = user?.lastName?.[0] ?? "";
   return `${first}${last}`.toUpperCase() || "?";
+};
+
+// ── Telefon raqamlari ────────────────────────────
+//
+// Maydon nomi ikkala rolda bitta (`phone`, `parentPhone`), ma'nosi esa
+// rolga qarab: o'quvchida ikkinchisi ota-ona, xodimda qo'shimcha raqam.
+// Yorliq shu yerda hal qilinadi — karta, modal va yaratish formasi bir xil
+// so'zni ishlatsin.
+
+/** Rolga qarab telefon maydonlarining yorliqlari (forma va karta uchun). */
+export const getPhoneLabels = (role) =>
+  role === "student"
+    ? {
+        phone: "O'quvchi telefoni",
+        parentPhone: "Ota-ona telefoni",
+        phoneShort: "O'quvchi",
+        parentPhoneShort: "Ota-ona",
+      }
+    : {
+        phone: "Telefon",
+        parentPhone: "Qo'shimcha telefon",
+        phoneShort: "Telefon",
+        parentPhoneShort: "Qo'shimcha",
+      };
+
+/**
+ * Maskali telefon inputidan chiqqan qiymatni payload'ga tayyorlash.
+ *
+ * Bo'sh qoldirilgan maydon `null` bo'lib ketadi (server raqamni o'chiradi).
+ * Faqat `+998` prefiksi qolgan holat ham bo'sh hisoblanadi — uni maska
+ * o'zi yozadi, foydalanuvchi raqam kiritmagan. Qolgan hollarda xom qiymat
+ * ketadi: normalizatsiya va tekshiruv serverda.
+ *
+ * @param {string|null|undefined} value
+ * @returns {string|null}
+ */
+export const maskedPhoneOrNull = (value) => {
+  const digits = String(value ?? "").replace(/\D/g, "");
+  return digits.length > 3 ? value : null;
 };

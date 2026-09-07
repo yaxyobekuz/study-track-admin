@@ -126,3 +126,24 @@ export const shiftMonth = (month, year, delta) => {
     year: year + Math.floor(index / 12),
   };
 };
+
+/**
+ * Ism/familiya bo'yicha qidiruv — serverdagi `search` bilan BIR XIL qoida:
+ * so'rov so'zlarga bo'linadi va har bir so'z ism YOKI familiyada uchrashi
+ * kerak. Shu tufayli "Sardor Turdaliyev" ham, "Turdaliyev Sardor" ham topadi.
+ *
+ * @param {{firstName?: string, lastName?: string}} person
+ * @param {string} search
+ * @returns {boolean}
+ */
+export const matchesNameSearch = (person, search) => {
+  const terms = String(search || "")
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!terms.length) return true;
+  const first = String(person?.firstName || "").toLowerCase();
+  const last = String(person?.lastName || "").toLowerCase();
+  return terms.every((t) => first.includes(t) || last.includes(t));
+};

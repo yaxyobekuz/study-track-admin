@@ -21,7 +21,10 @@ import AttendanceMarkTable from "../components/AttendanceMarkTable";
 import MarkToolbar from "../components/MarkToolbar";
 
 // Data & hooks
-import { SUMMARY_CARDS } from "../data/studentAttendance.data";
+import {
+  MARK_STAFF_SUMMARY_CARDS,
+  SUMMARY_CARDS_GRID,
+} from "../data/studentAttendance.data";
 import { buildRoleOptions, buildRoleLabelMap } from "../data/attendance.data";
 import useMarkAttendance from "../hooks/useMarkAttendance";
 import { useRoles } from "@/features/roles/queries/roles.queries";
@@ -136,9 +139,9 @@ const MarkStaffPage = () => {
       {/* Jonli yig'indi (joriy tanlovlar bo'yicha) */}
       {!isLoading && rows.length > 0 && (
         <AttendanceSummaryCards
-          cards={SUMMARY_CARDS}
+          cards={MARK_STAFF_SUMMARY_CARDS}
           summary={counts}
-          className="sm:grid-cols-3 lg:grid-cols-5"
+          className={SUMMARY_CARDS_GRID}
         />
       )}
 

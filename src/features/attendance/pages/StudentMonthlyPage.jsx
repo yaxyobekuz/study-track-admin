@@ -8,8 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 // Router
 import { useOutletContext } from "react-router-dom";
 
-// API
-import { studentAttendanceAPI } from "../api/studentAttendance.api";
+// Queries
+import { studentAttendanceQueries } from "../queries/attendance.queries";
 
 // Components
 import Select from "@/shared/components/ui/select/Select";
@@ -32,23 +32,14 @@ const StudentMonthlyPage = () => {
   const [classId, setClassId] = useState("");
   const [status, setStatus] = useState("");
 
-  const { data: classesData } = useQuery({
-    queryKey: ["studentAttendance", "classes"],
-    queryFn: () => studentAttendanceAPI.getClasses().then((r) => r.data.data),
-  });
-  const classes = classesData || [];
+  const { data: classes = [] } = useQuery(studentAttendanceQueries.classes());
 
   // Oylik davomat sinf bo'yicha ko'rsatiladi - bitta sinf tanlanadi (default - birinchisi)
   const selectedClassId = classId || classes[0]?.id || "";
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["studentAttendance", "class-month", selectedClassId, month, year],
-    queryFn: () =>
-      studentAttendanceAPI
-        .getClassMonthRecords(selectedClassId, month, year)
-        .then((r) => r.data),
-    enabled: !!selectedClassId,
-  });
+  const { data, isLoading } = useQuery(
+    studentAttendanceQueries.classMonth(selectedClassId, month, year),
+  );
 
   const records = data?.records || [];
   const summary = data?.summary || {};

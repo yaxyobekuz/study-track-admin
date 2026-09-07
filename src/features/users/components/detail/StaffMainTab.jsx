@@ -3,8 +3,10 @@ import InfoCard, { InfoRows } from "./InfoCard";
 import UserAccountCard from "./UserAccountCard";
 import UserBasicInfoCard from "./UserBasicInfoCard";
 import UserBranchesCard from "./UserBranchesCard";
+import UserPhoneCard from "./UserPhoneCard";
 import UserRolesCard from "./UserRolesCard";
 import EditUserBasicModal from "../EditUserBasicModal";
+import EditUserPhoneModal from "../EditUserPhoneModal";
 import EditWorkScheduleModal from "../EditWorkScheduleModal";
 import EditStaffSubjectsModal from "../EditStaffSubjectsModal";
 import EditUserRolesModal from "../EditUserRolesModal";
@@ -170,6 +172,9 @@ const StaffMainTab = ({ user }) => {
             </p>
           )}
         </InfoCard>
+
+        {/* Xodimning raqamlari — ko'rish hammaga, tahrirlash `users.phone`. */}
+        <UserPhoneCard user={user} canEdit={canManage} />
       </div>
 
       {/* KO'P ROLLILIK — "Ruxsatlar" tabidan ALOHIDA va bu ataylab:
@@ -189,6 +194,7 @@ const StaffMainTab = ({ user }) => {
       <EditWorkScheduleModal />
       <EditStaffSubjectsModal />
       <EditUserRolesModal />
+      <EditUserPhoneModal />
     </div>
   );
 };

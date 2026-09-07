@@ -5,7 +5,9 @@ import { Link } from "react-router-dom";
 import InfoCard from "./InfoCard";
 import UserAccountCard from "./UserAccountCard";
 import UserBasicInfoCard from "./UserBasicInfoCard";
+import UserPhoneCard from "./UserPhoneCard";
 import EditUserBasicModal from "../EditUserBasicModal";
+import EditUserPhoneModal from "../EditUserPhoneModal";
 import EditStudentClassesModal from "../EditStudentClassesModal";
 
 // Hooks
@@ -74,11 +76,16 @@ const StudentMainTab = ({ user }) => {
         </InfoCard>
 
         <UserAccountCard user={user} />
+
+        {/* O'quvchi va ota-ona raqamlari — davomatdan qo'ng'iroq qilish
+            uchun. Ko'rish hammaga, tahrirlash `users.phone` bilan. */}
+        <UserPhoneCard user={user} canEdit={canManage} />
       </div>
 
       {/* Modallar shu tab ichida — ro'yxat sahifalariga tegishli emas */}
       <EditUserBasicModal />
       <EditStudentClassesModal />
+      <EditUserPhoneModal />
     </div>
   );
 };

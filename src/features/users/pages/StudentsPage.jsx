@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 
 // Components
 import Select from "@/shared/components/ui/select/Select";
+import CallButton from "@/shared/components/ui/CallButton";
 import UsersListView from "../components/UsersListView";
 import UserRowActions from "../components/UserRowActions";
 
@@ -73,6 +74,16 @@ const StudentsPage = () => {
             {user.classes?.length > 0
               ? user.classes.map((cls) => cls.name).join(", ")
               : "—"}
+          </td>
+
+          {/* Qo'ng'iroq tugmasi qator bosilishiga tarqalmasin — aks holda
+              qo'ng'iroq o'rniga detal sahifasi ochilib ketardi */}
+          <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+            <CallButton
+              compact
+              phone={user.phone}
+              parentPhone={user.parentPhone}
+            />
           </td>
 
           <td className="px-4 py-3 text-gray-500">{user.coinBalance ?? 0}</td>

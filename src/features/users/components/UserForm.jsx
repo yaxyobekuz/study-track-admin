@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import usePermissions from "@/shared/hooks/usePermissions";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 import { useClasses } from "@/features/classes/queries/classes.queries";
 import { useCreateUser } from "@/features/users/queries/users.mutations";
@@ -19,7 +20,11 @@ import { Field, FieldLabel } from "@/shared/components/shadcn/field";
 import WeeklyScheduleEditor from "./WeeklyScheduleEditor";
 
 // Data
-import { genderOptions } from "../data/users.data";
+import {
+  genderOptions,
+  getPhoneLabels,
+  maskedPhoneOrNull,
+} from "../data/users.data";
 import { WORK_DAYS_OPTIONS } from "@/features/attendance/data/attendance.data";
 
 /**
@@ -35,9 +40,15 @@ import { WORK_DAYS_OPTIONS } from "@/features/attendance/data/attendance.data";
  */
 const UserForm = ({ defaultRole = "student" }) => {
   const navigate = useNavigate();
+  const { can } = usePermissions();
   const { data: classes = [] } = useClasses();
   const { data: rolesData = [] } = useRoles();
   const roles = rolesData.filter((r) => r.value !== "owner");
+
+  // Telefon maydonlari faqat `users.phone` bilan: ruxsatsiz aktyor bo'sh
+  // bo'lmagan raqam yuborsa server butun yaratishni rad etadi, shuning
+  // uchun maydonlar ko'rsatilmaydi va payload'ga ham kirmaydi.
+  const canEditPhone = can("users.phone");
 
   const { mutateAsync: createUser } = useCreateUser();
 
@@ -48,6 +59,8 @@ const UserForm = ({ defaultRole = "student" }) => {
     password: "",
     role: defaultRole,
     gender: "male",
+    phone: "",
+    parentPhone: "",
     classes: [],
     workStartTime: "",
     workEndTime: "",
@@ -78,6 +91,7 @@ const UserForm = ({ defaultRole = "student" }) => {
   };
 
   const showScheduleSection = state.role !== "student" && state.role !== "owner";
+  const phoneLabels = getPhoneLabels(state.role);
 
   // Qaysi ro'yxatga qaytish kerakligi rolga bog'liq
   const listPath = state.role === "student" ? "/users/students" : "/users/staff";
@@ -101,6 +115,10 @@ const UserForm = ({ defaultRole = "student" }) => {
       password: state.password,
       role: state.role,
       classes: state.role === "student" ? state.classes : undefined,
+      ...(canEditPhone && {
+        phone: maskedPhoneOrNull(state.phone),
+        parentPhone: maskedPhoneOrNull(state.parentPhone),
+      }),
       workStartTime: withSchedule ? state.workStartTime || null : null,
       workEndTime: withSchedule ? state.workEndTime || null : null,
       workDays: withSchedule ? state.workDays : null,
@@ -188,6 +206,29 @@ const UserForm = ({ defaultRole = "student" }) => {
           onChange={(v) => setField("classes", v)}
           options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
         />
+      )}
+
+      {canEditPhone && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {/* `type="tel"` → InputTel (maskali): +998 (90) 123-45-67 */}
+          <InputField
+            type="tel"
+            name="phone"
+            value={state.phone}
+            autoComplete="off"
+            label={phoneLabels.phone}
+            onChange={(e) => setField("phone", e.target.value)}
+          />
+
+          <InputField
+            type="tel"
+            name="parentPhone"
+            value={state.parentPhone}
+            autoComplete="off"
+            label={phoneLabels.parentPhone}
+            onChange={(e) => setField("parentPhone", e.target.value)}
+          />
+        </div>
       )}
 
       {showScheduleSection && (

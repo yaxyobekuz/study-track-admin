@@ -35,20 +35,53 @@ export const MONTH_OPTIONS = [
   { label: "Dekabr", value: 12 },
 ];
 
+/**
+ * Kunlik va belgilash sahifalaridagi yig'indi kartalari.
+ *
+ * "Kelganlar" = keldi + kech keldi — kech kelgan ham maktabda.
+ * "Kelmaganlar" = jami − kelganlar — belgilanmaganlar ham SHU yerga kiradi:
+ * bola hali belgilanmagani uchun "maktabda bor" bo'lib qolmasligi kerak.
+ * Server `summary` ham, belgilash sahifasidagi jonli `counts` ham aynan
+ * shu kalitlarni beradi.
+ */
 export const SUMMARY_CARDS = [
-  { key: "present", label: "Keldi", color: "bg-green-100 text-green-700" },
-  { key: "late", label: "Kech keldi", color: "bg-yellow-100 text-yellow-700" },
-  { key: "absent", label: "Kelmadi", color: "bg-red-100 text-red-700" },
+  { key: "total", label: "Jami o'quvchi", color: "bg-gray-100 text-gray-700" },
+  { key: "came", label: "Kelganlar", color: "bg-green-100 text-green-700" },
+  { key: "notCame", label: "Kelmaganlar", color: "bg-red-100 text-red-700" },
+  {
+    key: "late",
+    label: "Shundan kech kelgan",
+    color: "bg-yellow-100 text-yellow-700",
+  },
+  {
+    key: "absent",
+    label: "Kelmadi (sababsiz)",
+    color: "bg-rose-50 text-rose-600",
+  },
   { key: "excused", label: "Sababli", color: "bg-blue-100 text-blue-700" },
-  { key: "unmarked", label: "Belgilanmagan", color: "bg-gray-100 text-gray-500" },
+  {
+    key: "unmarked",
+    label: "Belgilanmagan",
+    color: "bg-gray-100 text-gray-500",
+  },
 ];
 
+// 7 ta karta: katta ekranda bir qatorda, planshetda ikki qatorda
+export const SUMMARY_CARDS_GRID = "sm:grid-cols-4 lg:grid-cols-7";
+
+// Xodimlarni belgilash sahifasi uchun xuddi shu kartalar — faqat "jami"
+// yorlig'i xodimlarga mos (aks holda xodimlar ustida "Jami o'quvchi" turardi)
+export const MARK_STAFF_SUMMARY_CARDS = SUMMARY_CARDS.map((card) =>
+  card.key === "total" ? { ...card, label: "Jami xodim" } : card,
+);
+
 /**
- * Bitta foydalanuvchining oylik yig'masi uchun kartalar.
- * "Belgilanmagan" bu yerda yo'q — u sinf/ro'yxat kesimida ma'noga ega.
+ * Bitta foydalanuvchining oylik yig'masi uchun kartalar — faqat to'rt holat.
+ * "Jami / Kelganlar / Belgilanmagan" bu yerda yo'q — ular sinf/ro'yxat
+ * kesimida ma'noga ega.
  */
-export const USER_SUMMARY_ITEMS = SUMMARY_CARDS.filter(
-  (card) => card.key !== "unmarked",
+export const USER_SUMMARY_ITEMS = ["present", "late", "absent", "excused"].map(
+  (key) => ({ key, label: STATUS_LABELS[key], color: STATUS_COLORS[key] }),
 );
 
 // Yil filtri optionlari (joriy yil va oldingi 2 yil)

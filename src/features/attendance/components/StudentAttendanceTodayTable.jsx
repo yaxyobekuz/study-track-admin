@@ -1,5 +1,6 @@
 import { cn } from "@/shared/utils/cn";
 import { formatTimeUz } from "@/shared/utils/date.utils";
+import CallButton from "@/shared/components/ui/CallButton";
 import { STATUS_COLORS, STATUS_LABELS } from "../data/studentAttendance.data";
 
 const formatTime = (iso) => formatTimeUz(iso, "-");
@@ -10,7 +11,18 @@ const formatClasses = (classes) => {
   return classes.map((c) => c?.name).filter(Boolean).join(", ") || "-";
 };
 
-const StudentAttendanceTodayTable = ({ students, showClass = false }) => {
+/**
+ * Kunlik o'quvchilar davomati jadvali.
+ * @param {Array} students - [{ student, attendance, classId }] (server `row` shakli)
+ * @param {boolean} showClass - "Sinf" ustuni (barcha sinflar rejimida)
+ * @param {Function} [onRowClick] - (row) => void; berilsa qator bosiladigan bo'ladi
+ *   (tahrirlash oynasi). Qo'ng'iroq tugmasi bosilishi qatorga tarqalmaydi.
+ */
+const StudentAttendanceTodayTable = ({
+  students,
+  showClass = false,
+  onRowClick,
+}) => {
   if (!students || students.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -33,46 +45,64 @@ const StudentAttendanceTodayTable = ({ students, showClass = false }) => {
           <tr>
             <th className="text-left px-4 py-3">O&apos;quvchi</th>
             {showClass && <th className="text-left px-4 py-3">Sinf</th>}
+            <th className="text-left px-4 py-3">Telefon</th>
             <th className="text-left px-4 py-3">Holat</th>
             <th className="text-left px-4 py-3">Belgilangan vaqt</th>
             <th className="text-left px-4 py-3">Sabab</th>
           </tr>
         </thead>
         <tbody>
-          {sortedStudents.map(({ student, attendance }) => (
-            <tr key={student.id} className="border-t border-gray-100">
-              <td className="px-4 py-3 font-medium text-gray-900">
-                {student.lastName} {student.firstName}
-              </td>
-              {showClass && (
-                <td className="px-4 py-3 text-gray-500 text-xs">
-                  {formatClasses(student.classes)}
-                </td>
-              )}
-              <td className="px-4 py-3">
-                {!attendance ? (
-                  <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500">
-                    Belgilanmagan
-                  </span>
-                ) : (
-                  <span
-                    className={cn(
-                      "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
-                      STATUS_COLORS[attendance.status]
-                    )}
-                  >
-                    {STATUS_LABELS[attendance.status]}
-                  </span>
+          {sortedStudents.map((row) => {
+            const { student, attendance } = row;
+            return (
+              <tr
+                key={student.id}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                className={cn(
+                  "border-t border-gray-100",
+                  onRowClick && "cursor-pointer hover:bg-gray-50",
                 )}
-              </td>
-              <td className="px-4 py-3 text-gray-700">
-                {attendance?.markedAt ? formatTime(attendance.markedAt) : "-"}
-              </td>
-              <td className="px-4 py-3 text-gray-500 text-xs">
-                {attendance?.excuseReason || "-"}
-              </td>
-            </tr>
-          ))}
+              >
+                <td className="px-4 py-3 font-medium text-gray-900">
+                  {student.lastName} {student.firstName}
+                </td>
+                {showClass && (
+                  <td className="px-4 py-3 text-gray-500 text-xs">
+                    {formatClasses(student.classes)}
+                  </td>
+                )}
+                <td className="px-4 py-3">
+                  <CallButton
+                    compact
+                    phone={student.phone}
+                    parentPhone={student.parentPhone}
+                  />
+                </td>
+                <td className="px-4 py-3">
+                  {!attendance ? (
+                    <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500">
+                      Belgilanmagan
+                    </span>
+                  ) : (
+                    <span
+                      className={cn(
+                        "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
+                        STATUS_COLORS[attendance.status],
+                      )}
+                    >
+                      {STATUS_LABELS[attendance.status]}
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-gray-700">
+                  {attendance?.markedAt ? formatTime(attendance.markedAt) : "-"}
+                </td>
+                <td className="px-4 py-3 text-gray-500 text-xs">
+                  {attendance?.excuseReason || "-"}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

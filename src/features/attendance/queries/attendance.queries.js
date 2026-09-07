@@ -7,9 +7,12 @@ import { createQueryKeys } from "@/shared/lib/query";
 // API
 import { absenceReasonAPI } from "../api/absenceReason.api";
 import { attendanceAPI } from "../api/attendance.api";
+import { attendanceReportAPI } from "../api/attendanceReport.api";
 import { studentAttendanceAPI } from "../api/studentAttendance.api";
 
 export const attendanceKeys = createQueryKeys("attendance");
+export const studentAttendanceKeys = createQueryKeys("studentAttendance");
+export const attendanceReportsKeys = createQueryKeys("attendanceReports");
 
 export const attendanceQueries = {
   /**
@@ -58,5 +61,73 @@ export const attendanceQueries = {
     queryOptions({
       queryKey: [...attendanceKeys.all, "settings"],
       queryFn: () => attendanceAPI.getSettings().then((r) => r.data.data),
+    }),
+};
+
+/**
+ * O'quvchilar davomati (kunlik ro'yxatlar va belgilash).
+ * Hammasi `["studentAttendance", ...]` ildizida — belgilashdan keyin
+ * `studentAttendanceKeys.all` bilan bir yo'la eskiradi.
+ */
+export const studentAttendanceQueries = {
+  /** Davomat uchun sinflar ro'yxati → `[{ id, name, ... }]`. */
+  classes: () =>
+    queryOptions({
+      queryKey: [...studentAttendanceKeys.all, "classes"],
+      queryFn: () => studentAttendanceAPI.getClasses().then((r) => r.data.data),
+    }),
+
+  /** Bitta sinfning kunlik davomati → `{ classInfo, students, summary, date }`. */
+  todayClass: (classId, date) =>
+    queryOptions({
+      queryKey: [...studentAttendanceKeys.all, "today", classId, date],
+      queryFn: () =>
+        studentAttendanceAPI.getTodayClass(classId, date).then((r) => r.data),
+      enabled: Boolean(classId),
+    }),
+
+  /**
+   * Barcha sinflar, sahifalangan → `{ students, summary, date, pagination }`.
+   * `summary` sahifadan qat'i nazar butun maktab bo'yicha keladi.
+   */
+  todayAll: (params) =>
+    queryOptions({
+      queryKey: [...studentAttendanceKeys.all, "today-all", params],
+      queryFn: () =>
+        studentAttendanceAPI.getTodayAll(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /**
+   * Belgilash uchun to'liq ro'yxat (sahifalanmaydi) → `{ students, summary, date }`.
+   * `classId` bo'lmasa barcha faol o'quvchilar.
+   */
+  markList: (params) =>
+    queryOptions({
+      queryKey: [...studentAttendanceKeys.all, "mark-list", params],
+      queryFn: () =>
+        studentAttendanceAPI.getMarkList(params).then((r) => r.data),
+    }),
+
+  /** Sinfning oylik davomati (kun matritsasi) → `{ records, summary }`. */
+  classMonth: (classId, month, year) =>
+    queryOptions({
+      queryKey: [...studentAttendanceKeys.all, "class-month", classId, month, year],
+      queryFn: () =>
+        studentAttendanceAPI
+          .getClassMonthRecords(classId, month, year)
+          .then((r) => r.data),
+      enabled: Boolean(classId),
+    }),
+};
+
+/** Davomat hisobotlari — belgilashdan keyin foizlar ham eskiradi. */
+export const attendanceReportsQueries = {
+  /** O'quvchilar oylik hisoboti → `{ overall, byDay, byClass, ... }`. */
+  students: (month, year) =>
+    queryOptions({
+      queryKey: [...attendanceReportsKeys.all, "students", { month, year }],
+      queryFn: () =>
+        attendanceReportAPI.getStudentReport(month, year).then((r) => r.data),
     }),
 };

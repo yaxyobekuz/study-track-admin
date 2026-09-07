@@ -30,6 +30,8 @@ export const DAILY_CHART_SERIES = [
   { key: "late", name: "Kech keldi", color: "#eab308" },
   { key: "absent", name: "Kelmadi", color: "#ef4444" },
   { key: "excused", name: "Sababli", color: "#3b82f6" },
+  // Kutilgan-u belgilanmagan o'quvchilar (kulrang) - jim qolmasligi uchun
+  { key: "unmarked", name: "Belgilanmagan", color: "#9ca3af" },
 ];
 
 // Reyting (1-3 o'rin) badge ranglari

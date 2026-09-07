@@ -62,11 +62,36 @@ export const STAFF_DAILY_STATUS_OPTIONS = [
   { label: "Belgilanmagan", value: "not_marked" },
 ];
 
-// O'quvchilar kunlik davomati - "Belgilanmagan" (unmarked) ham qo'shiladi
+// O'quvchilar kunlik davomati - holat filtri.
+// "Kelganlar (jami)" = keldi + kech keldi (kech kelgan ham kelgan hisoblanadi),
+// "Keldi (o'z vaqtida)" esa faqat `present`. "Belgilanmagan" - yozuvi yo'qlar.
 export const STUDENT_DAILY_STATUS_OPTIONS = [
-  ...STATUS_FILTER_OPTIONS,
+  { label: "Barcha holatlar", value: "all" },
+  { label: "Kelganlar (jami)", value: "came" },
+  { label: "Keldi (o'z vaqtida)", value: "present" },
+  { label: "Kech keldi", value: "late" },
+  { label: "Kelmadi", value: "absent" },
+  { label: "Sababli", value: "excused" },
   { label: "Belgilanmagan", value: "unmarked" },
 ];
+
+// Belgilash sahifasi filtri - kunlik bilan bir xil. Filtr SAQLANGAN (serverdagi)
+// holat bo'yicha ishlaydi: foydalanuvchi qatorni o'zgartirganda u ro'yxatdan
+// g'oyib bo'lmaydi.
+export const MARK_FILTER_OPTIONS = STUDENT_DAILY_STATUS_OPTIONS;
+
+/**
+ * Saqlangan holat filtrga mos keladimi (kunlik va belgilash sahifalari uchun
+ * umumiy). `came` = present | late, `unmarked` = yozuv yo'q (null).
+ * @param {string|null} status - bazadagi holat yoki null
+ * @param {string} filter - filtr qiymati ("all" / "" = hammasi)
+ */
+export const matchesStatusFilter = (status, filter) => {
+  if (!filter || filter === "all") return true;
+  if (filter === "came") return status === "present" || status === "late";
+  if (filter === "unmarked") return !status;
+  return status === filter;
+};
 
 // Davomat belgilash uchun holat tugmalari (segmented control)
 export const MARK_STATUS_OPTIONS = [

@@ -7,8 +7,8 @@ import { useOutletContext } from "react-router-dom";
 // Utils
 import { cn } from "@/shared/utils/cn";
 
-// API
-import { attendanceReportAPI } from "../api/attendanceReport.api";
+// Queries
+import { attendanceReportsQueries } from "../queries/attendance.queries";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -28,11 +28,9 @@ import {
 const StudentReportsPage = () => {
   const { month, year } = useOutletContext();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["attendanceReports", "students", { month, year }],
-    queryFn: () =>
-      attendanceReportAPI.getStudentReport(month, year).then((r) => r.data),
-  });
+  const { data, isLoading } = useQuery(
+    attendanceReportsQueries.students(month, year),
+  );
 
   if (isLoading) {
     return <div className="py-8 text-center text-gray-500">Yuklanmoqda...</div>;
@@ -48,15 +46,17 @@ const StudentReportsPage = () => {
   const monthLabel =
     MONTH_OPTIONS.find((m) => m.value === month)?.label || "Tanlangan oy";
 
-  // Umumiy foiz kartalari (Bugun / Shu hafta - joriy; Oy - tanlangan)
+  // Umumiy foiz kartalari (Bugun / Shu hafta - joriy; Oy - tanlangan).
+  // Foiz = kelganlar / KUTILGAN (jadval bo'yicha), belgilanganlarga nisbatan emas
   const overallItems = OVERALL_PERCENT_CARDS.map(({ key, label }) => {
     const section = data.overall?.[key] || {};
     return {
       key,
       label: key === "monthly" ? `${monthLabel} oyi` : label,
       percent: section.percent ?? null,
-      came: (section.present || 0) + (section.late || 0),
-      total: section.total || 0,
+      came: section.came ?? (section.present || 0) + (section.late || 0),
+      total: section.expected || 0,
+      unmarked: section.unmarked || 0,
     };
   });
 
@@ -79,6 +79,9 @@ const StudentReportsPage = () => {
           late: 0,
           absent: 0,
           excused: 0,
+          unmarked: 0,
+          came: 0,
+          expected: 0,
           total: 0,
           percent: null,
         };
@@ -121,11 +124,12 @@ const StudentReportsPage = () => {
               <thead>
                 <tr>
                   <th className="text-left px-4 py-3">Sinf</th>
-                  <th className="text-left px-4 py-3">Keldi</th>
+                  <th className="text-left px-4 py-3">Kutilgan</th>
+                  <th className="text-left px-4 py-3">Kelganlar</th>
                   <th className="text-left px-4 py-3">Kech keldi</th>
                   <th className="text-left px-4 py-3">Kelmadi</th>
                   <th className="text-left px-4 py-3">Sababli</th>
-                  <th className="text-left px-4 py-3">Jami</th>
+                  <th className="text-left px-4 py-3">Belgilanmagan</th>
                   <th className="text-left px-4 py-3">Davomat</th>
                 </tr>
               </thead>
@@ -145,11 +149,14 @@ const StudentReportsPage = () => {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-700">{cls.present}</td>
+                    <td className="px-4 py-3 text-gray-700">{cls.expected ?? 0}</td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {cls.came ?? (cls.present || 0) + (cls.late || 0)}
+                    </td>
                     <td className="px-4 py-3 text-gray-700">{cls.late}</td>
                     <td className="px-4 py-3 text-gray-700">{cls.absent}</td>
                     <td className="px-4 py-3 text-gray-700">{cls.excused}</td>
-                    <td className="px-4 py-3 text-gray-700">{cls.total}</td>
+                    <td className="px-4 py-3 text-gray-700">{cls.unmarked ?? 0}</td>
                     <td className="px-4 py-3">
                       <span
                         className={cn(

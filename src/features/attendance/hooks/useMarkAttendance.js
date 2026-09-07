@@ -6,7 +6,7 @@ import { useState } from "react";
  *
  * `people` - [{ id, role, originalStatus, defaultStatus, originalReasonId, originalNote }]
  *   - originalStatus: bazadagi joriy status (dirty hisoblash uchun, belgilanmagan bo'lsa null)
- *   - defaultStatus: dastlabki tanlov (o'quvchilarda "present", xodimlarda null bo'lishi mumkin)
+ *   - defaultStatus: dastlabki tanlov (belgilanmagan bo'lsa null — avtomatik "Keldi" YO'Q)
  *   - originalReasonId / originalNote: "Sababli" holatdagi tanlangan sabab va izoh
  * `syncKey` - ma'lumot yangilanganda marks ni qayta tiklash kaliti (masalan, query.dataUpdatedAt)
  *
@@ -42,10 +42,18 @@ const useMarkAttendance = (people, syncKey) => {
   const setNote = (id, note) =>
     setMarks((prev) => ({ ...prev, [id]: { ...prev[id], note } }));
 
-  const setAll = (status) =>
+  /**
+   * "Barchasini belgilash": `ids` berilsa faqat shu qatorlar (filtrlangan,
+   * ko'rinib turganlar), berilmasa hammasi. Qolganlarning tanlovi saqlanadi.
+   */
+  const setAll = (status, ids) =>
     setMarks((prev) => {
-      const next = {};
-      for (const p of people) next[p.id] = { ...prev[p.id], status };
+      const only = ids ? new Set(ids) : null;
+      const next = { ...prev };
+      for (const p of people) {
+        if (only && !only.has(p.id)) continue;
+        next[p.id] = { ...prev[p.id], status };
+      }
       return next;
     });
 
@@ -62,13 +70,26 @@ const useMarkAttendance = (people, syncKey) => {
     return false;
   });
 
-  // Joriy tanlovlar bo'yicha yig'indi (jonli)
-  const counts = { present: 0, late: 0, absent: 0, excused: 0, unmarked: 0 };
+  // Joriy tanlovlar bo'yicha yig'indi (jonli). Kalitlar server `summary` bilan
+  // bir xil: kelganlar = keldi + kech keldi, kelmaganlar = jami − kelganlar
+  // (belgilanmaganlar ham kelmaganlar hisobiga kiradi).
+  const counts = {
+    total: people.length,
+    came: 0,
+    notCame: 0,
+    present: 0,
+    late: 0,
+    absent: 0,
+    excused: 0,
+    unmarked: 0,
+  };
   for (const p of people) {
     const status = marks[p.id]?.status;
     if (status && counts[status] !== undefined) counts[status]++;
     else counts.unmarked++;
   }
+  counts.came = counts.present + counts.late;
+  counts.notCame = counts.total - counts.came;
 
   return { marks, setStatus, setReason, setNote, setAll, dirty, counts };
 };
