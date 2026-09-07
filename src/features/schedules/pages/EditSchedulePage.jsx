@@ -11,7 +11,10 @@ import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
 
 // Queries
-import { useClassSchedule } from "@/features/schedules/queries/schedules.queries";
+import {
+  useClassSchedule,
+  useScheduleDraft,
+} from "@/features/schedules/queries/schedules.queries";
 import { useClasses } from "@/features/classes/queries/classes.queries";
 
 // Components
@@ -27,12 +30,35 @@ const EditSchedulePage = () => {
 
   const { data: schedules, isLoading, isError } = useClassSchedule(classId);
 
+  // Tugallanmagan tahrirning zaxirasi (faqat shu foydalanuvchiniki).
+  //
+  // ⚠️ Forma qoralama YUKLANIB BO'LGACH chiziladi: boshlang'ich holat bir
+  // marta o'qiladi va keyin proplar o'zgarsa ham qayta o'rnatilmaydi
+  // (odamning yozayotgani orqaga tashlanmasligi uchun). Kech kelgan
+  // qoralama shu sababli e'tiborsiz qolib ketardi.
+  //
+  // Qoralamani olishda xatolik bo'lsa sahifa ochilaveradi — zaxira
+  // qulaylik, jadvalni tahrirlashning sharti emas.
+  const {
+    data: draftData,
+    isLoading: isDraftLoading,
+    isError: isDraftError,
+  } = useScheduleDraft(classId);
+
   useEffect(() => {
     if (isError) {
       toast.error("Dars jadvalini yuklashda xatolik yuz berdi");
       navigate(`/schedules/${classId}`);
     }
   }, [isError, classId, navigate]);
+
+  useEffect(() => {
+    if (isDraftError) {
+      toast.warning("Tahrirni zaxiralash hozir ishlamayapti");
+    }
+  }, [isDraftError]);
+
+  const isReady = !isLoading && !isDraftLoading;
 
   return (
     <div className="space-y-4">
@@ -48,10 +74,17 @@ const EditSchedulePage = () => {
 
       <h1 className="page-title">Dars jadvalini tahrirlash - {className}</h1>
 
-      {isLoading ? (
+      {!isReady ? (
         <Card className="h-96 animate-pulse" />
       ) : (
-        <ScheduleForm classId={classId} initialSchedules={schedules || []} />
+        <ScheduleForm
+          key={classId}
+          classId={classId}
+          initialSchedules={schedules || []}
+          draft={draftData?.draft || null}
+          currentHash={draftData?.currentHash || null}
+          isStale={Boolean(draftData?.isStale)}
+        />
       )}
     </div>
   );

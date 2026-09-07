@@ -17,6 +17,32 @@ export const useSaveClassSchedule = () => {
   });
 };
 
+/**
+ * QORALAMANI ZAXIRALASH — forma buni tahrir tinchigach avtomatik chaqiradi.
+ *
+ * ⚠️ Cache ATAYLAB invalidatsiya qilinmaydi: qoralamaning yagona egasi —
+ * ochiq turgan forma. Qayta so'rov serverdagi nusxani qaytarib, odam
+ * yozayotgan paytda formani orqaga tashlab yuborardi.
+ */
+export const useSaveScheduleDraft = () =>
+  useMutation({
+    mutationFn: ({ classId, week, baseHash }) =>
+      schedulesAPI.saveDraft(classId, { week, baseHash }).then((r) => r.data),
+  });
+
+/** Qoralamani tashlash — "saqlangan jadvalga qaytish". */
+export const useDeleteScheduleDraft = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (classId) =>
+      schedulesAPI.deleteDraft(classId).then((r) => r.data),
+    onSuccess: (_data, classId) =>
+      qc.invalidateQueries({
+        queryKey: [...schedulesKeys.all, "class", classId, "draft"],
+      }),
+  });
+};
+
 /** Create or update a single schedule entry. */
 export const useCreateOrUpdateSchedule = () => {
   const qc = useQueryClient();

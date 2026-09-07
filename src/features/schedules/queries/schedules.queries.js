@@ -66,6 +66,37 @@ export const schedulesQueries = {
       queryKey: [...schedulesKeys.all, "all-today"],
       queryFn: () => schedulesAPI.getAllToday().then((r) => r.data.data),
     }),
+
+  /**
+   * Dars biriktirish uchun o'qituvchilar: `[{ id, fullName, subjectIds }]`.
+   *
+   * Ma'lumotnoma — kamdan-kam o'zgaradi, shuning uchun uzun `staleTime`.
+   */
+  teacherOptions: () =>
+    queryOptions({
+      queryKey: [...schedulesKeys.all, "teacher-options"],
+      queryFn: () =>
+        schedulesAPI.getTeacherOptions().then((r) => r.data.data),
+      staleTime: 10 * 60 * 1000,
+    }),
+
+  /**
+   * Sinf uchun MENING qoralamam:
+   * `{ draft: { week, baseHash, updatedAt } | null, currentHash, isStale }`.
+   *
+   * ⚠️ `staleTime: Infinity` — qoralamani faqat forma yozadi. Qayta so'rov
+   * tahrir o'rtasida serverdagi eski nusxani qaytarib, formani orqaga
+   * tashlab yuborardi.
+   */
+  draft: (classId) =>
+    queryOptions({
+      queryKey: [...schedulesKeys.all, "class", classId, "draft"],
+      queryFn: () => schedulesAPI.getDraft(classId).then((r) => r.data.data),
+      enabled: Boolean(classId),
+      staleTime: Infinity,
+      gcTime: 0,
+      retry: false,
+    }),
 };
 
 /**
@@ -76,3 +107,19 @@ export const schedulesQueries = {
  */
 export const useClassSchedule = (classId) =>
   useQuery(schedulesQueries.byClass(classId));
+
+/**
+ * Dars biriktirish uchun o'qituvchilar (fanlari bilan).
+ *
+ * @example
+ * const { data: teachers = [] } = useTeacherOptions();
+ */
+export const useTeacherOptions = () => useQuery(schedulesQueries.teacherOptions());
+
+/**
+ * Sinf jadvalining MENING qoralamam (tugallanmagan tahrir).
+ *
+ * @param {string} classId
+ */
+export const useScheduleDraft = (classId) =>
+  useQuery(schedulesQueries.draft(classId));

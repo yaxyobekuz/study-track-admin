@@ -12,7 +12,7 @@ import {
 // Components
 import Button from "@/shared/components/ui/button/Button";
 import Tooltip from "@/shared/components/ui/tooltip/Tooltip";
-import ConfirmPopover from "./ConfirmPopover";
+import ConfirmPopover from "@/shared/components/ui/ConfirmPopover";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
