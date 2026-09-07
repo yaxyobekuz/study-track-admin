@@ -201,8 +201,19 @@ const Routes = () => {
             <Route path="/education" element={<AcademicDashboardPage />} />
             {/* "Inventar" tabi — moddiy-texnik baza. Inventar
                 bo'limidagi "Dashboard" tabi bilan AYNI sahifa: ikki
-                kirish nuqtasi, bitta ekran (moliya bilan bir xil naqsh). */}
-            <Route path="/assets" element={<InventoryDashboardPage />} />
+                kirish nuqtasi, bitta ekran (moliya bilan bir xil naqsh).
+
+                ⚠️ YO'L NOMI `/assets` BO'LMAYDI va bu qattiq cheklov.
+                Vite qurilmani `dist/assets/` ga yozadi, nginx esa shu
+                papkani STATIK fayl sifatida beradi — ya'ni brauzerda
+                `/assets` da turib "yangilash" bosilganda so'rov React
+                routerga umuman yetib bormaydi: nginx haqiqiy papkani
+                topadi, ro'yxatlash yopiq bo'lgani uchun **403
+                Forbidden** qaytaradi. Sahifa ichida yurganda ishlab,
+                faqat refreshda buziladi — shuning uchun buni topish
+                qiyin. Xuddi shu sabab `/favicon.svg` yoki `/index.html`
+                ham marshrut nomi bo'la olmaydi. */}
+            <Route path="/equipment" element={<InventoryDashboardPage />} />
             {/* "Faollik" tabi — tizimdan kim foydalanyapti. Moliya,
                 ta'lim va inventar "nima bo'lyapti" ni ko'rsatadi, bu esa
                 "kim ishlatyapti" ni: rahbar uchun bu to'rtinchi savol.
@@ -210,7 +221,7 @@ const Routes = () => {
                 ⚠️ AYNI SAHIFA `/activity` da ham ochiladi (sidebar).
                 Ikki kirish nuqtasi, bitta ekran — moliya
                 (`/reports` + `/finance/main/dashboard`) va inventar
-                (`/assets` + `/inventory/dashboard`) bilan bir xil
+                (`/equipment` + `/inventory/dashboard`) bilan bir xil
                 naqsh. Yo'l ikkita, chunki tab HomeLayout ICHIDA
                 bo'lishi kerak, sidebar havolasi esa undan tashqarida. */}
             <Route path="/pulse" element={<ActivityDashboardPage />} />

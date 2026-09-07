@@ -747,7 +747,7 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/finance/main/discounts", key: "discounts.view" },
   // Inventar dashboardi bosh sahifaning "Inventar" tabida — moliya
   // hisobotlari `/reports` da turgani bilan bir xil naqsh
-  { prefix: "/assets", key: "inventory.dashboard" },
+  { prefix: "/equipment", key: "inventory.dashboard" },
   // Inventar bo'limiga kirish `inventory.view` bilan; monitoring va zarar
   // tablari esa o'z kalitini talab qiladi (eng UZUN mos prefiks yutadi).
   { prefix: "/inventory", key: "inventory.view" },

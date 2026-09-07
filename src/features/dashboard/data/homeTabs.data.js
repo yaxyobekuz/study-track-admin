@@ -42,8 +42,12 @@ export const HOME_TABS = [
   // Xatlov ekraniga kirish huquqi bu tabni ochmaydi: bu yerda bazaning
   // pul qiymati va qarzdorlik qoldig'i turadi
   // (`server/src/utils/permissions.js` dagi izoh).
+  //
+  // ⚠️ YO'L `/assets` EMAS (`app/routes.jsx` dagi to'liq izoh): u
+  // qurilma papkasi (`dist/assets/`) bilan to'qnashadi va sahifa
+  // yangilanganda nginx 403 qaytaradi.
   {
-    to: "/assets",
+    to: "/equipment",
     label: "Inventar",
     can: "inventory.dashboard",
     exact: false,
