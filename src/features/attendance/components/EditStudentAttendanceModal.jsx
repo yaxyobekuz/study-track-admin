@@ -1,28 +1,22 @@
 // Toast
 import { toast } from "sonner";
 
-// TanStack Query
-import { useQuery } from "@tanstack/react-query";
-
 // Utils
 import { cn } from "@/shared/utils/cn";
 import { formatDateUz } from "@/shared/utils/date.utils";
 
 // Components
 import Input from "@/shared/components/ui/input/Input";
-import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import CallButton from "@/shared/components/ui/CallButton";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
-import { attendanceQueries } from "../queries/attendance.queries";
 import { useMarkStudentAttendance } from "../queries/attendance.mutations";
 
 // Data
 import { MARK_STATUS_OPTIONS, MARK_SELECTED_COLORS } from "../data/attendance.data";
-import { reasonsForRole } from "../data/absenceReason.data";
 
 // O'quvchining sinf nomi: yozuvdagi sinf, bo'lmasa birinchi sinfi
 const resolveClassName = (student, classId) => {
@@ -39,6 +33,9 @@ const resolveClassName = (student, classId) => {
  * yerda to'liq ko'rinadi: kelmagan bolaning ota-onasiga darhol qo'ng'iroq
  * qilish uchun ro'yxatdan chiqib ketish shart emas.
  *
+ * ⚠️ Sabab KATEGORIYASI so'ralmaydi: holatni to'g'rilash uchun ro'yxatdan
+ * nimadir tanlash shart emas, bitta IXTIYORIY izoh yetadi.
+ *
  * `openModal("editStudentAttendance", { row, date })` — `row` server `row`
  * shakli (`{ student, attendance, classId }`), `date` — `YYYY-MM-DD`.
  */
@@ -53,32 +50,18 @@ const Content = ({ close, isLoading, setIsLoading, row, date }) => {
   const attendance = row?.attendance;
 
   // Yopilganda oyna unmount bo'ladi - har ochilishda qatordagi holat yangidan olinadi
-  const { status, absenceReasonId, note, setField } = useObjectState({
+  const { status, note, setField } = useObjectState({
     status: attendance?.status || null,
-    absenceReasonId: attendance?.absenceReason || null,
     note: attendance?.excuseReason || "",
   });
-
-  // Faol "Kelmaslik sabablari" - faqat o'quvchi roliga tegishlilari
-  const { data: reasons = [] } = useQuery(attendanceQueries.activeAbsenceReasons());
-  const reasonOptions = reasonsForRole(reasons, "student").map((r) => ({
-    label: r.title,
-    value: r.id,
-  }));
 
   const { mutate: save } = useMarkStudentAttendance();
 
   if (!student) return null;
 
-  const isExcused = status === "excused";
-
   const handleSave = () => {
     if (!status) {
       toast.warning("Holatni tanlang");
-      return;
-    }
-    if (isExcused && !absenceReasonId) {
-      toast.warning("'Sababli' uchun sabab tanlang");
       return;
     }
     if (!row.classId) {
@@ -91,14 +74,8 @@ const Content = ({ close, isLoading, setIsLoading, row, date }) => {
       {
         classId: row.classId,
         date,
-        records: [
-          {
-            studentId: student.id,
-            status,
-            absenceReason: isExcused ? absenceReasonId : undefined,
-            excuseReason: isExcused ? note : undefined,
-          },
-        ],
+        // Izoh ixtiyoriy va har qanday holatda yuboriladi (kategoriya yo'q)
+        records: [{ studentId: student.id, status, excuseReason: note || "" }],
       },
       {
         onSuccess: () => {
@@ -157,30 +134,18 @@ const Content = ({ close, isLoading, setIsLoading, row, date }) => {
         </div>
       </div>
 
-      {/* Sabab: faqat "Sababli" holatda - kategoriya (majburiy) + izoh (ixtiyoriy) */}
-      {isExcused && (
-        <div className="space-y-2">
-          {reasonOptions.length === 0 ? (
-            <p className="text-xs text-red-500">
-              O&apos;quvchilar uchun sabab yo&apos;q - avval qo&apos;shing
-            </p>
-          ) : (
-            <Select
-              value={absenceReasonId || undefined}
-              options={reasonOptions}
-              placeholder="Sabab tanlang"
-              triggerClassName="w-full"
-              onChange={(v) => setField("absenceReasonId", v)}
-            />
-          )}
-          <Input
-            value={note}
-            maxLength={300}
-            placeholder="Izoh (ixtiyoriy)"
-            onChange={(e) => setField("note", e.target.value)}
-          />
-        </div>
-      )}
+      {/* Izoh — IXTIYORIY va har qanday holatda ochiq */}
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">
+          Izoh <span className="font-normal text-gray-400">(ixtiyoriy)</span>
+        </p>
+        <Input
+          value={note}
+          maxLength={300}
+          placeholder="Masalan: kechikib keldi, ota-onasi ogohlantirdi"
+          onChange={(e) => setField("note", e.target.value)}
+        />
+      </div>
 
       <div className="flex flex-col-reverse gap-4 xs:flex-row xs:justify-end">
         <Button

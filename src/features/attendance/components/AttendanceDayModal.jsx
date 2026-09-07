@@ -76,15 +76,14 @@ const Content = ({ close, record, variant = "staff", user }) => {
     );
   }
 
-  // Katalogdan tanlangan sabab va erkin izoh — ikki xil narsa
-  rows.push({
-    label: "Sabab",
-    value: record.absenceReason?.title ?? "Ko'rsatilmagan",
-  });
-
-  if (record.excuseReason) {
-    rows.push({ label: "Izoh", value: record.excuseReason });
+  // ⚠️ Sabab KATEGORIYASI faqat XODIM tomonida qoldi — u tasdiqlangan
+  // "Uzrli so'rov" dan tushadi. Qo'lda belgilashda (o'quvchi ham, xodim ham)
+  // kategoriya so'ralmaydi, faqat ixtiyoriy izoh yoziladi.
+  if (isStaff && record.absenceReason?.title) {
+    rows.push({ label: "Sabab", value: record.absenceReason.title });
   }
+
+  rows.push({ label: "Izoh", value: record.excuseReason || "—" });
 
   rows.push({
     label: "Qayd etilgan",

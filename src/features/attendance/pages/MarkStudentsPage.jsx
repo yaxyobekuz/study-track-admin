@@ -20,10 +20,7 @@ import AttendanceMarkTable from "../components/AttendanceMarkTable";
 import MarkToolbar from "../components/MarkToolbar";
 
 // Queries & hooks
-import {
-  attendanceQueries,
-  studentAttendanceQueries,
-} from "../queries/attendance.queries";
+import { studentAttendanceQueries } from "../queries/attendance.queries";
 import { useMarkStudentAttendance } from "../queries/attendance.mutations";
 import useMarkAttendance from "../hooks/useMarkAttendance";
 
@@ -62,11 +59,6 @@ const MarkStudentsPage = () => {
   const selectedClassId = isAll ? "" : classId || classes[0]?.id || "";
   const selectValue = classId || classes[0]?.id; // SelectSearch ko'rsatadigan qiymat
 
-  // Barcha aktiv "Kelmaslik sabablari" (jadvalda rol bo'yicha filtrlanadi)
-  const { data: reasons = [] } = useQuery(
-    attendanceQueries.activeAbsenceReasons(),
-  );
-
   // Sinf rejimi - shu sinf; "Barcha sinflar" - to'liq ro'yxat BIR MARTA yuklanadi
   // (serverga faqat sana ketadi), filtr/qidiruv esa shu yerda - tez bo'lsin.
   // Belgilash paytida fokus qaytganda qayta yuklanmaydi - tanlovlar o'chib ketmasin.
@@ -103,7 +95,6 @@ const MarkStudentsPage = () => {
         className: cls?.name || null,
         originalStatus: attendance?.status || null,
         defaultStatus: attendance?.status || null, // belgilanmagan -> BO'SH
-        originalReasonId: attendance?.absenceReason || null,
         originalNote: attendance?.excuseReason || "",
       };
     })
@@ -114,7 +105,7 @@ const MarkStudentsPage = () => {
     );
 
   const syncKey = data ? dataUpdatedAt : null;
-  const { marks, setStatus, setReason, setNote, setAll, dirty, counts } =
+  const { marks, setStatus, setNote, setAll, dirty, counts } =
     useMarkAttendance(people, syncKey);
 
   // Ko'rinib turgan qatorlar - SAQLANGAN holat bo'yicha (joriy tanlov emas)
@@ -130,15 +121,6 @@ const MarkStudentsPage = () => {
   const handleSave = () => {
     if (dirty.length === 0) return;
 
-    // "Sababli" uchun sabab majburiy
-    const missing = dirty.find(
-      (p) => marks[p.id].status === "excused" && !marks[p.id].absenceReasonId,
-    );
-    if (missing) {
-      toast.warning("'Sababli' belgilangan o'quvchi uchun sabab tanlang");
-      return;
-    }
-
     // Sinfsiz o'quvchi uchun yozuv qaysi sinfga tegishli ekani noma'lum
     const noClass = dirty.find((p) => !p.classId);
     if (noClass) {
@@ -151,17 +133,13 @@ const MarkStudentsPage = () => {
         // Yuqori darajadagi sinf faqat sinf rejimida; har yozuvda o'z sinfi
         classId: isAll ? undefined : selectedClassId,
         date,
-        records: dirty.map((p) => {
-          const m = marks[p.id];
-          const excused = m.status === "excused";
-          return {
-            studentId: p.id,
-            classId: p.classId,
-            status: m.status,
-            absenceReason: excused ? m.absenceReasonId : undefined,
-            excuseReason: excused ? m.note : undefined,
-          };
-        }),
+        // Izoh ixtiyoriy va har qanday holatda yuboriladi (kategoriya yo'q)
+        records: dirty.map((p) => ({
+          studentId: p.id,
+          classId: p.classId,
+          status: marks[p.id].status,
+          excuseReason: marks[p.id].note || "",
+        })),
       },
       {
         onSuccess: () => toast.success("O'quvchilar davomati saqlandi"),
@@ -250,9 +228,7 @@ const MarkStudentsPage = () => {
           showPhone
           people={visible}
           marks={marks}
-          reasons={reasons}
           onStatusChange={setStatus}
-          onReasonChange={setReason}
           onNoteChange={setNote}
         />
       )}

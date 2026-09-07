@@ -4,13 +4,13 @@ import { useState } from "react";
 /**
  * Davomat belgilash holatini boshqaradi (o'quvchilar va xodimlar uchun umumiy).
  *
- * `people` - [{ id, role, originalStatus, defaultStatus, originalReasonId, originalNote }]
+ * `people` - [{ id, role, originalStatus, defaultStatus, originalNote }]
  *   - originalStatus: bazadagi joriy status (dirty hisoblash uchun, belgilanmagan bo'lsa null)
  *   - defaultStatus: dastlabki tanlov (belgilanmagan bo'lsa null — avtomatik "Keldi" YO'Q)
- *   - originalReasonId / originalNote: "Sababli" holatdagi tanlangan sabab va izoh
+ *   - originalNote: yozuvdagi izoh (ixtiyoriy, har qanday holatda yoziladi)
  * `syncKey` - ma'lumot yangilanganda marks ni qayta tiklash kaliti (masalan, query.dataUpdatedAt)
  *
- * @returns {{ marks, setStatus, setReason, setNote, setAll, dirty, counts }}
+ * @returns {{ marks, setStatus, setNote, setAll, dirty, counts }}
  */
 const useMarkAttendance = (people, syncKey) => {
   const [marks, setMarks] = useState({});
@@ -25,7 +25,6 @@ const useMarkAttendance = (people, syncKey) => {
           p.id,
           {
             status: p.defaultStatus ?? p.originalStatus ?? null,
-            absenceReasonId: p.originalReasonId || null,
             note: p.originalNote || "",
           },
         ]),
@@ -35,9 +34,6 @@ const useMarkAttendance = (people, syncKey) => {
 
   const setStatus = (id, status) =>
     setMarks((prev) => ({ ...prev, [id]: { ...prev[id], status } }));
-
-  const setReason = (id, absenceReasonId) =>
-    setMarks((prev) => ({ ...prev, [id]: { ...prev[id], absenceReasonId } }));
 
   const setNote = (id, note) =>
     setMarks((prev) => ({ ...prev, [id]: { ...prev[id], note } }));
@@ -57,17 +53,15 @@ const useMarkAttendance = (people, syncKey) => {
       return next;
     });
 
-  // Bazadagidan farq qiladigan (saqlanadigan) yozuvlar
+  // Bazadagidan farq qiladigan (saqlanadigan) yozuvlar.
+  // Izoh HAR QANDAY holatda hisobga olinadi: faqat izohni to'g'rilash ham
+  // saqlanishi kerak (kategoriya endi umuman yo'q).
   const dirty = people.filter((p) => {
     const m = marks[p.id] || {};
     const current = m.status || null;
     if (!current) return false;
     if (current !== (p.originalStatus || null)) return true;
-    if (current === "excused") {
-      if ((m.absenceReasonId || null) !== (p.originalReasonId || null)) return true;
-      if ((m.note || "") !== (p.originalNote || "")) return true;
-    }
-    return false;
+    return (m.note || "").trim() !== (p.originalNote || "").trim();
   });
 
   // Joriy tanlovlar bo'yicha yig'indi (jonli). Kalitlar server `summary` bilan
@@ -91,7 +85,7 @@ const useMarkAttendance = (people, syncKey) => {
   counts.came = counts.present + counts.late;
   counts.notCame = counts.total - counts.came;
 
-  return { marks, setStatus, setReason, setNote, setAll, dirty, counts };
+  return { marks, setStatus, setNote, setAll, dirty, counts };
 };
 
 export default useMarkAttendance;

@@ -28,7 +28,7 @@ import {
 import { buildRoleOptions, buildRoleLabelMap } from "../data/attendance.data";
 import useMarkAttendance from "../hooks/useMarkAttendance";
 import { useRoles } from "@/features/roles/queries/roles.queries";
-import { attendanceKeys, attendanceQueries } from "../queries/attendance.queries";
+import { attendanceKeys } from "../queries/attendance.queries";
 
 const MarkStaffPage = () => {
   const { date, filterSlot } = useOutletContext();
@@ -41,11 +41,6 @@ const MarkStaffPage = () => {
   );
   const roleOptions = buildRoleOptions(roles);
   const roleLabelMap = buildRoleLabelMap(allRoles);
-
-  // Barcha aktiv "Kelmaslik sabablari" (jadvalda rol bo'yicha filtrlanadi)
-  const { data: reasons = [] } = useQuery(
-    attendanceQueries.activeAbsenceReasons(),
-  );
 
   const { data, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ["attendance", "mark-staff", { role, date }],
@@ -75,13 +70,12 @@ const MarkStaffPage = () => {
         role: r.user.role,
         originalStatus: persisted,
         defaultStatus: persisted,
-        originalReasonId: r.absenceReason || null,
         originalNote: r.excuseReason || "",
       };
     });
 
   const syncKey = data ? dataUpdatedAt : null;
-  const { marks, setStatus, setReason, setNote, setAll, dirty, counts } =
+  const { marks, setStatus, setNote, setAll, dirty, counts } =
     useMarkAttendance(people, syncKey);
 
   const { mutate: save, isPending } = useMutation({
@@ -97,27 +91,14 @@ const MarkStaffPage = () => {
   const handleSave = () => {
     if (dirty.length === 0) return;
 
-    // "Sababli" uchun sabab majburiy
-    const missing = dirty.find(
-      (p) => marks[p.id].status === "excused" && !marks[p.id].absenceReasonId,
-    );
-    if (missing) {
-      toast.warning("'Sababli' belgilangan xodim uchun sabab tanlang");
-      return;
-    }
-
     save({
       date,
-      records: dirty.map((p) => {
-        const m = marks[p.id];
-        const excused = m.status === "excused";
-        return {
-          userId: p.id,
-          status: m.status,
-          absenceReason: excused ? m.absenceReasonId : undefined,
-          excuseReason: excused ? m.note : undefined,
-        };
-      }),
+      // Izoh ixtiyoriy va har qanday holatda yuboriladi (kategoriya yo'q)
+      records: dirty.map((p) => ({
+        userId: p.id,
+        status: marks[p.id].status,
+        excuseReason: marks[p.id].note || "",
+      })),
     });
   };
 
@@ -162,9 +143,7 @@ const MarkStaffPage = () => {
         <AttendanceMarkTable
           people={people}
           marks={marks}
-          reasons={reasons}
           onStatusChange={setStatus}
-          onReasonChange={setReason}
           onNoteChange={setNote}
         />
       )}
