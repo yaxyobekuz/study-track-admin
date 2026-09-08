@@ -61,8 +61,17 @@ const Content = ({ close, isLoading, setIsLoading, month }) => {
       {
         onSuccess: (summary) => {
           close();
+
+          // ⚠️ Bekordan qaytarilgani ALOHIDA aytiladi: u yangi qator emas,
+          // lekin registrda paydo bo'ladi. Jim qolsa, "0 ta yaratildi"
+          // degan xabar bilan birga 162 ta qator chiqib kelardi.
+          const parts = [];
+          if (summary.created > 0) parts.push(`${summary.created} ta shakllantirildi`);
+          if (summary.restored > 0)
+            parts.push(`${summary.restored} tasi bekordan qaytarildi`);
+
           toast.success(
-            `${summary.created} ta majburiyat shakllantirildi (${formatMoney(summary.totalAmount)})`,
+            `${parts.join(", ") || "Yangi majburiyat yo'q"} (${formatMoney(summary.totalAmount)})`,
           );
         },
         onError: handleError,
@@ -95,6 +104,14 @@ const Content = ({ close, isLoading, setIsLoading, month }) => {
               <p className="text-lg font-semibold text-gray-900">
                 {preview.created}
               </p>
+              {/* Bekor qilinganlari SHU TUGMA bilan qaytadi — oldindan
+                  ko'rinmasa, "0 ta yaratiladi" degan raqam odamni tugmani
+                  bosishdan qaytarardi */}
+              {preview.restored > 0 && (
+                <p className="mt-0.5 text-xs text-blue-600">
+                  + {preview.restored} tasi bekordan qaytariladi
+                </p>
+              )}
             </div>
             <div className="rounded-xl border border-gray-100 p-3">
               <p className="text-xs text-gray-500">Umumiy summa</p>
@@ -132,7 +149,7 @@ const Content = ({ close, isLoading, setIsLoading, month }) => {
             </div>
           )}
 
-          {preview.created === 0 && (
+          {preview.created === 0 && preview.restored === 0 && (
             <p className="text-sm text-gray-500">
               Yangi majburiyat yaratilmaydi — hammasi allaqachon shakllantirilgan.
             </p>
@@ -166,7 +183,7 @@ const Content = ({ close, isLoading, setIsLoading, month }) => {
             type="button"
             autoFocus
             onClick={runReal}
-            disabled={isLoading || preview.created === 0}
+            disabled={isLoading || (preview.created === 0 && preview.restored === 0)}
             className="w-full xs:w-40"
           >
             Tasdiqlash
