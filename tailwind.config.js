@@ -83,6 +83,36 @@ export default {
         "in-out-sine": "cubic-bezier(0.37, 0, 0.63, 1)",
       },
       keyframes: {
+        /* ─── Dars soatlari ("Ledger") ───────
+         *
+         * Registr tili: yozuv DAFTARGA TUSHADI. Shuning uchun kirish
+         * harakati pastdan yuqoriga emas, chap relsdan boshlanadi —
+         * avval chiziq chiziladi, keyin qator to'ladi.
+         *
+         * ⚠️ UZLUKSIZ HARAKAT — IKKITA, ko'p emas (`Atlas` va `Puls`
+         * bilan bir xil byudjet): `tide` hero'da, `flow-dash` sxemada.
+         * Uchinchisi qo'shilsa ekran "reklama banneri" bo'lib qolardi. */
+        post: {
+          "0%": { opacity: "0", transform: "translateY(11px)" },
+          "55%": { opacity: "1" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "rail-draw": {
+          "0%": { transform: "scaleY(0)" },
+          "100%": { transform: "scaleY(1)" },
+        },
+        /* Sxemadagi bog'lovchilar: soat jadvaldan oylikka OQIB o'tadi.
+         * `stroke-dashoffset` — sof bo'yash, layout'ga tegmaydi. */
+        "flow-dash": {
+          "0%": { strokeDashoffset: "28" },
+          "100%": { strokeDashoffset: "0" },
+        },
+        /* Hero fonidagi sekin suzuvchi yorug'lik. `background-position`
+         * — kompozit qatlam, `useFitRows` o'lchovini buzmaydi. */
+        tide: {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
         "fade-up": {
           "0%": { opacity: "0", transform: "translateY(14px) scale(0.985)" },
           "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
@@ -283,6 +313,12 @@ export default {
         },
       },
       animation: {
+        /* ─── Dars soatlari ("Ledger") ─── */
+        post: "post 620ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "rail-draw": "rail-draw 520ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "flow-dash": "flow-dash 1.5s linear infinite",
+        tide: "tide 14s cubic-bezier(0.37, 0, 0.63, 1) infinite",
+
         "fade-up": "fade-up 640ms cubic-bezier(0.22, 1, 0.36, 1) both",
         breathe: "breathe 3.2s cubic-bezier(0.37, 0, 0.63, 1) infinite",
         "shimmer-x": "shimmer-x 7s linear infinite",

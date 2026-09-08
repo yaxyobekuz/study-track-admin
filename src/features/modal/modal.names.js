@@ -167,6 +167,14 @@ export const MODAL_NAMES = [
   "incomePlans",
   "tariffDirections",
 
+  // Dars soatlari va o'rinbosarlik
+  //
+  // ⚠️ "almashtirish" EMAS: bu so'z tizimda FILIAL almashtirishni
+  // bildiradi, shuning uchun modul bo'ylab "o'rinbosar" ishlatiladi.
+  "teacherHours",
+  "createSubstitution",
+  "cancelSubstitution",
+
   // Moliya - ta'til
   "markVacation",
 

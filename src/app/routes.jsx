@@ -148,6 +148,14 @@ import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
 import ExternalIncomePage from "@/features/externalIncome/pages/ExternalIncomePage";
 import PayrollPage from "@/features/payroll/pages/PayrollPage";
 
+// Pages - Dars soatlari va o'rinbosarlik
+import LessonHoursLayout from "@/features/lessonHours/layouts/LessonHoursLayout";
+import LessonHoursIndex from "@/features/lessonHours/layouts/LessonHoursIndex";
+import LessonHoursOverviewPage from "@/features/lessonHours/pages/LessonHoursOverviewPage";
+import LessonHoursLedgerPage from "@/features/lessonHours/pages/LessonHoursLedgerPage";
+import SubstitutionsPage from "@/features/lessonHours/pages/SubstitutionsPage";
+import LessonLoadPage from "@/features/lessonHours/pages/LessonLoadPage";
+
 // Pages - Inventar (moddiy-texnik baza)
 import InventoryLayout from "@/features/inventory/layouts/InventoryLayout";
 import InventoryIndex from "@/features/inventory/layouts/InventoryIndex";
@@ -228,6 +236,11 @@ const Routes = () => {
             {/* "Xavfsizlik" tabi — sidebardagi `/security` bilan AYNI
                 sahifa. Ikki yo'l, bitta ekran (Faollik bilan bir xil
                 sabab: tab HomeLayout ichida bo'lishi shart). */}
+            {/* Bosh sahifadagi "Dars soatlari" tabi — bo'limdagi
+                "Ko'rsatkichlar" sahifasi bilan AYNI ekran (moliya va
+                inventar bilan bir xil naqsh: ikki kirish nuqtasi, bitta
+                sahifa). */}
+            <Route path="/lesson-load" element={<LessonLoadPage />} />
             <Route path="/watch" element={<SecurityPage />} />
           </Route>
 
@@ -423,6 +436,16 @@ const Routes = () => {
             path="/student-attendance/today"
             element={<Navigate to="/attendance/daily/students" replace />}
           />
+
+          {/* Dars soatlari — soat, maosh rejimi va o'rinbosarlik */}
+          <Route path="/lesson-hours" element={<LessonHoursLayout />}>
+            {/* Ruxsati bor birinchi tab — faqat o'rinbosarlik huquqi
+                bo'lgan xodim "Ruxsat yo'q" ekraniga tushmaydi */}
+            <Route index element={<LessonHoursIndex />} />
+            <Route path="overview" element={<LessonHoursOverviewPage />} />
+            <Route path="ledger" element={<LessonHoursLedgerPage />} />
+            <Route path="substitutions" element={<SubstitutionsPage />} />
+          </Route>
 
           {/* Moliya bo'limi - bitta sahifa, ichida tablar */}
           <Route path="/finance" element={<Navigate to="/finance/main" replace />} />

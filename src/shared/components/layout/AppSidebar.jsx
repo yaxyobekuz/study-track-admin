@@ -18,6 +18,7 @@ import {
   Wallet,
   Boxes,
   Radar,
+  Timer,
 } from "lucide-react";
 
 // Router
@@ -236,6 +237,35 @@ const navItems = [
       {
         title: "Sozlamalar",
         url: "/coin-settings",
+      },
+    ],
+  },
+  {
+    // DARS SOATLARI — moliyadan ALOHIDA guruh va bu ataylab.
+    //
+    // Bo'lim ikki auditoriyaga xizmat qiladi: boshliq maosh rejimini
+    // belgilaydi (`payroll.hours`), o'quv ishlari mas'uli esa kasal
+    // o'qituvchining darsini ko'chiradi (`substitutions.*`). Ikkinchisiga
+    // moliya bo'limini ochib berish "dars ko'chirish uchun qarzdorlik
+    // registrini ham ko'r" degani bo'lardi.
+    //
+    // ⚠️ Bo'g'inlar RUXSAT bo'yicha o'zi filtrlanadi (`permissionForPath`),
+    // shuning uchun bu yerda hech qanday shart yozilmaydi.
+    title: "Dars soatlari",
+    icon: Timer,
+    isActive: false,
+    items: [
+      {
+        title: "Ko'rsatkichlar",
+        url: "/lesson-hours/overview",
+      },
+      {
+        title: "Vedomost",
+        url: "/lesson-hours/ledger",
+      },
+      {
+        title: "O'rinbosarlik",
+        url: "/lesson-hours/substitutions",
       },
     ],
   },

@@ -70,7 +70,29 @@ export const HOME_TABS = [
     can: "activity.view",
     exact: false,
   },
-  // "Xavfsizlik" — beshinchi va oxirgi savol: "tizim ishonchlimi".
+  // "Dars soatlari" — beshinchi savol: "o'qituvchilar qancha ishlaydi va
+  // bu bizga qanchaga tushadi".
+  //
+  // Moliya PULNI, ta'lim O'QISHNI ko'rsatadi; bu esa ikkalasining
+  // kesishgan joyi — akademik soat. Rahbar uchun bu bosh sahifadan
+  // ochiladigan savol, chunki maktabning eng katta xarajati aynan shu
+  // raqamdan chiqadi.
+  //
+  // ⚠️ `payroll.hours` — `payroll.view` DAN ALOHIDA kalit. Qarzdorlik
+  // registriga kirish huquqi bu tabni ochmaydi va aksincha
+  // (`server/src/utils/permissions.js` dagi izoh).
+  //
+  // ⚠️ `/lesson-load` va `/lesson-hours/overview` — AYNI sahifa. Tab
+  // `HomeLayout` ichida bo'lishi kerak (aks holda tab paneli yo'qoladi),
+  // bo'limning o'z yo'li esa undan tashqarida — Faollik va Xavfsizlik
+  // bilan bir xil naqsh.
+  {
+    to: "/lesson-load",
+    label: "Dars soatlari",
+    can: "payroll.hours",
+    exact: false,
+  },
+  // "Xavfsizlik" — oltinchi va oxirgi savol: "tizim ishonchlimi".
   //
   // Faollik "kim ishlatyapti" ni ko'rsatadi, bu esa "kim kirdi" ni.
   // Ikkalasi qo'shni, lekin bir xil emas: birinchisi kadrlar qarori,

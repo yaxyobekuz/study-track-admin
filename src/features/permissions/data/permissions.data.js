@@ -18,6 +18,7 @@ export const SECTIONS = {
   CLUBS: "clubs",
   SCHEDULES: "schedules",
   PLANNER: "planner",
+  SUBSTITUTIONS: "substitutions",
   TOPICS: "topics",
   CLASSES: "classes",
   SUBJECTS: "subjects",
@@ -416,12 +417,38 @@ export const PERMISSION_SECTIONS = [
     // Amallar ATAYLAB mayda: qoida biriktirish (kimga qancha oylik) va
     // to'lash (pulni kassadan chiqarish) — ikki xil mas'uliyat. Buxgalter
     // to'laydi, lekin oylik miqdorini o'zi belgilay olmasligi kerak.
+    // DARS O'RINBOSARLIGI — "kim kimning o'rniga dars o'tadi".
+    //
+    // ⚠️ ATAMA: "almashtirish" EMAS — u tizimda FILIAL almashtirishni
+    // bildiradi. Yorliqlarda "o'rinbosar".
+    //
+    // Amallar ATAYLAB mayda: o'rinbosarlik BIR VAQTDA uch narsani
+    // harakatlantiradi — jurnal huquqini, jarima mas'uliyatini va
+    // OYLIKNI. Bekor qilish esa o'tgan davr soatini egasiga qaytaradi,
+    // ya'ni pulga tegadi.
+    //
+    // ⚠️ Server katalogi bilan QO'LDA sinxron:
+    // `server/src/utils/permissions.js`.
+    key: SECTIONS.SUBSTITUTIONS,
+    label: "Dars o'rinbosarligi",
+    group: "Ta'lim",
+    actions: [
+      A.view,
+      { key: "create", label: "O'rinbosar biriktirish" },
+      { key: "cancel", label: "Bekor qilish" },
+    ],
+  },
+  {
     key: SECTIONS.PAYROLL,
     label: "Xodimlar oyligi",
     group: "Moliya",
     actions: [
       A.view,
       { key: "assign", label: "Oylik belgilash" },
+      // DARS SOATI HISOBOTI — `view` DAN ALOHIDA. `payroll.view` qarzdorlik
+      // registri ("kimga qancha qarzdormiz"), bu esa butun shtatning dars
+      // yuklamasi va jonli maosh prognozi: boshqa savol, boshqa qaror.
+      { key: "hours", label: "Dars soatlari hisoboti" },
       { key: "generate", label: "Oylik shakllantirish" },
       { key: "pay", label: "To'lash" },
       { key: "void", label: "To'lovni bekor qilish" },
@@ -745,6 +772,15 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/finance", key: "finance.view" },
   { prefix: "/finance/main/tariffs", key: "tariffs.view" },
   { prefix: "/finance/main/discounts", key: "discounts.view" },
+  // Dars soatlari — ichida ikki xil ruxsatli tab bor, shuning uchun
+  // eng UZUN prefiks yutadigan qoidaga tayanamiz: bo'limga kirish
+  // `payroll.hours` bilan, o'rinbosarlik tabiga esa o'z kaliti bilan.
+  { prefix: "/lesson-hours/substitutions", key: "substitutions.view" },
+  { prefix: "/lesson-hours", key: "payroll.hours" },
+  // Bosh sahifadagi "Dars soatlari" tabi — `/lesson-hours/overview` bilan
+  // AYNI sahifa, shuning uchun kalit ham bir xil (moliya `/reports` bilan
+  // bir xil naqsh).
+  { prefix: "/lesson-load", key: "payroll.hours" },
   // Inventar dashboardi bosh sahifaning "Inventar" tabida — moliya
   // hisobotlari `/reports` da turgani bilan bir xil naqsh
   { prefix: "/equipment", key: "inventory.dashboard" },
