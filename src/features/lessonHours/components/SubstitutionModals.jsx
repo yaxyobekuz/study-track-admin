@@ -149,7 +149,11 @@ const CreateSubstitutionForm = ({ close, isLoading, setIsLoading, teacherId }) =
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* ── 1. Kim va kim ────────────────────────────────────── */}
-      <div className="grid grid-cols-1 items-end gap-2.5 sm:grid-cols-[1fr_auto_1fr]">
+      {/* ⚠️ `items-end` EMAS, `items-start`. Tanlagich ro'yxati OQIM ICHIDA
+          ochiladi (portal emas — `TeacherPicker` sarlavhasiga qarang), ya'ni
+          bitta katak balandligi o'zgaradi. Pastdan tekislansa, qo'shni
+          maydon ro'yxat ochilganda pastga sirg'alib ketardi. */}
+      <div className="grid grid-cols-1 items-start gap-2.5 sm:grid-cols-[1fr_auto_1fr]">
         <Field label="Dars egasi">
           <TeacherPicker
             value={originalTeacherId}
@@ -166,7 +170,9 @@ const CreateSubstitutionForm = ({ close, isLoading, setIsLoading, teacherId }) =
           />
         </Field>
 
-        <span className="hidden pb-3 sm:block">
+        {/* Yorliq balandligi (22px) + maydon balandligining yarmi (22px)
+            — o'q aynan maydonlar o'rtasiga to'g'ri keladi. */}
+        <span className="mt-[22px] hidden h-11 items-center sm:flex">
           <ArrowRight className="size-4 text-slate-300" strokeWidth={2} />
         </span>
 
@@ -237,7 +243,10 @@ const CreateSubstitutionForm = ({ close, isLoading, setIsLoading, teacherId }) =
             Bu davrda ushbu o'qituvchining darslari topilmadi
           </p>
         ) : (
-          <ul className="max-h-[240px] space-y-1.5 overflow-y-auto hidden-scrollbar pr-1">
+          // ⚠️ `hidden-scrollbar` QO'YILMAYDI: bu ro'yxatda aylantirish
+          // asosiy harakat va yashirilgan aylantirgich "ro'yxat shu yerda
+          // tugadi" degan taassurot berardi.
+          <ul className="max-h-[240px] space-y-1.5 overflow-y-auto pr-1">
             {lessons.map((lesson) => (
               <LessonOption
                 key={lesson.key}

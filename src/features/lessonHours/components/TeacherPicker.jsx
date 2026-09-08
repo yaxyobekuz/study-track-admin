@@ -1,15 +1,8 @@
 // React
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 // Icons
 import { Check, ChevronDown, Search } from "lucide-react";
-
-// Components
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/components/shadcn/popover";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
@@ -19,12 +12,31 @@ import { CHIP, SURFACE, T } from "../data/ledger.tokens";
 import { formatHourNumber } from "../data/lessonHours.data";
 
 /**
- * O'QITUVCHI TANLAGICH — qidiruvli, guruhlangan.
+ * O'QITUVCHI TANLAGICH — qidiruvli, guruhlangan, OQIM ICHIDA ochiladi.
  *
  * ⚠️ NATIV `<select>` EMAS va bu shu bo'limdagi eng ko'p ta'sir qiladigan
  * qaror. Maktabda 40–200 xodim bor; brauzerning o'z ro'yxati ularni bir xil
  * kulrang qator qilib chiqaradi, qidiruvi yo'q va u OS ga qarab boshqacha
  * ko'rinadi — ya'ni butun ekrandagi yagona "begona" element bo'lib qolardi.
+ *
+ * ⚠️ POPOVER (PORTAL) HAM ISHLATILMAYDI — va sabab jiddiy.
+ *
+ * Bu tanlagich MODAL ichida turadi. Radix `Dialog` sahifa aylanishini
+ * `react-remove-scroll` bilan qulflaydi va u faqat BITTA DOM shoxiga ruxsat
+ * beradi: `shards: [contentRef]`, ya'ni dialog kontentining o'zi. Radix
+ * `Popover.Content` esa `document.body` ga PORTALLANADI — DOM bo'yicha
+ * dialogdan tashqarida qoladi. Natijada ro'yxat ko'rinadi va bosiladi,
+ * LEKIN g'ildirak bilan aylantirib bo'lmaydi: hodisa qulf tomonidan
+ * bloklanadi. 39 ta xodimdan faqat oltitasi ko'rinib turardi.
+ *
+ * Shuning uchun ro'yxat oddiy oqim elementi sifatida, tugmaning TAGIDA
+ * chiziladi. U dialog kontentining ichida bo'lgani uchun aylanish ishlaydi,
+ * mobil ko'rinishdagi `Drawer` da ham xuddi shunday (u yerda portalli
+ * qatlam yanada yomon xatti-harakat qilardi).
+ *
+ * ⚠️ AYLANTIRGICH KO'RINADI — `hidden-scrollbar` QO'YILMAYDI. Bu ro'yxatda
+ * aylantirish asosiy harakat; yashirilgan aylantirgich "ro'yxat shu yerda
+ * tugadi" degan taassurot berardi.
  *
  * ⚠️ IKKI GURUH ATAYLAB: "jadvalda darsi bor" va "darsi yo'q". Ilgari
  * hamma qatorda "0 soat/hafta" turardi va u ekranni yolg'on ma'lumot bilan
@@ -54,6 +66,35 @@ const TeacherPicker = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const rootRef = useRef(null);
+
+  const close = () => {
+    setOpen(false);
+    setQuery("");
+  };
+
+  // Tashqariga bosilganda va `Escape` da yopiladi. Oqim ichidagi ro'yxat
+  // o'z-o'zidan yopilmaydi (portal qatlami buni tekin beradi), shuning
+  // uchun bu ikkisi qo'lda ulanadi — ularsiz ro'yxat ochiq qolib, formaning
+  // qolgan qismini bosib turardi.
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const onPointerDown = (event) => {
+      if (!rootRef.current?.contains(event.target)) close();
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") close();
+    };
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
 
   const options = useMemo(
     () => teachers.filter((teacher) => teacher.id !== excludeId),
@@ -79,121 +120,119 @@ const TeacherPicker = ({
     };
   }, [options, query]);
 
-  const isEmpty = withLessons.length === 0 && withoutLessons.length === 0;
+  const total = withLessons.length + withoutLessons.length;
 
   const pick = (teacher) => {
     onChange?.(teacher.id);
-    setOpen(false);
-    setQuery("");
+    close();
   };
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (!next) setQuery("");
-      }}
-    >
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          disabled={disabled}
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => (open ? close() : setOpen(true))}
+        className={cn(
+          "flex h-11 w-full items-center gap-2.5 rounded-xl bg-slate-50 px-3 text-left",
+          "transition-colors duration-200 ease-out-quint",
+          disabled
+            ? "cursor-not-allowed opacity-55"
+            : "hover:bg-slate-100 focus:bg-slate-100 focus:outline-none",
+          open && "bg-slate-100",
+        )}
+      >
+        {selected ? (
+          <>
+            <Initials name={selected.name} />
+            <span className={cn(T.tdName, "min-w-0 flex-1 truncate")}>
+              {selected.name}
+            </span>
+            <HoursBadge hours={selected.weeklyHours} />
+          </>
+        ) : (
+          <span className={cn(T.td, "flex-1 truncate text-slate-400")}>
+            {placeholder}
+          </span>
+        )}
+
+        <ChevronDown
           className={cn(
-            "flex h-11 w-full items-center gap-2.5 rounded-xl bg-slate-50 px-3 text-left",
-            "transition-colors duration-200 ease-out-quint",
-            disabled
-              ? "cursor-not-allowed opacity-55"
-              : "hover:bg-slate-100 focus:bg-slate-100 focus:outline-none",
-            open && "bg-slate-100",
+            "size-3.5 shrink-0 text-slate-400 transition-transform duration-200",
+            open && "rotate-180",
+          )}
+          strokeWidth={2.2}
+        />
+      </button>
+
+      {open && (
+        <div
+          className={cn(
+            "mt-1.5 overflow-hidden rounded-2xl bg-white",
+            "shadow-[0_1px_2px_rgba(15,23,42,0.06),0_14px_32px_-18px_rgba(15,23,42,0.26)]",
+            "motion-safe:animate-post",
           )}
         >
-          {selected ? (
-            <>
-              <Initials name={selected.name} />
-              <span className="min-w-0 flex-1">
-                <span className={cn(T.tdName, "block truncate")}>
-                  {selected.name}
-                </span>
-              </span>
-              <HoursBadge hours={selected.weeklyHours} />
-            </>
-          ) : (
-            <span className={cn(T.td, "flex-1 truncate text-slate-400")}>
-              {placeholder}
-            </span>
-          )}
-
-          <ChevronDown
-            className={cn(
-              "size-3.5 shrink-0 text-slate-400 transition-transform duration-200",
-              open && "rotate-180",
+          {/* ── Qidiruv ───────────────────────────────────────── */}
+          <div className="flex items-center gap-2 px-3 py-2.5">
+            <Search className="size-3.5 shrink-0 text-slate-400" strokeWidth={2} />
+            <input
+              autoFocus
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Ism yoki login"
+              className={cn(
+                T.td,
+                "h-auto w-full border-0 bg-transparent p-0 placeholder:text-slate-400 focus:outline-none focus:ring-0",
+              )}
+            />
+            {total > 0 && (
+              <span className={cn(T.meta, "shrink-0 tabular-nums")}>{total}</span>
             )}
-            strokeWidth={2.2}
-          />
-        </button>
-      </PopoverTrigger>
+          </div>
 
-      <PopoverContent
-        align="start"
-        className="w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-2xl border-0 p-0 shadow-[0_1px_2px_rgba(15,23,42,0.06),0_20px_44px_-20px_rgba(15,23,42,0.28)]"
-      >
-        {/* ── Qidiruv ─────────────────────────────────────────── */}
-        <div className="flex items-center gap-2 px-3 py-2.5">
-          <Search className="size-3.5 shrink-0 text-slate-400" strokeWidth={2} />
-          <input
-            autoFocus
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Ism yoki login"
-            className={cn(
-              T.td,
-              "h-auto w-full border-0 bg-transparent p-0 placeholder:text-slate-400 focus:outline-none focus:ring-0",
+          {/* Qidiruv maydoni bilan ro'yxat orasidagi YAGONA chiziq: bu
+              yerda u bezak emas, kiritish maydoni va natijalar chegarasi. */}
+          <span className="block h-px bg-slate-100" />
+
+          {/* ⚠️ `hidden-scrollbar` YO'Q — aylantirgich ko'rinishi kerak */}
+          <div className="max-h-[244px] overflow-y-auto p-1.5">
+            {total === 0 && (
+              <p className={cn(T.hint, "px-2 py-6 text-center")}>
+                Hech kim topilmadi
+              </p>
             )}
-          />
+
+            {withLessons.length > 0 && (
+              <Group label="Dars jadvalida bor">
+                {withLessons.map((teacher) => (
+                  <Option
+                    key={teacher.id}
+                    teacher={teacher}
+                    selected={teacher.id === value}
+                    onPick={() => pick(teacher)}
+                  />
+                ))}
+              </Group>
+            )}
+
+            {withoutLessons.length > 0 && (
+              <Group label="Jadvalda darsi yo'q" muted>
+                {withoutLessons.map((teacher) => (
+                  <Option
+                    key={teacher.id}
+                    teacher={teacher}
+                    selected={teacher.id === value}
+                    onPick={() => pick(teacher)}
+                    muted
+                  />
+                ))}
+              </Group>
+            )}
+          </div>
         </div>
-
-        {/* Ajratgich — chiziq, chunki bu ro'yxatning BOSHI. Kartalar
-            ichida chiziq chizilmaydi, lekin qidiruv maydoni bilan ro'yxat
-            orasida ko'z uchun aniq chegara kerak. */}
-        <span className="block h-px bg-slate-100" />
-
-        <div className="max-h-[268px] overflow-y-auto hidden-scrollbar p-1.5">
-          {isEmpty && (
-            <p className={cn(T.hint, "px-2 py-6 text-center")}>
-              Hech kim topilmadi
-            </p>
-          )}
-
-          {withLessons.length > 0 && (
-            <Group label="Dars jadvalida bor">
-              {withLessons.map((teacher) => (
-                <Option
-                  key={teacher.id}
-                  teacher={teacher}
-                  selected={teacher.id === value}
-                  onPick={() => pick(teacher)}
-                />
-              ))}
-            </Group>
-          )}
-
-          {withoutLessons.length > 0 && (
-            <Group label="Jadvalda darsi yo'q" muted>
-              {withoutLessons.map((teacher) => (
-                <Option
-                  key={teacher.id}
-                  teacher={teacher}
-                  selected={teacher.id === value}
-                  onPick={() => pick(teacher)}
-                  muted
-                />
-              ))}
-            </Group>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
+      )}
+    </div>
   );
 };
 
