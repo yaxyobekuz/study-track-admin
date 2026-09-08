@@ -1,5 +1,9 @@
 // React
 import { useState } from "react";
+import { createPortal } from "react-dom";
+
+// Router
+import { useOutletContext } from "react-router-dom";
 
 // Icons
 import { ArrowRight, Ban, Lock, Pencil, Plus, Repeat2, Trash2 } from "lucide-react";
@@ -55,6 +59,10 @@ const SubstitutionsPage = () => {
   const { can } = usePermissions();
   const { openModal } = useModal("createSubstitution");
 
+  // Boshqaruvlar layoutdagi tablar qatoriga joylanadi — alohida qator
+  // ochilsa, ro'yxat ekranda pastroqdan boshlanardi.
+  const { filterSlot } = useOutletContext() ?? {};
+
   const [page, setPage] = useState(1);
   const [ongoing, setOngoing] = useState(false);
   const [status, setStatus] = useState("");
@@ -84,48 +92,51 @@ const SubstitutionsPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* ── Boshqaruv qatori ─────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Toggle
-            active={ongoing}
-            onClick={() => {
-              setOngoing((prev) => !prev);
-              setPage(1);
-            }}
-            label="Hozir amalda"
-            count={data?.totals?.ongoing}
-          />
-          <Segmented
-            value={status}
-            onChange={(value) => {
-              setStatus(value);
-              setPage(1);
-            }}
-            options={[
-              { key: "", label: "Barchasi" },
-              { key: "active", label: "Amaldagi" },
-              { key: "cancelled", label: "Bekor qilingan" },
-            ]}
-          />
-        </div>
+      {/* ── Boshqaruvlar — LAYOUTDAGI tablar qatoriga portal orqali ── */}
+      {filterSlot &&
+        createPortal(
+          <>
+            <Toggle
+              active={ongoing}
+              onClick={() => {
+                setOngoing((prev) => !prev);
+                setPage(1);
+              }}
+              label="Hozir amalda"
+              count={data?.totals?.ongoing}
+            />
 
-        <Can do="substitutions.create">
-          <button
-            type="button"
-            onClick={() => openModal("createSubstitution", {})}
-            className={cn(
-              "flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-2.5",
-              "text-[12.5px] font-medium text-white",
-              "transition-transform duration-300 ease-out-quint motion-safe:hover:-translate-y-0.5",
-              "shadow-[0_1px_2px_rgba(15,23,42,0.08),0_12px_28px_-16px_rgba(15,23,42,0.4)]",
-            )}
-          >
-            <Plus className="size-3.5" strokeWidth={2.4} />
-            O'rinbosar biriktirish
-          </button>
-        </Can>
-      </div>
+            <Segmented
+              value={status}
+              onChange={(value) => {
+                setStatus(value);
+                setPage(1);
+              }}
+              options={[
+                { key: "", label: "Barchasi" },
+                { key: "active", label: "Amaldagi" },
+                { key: "cancelled", label: "Bekor qilingan" },
+              ]}
+            />
+
+            <Can do="substitutions.create">
+              <button
+                type="button"
+                onClick={() => openModal("createSubstitution", {})}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-2",
+                  "text-[12px] font-medium text-white",
+                  "transition-transform duration-300 ease-out-quint motion-safe:hover:-translate-y-0.5",
+                  "shadow-[0_1px_2px_rgba(15,23,42,0.08),0_12px_28px_-16px_rgba(15,23,42,0.4)]",
+                )}
+              >
+                <Plus className="size-3.5" strokeWidth={2.4} />
+                O'rinbosar biriktirish
+              </button>
+            </Can>
+          </>,
+          filterSlot,
+        )}
 
       {/* ── Ro'yxat ──────────────────────────────────────────── */}
       <Panel

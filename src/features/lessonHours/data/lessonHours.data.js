@@ -10,12 +10,19 @@ import { MODE } from "./ledger.tokens";
 
 /* ─────────────────────── TABLAR ─────────────────────── */
 
+/**
+ * ⚠️ `monthScoped` — tab OY KESIMIDAMI. Oy tanlagichi layoutdagi tablar
+ * qatorida turadi (joyni tejash uchun), lekin u faqat oy bo'yicha
+ * o'lchanadigan ekranlarda ma'noli. O'rinbosarlik ro'yxati sana oralig'i
+ * bilan ishlaydi, oy bilan emas — u yerda tanlagich chalg'itardi.
+ */
 export const HOURS_TABS = [
   {
     to: "/lesson-hours/overview",
     label: "Ko'rsatkichlar",
     title: "Dars soatlari",
     can: "payroll.hours",
+    monthScoped: true,
     exact: false,
   },
   {
@@ -23,6 +30,7 @@ export const HOURS_TABS = [
     label: "Vedomost",
     title: "Dars soatlari",
     can: "payroll.hours",
+    monthScoped: true,
     exact: false,
   },
   {
@@ -30,6 +38,7 @@ export const HOURS_TABS = [
     label: "O'rinbosarlik",
     title: "Dars soatlari",
     can: "substitutions.view",
+    monthScoped: false,
     exact: false,
   },
 ];

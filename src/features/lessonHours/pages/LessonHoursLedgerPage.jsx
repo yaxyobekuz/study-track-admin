@@ -1,5 +1,9 @@
 // React
 import { useState } from "react";
+import { createPortal } from "react-dom";
+
+// Router
+import { useOutletContext } from "react-router-dom";
 
 // Icons
 import { Lock, Search } from "lucide-react";
@@ -11,7 +15,6 @@ import { useQuery } from "@tanstack/react-query";
 import Card from "@/shared/components/ui/Card";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import LedgerTable from "../components/LedgerTable";
-import MonthPicker from "../components/MonthPicker";
 import TeacherHoursModal from "../components/TeacherHoursModal";
 
 // Hooks
@@ -20,7 +23,6 @@ import usePermissions from "@/shared/hooks/usePermissions";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
-import { currentMonthKey } from "@/shared/helpers/month.helpers";
 
 // Data & queries
 import { MODE, SURFACE, T } from "../data/ledger.tokens";
@@ -37,7 +39,10 @@ const LessonHoursLedgerPage = () => {
   const { can } = usePermissions();
   const { openModal } = useModal("teacherHours");
 
-  const [month, setMonth] = useState(currentMonthKey());
+  // Oy va filtr sloti layoutdan keladi (`LessonHoursLayout`): tablar,
+  // filtrlar va oy tanlagich BITTA qatorda turishi uchun.
+  const { month, filterSlot } = useOutletContext() ?? {};
+
   const [type, setType] = useState("");
   const [search, setSearch] = useState("");
 
@@ -63,32 +68,34 @@ const LessonHoursLedgerPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* ── Filtrlar ─────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <ModeFilter value={type} onChange={setType} />
+      {/* ── Filtrlar — LAYOUTDAGI tablar qatoriga portal orqali ──
+          Alohida qator ochilsa, ekranning yuqorisidan yana bitta satr
+          ketardi va vedomost pastroqdan boshlanardi. */}
+      {filterSlot &&
+        createPortal(
+          <>
+            <ModeFilter value={type} onChange={setType} />
 
-          <label
-            className={cn(
-              "flex items-center gap-2 rounded-xl bg-white px-3 py-2",
-              "shadow-[0_1px_2px_rgba(15,23,42,0.05),0_8px_20px_-14px_rgba(15,23,42,0.16)]",
-            )}
-          >
-            <Search className="size-3.5 shrink-0 text-slate-400" strokeWidth={2} />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Ism yoki login"
+            <label
               className={cn(
-                T.td,
-                "h-auto w-[150px] border-0 bg-transparent p-0 placeholder:text-slate-400 focus:outline-none focus:ring-0",
+                "flex items-center gap-2 rounded-xl bg-white px-3 py-2",
+                "shadow-[0_1px_2px_rgba(15,23,42,0.05),0_8px_20px_-14px_rgba(15,23,42,0.16)]",
               )}
-            />
-          </label>
-        </div>
-
-        <MonthPicker month={month} onChange={setMonth} />
-      </div>
+            >
+              <Search className="size-3.5 shrink-0 text-slate-400" strokeWidth={2} />
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Ism yoki login"
+                className={cn(
+                  T.td,
+                  "h-auto w-[140px] border-0 bg-transparent p-0 placeholder:text-slate-400 focus:outline-none focus:ring-0",
+                )}
+              />
+            </label>
+          </>,
+          filterSlot,
+        )}
 
       <LedgerTable
         data={data}

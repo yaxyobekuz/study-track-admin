@@ -1,6 +1,9 @@
 // React
 import { useState } from "react";
 
+// Router
+import { useOutletContext } from "react-router-dom";
+
 // Icons
 import { Lock } from "lucide-react";
 
@@ -47,11 +50,23 @@ const LessonHoursOverviewPage = () => {
   const { can } = usePermissions();
   const { openModal } = useModal("teacherHours");
 
-  // ⚠️ HOLAT — RAQAM (YYYYMM), ISO satr emas. Ilgari bu yerda
-  // `<input type="month">` uchun "2026-09" satri turardi va u har
-  // renderda ikki marta aylantirilardi. Tanlagich endi o'z tanlovini
+  // ⚠️ OY IKKI JOYDAN KELISHI MUMKIN va bu ataylab:
+  //   · bo'lim ichida (`/lesson-hours/overview`) — tanlagich layoutdagi
+  //     tablar qatorida turadi va qiymat `Outlet` konteksti orqali keladi;
+  //   · bosh sahifadagi dashboardlar qatorida (`/lesson-load`) — u yerda
+  //     layout umuman yo'q, shuning uchun sahifa o'z tanlagichini chizadi.
+  //
+  // `useOutletContext()` `Outlet` dan tashqarida `null` qaytaradi, ya'ni
+  // shart xavfsiz. `useState` esa HAR DOIM chaqiriladi — hook tartibi
+  // buzilmasligi kerak.
+  //
+  // ⚠️ QIYMAT — RAQAM (YYYYMM), ISO satr emas: tanlagich o'z tanlovini
   // to'g'ridan-to'g'ri oy kaliti bilan beradi.
-  const [month, setMonth] = useState(currentMonthKey());
+  const scope = useOutletContext();
+  const [ownMonth, setOwnMonth] = useState(currentMonthKey());
+
+  const month = scope?.month ?? ownMonth;
+  const setMonth = scope?.setMonth ?? setOwnMonth;
 
   const { data, isLoading, isError } = useQuery(
     lessonHoursQueries.overview({ month }),
@@ -73,9 +88,13 @@ const LessonHoursOverviewPage = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <MonthPicker month={month} onChange={setMonth} />
-      </div>
+      {/* Bo'lim ichida tanlagich layoutdagi qatorda — bu yerda takror
+          chizilmaydi. Bosh sahifada esa layout yo'q, shuning uchun kerak. */}
+      {!scope && (
+        <div className="flex justify-end">
+          <MonthPicker month={month} onChange={setMonth} />
+        </div>
+      )}
 
       <HeroSummary
         {...state}
