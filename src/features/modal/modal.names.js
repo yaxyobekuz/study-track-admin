@@ -119,6 +119,9 @@ export const MODAL_NAMES = [
   "createAbsenceReason",
   "editAbsenceReason",
 
+  // Mening davomatim (o'z davomatidan o'tish — ruxsatsiz bo'lim)
+  "myExcuseRequest",
+
   // O'qish davrlari
   "enrollmentPeriod",
   "closeEnrollment",

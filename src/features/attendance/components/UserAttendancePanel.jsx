@@ -43,8 +43,20 @@ import { attendanceQueries } from "../queries/attendance.queries";
  * @param {object} props
  * @param {"staff"|"student"} props.variant
  * @param {object} props.user - kamida `{ id }`; xodimda ish grafigi ham
+ * @param {string} [props.title] - panel sarlavhasi
+ * @param {(month: number, year: number) => object} [props.buildQuery] - oylik
+ *   ma'lumot uchun BOSHQA manba (`queryOptions` qaytaradi). Berilmasa —
+ *   `/attendance/user/:id`, ya'ni `attendance.view` ruxsatiga tayanadigan
+ *   ma'muriy yo'l. Xodim O'Z davomatini ko'rganda esa unday ruxsat yo'q va
+ *   `/attendance/my` ishlatiladi: shakl bir xil (`{ records, summary }`),
+ *   shuning uchun panel ikkinchi marta yozilmaydi.
  */
-const UserAttendancePanel = ({ variant, user }) => {
+const UserAttendancePanel = ({
+  variant,
+  user,
+  title = "Davomat",
+  buildQuery = null,
+}) => {
   const isStaff = variant === "staff";
   const { openModal } = useModal();
 
@@ -56,9 +68,11 @@ const UserAttendancePanel = ({ variant, user }) => {
   const [statusFilter, setStatusFilter] = useState(null);
 
   const { data, isLoading } = useQuery(
-    isStaff
-      ? attendanceQueries.userMonth(user.id, period.month, period.year)
-      : attendanceQueries.studentMonth(user.id, period.month, period.year),
+    buildQuery
+      ? buildQuery(period.month, period.year)
+      : isStaff
+        ? attendanceQueries.userMonth(user.id, period.month, period.year)
+        : attendanceQueries.studentMonth(user.id, period.month, period.year),
   );
 
   const records = useMemo(() => data?.records ?? [], [data]);
@@ -76,7 +90,7 @@ const UserAttendancePanel = ({ variant, user }) => {
     <div className="space-y-4">
       {/* Sarlavha va oy navigatsiyasi — kartadan tashqarida, sahifa boshqaruvi */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-semibold text-gray-900">Davomat</h2>
+        <h2 className="font-semibold text-gray-900">{title}</h2>
         <AttendanceMonthNav {...period} onChange={setPeriod} />
       </div>
 

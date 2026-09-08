@@ -109,6 +109,9 @@ import PremiumSettingsPage from "@/features/premium/pages/PremiumSettingsPage";
 import PremiumEmojisPage from "@/features/premium/pages/PremiumEmojisPage";
 
 // Davomat (Attendance) - layouts & route-level pages
+// Mening davomatim — o'z davomatidan o'tish (ruxsatsiz, har bir xodim uchun)
+import MyAttendancePage from "@/features/myAttendance/pages/MyAttendancePage";
+
 import AttendanceLayout from "@/features/attendance/layouts/AttendanceLayout";
 import DailyAttendanceLayout from "@/features/attendance/layouts/DailyAttendanceLayout";
 import MonthlyAttendanceLayout from "@/features/attendance/layouts/MonthlyAttendanceLayout";
@@ -365,6 +368,13 @@ const Routes = () => {
           <Route path="/premium" element={<PremiumSubscriptionsPage />} />
           <Route path="/premium/emojis" element={<PremiumEmojisPage />} />
           <Route path="/premium/settings" element={<PremiumSettingsPage />} />
+
+          {/* MENING DAVOMATIM — ruxsat talab qilmaydi.
+              Ma'muriy `/attendance` bo'limidan ATAYLAB ajratilgan: u
+              "kim keldi" degan savolga javob beradi va `attendance.view`
+              ortida turadi, bu esa "men keldim" — har bir xodimning o'z
+              ishi (server ham uni faqat `protect` bilan himoyalaydi). */}
+          <Route path="/my-attendance" element={<MyAttendancePage />} />
 
           {/* Davomat - yagona layout + route-darajali sahifalar */}
           <Route path="/attendance" element={<AttendanceLayout />}>

@@ -19,6 +19,7 @@ import {
   Boxes,
   Radar,
   Timer,
+  Clock,
 } from "lucide-react";
 
 // Router
@@ -106,6 +107,30 @@ const navItems = [
       {
         title: "Statistika",
         url: "/statistics",
+      },
+    ],
+  },
+  {
+    // MENING DAVOMATIM — RUXSAT TALAB QILMAYDI.
+    //
+    // ⚠️ "Ta'lim → Davomat" bilan chalkashtirmang: u boshqalarning davomati
+    // va `attendance.view` ortida turadi. Bu esa xodimning O'ZI kelgan-
+    // ketganini qayd etishi — server ham uni faqat `protect` bilan
+    // himoyalaydi (`/attendance/check-in`). Ilgari bu ekran faqat
+    // o'qituvchi va xodim panellarida bo'lgani uchun admin panelga
+    // kiradigan rahbar/ma'mur o'zini umuman davomatdan o'tkaza olmasdi.
+    //
+    // `hideForOwner` — owner'da davomat yozuvi YO'Q (`attendance.service.js`
+    // uni `student` bilan birga rad etadi), shuning uchun unga hech qachon
+    // ishlamaydigan bo'lim ko'rsatilmaydi.
+    title: "Mening davomatim",
+    icon: Clock,
+    isActive: false,
+    hideForOwner: true,
+    items: [
+      {
+        title: "Davomatdan o'tish",
+        url: "/my-attendance",
       },
     ],
   },
@@ -470,10 +495,13 @@ const Header = () => {
 const Main = () => {
   const isMobile = useIsMobile();
   const { toggleSidebar } = useSidebar();
-  const { can } = usePermissions();
+  const { can, isOwner } = usePermissions();
 
   // Ruxsati bo'lmagan sahifalarni yashiramiz; bo'lim bo'sh qolsa — butun bo'limni.
+  // `hideForOwner` — ruxsatga emas, ROLGA bog'liq bo'lim (owner'da davomat
+  // yozuvi yo'q): "ruxsati bor, lekin ishlamaydi" degan holat bo'lmasin.
   const visibleNavItems = navItems
+    .filter((item) => !(item.hideForOwner && isOwner))
     .map((item) => ({
       ...item,
       items: (item.items || []).filter((sub) =>
