@@ -10,7 +10,7 @@ import http from "@/shared/api/http";
  * to'garak), raqam esa har safar qaytadan hisoblanadi.
  */
 export const academicDashboardAPI = {
-  /** Butun akademik manzara. Params: { month, compareMonth, trendMonths } */
+  /** Butun akademik manzara. Params: { month, compareMonth } */
   getOverview: (params) => http.get("/education/overview", { params }),
 
   /**

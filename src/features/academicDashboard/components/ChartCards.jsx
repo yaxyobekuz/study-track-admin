@@ -160,15 +160,34 @@ const TOOLTIP_BOX =
  * Ierarxiya tokenlardan: sarlavha `T.tableName`, seriya nomi `T.tableSub`,
  * qiymat `T.tableNum` — jadval kartalari bilan bir xil uch daraja.
  */
-const AcademicTooltip = ({ active, payload, label, unit = "grade" }) => {
-  if (!active || !payload?.length) return null;
+const AcademicTooltip = ({
+  active,
+  payload,
+  label,
+  unit = "grade",
+  // O'q yorlig'i qisqartirilgan bo'lsa (kun raqami "8"), tultip sarlavhasi
+  // uchun to'liq matn qatorning o'zidan olinadi ("8-sentabr, 2026").
+  labelKey = null,
+}) => {
+  // ⚠️ `tooltipType="none"` FAQAT standart tultipni to'xtatadi
+  // (`DefaultTooltipContent`), maxsus `content` ga esa recharts butun
+  // `payload` ni beradi va uni filtrlash BIZNING zimmamizda. Recharts
+  // bayroqni qatorning `type` maydoniga yozadi (`cartesian/Area.js`),
+  // shuning uchun tekshiruv ham o'sha yerda. Usiz bezak uchun qo'yilgan
+  // `Area` tultipda ikkinchi qator bo'lib chiqadi va `name` yo'qligi
+  // uchun "rate 93.8%" ko'rinishida — davomat dinamikasi kartasida
+  // aynan shu bo'lgan edi.
+  const rows = payload?.filter((row) => row && row.type !== "none") ?? [];
+  if (!active || rows.length === 0) return null;
 
   return (
     <div className={TOOLTIP_BOX}>
-      <p className={T.tableName}>{label}</p>
+      <p className={T.tableName}>
+        {(labelKey && rows[0]?.payload?.[labelKey]) || label}
+      </p>
 
       <ul className="mt-1 space-y-0.5">
-        {payload.map((row) => (
+        {rows.map((row) => (
           <li key={row.dataKey} className="flex items-center gap-2">
             <span
               className="size-2 shrink-0 rounded-full"
@@ -353,26 +372,40 @@ export const SubjectChart = ({ data, isLoading, isError, delay = 0 }) => {
 };
 
 /**
- * DAVOMAT DINAMIKASI — 12 oylik chiziq.
+ * DAVOMAT DINAMIKASI — tanlangan oyning KUNLIK chizig'i.
  *
- * ⚠️ Oy nomi SERVERDAN keladi (`monthShort`): frontendda oy nomlari
- * massivini nusxalash taqiqlangan (`.claude/rules/dates.md`).
+ * ⚠️ OYLIK EMAS. Oylik o'rtacha davomat yil bo'yi 92-95% da tekis yotadi
+ * va diagramma hech narsa ko'rsatmasdi; ustiga bazada bitta oy ma'lumot
+ * bo'lsa, 12 oydan 11 tasi `total = 0` bo'lib filtrlanib, karta yolg'iz
+ * bitta nuqta bilan qolardi. Kerakli savol — "qaysi KUNI davomat
+ * cho'kdi", javob esa faqat kun kesimida ko'rinadi.
+ *
+ * ⚠️ O'QDA FAQAT KUN RAQAMI (`dayShort`), tultipda esa to'liq sana
+ * (`dayLabel`) — ikkalasi ham SERVERDAN keladi, chunki frontendda oy
+ * nomlari massivini nusxalash taqiqlangan (`.claude/rules/dates.md`).
+ * Oy o'qda takrorlanmaydi: u kartaning izohida turibdi.
+ *
+ * ⚠️ `interval={0}` YO'Q. Bir oyda 31 tagacha katak bor va uch ustunli
+ * to'rda bitta kartaga ~590px to'g'ri keladi, ya'ni bitta kunga ~17px —
+ * "31" esa 10px shriftda ~13px joy egallaydi va tor ekranda yorliqlar
+ * bir-biriga tegib ketardi. `preserveStartEnd` recharts ga oraliqni
+ * o'zi tanlashga ruxsat beradi, oyning boshi va oxiri esa har doim
+ * ko'rinadi.
  *
  * ⚠️ O'Q 0 DAN EMAS: davomat amalda 85–97% oralig'ida yuradi va [0,100]
- * shkalada butun yillik dinamika ~20 PIKSELGA siqilardi — grafik tekis
- * chiziqqa aylanib, kartaning ma'nosi yo'qolardi. Chegara pastga tushsa
- * (masalan 40%), `domain` uni ham ko'rsatadi.
+ * shkalada kunlar orasidagi butun farq ~20 PIKSELGA siqilardi — grafik
+ * tekis chiziqqa aylanib, kartaning ma'nosi yo'qolardi. Kun pastga
+ * tushsa (masalan 40%), `domain` uni ham ko'rsatadi.
  *
- * ⚠️ Chiziq ustida QIYMAT YORLIG'I YO'Q. Uch ustunli to'rda bitta kartaga
- * ~590px kenglik to'g'ri keladi, ya'ni 12 oyga bo'linganda bitta oyga
- * ~45px slot qoladi; "94.2%" esa 10px shriftda ~30px joy egallaydi va
- * chiziq ko'tarilgan joyda yorliqlar bir-birining ustiga chiqardi.
- * Qiymat tultipda, nuqta ustiga borilganda ko'rinadi.
+ * ⚠️ Chiziq ustida QIYMAT YORLIG'I YO'Q: "94.2%" 10px shriftda ~30px
+ * joy egallaydi, bitta kunga esa ~17px slot qoladi — yorliqlar
+ * bir-birining ustiga chiqardi. Qiymat tultipda, nuqta ustiga
+ * borilganda ko'rinadi.
  *
  * ANIMATSIYA: chiziq chapdan o'ngga "chiziladi" (1400ms, ease-in-out),
  * ostida yumshoq gradient maydon u bilan birga to'ladi. OXIRGI NUQTA
  * "jonli" — halqa EMAS, nuqtaning o'zi sekin nafas oladi (`breathe`,
- * opacity): bu "hozirgi oy, ma'lumot yangilanib turibdi" degan belgi.
+ * opacity): bu "oxirgi belgilangan kun" degan belgi.
  * Kengayib so'nadigan ping halqasi olib tashlandi — u e'tiborni
  * diagrammadan o'g'irlab, "bachkana" o'qilardi.
  *
@@ -388,8 +421,11 @@ export const AttendanceTrendChart = ({
   isError,
   delay = 0,
 }) => {
+  // ⚠️ `total > 0` — davomat BELGILANGAN kunlar. Server oyning hamma
+  // kunini qaytaradi (yakshanba va bayram ham), aks holda "belgilanmagan
+  // kun" bilan "0% davomat" farqlanmasdi; chizishga esa faqat belgilangani
+  // yaraydi — bo'sh kunlar chiziqni nolga tushirib yuborardi.
   const rows = (data?.attendanceTrend ?? []).filter((row) => row.total > 0);
-  const monthCount = data?.attendanceTrend?.length ?? 12;
   const begin = contentDelay(delay);
 
   // Eng past qiymatdan bir pog'ona past — o'nlikka yaxlitlangan.
@@ -423,7 +459,7 @@ export const AttendanceTrendChart = ({
   return (
     <DashboardCard
       title="Davomat dinamikasi"
-      hint={`Oxirgi ${monthCount} oy`}
+      hint={data?.monthLabel ?? "Kunlik"}
       category="attendance"
       delay={delay}
       dense
@@ -471,9 +507,9 @@ export const AttendanceTrendChart = ({
 
             <CartesianGrid vertical={false} {...GRID} />
             <XAxis
-              dataKey="monthShort"
+              dataKey="dayShort"
               {...AXIS_TICK}
-              interval={0}
+              interval="preserveStartEnd"
               tickMargin={6}
             />
             <YAxis
@@ -482,11 +518,14 @@ export const AttendanceTrendChart = ({
               tickFormatter={(value) => `${value}%`}
               width={40}
             />
-            <Tooltip content={<AcademicTooltip unit="percent" />} />
+            <Tooltip
+              content={<AcademicTooltip unit="percent" labelKey="dayLabel" />}
+            />
 
             {/* ⚠️ `tooltipType="none"` va `legendType="none"`: maydon FAQAT
                 bezak, u chiziq bilan bir xil qiymatni ko'rsatadi. Usiz
-                tultipda "Davomat" ikki marta chiqardi. */}
+                tultipda qiymat ikki marta chiqardi ("rate" va "Davomat")
+                — filtrlash `AcademicTooltip` ichida. */}
             <Area
               type="monotone"
               dataKey="rate"
