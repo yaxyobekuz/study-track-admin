@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Icons
-import { Ban, Pencil, Plus, RefreshCw, Users, Wallet, XCircle } from "lucide-react";
+import { Ban, Pencil, Plus, RefreshCw, Trash2, Users, Wallet, XCircle } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -19,6 +19,7 @@ import Select from "@/shared/components/ui/select/Select";
 import Pagination from "@/shared/components/ui/Pagination";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
+import ConfirmPopover from "@/shared/components/ui/ConfirmPopover";
 import {
   SalaryRuleModal,
   SalaryPaymentModal,
@@ -47,10 +48,16 @@ import {
   ENTRY_TABLE_COLUMNS,
   PAYROLL_TABS,
   RULE_TABLE_COLUMNS,
+  getRuleFormula,
+  getRuleFormulaHint,
   getRuleStatus,
 } from "../data/payroll.data";
 import { payrollQueries } from "../queries/payroll.queries";
-import { useGeneratePayroll, useCloseSalary } from "../queries/payroll.mutations";
+import {
+  useGeneratePayroll,
+  useCloseSalary,
+  useDeleteSalary,
+} from "../queries/payroll.mutations";
 
 /**
  * XODIMLAR OYLIGI — chiqim tomonining o'quvchi registriga o'xshashi.
@@ -358,18 +365,32 @@ const RulesView = () => {
 
   const { data, isLoading } = useQuery(payrollQueries.salaries({ page, limit: 20 }));
   const { mutate: closeSalary } = useCloseSalary();
+  const { mutate: deleteSalary } = useDeleteSalary();
 
   const items = data?.data ?? [];
+
+  const showError = (err) =>
+    toast.error(err.response?.data?.message || "Xatolik yuz berdi");
 
   const handleClose = (rule) => {
     closeSalary(
       { id: rule.id },
       {
         onSuccess: () => toast.success("Qoida yopildi"),
-        onError: (err) =>
-          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onError: showError,
       },
     );
+  };
+
+  // ⚠️ O'CHIRISH — FAQAT hech qanday majburiyat shakllanmagan qoidada.
+  // Buni server hal qiladi (`staffSalary.service.js`): majburiyat bo'lsa
+  // sabab bilan rad etadi va xodim uni toastda ko'radi. Panelda alohida
+  // shart yozilsa, u serverdagi qoida bilan bir kuni ajralib ketardi.
+  const handleDelete = (rule) => {
+    deleteSalary(rule.id, {
+      onSuccess: () => toast.success("Qoida o'chirildi"),
+      onError: showError,
+    });
   };
 
   return (
@@ -423,7 +444,17 @@ const RulesView = () => {
                     )}
                   </Td>
 
-                  <Td align="right" className="font-medium">{formatMoney(rule.amount)}</Td>
+                  {/* Soatbay va aralash qoidada "summa" bitta son emas —
+                      formulaning o'zi ko'rsatiladi, aks holda soatbay
+                      qatori "0 so'm" bo'lib turardi */}
+                  <Td align="right" nowrap={false} className="font-medium">
+                    {getRuleFormula(rule)}
+                    {getRuleFormulaHint(rule) && (
+                      <span className="block text-xs font-normal text-gray-400">
+                        {getRuleFormulaHint(rule)}
+                      </span>
+                    )}
+                  </Td>
                   <Td nowrap={false} className="text-gray-500">
                     {rule.periodLabel}
                     {rule.note && (
@@ -462,6 +493,24 @@ const RulesView = () => {
                           </button>
                         </Can>
                       )}
+
+                      <Can do="payroll.assign">
+                        <ConfirmPopover
+                          tooltip="O'chirish"
+                          title="Qoida o'chirilsinmi?"
+                          description="Faqat majburiyat shakllanmagan qoida o'chiriladi. Majburiyat bo'lsa qoida o'chmaydi — uni yopish kerak."
+                          confirmLabel="O'chirish"
+                          danger
+                          onConfirm={() => handleDelete(rule)}
+                        >
+                          <button
+                            type="button"
+                            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </ConfirmPopover>
+                      </Can>
                     </div>
                   </Td>
                 </Tr>

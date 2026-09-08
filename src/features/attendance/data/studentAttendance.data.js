@@ -1,3 +1,6 @@
+// Utils
+import { MONTHS_UZ_CAP } from "@/shared/utils/date.utils";
+
 export const STATUS_LABELS = {
   present: "Keldi",
   late: "Kech keldi",
@@ -20,20 +23,16 @@ export const STATUS_DOT_COLORS = {
   excused: "bg-blue-500",
 };
 
-export const MONTH_OPTIONS = [
-  { label: "Yanvar", value: 1 },
-  { label: "Fevral", value: 2 },
-  { label: "Mart", value: 3 },
-  { label: "Aprel", value: 4 },
-  { label: "May", value: 5 },
-  { label: "Iyun", value: 6 },
-  { label: "Iyul", value: 7 },
-  { label: "Avgust", value: 8 },
-  { label: "Sentyabr", value: 9 },
-  { label: "Oktyabr", value: 10 },
-  { label: "Noyabr", value: 11 },
-  { label: "Dekabr", value: 12 },
-];
+/**
+ * Oy tanlagichi — `attendance.data.js` dagi bilan AYNI ro'yxat.
+ *
+ * ⚠️ Oy nomlari YAGONA manbadan (`date.utils.js`): qo'lda yozilgan massiv
+ * bu yerda ham "Sentyabr" bo'lib turgan edi (`.claude/rules/dates.md` §2).
+ */
+export const MONTH_OPTIONS = MONTHS_UZ_CAP.map((label, index) => ({
+  label,
+  value: index + 1,
+}));
 
 /**
  * Kunlik va belgilash sahifalaridagi yig'indi kartalari.

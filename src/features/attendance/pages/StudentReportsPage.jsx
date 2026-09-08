@@ -1,3 +1,6 @@
+// React
+import { useMemo, useState } from "react";
+
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
@@ -6,6 +9,7 @@ import { useOutletContext } from "react-router-dom";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
+import { todayInputValue } from "@/shared/utils/date.utils";
 
 // Queries
 import { attendanceReportsQueries } from "../queries/attendance.queries";
@@ -17,19 +21,54 @@ import ReportBarList from "../components/ReportBarList";
 import DailyAttendanceChart from "../components/DailyAttendanceChart";
 
 // Data
-import { MONTH_OPTIONS } from "../data/attendance.data";
 import {
   WEEKDAY_LABELS,
   OVERALL_PERCENT_CARDS,
+  buildCompareMonthOptions,
   getPercentColor,
   RANK_COLORS,
 } from "../data/attendanceReports.data";
 
+/** Tanlagichlar — kartalar ichida turadi, shuning uchun ixcham. */
+const CONTROL_CLASS =
+  "h-7 rounded-md border border-current/20 bg-white/70 px-2 text-[11px] text-gray-700 outline-none";
+
 const StudentReportsPage = () => {
   const { month, year } = useOutletContext();
 
+  // ⚠️ Kunlik karta o'z sanasi bilan yashaydi va yuqoridagi OY filtriga
+  // bog'lanmagan: "6-sentabrni 8-sentabrga solishtiray" degan ish oy
+  // tanlashdan mustaqil. Default — bugun.
+  const [day, setDay] = useState(todayInputValue);
+  const [compareDay, setCompareDay] = useState("");
+  // "YYYY-MM" yoki bo'sh (taqqoslashsiz)
+  const [compareMonthValue, setCompareMonthValue] = useState("");
+
+  const compareMonthOptions = useMemo(
+    () => buildCompareMonthOptions(month, year),
+    [month, year],
+  );
+
+  // Oy o'zgarganda eski tanlov ro'yxatdan tushib qolishi mumkin —
+  // u paytda taqqoslash o'chiriladi (aks holda karta "—" ko'rsatib turardi)
+  const safeCompareMonth = compareMonthOptions.some(
+    (option) => option.value === compareMonthValue,
+  )
+    ? compareMonthValue
+    : "";
+
+  const [compareYear, compareMonthNumber] = safeCompareMonth
+    ? safeCompareMonth.split("-")
+    : [];
+
   const { data, isLoading } = useQuery(
-    attendanceReportsQueries.students(month, year),
+    attendanceReportsQueries.students(month, year, {
+      day,
+      ...(compareDay ? { compareDay } : {}),
+      ...(safeCompareMonth
+        ? { compareMonth: Number(compareMonthNumber), compareYear: Number(compareYear) }
+        : {}),
+    }),
   );
 
   if (isLoading) {
@@ -43,20 +82,71 @@ const StudentReportsPage = () => {
     );
   }
 
-  const monthLabel =
-    MONTH_OPTIONS.find((m) => m.value === month)?.label || "Tanlangan oy";
+  const overall = data.overall ?? {};
 
-  // Umumiy foiz kartalari (Bugun / Shu hafta - joriy; Oy - tanlangan).
+  // ⚠️ Sana va oy YORLIG'I serverdan tayyor keladi ("8-sentabr, 2026",
+  // "Sentabr, 2026"): bu yerda qayta yig'ilsa, bitta ekranda ikki xil
+  // sana formati paydo bo'lardi (`.claude/rules/dates.md`).
+  const CONTROLS = {
+    daily: (
+      <div className="flex items-center gap-1">
+        <input
+          type="date"
+          value={day}
+          max={todayInputValue()}
+          onChange={(e) => setDay(e.target.value || todayInputValue())}
+          className={CONTROL_CLASS}
+        />
+        <span className="text-[11px] opacity-70">vs</span>
+        <input
+          type="date"
+          value={compareDay}
+          max={todayInputValue()}
+          onChange={(e) => setCompareDay(e.target.value)}
+          className={CONTROL_CLASS}
+        />
+      </div>
+    ),
+    monthly: (
+      <select
+        value={safeCompareMonth}
+        onChange={(e) => setCompareMonthValue(e.target.value)}
+        className={CONTROL_CLASS}
+      >
+        <option value="">Taqqoslashsiz</option>
+        {compareMonthOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label} bilan
+          </option>
+        ))}
+      </select>
+    ),
+  };
+
+  // Umumiy foiz kartalari: KUNLIK (tanlangan kun) va OYLIK (tanlangan oy).
   // Foiz = kelganlar / KUTILGAN (jadval bo'yicha), belgilanganlarga nisbatan emas
   const overallItems = OVERALL_PERCENT_CARDS.map(({ key, label }) => {
-    const section = data.overall?.[key] || {};
+    const section = overall[key] || {};
+    const compare = overall[key === "daily" ? "dailyCompare" : "monthlyCompare"];
+
     return {
       key,
-      label: key === "monthly" ? `${monthLabel} oyi` : label,
+      label:
+        key === "daily"
+          ? section.dateLabel || label
+          : section.monthLabel || label,
       percent: section.percent ?? null,
       came: section.came ?? (section.present || 0) + (section.late || 0),
       total: section.expected || 0,
       unmarked: section.unmarked || 0,
+      control: CONTROLS[key],
+      compare: compare
+        ? {
+            label: key === "daily" ? compare.dateLabel : compare.monthLabel,
+            percent: compare.percent ?? null,
+          }
+        : null,
+      change: key === "daily" ? overall.dailyChange : overall.monthlyChange,
     };
   });
 
@@ -67,13 +157,15 @@ const StudentReportsPage = () => {
     (data.byDay || []).map((d) => [parseInt(d.date.slice(8, 10), 10), d]),
   );
   const byDay = Array.from({ length: daysInMonth }, (_, i) => {
-    const day = i + 1;
-    const d = byDayMap[day];
+    // ⚠️ `dayNumber`, `day` EMAS: yuqorida kunlik kartaning tanlangan
+    // sanasi ham `day` deb ataladi va soya bo'lib tushib qolardi
+    const dayNumber = i + 1;
+    const d = byDayMap[dayNumber];
     return d
-      ? { ...d, day }
+      ? { ...d, day: dayNumber }
       : {
-          day,
-          date: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+          day: dayNumber,
+          date: `${year}-${String(month).padStart(2, "0")}-${String(dayNumber).padStart(2, "0")}`,
           // Ma'lumotsiz kunlar 0 chizig'ida turadi
           present: 0,
           late: 0,

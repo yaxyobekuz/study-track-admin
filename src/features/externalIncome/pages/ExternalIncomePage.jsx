@@ -5,7 +5,15 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Icons
-import { Ban, Coins, Pencil, Plus, Archive, ArchiveRestore } from "lucide-react";
+import {
+  Ban,
+  Coins,
+  Pencil,
+  Plus,
+  Archive,
+  ArchiveRestore,
+  Trash2,
+} from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -18,6 +26,7 @@ import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import Pagination from "@/shared/components/ui/Pagination";
 import EmptyState from "@/shared/components/ui/EmptyState";
+import ConfirmPopover from "@/shared/components/ui/ConfirmPopover";
 import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 import {
   IncomeEntryModal,
@@ -44,7 +53,10 @@ import {
   getCategoryStatus,
 } from "../data/externalIncome.data";
 import { incomeQueries } from "../queries/externalIncome.queries";
-import { useArchiveCategory } from "../queries/externalIncome.mutations";
+import {
+  useArchiveCategory,
+  useDeleteCategory,
+} from "../queries/externalIncome.mutations";
 import { financeQueries } from "@/features/finance/queries/finance.queries";
 
 /**
@@ -268,18 +280,31 @@ const CategoriesPanel = () => {
 
   const { data, isLoading } = useQuery(incomeQueries.categories({ status }));
   const { mutate: archiveCategory } = useArchiveCategory();
+  const { mutate: deleteCategory } = useDeleteCategory();
 
   const items = data?.items ?? [];
+
+  const showError = (err) =>
+    toast.error(err.response?.data?.message || "Xatolik yuz berdi");
 
   const handleArchive = (category) => {
     archiveCategory(
       { id: category.id, isArchived: !category.isArchived },
       {
         onSuccess: (result) => toast.success(result.message),
-        onError: (err) =>
-          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onError: showError,
       },
     );
+  };
+
+  // ⚠️ Tugma FAQAT ishlatilmagan kategoriyada ko'rinadi (`usageCount === 0`).
+  // Yozuvi bor kategoriyani o'chirish o'tgan hisobotni buzardi — u faqat
+  // arxivlanadi. Server ham shu shartni qayta tekshiradi.
+  const handleDelete = (category) => {
+    deleteCategory(category.id, {
+      onSuccess: (result) => toast.success(result.message),
+      onError: showError,
+    });
   };
 
   return (
@@ -356,6 +381,24 @@ const CategoriesPanel = () => {
                         <Archive className="size-3.5" />
                       )}
                     </button>
+
+                    {category.usageCount === 0 && (
+                      <ConfirmPopover
+                        tooltip="O'chirish"
+                        title="Kategoriya o'chirilsinmi?"
+                        description="Bu kategoriyada birorta yozuv yo'q, shuning uchun uni butunlay o'chirish mumkin."
+                        confirmLabel="O'chirish"
+                        danger
+                        onConfirm={() => handleDelete(category)}
+                      >
+                        <button
+                          type="button"
+                          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </ConfirmPopover>
+                    )}
                   </div>
                 </Td>
               </Tr>

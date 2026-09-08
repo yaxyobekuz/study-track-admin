@@ -39,7 +39,13 @@ import {
   useCancelEntry,
   useRegenerateEntry,
 } from "../queries/payroll.mutations";
-import { NO_ADVANCE_HINT, PAYROLL_SEAL_HINT } from "../data/payroll.data";
+import {
+  NO_ADVANCE_HINT,
+  PAYROLL_SEAL_HINT,
+  SALARY_TYPES,
+  SALARY_TYPE_HINTS,
+  SALARY_TYPE_OPTIONS,
+} from "../data/payroll.data";
 
 const todayInputValue = () => {
   const now = new Date();
@@ -71,13 +77,35 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
     enabled: !isEdit && !staff,
   });
 
-  const { staffId, amount, startMonth, endMonth, note, setField } = useObjectState({
+  const {
+    staffId,
+    type,
+    amount,
+    hourlyRate,
+    monthlyHourNorm,
+    startMonth,
+    endMonth,
+    note,
+    setField,
+  } = useObjectState({
     staffId: staff?.id ?? rule?.staffId ?? "",
-    amount: rule?.amount ?? "",
+    type: rule?.type ?? SALARY_TYPES.FIXED,
+    // Soatbay qoidada server `amount` ni nolga majburlaydi — o'sha nol
+    // maydonda "0" bo'lib turmasligi kerak, aks holda rejim fiksaga
+    // qaytarilganda xodim uni o'chirishni unutardi.
+    amount: rule?.type === SALARY_TYPES.HOURLY ? "" : (rule?.amount ?? ""),
+    hourlyRate: rule?.hourlyRate ?? "",
+    monthlyHourNorm: rule?.monthlyHourNorm ?? "",
     startMonth: monthKeyToInputValue(rule?.startMonth ?? currentMonthKey()),
     endMonth: monthKeyToInputValue(rule?.endMonth),
     note: rule?.note ?? "",
   });
+
+  const isHourly = type === SALARY_TYPES.HOURLY;
+  const isMixed = type === SALARY_TYPES.MIXED;
+  // Bazaviy summa faqat fiksa va aralash rejimda so'raladi
+  const usesAmount = !isHourly;
+  const usesRate = isHourly || isMixed;
 
   const staffOptions = people
     .filter((person) => person.role !== "student")
@@ -90,8 +118,13 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
     e.preventDefault();
     setIsLoading(true);
 
+    // ⚠️ FAQAT REJIMGA TEGISHLI MAYDONLAR yuboriladi: server rejimga qarab
+    // qolganini o'zi nolga/`null` ga keltiradi (`parseSalaryShape`).
     const payload = {
-      amount,
+      type,
+      ...(usesAmount ? { amount } : {}),
+      ...(usesRate ? { hourlyRate } : {}),
+      ...(isMixed ? { monthlyHourNorm } : {}),
       startMonth: inputValueToMonthKey(startMonth),
       endMonth: inputValueToMonthKey(endMonth),
       note,
@@ -133,17 +166,71 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
         )
       )}
 
-      <InputField
-        required
-        min="1"
-        type="number"
-        name="amount"
-        label="Oylik summasi"
-        value={amount}
-        placeholder="5000000"
-        description={amount ? `${formatMoney(amount)} / oy` : "Oyiga qat'iy summa"}
-        onChange={(e) => setField("amount", e.target.value)}
-      />
+      {/* ⚠️ REJIM — BOSHLIQNING QARORI (`payroll.assign`). Uchala rejim
+          serverda ham, o'qituvchi panelidagi jonli hisobda ham bitta
+          formuladan (`computeSalary`) o'tadi. */}
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Oylik turi</p>
+        <Select
+          value={type}
+          options={SALARY_TYPE_OPTIONS}
+          onChange={(v) => setField("type", v)}
+        />
+      </div>
+
+      {usesAmount && (
+        <InputField
+          required
+          min="1"
+          type="number"
+          name="amount"
+          label={isMixed ? "Bazaviy oylik" : "Oylik summasi"}
+          value={amount}
+          placeholder="5000000"
+          description={
+            amount
+              ? `${formatMoney(amount)} / oy`
+              : isMixed
+                ? "Har oy to'liq to'lanadigan qism"
+                : "Oyiga qat'iy summa"
+          }
+          onChange={(e) => setField("amount", e.target.value)}
+        />
+      )}
+
+      {usesRate && (
+        <InputField
+          required
+          min="1"
+          type="number"
+          name="hourlyRate"
+          label="1 soat narxi"
+          value={hourlyRate}
+          placeholder="60000"
+          description={
+            hourlyRate
+              ? `${formatMoney(hourlyRate)} / soat`
+              : "Bir akademik soat uchun to'lanadigan summa"
+          }
+          onChange={(e) => setField("hourlyRate", e.target.value)}
+        />
+      )}
+
+      {isMixed && (
+        <InputField
+          required
+          min="1"
+          max="500"
+          step="1"
+          type="number"
+          name="monthlyHourNorm"
+          label="Oylik soat normasi"
+          value={monthlyHourNorm}
+          placeholder="80"
+          description="Shu soatdan ortig'i uchun stavka qo'shiladi"
+          onChange={(e) => setField("monthlyHourNorm", e.target.value)}
+        />
+      )}
 
       <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
         <InputField
@@ -172,16 +259,20 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
         onChange={(e) => setField("note", e.target.value)}
       />
 
-      <p className="rounded-xl bg-gray-50 p-3 text-xs text-gray-500">
-        Oylik OY aniqligida hisoblanadi — kun bo'yicha bo'linmaydi. Oy o'rtasida
-        ishga kirgan xodim uchun keyingi oydan boshlang.
+      <p className="rounded-xl bg-gray-50 p-3 text-xs leading-relaxed text-gray-500">
+        {SALARY_TYPE_HINTS[type]}
       </p>
 
       <Button
         type="submit"
         className="w-full"
         loading={isLoading}
-        disabled={!amount || (!isEdit && !staffId && !staff)}
+        disabled={
+          (usesAmount && !amount) ||
+          (usesRate && !hourlyRate) ||
+          (isMixed && !monthlyHourNorm) ||
+          (!isEdit && !staffId && !staff)
+        }
       >
         {isEdit ? "Saqlash" : "Belgilash"}
       </Button>

@@ -9,8 +9,11 @@ import { toast } from "sonner";
 
 // Icons
 import {
+  ArrowDownRight,
+  ArrowUpRight,
   Ban,
   FileText,
+  Minus,
   PiggyBank,
   Receipt,
   RotateCcw,
@@ -43,6 +46,13 @@ import useModal from "@/shared/hooks/useModal";
 
 // Utils & helpers
 import { formatMoney } from "@/shared/utils/formatMoney";
+// ⚠️ O'zgarish strelkasining rangi va matni MOLIYA DASHBOARDIDAN olinadi:
+// bir bo'limda "+12%" ikki xil ko'rinishda va ikki xil rangda bo'lmasligi
+// kerak. Shu sababli bu yerda o'z `trendTone` imiz yozilmaydi.
+import {
+  formatChange,
+  trendTone,
+} from "@/features/financeDashboard/data/financeDashboard.data";
 import { currentMonthKey, buildMonthOptions } from "@/shared/helpers/month.helpers";
 
 // Data & queries
@@ -256,6 +266,11 @@ const OverviewPage = () => {
             accent="bg-blue-500"
             label="Hisoblangan"
             value={formatMoney(summary.totals.amount)}
+            compare={{
+              label: summary.compareMonthLabel,
+              previous: summary.previous?.amount,
+              change: summary.change?.amount,
+            }}
             hint={
               <>
                 {summary.counts.invoiced} ta majburiyat
@@ -276,6 +291,11 @@ const OverviewPage = () => {
             value={formatMoney(summary.totals.paid)}
             valueClassName="text-green-700"
             hint={`${summary.counts.paid} ta to'liq yopilgan`}
+            compare={{
+              label: summary.compareMonthLabel,
+              previous: summary.previous?.paid,
+              change: summary.change?.paid,
+            }}
           />
 
           <SummaryCard
@@ -285,6 +305,13 @@ const OverviewPage = () => {
             value={formatMoney(summary.totals.debt)}
             valueClassName="text-red-600"
             hint={`${summary.counts.unpaid + summary.counts.partial} ta to'lanmagan`}
+            // ⚠️ Qarzning O'SISHI yomon — strelka rangi teskari
+            compare={{
+              label: summary.compareMonthLabel,
+              previous: summary.previous?.debt,
+              change: summary.change?.debt,
+              inverse: true,
+            }}
           />
 
           <SummaryCard
@@ -473,7 +500,15 @@ const OverviewPage = () => {
  * xil karta uslubi bo'lsa, foydalanuvchi ular boshqa modulga tegishli deb
  * o'ylardi.
  */
-const SummaryCard = ({ icon: Icon, accent, label, value, hint, valueClassName }) => (
+const SummaryCard = ({
+  icon: Icon,
+  accent,
+  label,
+  value,
+  hint,
+  valueClassName,
+  compare,
+}) => (
   <div className="relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5">
     <div className={cn("absolute -right-7 -top-7 size-24 rounded-full opacity-10", accent)} />
 
@@ -501,7 +536,46 @@ const SummaryCard = ({ icon: Icon, accent, label, value, hint, valueClassName })
     </p>
 
     {hint && <p className="relative mt-1.5 text-[11px] text-gray-400">{hint}</p>}
+
+    {/* O'TGAN OY BILAN TAQQOSLASH.
+        ⚠️ `previous` bo'lmasa qator umuman chizilmaydi: "Depozitda"
+        kartasi oyga bog'liq emas (u BUGUNGI qoldiq), unga o'tgan oy
+        raqamini yozib qo'yish soxta taqqoslash bo'lardi. */}
+    {compare?.previous != null && (
+      <div className="relative mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5 text-[11px]">
+        <span className="truncate text-gray-400">
+          {compare.label}: {formatMoney(compare.previous)}
+        </span>
+        <Delta change={compare.change} inverse={compare.inverse} />
+      </div>
+    )}
   </div>
 );
+
+/**
+ * O'tgan oyga nisbatan o'zgarish — strelka va foiz.
+ *
+ * ⚠️ `null` bo'lsa HECH NARSA chizilmaydi. O'tgan oyda raqam nol bo'lsa
+ * o'sish foizining maxraji yo'q va uni "+100%" deb ko'rsatish yolg'on
+ * bo'lardi (server ham shu sababli `null` yuboradi).
+ */
+const Delta = ({ change, inverse }) => {
+  if (change == null) return null;
+
+  const tone = trendTone(change, { inverse });
+  const Icon =
+    tone.direction === "up"
+      ? ArrowUpRight
+      : tone.direction === "down"
+        ? ArrowDownRight
+        : Minus;
+
+  return (
+    <span className={cn("inline-flex shrink-0 items-center gap-0.5 font-medium", tone.className)}>
+      <Icon className="size-3.5 shrink-0" />
+      {formatChange(change)}
+    </span>
+  );
+};
 
 export default OverviewPage;

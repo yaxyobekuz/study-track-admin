@@ -21,7 +21,12 @@ import {
   RevenueStructureCard,
   TopExpensesCard,
 } from "../components/StructureCards";
-import { BudgetCard, DirectionsCard, PnlCard } from "../components/TableCards";
+import {
+  BudgetCard,
+  DirectionsCard,
+  PayrollCard,
+  PnlCard,
+} from "../components/TableCards";
 import {
   BudgetEditButton,
   ExpenseBudgetCard,
@@ -175,7 +180,7 @@ const FinanceDashboardPage = () => {
         </div>
       </div>
 
-      {/* ── 1-qator: beshta KPI kartasi ──────────────────────────────── */}
+      {/* ── 1-qator: KPI kartalari (kassa + qarz va oylik) ────────────── */}
       <KpiCards data={overview.data} isLoading={overview.isLoading} />
 
       {/* ── 2-qator: P&L, dinamika, xarajat tuzilmasi ────────────────── */}
@@ -198,19 +203,26 @@ const FinanceDashboardPage = () => {
         <DebtAgingCard {...state} />
       </div>
 
-      {/* ── 5-qator: narx intizomi (keng) + top 5 xarajat ───────────── */}
+      {/* ── 5-qator: xodimlar oyligi (to'liq kenglik) ───────────────── */}
+      {/* ⚠️ Xarajat tuzilmasidagi "Xodimlar maoshi" qatori TO'LANGAN pulni
+          ko'rsatadi, bu karta esa HISOBLANGANINI ham — ya'ni "kimga qancha
+          qarzdormiz" degan savolga javob faqat shu yerda bor. Jadval keng
+          (yetti ustun), shuning uchun qator o'ziga to'liq kenglikni oladi */}
+      <PayrollCard {...state} />
+
+      {/* ── 6-qator: narx intizomi (keng) + top 5 xarajat ───────────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <PricingCard {...state} className="xl:col-span-2" />
         <TopExpensesCard {...state} />
       </div>
 
-      {/* ── 6-qator: yo'nalishlar natijasi (keng) + bank hisoblari ───── */}
+      {/* ── 7-qator: yo'nalishlar natijasi (keng) + bank hisoblari ───── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <DirectionsCard {...state} className="xl:col-span-2" />
         <AccountsCard {...state} />
       </div>
 
-      {/* ── 7-qator: byudjet ijrosi (keng) + xarajat limitlari ───────── */}
+      {/* ── 8-qator: byudjet ijrosi (keng) + xarajat limitlari ───────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <BudgetCard
           {...state}
@@ -239,7 +251,7 @@ const FinanceDashboardPage = () => {
         />
       </div>
 
-      {/* ── 8-qator: bo'limlar bo'yicha yig'im (to'liq kenglik) ─────── */}
+      {/* ── 9-qator: bo'limlar bo'yicha yig'im (to'liq kenglik) ─────── */}
       <IncomePlanCard
         {...state}
         action={
@@ -251,14 +263,14 @@ const FinanceDashboardPage = () => {
         }
       />
 
-      {/* ── 9-qator: maktab KPI ko'rsatkichlari ──────────────────────── */}
+      {/* ── 10-qator: maktab KPI ko'rsatkichlari ──────────────────────── */}
       <ScorecardCard
         data={scorecard.data}
         isLoading={scorecard.isLoading}
         isError={scorecard.isError}
       />
 
-      {/* ── 10-qator: so'nggi operatsiyalar (keng) + eng katta qarzdorlar ─ */}
+      {/* ── 11-qator: so'nggi operatsiyalar (keng) + eng katta qarzdorlar ─ */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <RecentOperationsCard {...state} className="xl:col-span-2" />
         <TopDebtorsCard {...state} />

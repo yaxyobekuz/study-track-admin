@@ -8,6 +8,9 @@ export const expenseCategoriesAPI = {
   update: (id, data) => http.put(`/expense-categories/${id}`, data),
   archive: (id, isArchived) =>
     http.patch(`/expense-categories/${id}/archive`, { isArchived }),
+  // O'chirish — server faqat hech qayerda ishlatilmagan kategoriyaga ruxsat
+  // beradi, aks holda sababini aytib rad etadi
+  remove: (id) => http.delete(`/expense-categories/${id}`),
 };
 
 /**

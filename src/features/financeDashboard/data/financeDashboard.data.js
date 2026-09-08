@@ -74,12 +74,18 @@ export const compactMoney = (value) => {
 /**
  * Backend qiymatini turiga qarab matnga o'giradi.
  *
- * Uch tur bor va ularni aralashtirib bo'lmaydi: pul ("1 404 000 000 so'm"),
- * foiz ("25%") va sanoq ("118 ta"). Server har qatorda `unit` yuboradi,
+ * To'rt tur bor va ularni aralashtirib bo'lmaydi: pul ("1 404 000 000
+ * so'm"), foiz ("25%"), sanoq ("118 ta") va tayyor MATN ("Sentabr, 2026"
+ * — server bergan oy yorlig'i). Server har qatorda `unit` yuboradi,
  * shuning uchun komponentlar o'zicha taxmin qilmaydi.
+ *
+ * ⚠️ `text` turidagi qiymat AYNAN qanday kelsa shunday chiqadi: u
+ * serverdagi `formatMonthKey` dan chiqqan sana yorlig'i va bu yerda
+ * qayta formatlansa, sana qoidasi ikki joyda ikki xil bo'lib ketardi.
  */
 export const formatByUnit = (value, unit, { fallback = "—" } = {}) => {
   if (value == null || value === "") return fallback;
+  if (unit === "text") return String(value);
   if (unit === "percent") return `${Number(value)}%`;
   if (unit === "count") return `${Number(value)} ta`;
   return formatMoney(value, { fallback });
@@ -146,11 +152,24 @@ export const planBarTone = (rate, { inverse = false } = {}) => {
   return "bg-gray-300";
 };
 
-/** KPI kartalarining rangli fon urg'usi — tartib dizayndagi bilan bir xil. */
+/**
+ * KPI kartalarining rangli fon urg'usi — tartib dizayndagi bilan bir xil.
+ *
+ * ⚠️ Birinchi beshtasi KASSA o'lchovida ("pul kirdi/chiqdi"), keyingi
+ * to'rttasi MAJBURIYAT o'lchovida ("qancha olishimiz / to'lashimiz kerak").
+ * Ular bitta qatorda, chunki rahbar ekranni shu tartibda o'qiydi: pul
+ * qoldig'idan keyin darhol "lekin qancha qarz osilib turibdi" degan savol
+ * keladi. Qarz kartalari "Qarzdorlar" sahifasidagi kartalarning AYNI
+ * o'zi — ikkalasi bitta serverdagi `debt` blokidan chiqadi.
+ */
 export const KPI_CARDS = [
   { key: "income", label: "Jami tushum", accent: "bg-blue-500", tone: "text-gray-900" },
   { key: "expense", label: "Jami xarajat", accent: "bg-rose-500", tone: "text-gray-900", inverse: true },
   { key: "profit", label: "Sof foyda", accent: "bg-green-500", tone: "text-green-700" },
   { key: "margin", label: "Rentabellik", accent: "bg-violet-500", tone: "text-violet-700" },
   { key: "cashBalance", label: "Pul qoldig'i", accent: "bg-amber-500", tone: "text-gray-900" },
+  { key: "debt", label: "Jami qarz", accent: "bg-orange-500", tone: "text-orange-700", inverse: true },
+  { key: "debtors", label: "Qarzdorlar", accent: "bg-yellow-500", tone: "text-gray-900", inverse: true },
+  { key: "oldestDebt", label: "Eng eski qarz", accent: "bg-slate-500", tone: "text-gray-900" },
+  { key: "payroll", label: "Xodimlar oyligi", accent: "bg-indigo-500", tone: "text-gray-900", inverse: true },
 ];

@@ -8,6 +8,9 @@ export const incomeCategoriesAPI = {
   update: (id, data) => http.put(`/income-categories/${id}`, data),
   archive: (id, isArchived) =>
     http.patch(`/income-categories/${id}/archive`, { isArchived }),
+  // O'chirish — server faqat hech qayerda ishlatilmagan kategoriyaga ruxsat
+  // beradi, aks holda sababini aytib rad etadi
+  remove: (id) => http.delete(`/income-categories/${id}`),
 };
 
 /**

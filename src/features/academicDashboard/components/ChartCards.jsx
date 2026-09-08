@@ -591,11 +591,14 @@ const AnimatedTotal = ({ total, duration }) => {
  * esa ko'rinib turardi, ya'ni ekranda o'ziga qarama-qarshi ikki javob
  * paydo bo'lardi.
  *
- * ⚠️ Markazdagi son — O'QUVCHILAR soni: `buildDistribution` har bir
- * o'quvchini o'rtacha bahosi bo'yicha bitta chelakka soladi, ya'ni
- * maxraj KPI dagi "Jami o'quvchilar" bilan bir xil. Qo'yilgan baholar
- * soni bu yerda EMAS (u ko'p dars oladigan sinfni ustun qilib
- * ko'rsatardi).
+ * ⚠️ Markazdagi son — O'QUVCHILAR soni: har bir o'quvchi o'rtacha bahosi
+ * bo'yicha bitta chelakka tushadi. Qo'yilgan baholar soni bu yerda EMAS
+ * (u ko'p dars oladigan sinfni ustun qilib ko'rsatardi).
+ *
+ * ⚠️ Bu son KPI dagi "Jami o'quvchilar" ga TENG EMAS va bo'lishi ham shart
+ * emas: bu yerda faqat shu oyda BAHO OLGANLAR sanaladi. Bahosi yo'q
+ * o'quvchi (masalan bog'cha guruhi yoki oy oxirida kelgan bola) taqsimotga
+ * kirmaydi — shuning uchun markazda "Jami" emas, "Baho olgan" deb turadi.
  *
  * ANIMATSIYA: kartadan 140ms keyin halqa aylanib chiziladi (900ms,
  * ease-out), markazdagi son shu vaqt ichida yakuniy qiymatgacha sanaydi,
@@ -696,7 +699,12 @@ export const DistributionCard = ({ data, isLoading, isError, delay = 0 }) => {
             )}
             style={enter}
           >
-            <p className={T.label}>Jami</p>
+            {/* ⚠️ "Jami" EMAS. Markazdagi son — shu oyda KAMIDA BITTA
+                bahosi bor o'quvchilar, ya'ni u KPI dagi "Jami o'quvchilar"
+                dan kam bo'lishi TABIIY (bahosi yo'q bola bu yerda
+                sanalmaydi). "Jami" deb yozib qo'yilgani uchun ikki karta
+                ikki xil raqam ko'rsatyapti degan savol tug'ilardi. */}
+            <p className={T.label}>Baho olgan</p>
             <AnimatedTotal total={total} duration={begin + DURATION.ring} />
             <p className={T.valueMeta}>o'quvchi</p>
           </div>

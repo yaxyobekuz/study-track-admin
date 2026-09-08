@@ -54,7 +54,10 @@ const StudentDailyPage = () => {
   // Tahrirlash oynasi `POST /mark` chaqiradi — sahifa esa `attendance.view`
   // bilan ochiladi. Belgilash ruxsati bo'lmasa qator bosilmaydi (403 o'rniga).
   const canMark = can("attendance.mark");
-  const [classId, setClassId] = useState(""); // "" => birinchi sinf, "all" => barcha sinflar
+  // Default — BARCHA SINFLAR: kunlik davomat ekrani "bugun maktabda nima
+  // bo'ldi" degan savolga javob beradi, bitta sinfga tushib qolgan default
+  // esa qolgan sinflarni ko'rinmas qilib qo'yardi.
+  const [classId, setClassId] = useState(ALL_CLASSES);
   const [status, setStatus] = useState(""); // "" => barcha holatlar
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -66,7 +69,7 @@ const StudentDailyPage = () => {
   const firstClassId = classes[0]?.id || "";
   const isAll = classId === ALL_CLASSES;
   const perClassId = isAll ? "" : classId || firstClassId;
-  const selectValue = classId || firstClassId; // SelectSearch ko'rsatadigan qiymat
+  const selectValue = classId || firstClassId; // SelectSearch ko'rsatadigan qiymat (bo'sh => birinchi sinf)
 
   // Sinf / holat / qidiruv / sana o'zgarsa sahifani boshiga qaytaramiz (render vaqtida, effektsiz)
   const resetKey = `${date}|${status}|${classId}|${debouncedSearch}`;

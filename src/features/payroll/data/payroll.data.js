@@ -1,3 +1,6 @@
+// Utils
+import { formatMoney } from "@/shared/utils/formatMoney";
+
 // Xodimlar oyligi bo'limining statik ma'lumotlari.
 //
 // Oylik — CHIQIM tomonining o'quvchi registriga o'xshashi: qoida belgilanadi,
@@ -27,6 +30,42 @@ export const RULE_TABLE_COLUMNS = [
   "",
 ];
 
+/**
+ * OYLIK REJIMLARI — server `SalaryType` enumi bilan bir xil
+ * (`staffSalary.service.js` dagi `TYPE_LABELS`).
+ *
+ * ⚠️ Yorliqlar shu yerda TURADI va komponent ichida qayta yozilmaydi:
+ * bir ekranda "Soatbay", boshqasida "Soat bo'yicha" bo'lib qolmasligi kerak.
+ */
+export const SALARY_TYPES = {
+  FIXED: "fixed",
+  HOURLY: "hourly",
+  MIXED: "mixed",
+};
+
+export const SALARY_TYPE_OPTIONS = [
+  { label: "Fiksa — oyiga qat'iy summa", value: SALARY_TYPES.FIXED },
+  { label: "Soatbay — soat × stavka", value: SALARY_TYPES.HOURLY },
+  { label: "Fiksa + ortiqcha soat", value: SALARY_TYPES.MIXED },
+];
+
+/** Rejim tanlanganda oynada chiqadigan izoh. */
+export const SALARY_TYPE_HINTS = {
+  [SALARY_TYPES.FIXED]:
+    "Oylik OY aniqligida hisoblanadi — kun bo'yicha bo'linmaydi. Oy o'rtasida " +
+    "ishga kirgan xodim uchun keyingi oydan boshlang.",
+  [SALARY_TYPES.HOURLY]:
+    "Soat DARS JADVALIDAN hisoblanadi: haftalik jadval oy kunlariga yoyiladi, " +
+    "bayram kunlari va ta'til oyi chiqariladi. O'qituvchi o'z panelida har bir " +
+    "o'tilgan dars uchun summa qo'shilib borishini ko'radi. ⚠️ Soatbay " +
+    "majburiyat OY YOPILGANDAN KEYIN shakllanadi — aks holda oy o'rtasidagi " +
+    "soat butun oy deb muhrlanib qolardi.",
+  [SALARY_TYPES.MIXED]:
+    "Bazaviy summa har oy to'liq to'lanadi, ustiga normadan ORTIQCHA soat " +
+    "uchun stavka qo'shiladi. ⚠️ Normadan kam ishlangani uchun bazaviy summa " +
+    "kamaytirilmaydi — fiksa kelishilgan minimal kafolat, jarima emas.",
+};
+
 /** Majburiyat holati uchun badge. */
 export const ENTRY_STATUS_META = {
   unpaid: { label: "To'lanmagan", className: "bg-red-100 text-red-700" },
@@ -41,6 +80,33 @@ export const ENTRY_STATUS_OPTIONS = [
   { label: "Qisman to'langan", value: "partial" },
   { label: "To'langan", value: "paid" },
 ];
+
+/**
+ * Qoidaning bir qatorlik formulasi — jadval ustunida shu ko'rinadi.
+ *
+ * ⚠️ Serverdagi `formulaLabel` ISHLATILMAYDI: u xato xabarlari uchun xom
+ * summa bilan yig'iladi ("60000.00 so'm"), panelda esa pul har joyda
+ * `formatMoney` bilan chiqadi. Ikkalasi bir jadvalda yonma-yon tursa,
+ * bitta ustunda ikki xil pul formati ko'rinardi.
+ */
+export const getRuleFormula = (rule) => {
+  if (rule.type === SALARY_TYPES.HOURLY) {
+    return `${formatMoney(rule.hourlyRate)} / soat`;
+  }
+  if (rule.type === SALARY_TYPES.MIXED) {
+    return `${formatMoney(rule.amount)} + ${formatMoney(rule.hourlyRate)} / soat`;
+  }
+  return `${formatMoney(rule.amount)} / oy`;
+};
+
+/** Formulaning ostidagi kichik izoh — rejim va soat normasi. */
+export const getRuleFormulaHint = (rule) => {
+  if (rule.type === SALARY_TYPES.HOURLY) return "Soatbay — dars jadvalidan";
+  if (rule.type === SALARY_TYPES.MIXED) {
+    return `Norma: ${rule.monthlyHourNorm ?? 0} soat, ortig'iga stavka`;
+  }
+  return null;
+};
 
 /** Qoida davri holati. */
 export const getRuleStatus = (rule, currentMonth) => {

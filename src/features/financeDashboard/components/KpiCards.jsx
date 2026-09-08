@@ -2,12 +2,15 @@
 import {
   ArrowDownRight,
   ArrowUpRight,
+  CalendarClock,
   Minus,
   Percent,
   PiggyBank,
   Receipt,
   TrendingUp,
+  Users,
   Wallet,
+  WalletCards,
 } from "lucide-react";
 
 // Utils
@@ -28,6 +31,10 @@ const ICONS = {
   profit: TrendingUp,
   margin: Percent,
   cashBalance: PiggyBank,
+  debt: WalletCards,
+  debtors: Users,
+  oldestDebt: CalendarClock,
+  payroll: Users,
 };
 
 /** O'tgan oyga nisbatan o'zgarish — foizni ham, punktni ham server beradi. */
@@ -113,6 +120,13 @@ const KpiCards = ({ data, isLoading }) => {
               {formatByUnit(row.value, row.unit)}
             </p>
 
+            {/* Izoh satri — "38 ta xodim", "5 oy oldingi qarz" kabi.
+                Raqamning MA'NOSINI aytadi, shuning uchun summaning ostida,
+                taqqoslash bloki ustida turadi */}
+            {row.sub && (
+              <p className="relative mt-1 text-[11px] text-gray-500">{row.sub}</p>
+            )}
+
             <div className="relative mt-3 space-y-1.5 border-t border-gray-100 pt-2.5 text-[11px]">
               {/* REJA — belgilanmagan bo'lsa qator umuman chizilmaydi:
                   "Reja: —" bo'sh joy egallab, hech narsa aytmasdi */}
@@ -134,16 +148,22 @@ const KpiCards = ({ data, isLoading }) => {
                 </div>
               )}
 
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-gray-400">
-                  O'tgan oy: {formatByUnit(row.previous, row.unit)}
-                </span>
-                <Delta
-                  change={row.change}
-                  changeUnit={row.changeUnit}
-                  inverse={card.inverse}
-                />
-              </div>
+              {/* ⚠️ Taqqoslash qatori faqat taqqoslanadigan qiymatda
+                  chiziladi: "Eng eski qarz" oy YORLIG'I va uni o'tgan oy
+                  bilan taqqoslash ma'nosiz — "O'tgan oy: —" esa karta
+                  buzuqdek ko'rinardi */}
+              {row.previous != null && (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-gray-400">
+                    O'tgan oy: {formatByUnit(row.previous, row.unit)}
+                  </span>
+                  <Delta
+                    change={row.change}
+                    changeUnit={row.changeUnit}
+                    inverse={card.inverse}
+                  />
+                </div>
+              )}
             </div>
           </div>
         );

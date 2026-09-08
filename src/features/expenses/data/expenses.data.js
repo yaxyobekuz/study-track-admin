@@ -47,6 +47,7 @@ export const getCategoryStatus = (category) => {
  * O'chirish o'rniga arxivlash — o'tgan hisobotlar shu kesimga tayanadi.
  */
 export const CATEGORY_ARCHIVE_HINT =
-  "Kategoriya o'chirilmaydi — arxivlanadi. Arxivlangani yangi xarajat " +
-  "qo'shishda ro'yxatda ko'rinmaydi, lekin eski yozuvlar va hisobotlar " +
-  "o'z joyida qoladi.";
+  "Ishlatilgan kategoriya o'chirilmaydi — arxivlanadi. Arxivlangani yangi " +
+  "xarajat qo'shishda ro'yxatda ko'rinmaydi, lekin eski yozuvlar va " +
+  "hisobotlar o'z joyida qoladi. Bironta yozuvda ishlatilmagan kategoriyani " +
+  "esa butunlay o'chirish mumkin.";

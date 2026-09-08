@@ -123,11 +123,24 @@ export const studentAttendanceQueries = {
 
 /** Davomat hisobotlari — belgilashdan keyin foizlar ham eskiradi. */
 export const attendanceReportsQueries = {
-  /** O'quvchilar oylik hisoboti → `{ overall, byDay, byClass, ... }`. */
-  students: (month, year) =>
+  /**
+   * O'quvchilar oylik hisoboti → `{ overall, byDay, byClass, ... }`.
+   *
+   * ⚠️ Taqqoslash parametrlari (`day`, `compareDay`, `compareMonth`,
+   * `compareYear`) KALITGA kiradi: ular javobni o'zgartiradi, ya'ni
+   * kalitdan tashqarida qolsa 6-sentabrni tanlaganda ekranda 8-sentabr
+   * keshdan chiqib turardi.
+   */
+  students: (month, year, compare = {}) =>
     queryOptions({
-      queryKey: [...attendanceReportsKeys.all, "students", { month, year }],
+      queryKey: [
+        ...attendanceReportsKeys.all,
+        "students",
+        { month, year, ...compare },
+      ],
       queryFn: () =>
-        attendanceReportAPI.getStudentReport(month, year).then((r) => r.data),
+        attendanceReportAPI
+          .getStudentReport(month, year, compare)
+          .then((r) => r.data),
     }),
 };

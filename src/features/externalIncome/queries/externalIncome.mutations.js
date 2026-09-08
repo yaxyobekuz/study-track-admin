@@ -62,3 +62,11 @@ export const useArchiveCategory = () => {
     onSuccess: invalidate,
   });
 };
+
+export const useDeleteCategory = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (id) => incomeCategoriesAPI.remove(id).then((r) => r.data),
+    onSuccess: invalidate,
+  });
+};

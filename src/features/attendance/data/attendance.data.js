@@ -1,3 +1,6 @@
+// Utils
+import { MONTHS_UZ_CAP } from "@/shared/utils/date.utils";
+
 export const STATUS_LABELS = {
   present: "Keldi",
   late: "Kech keldi",
@@ -110,20 +113,18 @@ export const MARK_SELECTED_COLORS = {
   excused: "bg-blue-100 text-blue-700 hover:bg-blue-100 hover:text-blue-700",
 };
 
-export const MONTH_OPTIONS = [
-  { label: "Yanvar", value: 1 },
-  { label: "Fevral", value: 2 },
-  { label: "Mart", value: 3 },
-  { label: "Aprel", value: 4 },
-  { label: "May", value: 5 },
-  { label: "Iyun", value: 6 },
-  { label: "Iyul", value: 7 },
-  { label: "Avgust", value: 8 },
-  { label: "Sentyabr", value: 9 },
-  { label: "Oktyabr", value: 10 },
-  { label: "Noyabr", value: 11 },
-  { label: "Dekabr", value: 12 },
-];
+/**
+ * Oy tanlagichi uchun ro'yxat: 1-12.
+ *
+ * ⚠️ Oy nomlari YAGONA manbadan (`date.utils.js`) olinadi va bu yerda
+ * qayta yozilmaydi. Nusxa ko'chirilgan massiv aynan shu yerda "Sentyabr"
+ * bo'lib turgan edi, holbuki tizimdagi qolgan hamma joyda "sentabr"
+ * (`.claude/rules/dates.md` §2).
+ */
+export const MONTH_OPTIONS = MONTHS_UZ_CAP.map((label, index) => ({
+  label,
+  value: index + 1,
+}));
 
 export const EXCUSE_TYPE_LABELS = {
   advance: "Oldindan",

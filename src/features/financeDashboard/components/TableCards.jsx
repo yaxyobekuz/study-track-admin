@@ -1,3 +1,6 @@
+// React
+import { useState } from "react";
+
 // Icons
 import { ArrowDownRight, ArrowUpRight, Info, Minus } from "lucide-react";
 
@@ -439,6 +442,135 @@ export const DirectionsCard = ({ data, isLoading, isError, className }) => {
             </MiniTd>
           </MiniTr>
         )}
+      </MiniTable>
+    </DashboardCard>
+  );
+};
+
+/** Ochilmasdan turib nechta xodim ko'rinadi — kartaning bo'yi shunga bog'liq. */
+const PAYROLL_PREVIEW = 8;
+
+/**
+ * XODIMLAR OYLIGI — jami summa va kim qancha olayotgani.
+ *
+ * ⚠️ IKKI USTUN ATAYLAB: HISOBLANGAN (majburiyat) va TO'LANGAN (kassadan
+ * chiqqan pul). Yuqoridagi "Jami xarajat" kartasi faqat to'langanini
+ * ko'rsatadi (`finance.md` §10), shuning uchun faqat bitta ustun bo'lsa
+ * "hisoblangan-u to'lanmagan oylik" ekranda umuman ko'rinmasdi — aynan
+ * "kimga qancha qarzdormiz" degan savol javobsiz qolardi.
+ *
+ * ⚠️ Ro'yxat serverdan TO'LIQ keladi va bu yerda KESILADI: "hammasini
+ * ko'rsatish" tugmasi qo'shimcha so'rov yubormaydi, ya'ni ochilganda
+ * jadval qayta yuklanmaydi.
+ */
+export const PayrollCard = ({ data, isLoading, isError, className }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  const payroll = data?.payroll;
+  const rows = payroll?.items ?? [];
+  const visible = expanded ? rows : rows.slice(0, PAYROLL_PREVIEW);
+
+  return (
+    <DashboardCard
+      title="Xodimlar oyligi"
+      hint={`${payroll?.monthLabel ?? ""} · ${CURRENCY_HINT}`}
+      isLoading={isLoading}
+      isError={isError}
+      // ⚠️ Bo'sh ro'yxat IKKI xil sabab bilan bo'lishi mumkin: oylik
+      // shakllanmagan yoki xodimlar kesimini ko'rish ruxsati yo'q
+      // (`payroll.view`). Ikkalasi bir xil matn bilan ko'rinsa, ruxsati
+      // yo'q xodim "oylik hisoblanmabdi" degan yolg'on xulosaga kelardi.
+      isEmpty={rows.length === 0 && Number(payroll?.accrued ?? 0) === 0}
+      emptyText="Bu oyda oylik shakllanmagan"
+      bodyClassName="overflow-x-auto"
+      className={className}
+      footer={
+        rows.length > PAYROLL_PREVIEW ? (
+          <button
+            type="button"
+            className="text-xs font-medium text-primary hover:underline"
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded ? "Yig'ish" : `Barchasi (${rows.length} ta xodim)`}
+          </button>
+        ) : null
+      }
+    >
+      {/* Uchta yig'ma raqam — jadvaldan OLDIN: rahbarga avval "qancha",
+          keyin "kimga" kerak */}
+      <div className="mb-3 grid grid-cols-3 gap-2">
+        {[
+          { label: "Hisoblangan", value: payroll?.accrued, tone: "text-gray-900" },
+          { label: "To'langan", value: payroll?.paid, tone: "text-green-700" },
+          { label: "Qarzimiz", value: payroll?.debt, tone: "text-red-600" },
+        ].map((cell) => (
+          <div key={cell.label} className="rounded-xl bg-gray-50 px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+              {cell.label}
+            </p>
+            <p className={cn("mt-0.5 text-sm font-bold tabular-nums", cell.tone)}>
+              {formatMoney(cell.value, { withLabel: false })}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Ruxsati yo'q xodimga jadval o'rniga ochiq javob: raqam yashirilgan,
+          "ma'lumot yo'q" emas */}
+      {payroll?.staffVisible === false && (
+        <p className="rounded-xl bg-gray-50 px-3 py-2 text-[11px] text-gray-500">
+          Xodimlar kesimi «Xodimlar oyligi» ruxsati ostida — yig'ma summalar
+          ko'rinadi, kim qancha olgani esa yo'q.
+        </p>
+      )}
+
+      <MiniTable
+        columns={[
+          { label: "Xodim" },
+          { label: "Rejim" },
+          { label: "Soat", align: "right" },
+          { label: "Hisoblangan", align: "right" },
+          { label: "Ulush", align: "right" },
+          { label: "To'langan", align: "right" },
+          { label: "Qarz", align: "right" },
+        ]}
+      >
+        {visible.map((row) => (
+          <MiniTr key={row.staffId}>
+            <MiniTd className="font-medium text-gray-700">
+              {row.fullName}
+              {row.isArchived && (
+                <span className="ml-1.5 text-[10px] font-normal text-gray-400">
+                  (arxivlangan)
+                </span>
+              )}
+            </MiniTd>
+
+            <MiniTd className="text-gray-400">{row.salaryTypeLabel}</MiniTd>
+
+            {/* Fiksada soat o'lchanmaydi — 0 emas, "—" (0 "hech soat
+                o'tmagan" degan yolg'on xulosa berardi) */}
+            <MiniTd align="right" className="text-gray-500">
+              {row.hoursWorked == null ? "—" : row.hoursWorked}
+            </MiniTd>
+
+            <MiniTd align="right" className="font-medium text-gray-700">
+              {formatMoney(row.amount, { withLabel: false })}
+            </MiniTd>
+            <MiniTd align="right" className="text-gray-400">
+              {row.share}%
+            </MiniTd>
+            <MiniTd align="right" className="text-green-700">
+              {formatMoney(row.paidAmount, { withLabel: false })}
+            </MiniTd>
+            <MiniTd
+              align="right"
+              className={Number(row.debt) > 0 ? "text-red-600" : "text-gray-300"}
+            >
+              {formatMoney(row.debt, { withLabel: false })}
+            </MiniTd>
+          </MiniTr>
+        ))}
       </MiniTable>
     </DashboardCard>
   );

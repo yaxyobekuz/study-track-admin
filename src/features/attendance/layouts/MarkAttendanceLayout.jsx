@@ -7,15 +7,11 @@ import { Outlet } from "react-router-dom";
 // Components
 import { TabsLinks } from "@/shared/components/ui/tabs/Tabs";
 
+// Utils
+import { todayInputValue } from "@/shared/utils/date.utils";
+
 // Data
 import { MARK_SUBTABS } from "../data/davomatTabs.data";
-
-// Bugungi sanani yyyy-mm-dd (mahalliy vaqt) ko'rinishida qaytaradi
-const getTodayInputValue = () => {
-  const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 10);
-};
 
 /**
  * Davomat belgilash sub-layouti.
@@ -23,7 +19,7 @@ const getTodayInputValue = () => {
  * Istalgan kun tanlanib, o'sha kun uchun davomat belgilanadi/o'zgartiriladi.
  */
 const MarkAttendanceLayout = () => {
-  const [date, setDate] = useState(getTodayInputValue);
+  const [date, setDate] = useState(todayInputValue);
 
   // Sahifaga xos filtr (sinf/rol) shu slotga portal orqali joylanadi -
   // shunda tablar, sahifa filtri va sana bitta qatorda turadi.
@@ -44,8 +40,8 @@ const MarkAttendanceLayout = () => {
           <input
             type="date"
             value={date}
-            max={getTodayInputValue()}
-            onChange={(e) => setDate(e.target.value || getTodayInputValue())}
+            max={todayInputValue()}
+            onChange={(e) => setDate(e.target.value || todayInputValue())}
             className="h-10 rounded-md border border-input bg-white px-3 text-sm outline-2 outline-primary"
           />
         </div>

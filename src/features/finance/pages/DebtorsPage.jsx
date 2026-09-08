@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // Router
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 // Icons
 import {
@@ -71,6 +71,7 @@ const StatCard = ({ icon: Icon, label, value, sub, className }) => (
  */
 const DebtorsPage = () => {
   const { openModal } = useModal();
+  const navigate = useNavigate();
   const { can } = usePermissions();
   const allowed = can("debtors.view");
 
@@ -235,12 +236,33 @@ const DebtorsPage = () => {
             {debtors.map((debtor) => {
               const age = getDebtAgeMeta(debtor.oldestMonth, currentMonth);
 
+              const openStudent = () => navigate(`/users/${debtor.id}?tab=finance`);
+
               return (
-                <Tr key={debtor.id}>
+                <Tr
+                  key={debtor.id}
+                  className="cursor-pointer transition-colors hover:bg-gray-50"
+                  // Qator ichida tugmalar bor, shuning uchun qatorning o'zi
+                  // <button> bo'la olmaydi — `role="button"` va klaviatura
+                  // ishlov beruvchisi qo'lda beriladi.
+                  role="button"
+                  tabIndex={0}
+                  onClick={openStudent}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openStudent();
+                    }
+                  }}
+                >
                   <Td>
+                    {/* Havola QOLADI: yangi tabda ochish (o'rta tugma,
+                        Ctrl+bosish) faqat <a> bilan ishlaydi. Bosilganda
+                        qator ishlov beruvchisi ikkinchi marta yurmasin. */}
                     <Link
                       to={`/users/${debtor.id}?tab=finance`}
                       className="font-medium text-gray-900 hover:text-primary"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       {debtor.fullName}
                     </Link>
@@ -270,7 +292,12 @@ const DebtorsPage = () => {
                   </Td>
 
                   <Td>
-                    <div className="flex items-center justify-end gap-1.5">
+                    {/* Amal tugmalari qatorni OCHMAYDI: eslatma yuborish va
+                        to'lov qabul qilish — mustaqil qarorlar */}
+                    <div
+                      className="flex items-center justify-end gap-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Can do="debtors.remind">
                         <Button
                           size="sm"
