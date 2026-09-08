@@ -31,6 +31,7 @@ import {
 
 // Utils & helpers
 import { cn } from "@/shared/utils/cn";
+import { formatMoney } from "@/shared/utils/formatMoney";
 import { formatDateUZ } from "@/shared/utils/date.utils";
 import {
   formatMonthKey,
@@ -240,37 +241,46 @@ const FinanceSettingsPage = () => {
 const DefaultTariffCard = ({ value, onChange, current }) => {
   const { data: tariffs = [] } = useQuery(financeQueries.assignableTariffs());
   const { mutate: applyDefault, isPending } = useApplyDefaultTariff();
+  const { mutate: saveSettings, isPending: isSaving } = useUpdateFinanceSettings();
 
   const options = [
     { label: "Tanlanmagan", value: "" },
     ...tariffs.map((t) => ({ label: t.name, value: t.id })),
   ];
 
-  // ⚠️ Tugma SAQLANGAN tarif bilan ishlaydi, ekrandagi tanlov bilan emas:
-  // server sozlamadagi qiymatni o'qiydi. Shuning uchun tanlov o'zgartirilib
-  // hali saqlanmagan bo'lsa, tugma bloklanadi — aks holda odam yangi
-  // tarifni bosgan bo'lib, eskisi hammaga tarqalib ketardi.
-  const savedId = current?.id ?? "";
-  const isDirty = (value ?? "") !== savedId;
+  const showApplyResult = (result) => {
+    toast.success(
+      `${result.applied} ta o'quvchiga qo'llandi` +
+        (result.alreadyDefault > 0
+          ? `, ${result.alreadyDefault} tasida allaqachon shu tarif edi`
+          : ""),
+    );
+    result?.warnings?.forEach((w) => toast.warning(w));
+    result?.failed?.forEach((f) => toast.error(`${f.studentName}: ${f.reason}`));
+  };
 
+  const showError = (err) =>
+    toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+
+  /**
+   * ⚠️ AVVAL SAQLAYDI, KEYIN QO'LLAYDI — bitta bosishda.
+   *
+   * Server qo'llashda SOZLAMADAGI tarifni o'qiydi, ekrandagi tanlovni emas.
+   * Ilgari bu yerda "avval Saqlash tugmasini bosing" degan qulf turardi va u
+   * BOSHI BERK KO'CHA yasardi: forma bilan server qiymati biror sababga
+   * ko'ra mos kelmasa (sahifa qayta yuklanmadi, so'rov kechikdi), tugma
+   * qulflanib qolar, xabar esa allaqachon bosilgan tugmani ko'rsatardi.
+   *
+   * Endi qulf umuman yo'q: tanlov qanday bo'lsa, o'sha saqlanadi va o'sha
+   * qo'llanadi — ikkisi ajralib ketishi STRUKTURAVIY imkonsiz.
+   */
   const handleApply = () => {
-    applyDefault(
-      {},
+    saveSettings(
+      { defaultTariffId: value || "" },
       {
-        onSuccess: (result) => {
-          toast.success(
-            `${result.applied} ta o'quvchiga qo'llandi` +
-              (result.alreadyDefault > 0
-                ? `, ${result.alreadyDefault} tasida allaqachon shu tarif edi`
-                : ""),
-          );
-          result?.warnings?.forEach((w) => toast.warning(w));
-          result?.failed?.forEach((f) =>
-            toast.error(`${f.studentName}: ${f.reason}`),
-          );
-        },
-        onError: (err) =>
-          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSuccess: () =>
+          applyDefault({}, { onSuccess: showApplyResult, onError: showError }),
+        onError: showError,
       },
     );
   };
@@ -295,11 +305,13 @@ const DefaultTariffCard = ({ value, onChange, current }) => {
         />
 
         {/* Narx KATALOGDAN o'qiladi, sozlamada saqlanmaydi — tarif narxi
-            oshsa bu satr o'zi yangilanadi */}
+            oshsa bu satr o'zi yangilanadi.
+            ⚠️ `formatMoney` MAJBURIY: xom `formatAmount` natijasi ekranda
+            "2000000.00 so'm" bo'lib chiqardi. */}
         {current && !current.missing && (
           <p className="mt-2 text-xs text-gray-500">
-            {current.name} · {current.monthLabel}:{" "}
-            {current.amount ? `${current.amount} so'm` : "narx belgilanmagan"}
+            Saqlangan: {current.name} · {current.monthLabel}:{" "}
+            {current.amount ? formatMoney(current.amount) : "narx belgilanmagan"}
           </p>
         )}
 
@@ -317,16 +329,17 @@ const DefaultTariffCard = ({ value, onChange, current }) => {
           Barcha o'quvchilarga qo'llash
         </p>
         <p className="mt-0.5 text-xs text-gray-500">
-          Hamma o'quvchining amaldagi tarifi joriy oydan boshlab shu tarifga
-          almashtiriladi. O'tgan oylarga tegilmaydi va shakllangan
-          hisob-fakturalar summasi o'zgarmaydi.
+          Yuqorida tanlangan tarif avval saqlanadi, so'ng hamma o'quvchining
+          amaldagi tarifi joriy oydan boshlab shu tarifga almashtiriladi.
+          O'tgan oylarga tegilmaydi va shakllangan hisob-fakturalar summasi
+          o'zgarmaydi.
         </p>
 
         <Can do="tariffs.assign">
           <div className="mt-3">
             <ConfirmPopover
               title="Barcha o'quvchilarga qo'llansinmi?"
-              description="Hamma o'quvchining tarifi joriy oydan standart tarifga o'tadi. Boshqa tarifdagilar ham (bog'cha, o'quv markazi) shu tarifga ko'chadi."
+              description="Tanlangan tarif saqlanadi va hamma o'quvchining tarifi joriy oydan shunga o'tadi. Boshqa tarifdagilar ham (bog'cha, o'quv markazi) shu tarifga ko'chadi."
               confirmLabel="Qo'llash"
               danger
               onConfirm={handleApply}
@@ -334,23 +347,20 @@ const DefaultTariffCard = ({ value, onChange, current }) => {
               <Button
                 type="button"
                 variant="outline"
-                disabled={!savedId || isDirty || isPending}
+                disabled={!value || isPending || isSaving}
                 className="w-full xs:w-auto"
               >
-                {isPending ? "Qo'llanmoqda..." : "Barcha o'quvchilarga qo'llash"}
+                {isPending || isSaving
+                  ? "Qo'llanmoqda..."
+                  : "Barcha o'quvchilarga qo'llash"}
               </Button>
             </ConfirmPopover>
 
             {/* Nega tugma o'chiq ekani AYTILADI — jim turgan tugma
                 "sahifa buzuq" bo'lib ko'rinardi */}
-            {!savedId && (
+            {!value && (
               <p className="mt-2 text-xs text-gray-500">
-                Avval tarifni tanlab, sozlamalarni saqlang
-              </p>
-            )}
-            {savedId && isDirty && (
-              <p className="mt-2 text-xs text-amber-600">
-                Tanlov o'zgartirildi — avval "Saqlash" tugmasini bosing
+                Avval yuqoridan tarifni tanlang
               </p>
             )}
           </div>
