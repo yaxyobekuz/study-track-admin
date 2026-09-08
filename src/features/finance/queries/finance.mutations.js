@@ -484,6 +484,23 @@ export const useDeleteFinanceStatus = () => {
   });
 };
 
+/**
+ * STANDART TARIFNI BARCHA O'QUVCHILARGA QO'LLASH.
+ *
+ * ⚠️ Bu massaviy amal: o'quvchilarning amaldagi tarifi joriy oydan
+ * boshlab almashtiriladi. Shuning uchun chaqiruvchi tomonda tasdiqlash
+ * majburiy va natija (nechtasi o'zgardi, nechtasi shundoq ham standart
+ * edi) foydalanuvchiga ochiq aytiladi.
+ */
+export const useApplyDefaultTariff = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data = {}) =>
+      studentTariffsAPI.applyDefault(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
 // ── Sozlamalar ───────────────────────────────
 
 export const useUpdateFinanceSettings = () => {

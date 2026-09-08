@@ -17,12 +17,14 @@ import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import Switch from "@/shared/components/ui/switch/Switch";
 import InputField from "@/shared/components/ui/input/InputField";
+import ConfirmPopover from "@/shared/components/ui/ConfirmPopover";
 import MarkVacationModal from "../components/MarkVacationModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
 import useObjectState from "@/shared/hooks/useObjectState";
 import {
+  useApplyDefaultTariff,
   useDeleteVacationMonth,
   useUpdateFinanceSettings,
 } from "../queries/finance.mutations";
@@ -52,6 +54,7 @@ const FinanceSettingsPage = () => {
     catchUpMonths,
     firstInvoiceMonth,
     depositAutoApply,
+    defaultTariffId,
     setFields,
     setField,
   } = useObjectState({
@@ -60,6 +63,7 @@ const FinanceSettingsPage = () => {
     catchUpMonths: 1,
     firstInvoiceMonth: "",
     depositAutoApply: true,
+    defaultTariffId: "",
   });
 
   // Server javobi kelgach formani to'ldiramiz
@@ -71,6 +75,7 @@ const FinanceSettingsPage = () => {
       catchUpMonths: settings.catchUpMonths,
       firstInvoiceMonth: monthKeyToInputValue(settings.firstInvoiceMonth),
       depositAutoApply: settings.depositAutoApply,
+      defaultTariffId: settings.defaultTariffId ?? "",
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
@@ -85,6 +90,9 @@ const FinanceSettingsPage = () => {
         catchUpMonths: Number(catchUpMonths),
         firstInvoiceMonth: inputValueToMonthKey(firstInvoiceMonth),
         depositAutoApply,
+        // Bo'sh satr ATAYLAB yuboriladi: server uni "standart tarif yo'q"
+        // deb tushunadi va avtomat biriktirishni o'chiradi
+        defaultTariffId,
       },
       {
         onSuccess: (result) => {
@@ -167,6 +175,13 @@ const FinanceSettingsPage = () => {
         )}
       </Card>
 
+      {/* Standart tarif */}
+      <DefaultTariffCard
+        value={defaultTariffId}
+        onChange={(v) => setField("defaultTariffId", v)}
+        current={settings?.defaultTariff}
+      />
+
       {/* Chegirma va depozit qoidalari */}
       <Card title="Depozit">
         <div className="mt-3 flex items-center justify-between gap-3">
@@ -204,6 +219,144 @@ const FinanceSettingsPage = () => {
 
       <MarkVacationModal />
     </form>
+  );
+};
+
+/**
+ * STANDART TARIF — yangi o'quvchiga avtomat biriktiriladigan tarif.
+ *
+ * Ilgari yangi o'quvchi TARIFSIZ yaratilar, ya'ni unga hisob-faktura
+ * yozilmasdi va u qarzdorlar registrida umuman ko'rinmasdi. Tarifni har
+ * safar qo'lda biriktirish esa jimgina unutilaverardi — aynan shu bo'shliq
+ * shu karta bilan yopiladi.
+ *
+ * ⚠️ IKKI AMAL BIR KARTADA, LEKIN ULAR BOSHQA-BOSHQA:
+ *   tanlov  → forma bilan saqlanadi, faqat KELAJAKDAGI o'quvchilarga
+ *             ta'sir qiladi;
+ *   tugma   → darhol bajariladi va MAVJUD o'quvchilarni ko'chiradi.
+ * Ikkalasini bitta tugmaga birlashtirish "sozlamani saqladim, nega
+ * hammaning tarifi o'zgarib ketdi" degan holatga olib kelardi.
+ */
+const DefaultTariffCard = ({ value, onChange, current }) => {
+  const { data: tariffs = [] } = useQuery(financeQueries.assignableTariffs());
+  const { mutate: applyDefault, isPending } = useApplyDefaultTariff();
+
+  const options = [
+    { label: "Tanlanmagan", value: "" },
+    ...tariffs.map((t) => ({ label: t.name, value: t.id })),
+  ];
+
+  // ⚠️ Tugma SAQLANGAN tarif bilan ishlaydi, ekrandagi tanlov bilan emas:
+  // server sozlamadagi qiymatni o'qiydi. Shuning uchun tanlov o'zgartirilib
+  // hali saqlanmagan bo'lsa, tugma bloklanadi — aks holda odam yangi
+  // tarifni bosgan bo'lib, eskisi hammaga tarqalib ketardi.
+  const savedId = current?.id ?? "";
+  const isDirty = (value ?? "") !== savedId;
+
+  const handleApply = () => {
+    applyDefault(
+      {},
+      {
+        onSuccess: (result) => {
+          toast.success(
+            `${result.applied} ta o'quvchiga qo'llandi` +
+              (result.alreadyDefault > 0
+                ? `, ${result.alreadyDefault} tasida allaqachon shu tarif edi`
+                : ""),
+          );
+          result?.warnings?.forEach((w) => toast.warning(w));
+          result?.failed?.forEach((f) =>
+            toast.error(`${f.studentName}: ${f.reason}`),
+          );
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      },
+    );
+  };
+
+  return (
+    <Card title="Standart tarif">
+      <p className="mt-1 text-sm text-gray-500">
+        Yangi qo'shilgan o'quvchiga shu tarif avtomatik biriktiriladi.
+        Tanlanmagan bo'lsa, tarif har safar qo'lda biriktiriladi.
+      </p>
+
+      <div className="mt-4">
+        <label className="mb-1.5 block text-sm font-medium text-gray-700">
+          Tarif
+        </label>
+        <Select
+          name="defaultTariffId"
+          options={options}
+          value={value ?? ""}
+          onChange={onChange}
+          placeholder="Tarifni tanlang"
+        />
+
+        {/* Narx KATALOGDAN o'qiladi, sozlamada saqlanmaydi — tarif narxi
+            oshsa bu satr o'zi yangilanadi */}
+        {current && !current.missing && (
+          <p className="mt-2 text-xs text-gray-500">
+            {current.name} · {current.monthLabel}:{" "}
+            {current.amount ? `${current.amount} so'm` : "narx belgilanmagan"}
+          </p>
+        )}
+
+        {current?.missing && (
+          <p className="mt-2 text-xs text-red-600">
+            Tanlangan tarif topilmadi — u o'chirilgan bo'lishi mumkin. Yangisini
+            tanlang.
+          </p>
+        )}
+      </div>
+
+      {/* Mavjud o'quvchilarga qo'llash — DARHOL bajariladigan alohida amal */}
+      <div className="mt-5 rounded-xl bg-gray-50 p-3">
+        <p className="text-sm font-medium text-gray-700">
+          Barcha o'quvchilarga qo'llash
+        </p>
+        <p className="mt-0.5 text-xs text-gray-500">
+          Hamma o'quvchining amaldagi tarifi joriy oydan boshlab shu tarifga
+          almashtiriladi. O'tgan oylarga tegilmaydi va shakllangan
+          hisob-fakturalar summasi o'zgarmaydi.
+        </p>
+
+        <Can do="tariffs.assign">
+          <div className="mt-3">
+            <ConfirmPopover
+              title="Barcha o'quvchilarga qo'llansinmi?"
+              description="Hamma o'quvchining tarifi joriy oydan standart tarifga o'tadi. Boshqa tarifdagilar ham (bog'cha, o'quv markazi) shu tarifga ko'chadi."
+              confirmLabel="Qo'llash"
+              danger
+              onConfirm={handleApply}
+            >
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!savedId || isDirty || isPending}
+                className="w-full xs:w-auto"
+              >
+                {isPending ? "Qo'llanmoqda..." : "Barcha o'quvchilarga qo'llash"}
+              </Button>
+            </ConfirmPopover>
+
+            {/* Nega tugma o'chiq ekani AYTILADI — jim turgan tugma
+                "sahifa buzuq" bo'lib ko'rinardi */}
+            {!savedId && (
+              <p className="mt-2 text-xs text-gray-500">
+                Avval tarifni tanlab, sozlamalarni saqlang
+              </p>
+            )}
+            {savedId && isDirty && (
+              <p className="mt-2 text-xs text-amber-600">
+                Tanlov o'zgartirildi — avval "Saqlash" tugmasini bosing
+              </p>
+            )}
+          </div>
+        </Can>
+      </div>
+    </Card>
   );
 };
 

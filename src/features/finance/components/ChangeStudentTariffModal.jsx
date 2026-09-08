@@ -21,7 +21,6 @@ import {
   formatMonthKey,
   inputValueToMonthKey,
   monthKeyToInputValue,
-  nextMonthKey,
   prevMonthKey,
 } from "@/shared/helpers/month.helpers";
 
@@ -34,6 +33,10 @@ import { financeQueries } from "../queries/finance.queries";
  * Server buni bitta tranzaksiyada bajaradi: eskisi `fromMonth - 1` da
  * yopiladi, yangisi `fromMonth` dan ochiladi. Ikki alohida so'rov qilinsa,
  * oraliqda o'quvchi tarifsiz qolib ketardi.
+ *
+ * Boshlanish oyi JORIY oy ham bo'la oladi — chegara o'tgan oyda. Joriy oy
+ * hisob-fakturasi allaqachon shakllangan bo'lsa, u muhrlangan bo'lib qoladi
+ * va server ogohlantirish qaytaradi (uni qayta shakllantirish kerak).
  */
 const ChangeStudentTariffModal = () => (
   <ResponsiveModal name="changeStudentTariff" title="Tarifni almashtirish">
@@ -47,9 +50,10 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
 
   const { tariffId, fromMonth, note, setField } = useObjectState({
     tariffId: "",
-    // Almashtirish faqat kelajakdagi oydan boshlanadi — o'tgan davrni
-    // kesib tashlamaslik uchun (server ham shuni talab qiladi).
-    fromMonth: monthKeyToInputValue(nextMonthKey(currentMonthKey())),
+    // Odatda tarif joriy oydan almashtiriladi — narx bugun kelishiladi.
+    // O'tgan oy yopiq (server ham shuni talab qiladi): u yerdagi
+    // hisob-fakturalar muhrlangan fakt.
+    fromMonth: monthKeyToInputValue(currentMonthKey()),
     note: "",
   });
 
@@ -111,6 +115,7 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
         name="fromMonth"
         label="Qaysi oydan"
         value={fromMonth}
+        min={monthKeyToInputValue(currentMonthKey())}
         onChange={(e) => setField("fromMonth", e.target.value)}
       />
 
@@ -124,8 +129,10 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
 
       {fromMonthKey && (
         <p className="text-xs text-gray-500">
-          Joriy tarif {formatMonthKey(prevMonthKey(fromMonthKey))} oyida
-          yopiladi, yangisi {formatMonthKey(fromMonthKey)} oyidan boshlanadi.
+          {fromMonthKey === assignment?.startMonth
+            ? // Eskisiga birorta oy qolmaydi — u yopilmaydi, almashtiriladi.
+              `Joriy tarif ${formatMonthKey(fromMonthKey)} oyidan boshlab butunlay yangisiga almashtiriladi.`
+            : `Joriy tarif ${formatMonthKey(prevMonthKey(fromMonthKey))} oyida yopiladi, yangisi ${formatMonthKey(fromMonthKey)} oyidan boshlanadi.`}
         </p>
       )}
 

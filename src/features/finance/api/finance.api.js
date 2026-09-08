@@ -42,6 +42,9 @@ export const studentTariffsAPI = {
     http.get(`/student-tariffs/student/${studentId}`),
   create: (data) => http.post("/student-tariffs", data),
   bulkAssign: (data) => http.post("/student-tariffs/bulk", data),
+  // Standart tarifni BARCHA o'quvchilarga qo'llash. Sozlamadagi tarif
+  // ishlatiladi — tanlov so'rov tanasida yuborilmaydi.
+  applyDefault: (data) => http.post("/student-tariffs/apply-default", data),
   update: (id, data) => http.put(`/student-tariffs/${id}`, data),
   close: (id, endMonth) =>
     http.post(`/student-tariffs/${id}/close`, { endMonth }),

@@ -122,26 +122,43 @@ const EntriesView = () => {
       { month: monthKey },
       {
         onSuccess: (result) => {
-          const { alreadyExists, cancelled, noSalary, archived } = result.skipped;
+          const { alreadyExists, noSalary, archived, monthOpen, noHours } =
+            result.skipped;
+          const restored = result.restored ?? 0;
 
           // ⚠️ "Allaqachon shakllantirilgan" YETARLI EMAS: shakllantirish
           // idempotent, ya'ni uni qayta bosish YANGI xodimlarga majburiyat
           // yaratadi. Nima bo'lgani va NIMA BO'LMAGANI aytilmasa,
           // foydalanuvchi tugma umuman ishlamadi deb o'ylardi.
-          if (result.created > 0) {
-            toast.success(
-              `${result.monthLabel}: ${result.created} ta oylik shakllantirildi`,
-            );
-          } else if (alreadyExists > 0 || cancelled > 0) {
+          //
+          // ⚠️ BEKOR QILINGANI endi TO'SIQ EMAS — u shu tugmaning o'zi
+          // bilan qayta hisoblanib tiklanadi. Shuning uchun "qatordagi
+          // Qayta shakllantirishdan foydalaning" degan yo'riqnoma olib
+          // tashlandi: u boshi berk ko'chaga boshlardi.
+          if (result.created > 0 || restored > 0) {
+            const parts = [];
+            if (result.created > 0) parts.push(`${result.created} ta shakllantirildi`);
+            if (restored > 0) parts.push(`${restored} tasi bekordan qaytarildi`);
+
+            toast.success(`${result.monthLabel}: ${parts.join(", ")}`);
+          } else if (alreadyExists > 0) {
             toast.info(
-              `${result.monthLabel}: yangi majburiyat yo'q — ${alreadyExists} ta allaqachon bor` +
-                (cancelled > 0 ? `, ${cancelled} tasi bekor qilingan` : ""),
-              cancelled > 0
-                ? {
-                    description:
-                      "Bekor qilinganini qaytarish uchun qatordagi \u201cQayta shakllantirish\u201d tugmasidan foydalaning.",
-                  }
-                : undefined,
+              `${result.monthLabel}: yangi majburiyat yo'q — ${alreadyExists} ta allaqachon bor`,
+            );
+          } else if (monthOpen > 0) {
+            // ⚠️ SOATBAY OY YOPILGANDAN KEYIN MUHRLANADI. Bu sabab jim
+            // qolsa, "shakllantirish ishlamayapti" degan xulosa chiqardi —
+            // holbuki tizim ataylab kutyapti, soat hali o'zgaradi.
+            toast.info(
+              `${result.monthLabel}: ${monthOpen} ta soatbay xodim oy yakunlanishini kutyapti`,
+              {
+                description:
+                  "Dars soatiga bog'liq oylik oy tugagach shakllantiriladi — soat hali o'zgarishi mumkin.",
+              },
+            );
+          } else if (noHours > 0) {
+            toast.warning(
+              `${result.monthLabel}: ${noHours} ta soatbay xodimda dars soati yo'q — majburiyat yozilmadi`,
             );
           } else if (noSalary > 0 || archived > 0) {
             toast.warning(
@@ -382,10 +399,10 @@ const RulesView = () => {
     );
   };
 
-  // ⚠️ O'CHIRISH — FAQAT hech qanday majburiyat shakllanmagan qoidada.
-  // Buni server hal qiladi (`staffSalary.service.js`): majburiyat bo'lsa
-  // sabab bilan rad etadi va xodim uni toastda ko'radi. Panelda alohida
-  // shart yozilsa, u serverdagi qoida bilan bir kuni ajralib ketardi.
+  // ⚠️ O'CHIRISH SHARTSIZ va bu XAVFSIZ: shakllangan majburiyat bu
+  // qatorga ishora qilmaydi — summa, stavka, norma va formula uning
+  // ichiga muhrlangan. Ya'ni o'chirish o'tgan vedomostga ham, to'lovga
+  // ham tegmaydi, faqat KELAJAKDAGI shakllantirishni to'xtatadi.
   const handleDelete = (rule) => {
     deleteSalary(rule.id, {
       onSuccess: () => toast.success("Qoida o'chirildi"),
@@ -498,7 +515,7 @@ const RulesView = () => {
                         <ConfirmPopover
                           tooltip="O'chirish"
                           title="Qoida o'chirilsinmi?"
-                          description="Faqat majburiyat shakllanmagan qoida o'chiriladi. Majburiyat bo'lsa qoida o'chmaydi — uni yopish kerak."
+                          description="Shakllangan majburiyatlar joyida qoladi — ularning summasi allaqachon muhrlangan. Bundan keyin bu xodimga oylik hisoblanmaydi."
                           confirmLabel="O'chirish"
                           danger
                           onConfirm={() => handleDelete(rule)}

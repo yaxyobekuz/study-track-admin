@@ -171,5 +171,11 @@ export const KPI_CARDS = [
   { key: "debt", label: "Jami qarz", accent: "bg-orange-500", tone: "text-orange-700", inverse: true },
   { key: "debtors", label: "Qarzdorlar", accent: "bg-yellow-500", tone: "text-gray-900", inverse: true },
   { key: "oldestDebt", label: "Eng eski qarz", accent: "bg-slate-500", tone: "text-gray-900" },
-  { key: "payroll", label: "Xodimlar oyligi", accent: "bg-indigo-500", tone: "text-gray-900", inverse: true },
+  // ⚠️ "Xodimlar oyligi" EMAS: pastdagi jadval ham shu nom bilan turadi,
+  // lekin u SHAKLLANTIRILGANINI (hisoblangan/to'langan/qarzimiz)
+  // ko'rsatadi. Bu karta esa qoidadan chiqadigan BELGILANGAN summani
+  // beradi va u "Shakllantirish" bosilishiga bog'liq emas — ikkalasi
+  // bir xil nom bilan turib boshqa raqam ko'rsatsa, ekran buzuq
+  // ko'rinardi.
+  { key: "payroll", label: "Belgilangan oylik", accent: "bg-indigo-500", tone: "text-gray-900", inverse: true },
 ];
