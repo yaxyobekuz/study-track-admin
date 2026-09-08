@@ -243,9 +243,23 @@ const DefaultTariffCard = ({ value, onChange, current }) => {
   const { mutate: applyDefault, isPending } = useApplyDefaultTariff();
   const { mutate: saveSettings, isPending: isSaving } = useUpdateFinanceSettings();
 
+  // ⚠️ SAQLANGAN TARIF RO'YXATGA MAJBURAN QO'SHILADI.
+  //
+  // Variantlar `assignableTariffs` dan keladi va u FAQAT faol tariflarni
+  // qaytaradi. Saqlangan tarif nofaol qilib qo'yilgan bo'lsa (yoki ro'yxat
+  // hali yuklanmagan bo'lsa), tanlagich mos variantni topolmay BO'SH
+  // ko'rinardi — ekranda "Tanlanmagan" turar, ostida esa saqlangan tarif
+  // nomi yozilib turardi. Foydalanuvchi buni "saqlanmadi" deb o'qiydi va
+  // qayta-qayta saqlashga urinadi.
+  const known = new Map(tariffs.map((t) => [t.id, t.name]));
+
+  if (current?.id && !known.has(current.id)) {
+    known.set(current.id, current.missing ? "Topilmadi" : current.name);
+  }
+
   const options = [
     { label: "Tanlanmagan", value: "" },
-    ...tariffs.map((t) => ({ label: t.name, value: t.id })),
+    ...[...known].map(([id, name]) => ({ label: name, value: id })),
   ];
 
   const showApplyResult = (result) => {
