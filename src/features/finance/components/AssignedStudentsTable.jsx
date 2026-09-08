@@ -32,7 +32,11 @@ import { useDeleteAssignment } from "../queries/finance.mutations";
  * narxni saqlamaydi, shuning uchun tarif narxi o'zgarsa bu jadval o'zi
  * yangilanadi.
  */
-const AssignedStudentsTable = ({ assignments = [] }) => {
+const AssignedStudentsTable = ({
+  assignments = [],
+  isFetching = false,
+  emptyMessage = "Bu tarifga hali o'quvchi biriktirilmagan",
+}) => {
   const now = currentMonthKey();
   const { openModal } = useModal();
   const { mutate: deleteAssignment } = useDeleteAssignment();
@@ -50,13 +54,19 @@ const AssignedStudentsTable = ({ assignments = [] }) => {
   if (assignments.length === 0) {
     return (
       <p className="py-6 text-center text-sm text-gray-500">
-        Bu tarifga hali o'quvchi biriktirilmagan
+        {isFetching ? "Qidirilmoqda..." : emptyMessage}
       </p>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl bg-white">
+    // `placeholderData` tufayli qidiruv paytida eski qatorlar ko'rinib
+    // turadi — xiralik ular hali yangilanmaganini bildiradi
+    <div
+      className={`overflow-x-auto rounded-2xl bg-white transition-opacity ${
+        isFetching ? "opacity-60" : ""
+      }`}
+    >
       <table className="min-w-full text-sm">
         <thead>
           <tr>

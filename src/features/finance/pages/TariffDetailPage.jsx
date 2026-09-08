@@ -1,3 +1,6 @@
+// React
+import { useState } from "react";
+
 // Router
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
@@ -12,6 +15,7 @@ import Card from "@/shared/components/ui/Card";
 import Can from "@/shared/components/guards/Can";
 import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
+import InputSearch from "@/shared/components/ui/input/InputSearch";
 import TariffVersionsTable from "../components/TariffVersionsTable";
 import AssignedStudentsTable from "../components/AssignedStudentsTable";
 import AddTariffVersionModal from "../components/AddTariffVersionModal";
@@ -22,6 +26,7 @@ import EditTariffModal from "../components/EditTariffModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import useDebounce from "@/shared/hooks/useDebounce";
 
 // Utils & helpers
 import { formatMoney } from "@/shared/utils/formatMoney";
@@ -45,15 +50,42 @@ const TariffDetailPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
 
+  // Qidiruv URL'da emas, lokal holatda: u sahifaga emas, shu jadvalga tegishli
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 400);
+
   const { data: tariff, isLoading } = useQuery(financeQueries.tariffDetail(id));
 
   // Biriktirilgan o'quvchilar — summasi joriy oyga hal qilingan holda
-  const { data: assignmentData } = useQuery(
-    financeQueries.assignmentList({ tariffId: id, page, limit: 24 }),
+  const { data: assignmentData, isFetching: isAssignmentsFetching } = useQuery(
+    financeQueries.assignmentList({
+      tariffId: id,
+      page,
+      limit: 24,
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
+    }),
   );
 
   const assignments = assignmentData?.data ?? [];
   const pagination = assignmentData?.pagination;
+
+  /**
+   * Yangi so'rovda sahifa birinchisiga qaytadi — aks holda 3-sahifada
+   * turib qidirilganda natija bor-u, sahifa bo'sh ko'rinardi.
+   */
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+
+    if (page !== 1) {
+      setSearchParams(
+        (prev) => {
+          prev.delete("page");
+          return prev;
+        },
+        { replace: true },
+      );
+    }
+  };
 
   if (isLoading) {
     return <div className="py-8 text-center text-gray-500">Yuklanmoqda...</div>;
@@ -194,8 +226,36 @@ const TariffDetailPage = () => {
 
       {/* Biriktirilgan o'quvchilar */}
       <div className="space-y-2">
-        <h2 className="font-semibold text-gray-900">Biriktirilgan o'quvchilar</h2>
-        <AssignedStudentsTable assignments={assignments} />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-baseline gap-2">
+            <h2 className="font-semibold text-gray-900">
+              Biriktirilgan o'quvchilar
+            </h2>
+            {pagination && (
+              <span className="text-sm text-gray-500">
+                {pagination.total} ta
+              </span>
+            )}
+          </div>
+
+          <div className="w-full sm:w-72">
+            <InputSearch
+              value={search}
+              onChange={handleSearchChange}
+              placeholder="Ism yoki username..."
+            />
+          </div>
+        </div>
+
+        <AssignedStudentsTable
+          assignments={assignments}
+          isFetching={isAssignmentsFetching}
+          emptyMessage={
+            debouncedSearch
+              ? `"${debouncedSearch}" bo'yicha o'quvchi topilmadi`
+              : "Bu tarifga hali o'quvchi biriktirilmagan"
+          }
+        />
 
         {pagination && pagination.totalPages > 1 && (
           <Pagination
