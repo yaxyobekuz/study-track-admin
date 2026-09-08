@@ -74,11 +74,22 @@ export const ENTRY_STATUS_META = {
   cancelled: { label: "Bekor qilingan", className: "bg-gray-100 text-gray-600" },
 };
 
+/**
+ * ⚠️ "BEKOR QILINGAN" RO'YXATDA TURISHI SHART. U yo'q edi va shu sababli
+ * bekor qilingan majburiyat ekranda umuman ko'rinmasdi: shakllantirish
+ * "2 tasi bekor qilingan, qatordagi Qayta shakllantirish tugmasidan
+ * foydalaning" deb yozardi-yu, o'sha qatorni ochib bo'lmasdi.
+ *
+ * "Barchasi" esa bekor qilinganini KO'RSATMAYDI (server `includeCancelled`
+ * siz ularni chiqarib tashlaydi) — bu ataylab: kundalik ish bekor
+ * qilinganlar bilan aralashib ketmasligi kerak.
+ */
 export const ENTRY_STATUS_OPTIONS = [
   { label: "Barchasi", value: "" },
   { label: "To'lanmagan", value: "unpaid" },
   { label: "Qisman to'langan", value: "partial" },
   { label: "To'langan", value: "paid" },
+  { label: "Bekor qilingan", value: "cancelled" },
 ];
 
 /**
