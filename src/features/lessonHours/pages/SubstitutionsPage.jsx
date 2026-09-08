@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // Icons
-import { ArrowRight, Ban, Lock, Plus, Repeat2 } from "lucide-react";
+import { ArrowRight, Ban, Lock, Pencil, Plus, Repeat2, Trash2 } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +16,8 @@ import Panel from "../components/Panel";
 import {
   CancelSubstitutionModal,
   CreateSubstitutionModal,
+  DeleteSubstitutionModal,
+  EditSubstitutionModal,
 } from "../components/SubstitutionModals";
 
 // Hooks
@@ -38,9 +40,16 @@ import { substitutionQueries } from "../queries/lessonHours.queries";
  * o'rinbosarlik ham `active` bo'lib qoladi, chunki u haqiqatan bo'lib
  * o'tgan va o'sha oyning oyligida hisobga olingan.
  *
- * ⚠️ YOZUV O'CHIRILMAYDI. "Bekor qilish" — holat, sabab va aktyor bilan
- * (`payroll` doktrinasi): o'chirilsa, o'tgan oylik "sababsiz" bo'lib
- * qolardi.
+ * ⚠️ O'CHIRISH VA BEKOR QILISH — IKKI XIL AMAL:
+ *   · hali BOSHLANMAGAN yozuv o'chiriladi — u hech qachon kuchga
+ *     kirmagan, hech qanday jurnal huquqi ochilmagan va soat
+ *     hisoblanmagan. Bu xato kiritilgan reja, tarixda qolishi shart emas;
+ *   · BOSHLANGAN yozuv faqat bekor qilinadi — sabab va aktyor bilan
+ *     (`payroll` doktrinasi). O'chirilsa, o'sha davrdagi baholar va
+ *     hisoblangan soat "sababsiz" bo'lib qolardi.
+ *
+ * Tahrirlash ham faqat boshlanmagan yozuvda ochiq va server buni qayta
+ * tekshiradi — panel bayrog'i (`canEdit`) faqat UI qatlami.
  */
 const SubstitutionsPage = () => {
   const { can } = usePermissions();
@@ -148,6 +157,8 @@ const SubstitutionsPage = () => {
       </Panel>
 
       <CreateSubstitutionModal />
+      <EditSubstitutionModal />
+      <DeleteSubstitutionModal />
       <CancelSubstitutionModal />
     </div>
   );
@@ -162,6 +173,8 @@ const SubstitutionsPage = () => {
  */
 const SubstitutionRow = ({ row, delay }) => {
   const [open, setOpen] = useState(false);
+  // ⚠️ `useModal` nomi faqat `isOpen` ni kuzatish uchun kerak; `openModal`
+  // istalgan modalni nomi bilan ochadi, shuning uchun bitta chaqiruv yetadi.
   const { openModal } = useModal("cancelSubstitution");
   const phase = PHASE_META[row.phase?.key] ?? PHASE_META.upcoming;
 
@@ -196,17 +209,53 @@ const SubstitutionRow = ({ row, delay }) => {
           <span className={cn(CHIP, "shrink-0", phase.chip)}>{phase.label}</span>
         </button>
 
+        {/* ⚠️ TUGMALAR YOZUV BOSQICHIGA QARAB O'ZGARADI.
+            · hali boshlanmagan (`canEdit`) → tahrirlash va o'chirish:
+              hech qanday jurnal huquqi ochilmagan, soat hisoblanmagan;
+            · boshlangan yoki tugagan → faqat bekor qilish: yozuv dalil
+              bo'lib qolgan va u sababi bilan yopiladi.
+            Server ikkala qoidani ham qayta tekshiradi. */}
         {row.status === "active" && (
-          <Can do="substitutions.cancel">
-            <button
-              type="button"
-              title="Bekor qilish"
-              onClick={() => openModal("cancelSubstitution", { substitution: row })}
-              className="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors duration-200 hover:bg-rose-50 hover:text-rose-600"
-            >
-              <Ban className="size-3.5" strokeWidth={2} />
-            </button>
-          </Can>
+          <div className="flex shrink-0 items-center gap-0.5">
+            {row.canEdit && (
+              <>
+                <Can do="substitutions.create">
+                  <button
+                    type="button"
+                    title="Tahrirlash"
+                    onClick={() => openModal("editSubstitution", { substitution: row })}
+                    className="rounded-lg p-1.5 text-slate-400 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-700"
+                  >
+                    <Pencil className="size-3.5" strokeWidth={2} />
+                  </button>
+                </Can>
+
+                <Can do="substitutions.cancel">
+                  <button
+                    type="button"
+                    title="O'chirish"
+                    onClick={() => openModal("deleteSubstitution", { substitution: row })}
+                    className="rounded-lg p-1.5 text-slate-400 transition-colors duration-200 hover:bg-rose-50 hover:text-rose-600"
+                  >
+                    <Trash2 className="size-3.5" strokeWidth={2} />
+                  </button>
+                </Can>
+              </>
+            )}
+
+            {!row.canEdit && (
+              <Can do="substitutions.cancel">
+                <button
+                  type="button"
+                  title="Bekor qilish"
+                  onClick={() => openModal("cancelSubstitution", { substitution: row })}
+                  className="rounded-lg p-1.5 text-slate-400 transition-colors duration-200 hover:bg-rose-50 hover:text-rose-600"
+                >
+                  <Ban className="size-3.5" strokeWidth={2} />
+                </button>
+              </Can>
+            )}
+          </div>
         )}
       </div>
 

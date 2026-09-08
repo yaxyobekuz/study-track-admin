@@ -44,6 +44,18 @@ export const substitutionAPI = {
 
   create: (data) => http.post("/lesson-hours/substitutions", data),
 
+  /** Tahrirlash — server faqat hali BOSHLANMAGAN yozuvga ruxsat beradi. */
+  update: (id, data) => http.put(`/lesson-hours/substitutions/${id}`, data),
+
+  /**
+   * O'chirish — faqat hali boshlanmagan yozuv.
+   *
+   * ⚠️ `cancel` BILAN CHALKASHMASIN: bu yerda yozuv hech qachon kuchga
+   * kirmagan (xato kiritilgan reja), bekor qilish esa AMALDA bo'lgan
+   * yozuvni sababi bilan yopadi va tarixda qoldiradi.
+   */
+  remove: (id) => http.delete(`/lesson-hours/substitutions/${id}`),
+
   cancel: (id, reason) =>
     http.post(`/lesson-hours/substitutions/${id}/cancel`, { reason }),
 };

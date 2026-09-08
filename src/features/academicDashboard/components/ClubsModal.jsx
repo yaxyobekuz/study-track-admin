@@ -394,6 +394,7 @@ const MembersPanel = ({ clubId, canManage, students, onBack }) => {
           <div className="min-w-48 flex-1">
             <p className="mb-1 text-[11px] font-medium text-gray-500">O'quvchi qo'shish</p>
             <SelectSearch
+              inline
               value={selected}
               options={options}
               triggerClassName="w-full"

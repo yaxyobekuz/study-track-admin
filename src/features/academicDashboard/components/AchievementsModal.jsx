@@ -173,6 +173,7 @@ const AchievementsPanel = ({ close, month }) => {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="O'quvchi">
               <SelectSearch
+                inline
                 value={form.studentId}
                 options={studentOptions}
                 triggerClassName="w-full"

@@ -435,7 +435,7 @@ export const PERMISSION_SECTIONS = [
     actions: [
       A.view,
       { key: "create", label: "O'rinbosar biriktirish" },
-      { key: "cancel", label: "Bekor qilish" },
+      { key: "cancel", label: "Bekor qilish / o'chirish" },
     ],
   },
   {

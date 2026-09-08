@@ -28,6 +28,25 @@ export const useCreateSubstitution = () => {
   });
 };
 
+export const useUpdateSubstitution = () => {
+  const invalidate = useInvalidate();
+
+  return useMutation({
+    mutationFn: ({ id, ...data }) =>
+      substitutionAPI.update(id, data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+export const useDeleteSubstitution = () => {
+  const invalidate = useInvalidate();
+
+  return useMutation({
+    mutationFn: (id) => substitutionAPI.remove(id).then((r) => r.data),
+    onSuccess: invalidate,
+  });
+};
+
 export const useCancelSubstitution = () => {
   const invalidate = useInvalidate();
 

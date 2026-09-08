@@ -173,6 +173,8 @@ export const MODAL_NAMES = [
   // bildiradi, shuning uchun modul bo'ylab "o'rinbosar" ishlatiladi.
   "teacherHours",
   "createSubstitution",
+  "editSubstitution",
+  "deleteSubstitution",
   "cancelSubstitution",
 
   // Moliya - ta'til

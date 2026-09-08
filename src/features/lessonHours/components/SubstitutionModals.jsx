@@ -29,6 +29,8 @@ import { substitutionQueries } from "../queries/lessonHours.queries";
 import {
   useCancelSubstitution,
   useCreateSubstitution,
+  useDeleteSubstitution,
+  useUpdateSubstitution,
 } from "../queries/lessonHours.mutations";
 
 /**
@@ -52,7 +54,30 @@ export const CreateSubstitutionModal = () => (
     description="Darslar boshqa o'qituvchiga vaqtincha o'tkaziladi: jurnal huquqi va dars soati ham u bilan birga ko'chadi."
     className="max-w-2xl"
   >
-    <CreateSubstitutionForm />
+    <SubstitutionForm />
+  </ResponsiveModal>
+);
+
+/**
+ * TAHRIRLASH — AYNI forma, boshqa qobiq.
+ *
+ * ⚠️ Alohida forma yozilmaydi: tekshiruvlar ro'yxati bir xil va ikki nusxa
+ * bo'lsa, ertami-kechmi bittasiga qo'shilgan maydon ikkinchisida unutilardi
+ * (server tomonida ham AYNI mulohaza — `prepareSubstitution`).
+ *
+ * ⚠️ Faqat hali BOSHLANMAGAN yozuv tahrirlanadi. Panel tugmani
+ * `canEdit` bo'yicha yashiradi, server esa buni qayta tekshiradi:
+ * boshlangan yozuv dalil bo'lib qoladi va uni o'zgartirish o'tgan kunni
+ * qayta yozish degani bo'lardi.
+ */
+export const EditSubstitutionModal = () => (
+  <ResponsiveModal
+    name="editSubstitution"
+    title="O'rinbosarlikni tahrirlash"
+    description="Yozuv hali boshlanmagan — o'qituvchilarni, muddatni va darslar ro'yxatini o'zgartirish mumkin."
+    className="max-w-2xl"
+  >
+    <SubstitutionForm />
   </ResponsiveModal>
 );
 
@@ -63,8 +88,22 @@ const todayInput = () => {
   ).padStart(2, "0")}`;
 };
 
-const CreateSubstitutionForm = ({ close, isLoading, setIsLoading, teacherId }) => {
+const SubstitutionForm = ({
+  close,
+  isLoading,
+  setIsLoading,
+  teacherId,
+  substitution = null,
+}) => {
+  const isEdit = Boolean(substitution?.id);
+
   const { mutate: create } = useCreateSubstitution();
+  const { mutate: update } = useUpdateSubstitution();
+
+  // `@db.Date` UTC yarim tunida keladi — kun qismini kesib olamiz. Bu
+  // MASHINA QIYMATI (`<DateField>` ham shu shaklda ishlaydi), ekranga esa
+  // `formatDateUz` natijasi chiqadi.
+  const dayOf = (value) => String(value ?? "").split("T")[0];
 
   const {
     originalTeacherId,
@@ -75,15 +114,21 @@ const CreateSubstitutionForm = ({ close, isLoading, setIsLoading, teacherId }) =
     note,
     setField,
   } = useObjectState({
-    originalTeacherId: teacherId ?? "",
-    substituteTeacherId: "",
-    fromDate: todayInput(),
-    toDate: todayInput(),
-    reason: "illness",
-    note: "",
+    originalTeacherId: substitution?.originalTeacherId ?? teacherId ?? "",
+    substituteTeacherId: substitution?.substituteTeacherId ?? "",
+    fromDate: substitution ? dayOf(substitution.fromDate) : todayInput(),
+    toDate: substitution ? dayOf(substitution.toDate) : todayInput(),
+    reason: substitution?.reason ?? "illness",
+    note: substitution?.note ?? "",
   });
 
-  const [picked, setPicked] = useState([]);
+  // Tahrirlashda tanlangan kataklar yozuvning O'ZIDAN keladi. Kalit shakli
+  // `getAvailableLessons` bilan AYNAN bir xil bo'lishi shart.
+  const [picked, setPicked] = useState(() =>
+    (substitution?.items ?? []).map(
+      (item) => `${item.classId}|${item.day}|${item.lessonOrder}`,
+    ),
+  );
 
   const { data: teachers = [] } = useQuery(substitutionQueries.teachers());
 
@@ -118,32 +163,34 @@ const CreateSubstitutionForm = ({ close, isLoading, setIsLoading, teacherId }) =
 
     setIsLoading(true);
 
-    create(
-      {
-        originalTeacherId,
-        substituteTeacherId,
-        fromDate,
-        toDate,
-        reason,
-        note,
-        lessons: lessons
-          .filter((lesson) => picked.includes(lesson.key))
-          .map((lesson) => ({
-            classId: lesson.classId,
-            day: lesson.day,
-            lessonOrder: lesson.lessonOrder,
-          })),
+    const payload = {
+      originalTeacherId,
+      substituteTeacherId,
+      fromDate,
+      toDate,
+      reason,
+      note,
+      lessons: lessons
+        .filter((lesson) => picked.includes(lesson.key))
+        .map((lesson) => ({
+          classId: lesson.classId,
+          day: lesson.day,
+          lessonOrder: lesson.lessonOrder,
+        })),
+    };
+
+    const handlers = {
+      onSuccess: () => {
+        close();
+        toast.success(isEdit ? "O'rinbosarlik yangilandi" : "O'rinbosar biriktirildi");
       },
-      {
-        onSuccess: () => {
-          close();
-          toast.success("O'rinbosar biriktirildi");
-        },
-        onError: (err) =>
-          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
-        onSettled: () => setIsLoading(false),
-      },
-    );
+      onError: (err) =>
+        toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      onSettled: () => setIsLoading(false),
+    };
+
+    if (isEdit) update({ id: substitution.id, ...payload }, handlers);
+    else create(payload, handlers);
   };
 
   return (
@@ -192,7 +239,6 @@ const CreateSubstitutionForm = ({ close, isLoading, setIsLoading, teacherId }) =
         <DateField
           label="Boshlanish sanasi"
           value={fromDate}
-          required
           onChange={(next) => {
             setField("fromDate", next);
             // Davr o'zgardi — darslar ro'yxati ham o'zgaradi
@@ -203,7 +249,6 @@ const CreateSubstitutionForm = ({ close, isLoading, setIsLoading, teacherId }) =
           label="Tugash sanasi"
           value={toDate}
           min={fromDate}
-          required
           hint="Shu kun ham davrga kiradi"
           onChange={(next) => {
             setField("toDate", next);
@@ -316,7 +361,7 @@ const CreateSubstitutionForm = ({ close, isLoading, setIsLoading, teacherId }) =
           Bekor qilish
         </Button>
         <Button type="submit" disabled={isLoading} className="flex-1">
-          {isLoading ? "Saqlanmoqda..." : "Biriktirish"}
+          {isLoading ? "Saqlanmoqda..." : isEdit ? "Saqlash" : "Biriktirish"}
         </Button>
       </div>
     </form>
@@ -393,6 +438,81 @@ const LessonOption = ({ lesson, checked, onToggle }) => (
 );
 
 /**
+ * O'CHIRISH — BEKOR QILISH EMAS.
+ *
+ * ⚠️ Ikkalasi BOSHQA savolga javob beradi va shuning uchun ikki xil oyna:
+ *
+ *   · o'chirish — yozuv HECH QACHON kuchga kirmagan (hali boshlanmagan).
+ *     Xato kiritilgan reja; uni saqlash tarixni ifloslantiradi, shuning
+ *     uchun sabab ham so'ralmaydi.
+ *   · bekor qilish — yozuv amalda bo'lgan yoki hozir amalda. U dalil:
+ *     jurnal huquqi ochilgan, soat hisoblangan. Sababi MAJBURIY.
+ */
+export const DeleteSubstitutionModal = () => (
+  <ResponsiveModal
+    name="deleteSubstitution"
+    title="O'rinbosarlikni o'chirish"
+    description="Bu yozuv hali boshlanmagan — hech qanday jurnal huquqi ochilmagan va soat hisoblanmagan. Shuning uchun u butunlay o'chiriladi."
+  >
+    <DeleteSubstitutionForm />
+  </ResponsiveModal>
+);
+
+const DeleteSubstitutionForm = ({ close, isLoading, setIsLoading, substitution }) => {
+  const { mutate: remove } = useDeleteSubstitution();
+
+  const handleDelete = () => {
+    setIsLoading(true);
+
+    remove(substitution.id, {
+      onSuccess: () => {
+        close();
+        toast.success("O'rinbosarlik o'chirildi");
+      },
+      onError: (err) =>
+        toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      onSettled: () => setIsLoading(false),
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <SubstitutionSummary substitution={substitution} />
+
+      <div className="flex gap-2.5">
+        <Button type="button" variant="outline" onClick={close} className="flex-1">
+          Yopish
+        </Button>
+        <Button
+          type="button"
+          variant="danger"
+          disabled={isLoading}
+          onClick={handleDelete}
+          className="flex-1"
+        >
+          {isLoading ? "O'chirilmoqda..." : "O'chirish"}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+/** Ikkala oynada bir xil: kim → kim, davr va darslar soni. */
+const SubstitutionSummary = ({ substitution }) => (
+  <div className={cn(SURFACE.tile, "flex items-center gap-2.5")}>
+    <CalendarRange className="size-3.5 shrink-0 text-slate-400" strokeWidth={2} />
+    <div className="min-w-0">
+      <p className={cn(T.tdName, "truncate")}>
+        {substitution?.originalTeacherName} → {substitution?.substituteTeacherName}
+      </p>
+      <p className={cn(T.meta, "mt-0.5 truncate")}>
+        {substitution?.periodLabel} · {substitution?.lessonCount} dars
+      </p>
+    </div>
+  </div>
+);
+
+/**
  * BEKOR QILISH — o'chirish EMAS.
  *
  * ⚠️ Sabab MAJBURIY: bekor qilish o'tgan davr soatini egasiga qaytaradi,
@@ -435,17 +555,7 @@ const CancelSubstitutionForm = ({ close, isLoading, setIsLoading, substitution }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className={cn(SURFACE.tile, "flex items-center gap-2.5")}>
-        <CalendarRange className="size-3.5 shrink-0 text-slate-400" strokeWidth={2} />
-        <div className="min-w-0">
-          <p className={cn(T.tdName, "truncate")}>
-            {substitution?.originalTeacherName} → {substitution?.substituteTeacherName}
-          </p>
-          <p className={cn(T.meta, "mt-0.5 truncate")}>
-            {substitution?.periodLabel} · {substitution?.lessonCount} dars
-          </p>
-        </div>
-      </div>
+      <SubstitutionSummary substitution={substitution} />
 
       <Field label="Bekor qilish sababi">
         <input

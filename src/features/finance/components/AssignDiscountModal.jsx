@@ -146,6 +146,7 @@ const Content = ({ close, isLoading, setIsLoading, discount, student }) => {
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Chegirma</p>
         <SelectSearch
+          inline
           value={discountId}
           placeholder="Chegirmani tanlang"
           onChange={(v) => setField("discountId", v)}
@@ -170,6 +171,7 @@ const Content = ({ close, isLoading, setIsLoading, discount, student }) => {
           <div className="space-y-1.5">
             <p className="text-sm font-medium text-gray-700">Sinf</p>
             <SelectSearch
+              inline
               value={classId}
               placeholder="Sinfni tanlang"
               options={classes.map((c) => ({ label: c.name, value: c.id }))}
@@ -184,6 +186,7 @@ const Content = ({ close, isLoading, setIsLoading, discount, student }) => {
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-gray-700">O'quvchi</p>
               <SelectSearch
+                inline
                 value={studentId}
                 disabled={!classId}
                 placeholder={classId ? "O'quvchini tanlang" : "Avval sinfni tanlang"}

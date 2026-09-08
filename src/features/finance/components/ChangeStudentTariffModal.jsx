@@ -95,6 +95,7 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Yangi tarif</p>
         <SelectSearch
+          inline
           value={tariffId}
           placeholder="Tarifni tanlang"
           onChange={(v) => setField("tariffId", v)}
