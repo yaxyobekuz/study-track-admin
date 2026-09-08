@@ -64,7 +64,9 @@ import {
 import { financeQueries } from "../queries/finance.queries";
 import {
   useCancelInvoice,
+  useCancelInvoiceMonth,
   useRegenerateInvoice,
+  useRegenerateInvoiceMonth,
   useRestoreInvoice,
 } from "../queries/finance.mutations";
 import { classesQueries } from "@/features/classes/queries/classes.queries";
@@ -112,6 +114,11 @@ const OverviewPage = () => {
   const invoices = data?.data ?? [];
   const pagination = data?.pagination;
 
+  // ⚠️ Ro'yxatning `pagination.total` i EMAS: u filtr (holat, sinf) ostida
+  // qisqaradi va "sinf tanlangani uchun tugma yo'qolib qoldi" degan holatga
+  // olib kelardi. Yig'ma sanoq filtrga bog'liq emas.
+  const invoiceCount = summary?.counts?.invoiced ?? 0;
+
   // ⚠️ TO'LOV TURI USTUNLARI DINAMIK. "Naqd" va "Plastik" — qotib qolgan
   // ro'yxat emas: to'lov turlari katalogdan keladi va maktab istalgan
   // vaqtda yangisini qo'shishi mumkin. Shuning uchun ustunlar ham
@@ -137,6 +144,8 @@ const OverviewPage = () => {
   const { mutate: cancelInvoice } = useCancelInvoice();
   const { mutate: restoreInvoice } = useRestoreInvoice();
   const { mutate: regenerateInvoice } = useRegenerateInvoice();
+  const { mutate: cancelMonth } = useCancelInvoiceMonth();
+  const { mutate: regenerateMonth } = useRegenerateInvoiceMonth();
 
   const handleError = (err) =>
     toast.error(err.response?.data?.message || "Xatolik yuz berdi");
@@ -182,6 +191,76 @@ const OverviewPage = () => {
             onSuccess: (result) => {
               close();
               toast.success(`Yangi summa: ${formatMoney(result.amount)}`);
+            },
+            onError: handleError,
+            onSettled: () => setIsLoading(false),
+          },
+        );
+      },
+    });
+
+  // ── OMMAVIY AMALLAR ──────────────────────────
+  //
+  // ⚠️ Ikkalasi ham BUTUN OYGA tegadi, shuning uchun tasdiqlash matnida
+  // nechta hisob-faktura borligi va nima bo'lishi ochiq yoziladi.
+  // Natijada esa "N ta bajarildi" bilan cheklanilmaydi: o'tkazib
+  // yuborilganlari (to'lov tushganlar) alohida aytiladi — aks holda
+  // foydalanuvchi hammasi o'zgardi deb o'ylardi.
+
+  const askRegenerateMonth = () =>
+    openModal("financeReason", {
+      description: `${summary?.monthLabel ?? ""} oyining barcha hisob-fakturasi joriy tarif va chegirmalar bo'yicha qaytadan hisoblanadi.`,
+      consequences: [
+        "Tarifni o'zgartirgandan keyin summalar shu tugma bilan yangilanadi",
+        "To'lov tushgan hisob-fakturalar o'zgarmaydi — ular chetda qoladi",
+        "Bekor qilinganlariga tegilmaydi",
+      ],
+      confirmLabel: "Qayta shakllantirish",
+      onConfirm: (reason, { close, setIsLoading }) => {
+        setIsLoading(true);
+        regenerateMonth(
+          { month, reason },
+          {
+            onSuccess: (result) => {
+              close();
+              toast.success(
+                `${result.done} ta hisob-faktura qayta shakllantirildi` +
+                  (result.skipped?.length
+                    ? `, ${result.skipped.length} tasi o'tkazib yuborildi (to'lov tushgan)`
+                    : ""),
+                {
+                  description: `Jami: ${formatMoney(result.amountBefore)} → ${formatMoney(result.amountAfter)}`,
+                },
+              );
+              result?.failed?.forEach((f) =>
+                toast.error(`${f.studentName}: ${f.reason}`),
+              );
+            },
+            onError: handleError,
+            onSettled: () => setIsLoading(false),
+          },
+        );
+      },
+    });
+
+  const askCancelMonth = () =>
+    openModal("financeReason", {
+      description: `${summary?.monthLabel ?? ""} oyining BARCHA hisob-fakturasi bekor qilinadi.`,
+      warning:
+        "Bu oyda qarz umuman qolmaydi. O'quvchilar, tariflar va to'lov turlari joyida qoladi. To'lov tushgan bo'lsa, pul o'quvchining depozitiga qaytadi.",
+      confirmLabel: "Qarzlarni tozalash",
+      onConfirm: (reason, { close, setIsLoading }) => {
+        setIsLoading(true);
+        cancelMonth(
+          { month, reason },
+          {
+            onSuccess: (result) => {
+              close();
+              toast.success(`${result.done} ta hisob-faktura bekor qilindi`);
+              result?.warnings?.forEach((w) => toast.warning(w));
+              result?.failed?.forEach((f) =>
+                toast.error(`${f.studentName}: ${f.reason}`),
+              );
             },
             onError: handleError,
             onSettled: () => setIsLoading(false),
@@ -236,15 +315,38 @@ const OverviewPage = () => {
           />
         </div>
 
-        <Can do="finance.generate">
-          <Button
-            disabled={!summary?.canGenerate}
-            onClick={() => openModal("generateInvoices", { month, summary })}
-          >
-            <Sparkles />
-            Shakllantirish
-          </Button>
-        </Can>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* ⚠️ Ommaviy tugmalar faqat oyda hisob-faktura BOR bo'lganda
+              ko'rinadi: bo'sh oyda ular hech nima qilmasdi va "bosdim,
+              hech narsa bo'lmadi" degan holatga olib kelardi */}
+          {invoiceCount > 0 && (
+            <>
+              <Can do="finance.adjust">
+                <Button variant="outline" onClick={askRegenerateMonth}>
+                  <RefreshCw />
+                  Oyni qayta shakllantirish
+                </Button>
+              </Can>
+
+              <Can do="finance.cancel">
+                <Button variant="outline" onClick={askCancelMonth}>
+                  <Ban />
+                  Qarzlarni tozalash
+                </Button>
+              </Can>
+            </>
+          )}
+
+          <Can do="finance.generate">
+            <Button
+              disabled={!summary?.canGenerate}
+              onClick={() => openModal("generateInvoices", { month, summary })}
+            >
+              <Sparkles />
+              Shakllantirish
+            </Button>
+          </Can>
+        </div>
       </div>
 
       {/* Nima uchun shakllantirib bo'lmaydi — jim qolmasin */}

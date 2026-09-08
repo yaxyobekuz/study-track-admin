@@ -244,6 +244,32 @@ export const useRegenerateInvoice = () => {
   });
 };
 
+/**
+ * OMMAVIY AMALLAR — bitta oyning hamma hisob-fakturasi ustida.
+ *
+ * ⚠️ Ikkalasi ham qaytmaydigan amal, shuning uchun chaqiruvchi tomonda
+ * sabab so'raladi (`financeReason` modali) va natija paket hisoboti
+ * sifatida ochiq ko'rsatiladi: nechtasi bajarildi, nechtasi o'tkazib
+ * yuborildi va NEGA. Jim "bajarildi" xabari bu yerda yetarli emas —
+ * to'lov tushgan qatorlar ataylab chetda qoladi.
+ */
+export const useCancelInvoiceMonth = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => invoicesAPI.cancelMonth(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useRegenerateInvoiceMonth = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) =>
+      invoicesAPI.regenerateMonth(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
 // ── To'lovlar (chek) ────────────────────────
 
 /**

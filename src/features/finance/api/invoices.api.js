@@ -28,6 +28,13 @@ export const invoicesAPI = {
   regenerate: (id, reason) => http.post(`/invoices/${id}/regenerate`, { reason }),
   restore: (id) => http.post(`/invoices/${id}/restore`),
 
+  // ── OMMAVIY AMALLAR (bitta oy bo'yicha) ──
+  // Bittalab bosib chiqish 100+ o'quvchida amalda bajarib bo'lmaydigan ish.
+  // Natija — paket hisoboti (nechtasi bajarildi, nechtasi o'tkazib
+  // yuborildi), yaratilgan resurs emas.
+  cancelMonth: (data) => http.post("/invoices/cancel-month", data),
+  regenerateMonth: (data) => http.post("/invoices/regenerate-month", data),
+
   // Hisob-fakturaga tushgan to'lovlar (chek raqami bilan)
   getPayments: (id, params) => http.get(`/invoices/${id}/payments`, { params }),
 };
