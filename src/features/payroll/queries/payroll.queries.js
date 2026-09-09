@@ -5,13 +5,14 @@ import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 import { createQueryKeys } from "@/shared/lib/query";
 
 // API
-import { staffSalariesAPI, payrollAPI } from "../api/payroll.api";
+import { staffSalariesAPI, payrollAPI, salaryRequestsAPI } from "../api/payroll.api";
 
 export const payrollKeys = createQueryKeys("payroll");
 
 const salariesKey = [...payrollKeys.all, "salaries"];
 const entriesKey = [...payrollKeys.all, "entries"];
 const paymentsKey = [...payrollKeys.all, "payments"];
+const requestsKey = [...payrollKeys.all, "salary-requests"];
 
 export const payrollQueries = {
   /** Oylik qoidalari (sahifalangan). */
@@ -51,6 +52,14 @@ export const payrollQueries = {
     queryOptions({
       queryKey: [...paymentsKey, params],
       queryFn: () => payrollAPI.getPayments(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Oylik so'rovlari → `{ data, pagination, pendingCount }`. */
+  salaryRequests: (params) =>
+    queryOptions({
+      queryKey: [...requestsKey, params],
+      queryFn: () => salaryRequestsAPI.getAll(params).then((r) => r.data),
       placeholderData: keepPreviousData,
     }),
 };

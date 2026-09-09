@@ -142,3 +142,39 @@ export const PAYROLL_SEAL_HINT =
 export const NO_ADVANCE_HINT =
   "Avans qo'llab-quvvatlanmaydi: to'lov qarzdan ko'p bo'lishi mumkin emas. " +
   "Lekin bitta oylikni bir necha marta bo'lib to'lash mumkin.";
+
+// ── Oylik so'rovlari (admin ko'rib chiqadi) ──
+export const REQUEST_TYPE_LABELS = {
+  raise: "Oylik / stavka",
+  bonus: "Ustama",
+  other: "Boshqa",
+};
+
+export const REQUEST_TYPE_OPTIONS = [
+  { label: "Barchasi", value: "" },
+  { label: "Oylik / stavka", value: "raise" },
+  { label: "Ustama", value: "bonus" },
+  { label: "Boshqa", value: "other" },
+];
+
+export const REQUEST_STATUS_META = {
+  pending: { label: "Kutilmoqda", className: "bg-amber-100 text-amber-700" },
+  approved: { label: "Tasdiqlangan", className: "bg-green-100 text-green-700" },
+  rejected: { label: "Rad etilgan", className: "bg-red-100 text-red-600" },
+};
+
+export const REQUEST_STATUS_OPTIONS = [
+  { label: "Kutilmoqda", value: "pending" },
+  { label: "Tasdiqlangan", value: "approved" },
+  { label: "Rad etilgan", value: "rejected" },
+  { label: "Barchasi", value: "" },
+];
+
+/**
+ * ⚠️ Tasdiq oylikni AVTOMAT o'zgartirmaydi — admin StaffSalary'ni "Qoidalar"
+ * tabidan o'zi belgilaydi. Bu bo'lim faqat so'rovlarni qabul qiladi va
+ * qaydga oladi.
+ */
+export const SALARY_REQUEST_HINT =
+  "Tasdiqlash oylikni o'zgartirmaydi — so'rov ko'rib chiqilgani qayd etiladi. " +
+  "Oylikni haqiqatda o'zgartirish uchun \"Qoidalar\" tabidan yangi oylik davri oching.";

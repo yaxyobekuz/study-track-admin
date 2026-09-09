@@ -150,6 +150,7 @@ import DiscountsPage from "@/features/finance/pages/DiscountsPage";
 import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
 import ExternalIncomePage from "@/features/externalIncome/pages/ExternalIncomePage";
 import PayrollPage from "@/features/payroll/pages/PayrollPage";
+import SalaryRequestsPage from "@/features/payroll/pages/SalaryRequestsPage";
 
 // Pages - Dars soatlari va o'rinbosarlik
 import LessonHoursLayout from "@/features/lessonHours/layouts/LessonHoursLayout";
@@ -472,6 +473,7 @@ const Routes = () => {
             <Route path="accounts" element={<AccountsPage />} />
             <Route path="income" element={<ExternalIncomePage />} />
             <Route path="payroll" element={<PayrollPage />} />
+            <Route path="salary-requests" element={<SalaryRequestsPage />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="tariffs" element={<TariffsPage />} />
             <Route path="discounts" element={<DiscountsPage />} />

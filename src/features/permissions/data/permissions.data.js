@@ -35,6 +35,7 @@ export const SECTIONS = {
   REPORTS: "reports",
   INCOME: "income",
   PAYROLL: "payroll",
+  SALARY_REQUESTS: "salaryRequests",
   EXPENSES: "expenses",
   INVENTORY: "inventory",
   MONITORING: "monitoring",
@@ -456,6 +457,19 @@ export const PERMISSION_SECTIONS = [
     ],
   },
   {
+    // OYLIK SO'ROVLARI — o'qituvchi/xodim o'z oyligini ko'rib chiqishni
+    // so'raydi (hujjat + izoh). Ko'rish/ko'rib chiqish alohida ruxsat — bu
+    // xodim butun oylik registrini boshqarish huquqini olmasligi kerak
+    // (server bilan qo'lda sinxron).
+    key: SECTIONS.SALARY_REQUESTS,
+    label: "Oylik so'rovlari",
+    group: "Moliya",
+    actions: [
+      A.view,
+      { key: "review", label: "Ko'rib chiqish (tasdiqlash / rad etish)" },
+    ],
+  },
+  {
     // XARAJATLAR — kommunal, ta'mirlash, jihoz. Oylik BU YERDA EMAS.
     key: SECTIONS.EXPENSES,
     label: "Xarajatlar",
@@ -768,6 +782,7 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/finance/main/dashboard", key: "reports.view" },
   { prefix: "/finance/main/income", key: "income.view" },
   { prefix: "/finance/main/payroll", key: "payroll.view" },
+  { prefix: "/finance/main/salary-requests", key: "salaryRequests.view" },
   { prefix: "/finance/main/expenses", key: "expenses.view" },
   { prefix: "/finance", key: "finance.view" },
   { prefix: "/finance/main/tariffs", key: "tariffs.view" },

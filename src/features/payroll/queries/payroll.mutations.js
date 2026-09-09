@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { staffSalariesAPI, payrollAPI } from "../api/payroll.api";
+import { staffSalariesAPI, payrollAPI, salaryRequestsAPI } from "../api/payroll.api";
 import { payrollKeys } from "./payroll.queries";
 
 // Oylik to'lovi KASSAGA tegadi, ya'ni to'lov turlari qoldig'i va moliya
@@ -102,6 +102,17 @@ export const useVoidSalaryPayment = () => {
   return useMutation({
     mutationFn: ({ id, reason }) =>
       payrollAPI.voidPayment(id, reason).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+// ── Oylik so'rovlari ─────────────────────────
+// Tasdiq/rad oylikni O'ZGARTIRMAYDI — faqat so'rov holatini yangilaydi.
+export const useReviewSalaryRequest = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ id, status, rejectionReason }) =>
+      salaryRequestsAPI.review(id, { status, rejectionReason }).then((r) => r.data.data),
     onSuccess: invalidate,
   });
 };

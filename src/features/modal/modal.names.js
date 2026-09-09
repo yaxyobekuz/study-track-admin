@@ -160,6 +160,7 @@ export const MODAL_NAMES = [
   "voidSalaryPayment",
   "cancelPayrollEntry",
   "regeneratePayrollEntry",
+  "reviewSalaryRequest",
   "expense",
   "voidExpense",
   "expenseCategory",

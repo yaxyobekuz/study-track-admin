@@ -1,6 +1,15 @@
 // HTTP
 import http from "@/shared/api/http";
 
+/**
+ * Oylik so'rovlari — o'qituvchi/xodim oyligini ko'rib chiqishni so'raydi.
+ * Tasdiq oylikni AVTOMAT o'zgartirmaydi (admin StaffSalary'ni o'zi belgilaydi).
+ */
+export const salaryRequestsAPI = {
+  getAll: (params) => http.get("/salary-requests", { params }),
+  review: (id, data) => http.post(`/salary-requests/${id}/review`, data),
+};
+
 /** Oylik qoidalari — kimga qancha fiksa belgilangan. */
 export const staffSalariesAPI = {
   getAll: (params) => http.get("/payroll/salaries", { params }),
