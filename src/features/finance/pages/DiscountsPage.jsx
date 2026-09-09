@@ -150,7 +150,7 @@ const DiscountsPage = () => {
 
         <div className="flex flex-wrap items-center gap-2">
           {view === "catalog" && (
-            <Select
+            <Select searchable
               value={status}
               triggerClassName="min-w-40"
               options={DISCOUNT_STATUS_OPTIONS}

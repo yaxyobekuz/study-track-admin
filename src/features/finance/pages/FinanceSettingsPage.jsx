@@ -137,7 +137,7 @@ const FinanceSettingsPage = () => {
           <InputField
             min="1"
             max="28"
-            type="number"
+            type="amount"
             name="invoiceDayOfMonth"
             label="Oyning nechanchi kuni"
             value={invoiceDayOfMonth}
@@ -148,7 +148,7 @@ const FinanceSettingsPage = () => {
           <InputField
             min="0"
             max="12"
-            type="number"
+            type="amount"
             name="catchUpMonths"
             label="Orqaga qaytish"
             value={catchUpMonths}

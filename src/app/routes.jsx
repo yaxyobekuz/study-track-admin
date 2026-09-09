@@ -160,6 +160,9 @@ import LessonHoursLedgerPage from "@/features/lessonHours/pages/LessonHoursLedge
 import SubstitutionsPage from "@/features/lessonHours/pages/SubstitutionsPage";
 import LessonLoadPage from "@/features/lessonHours/pages/LessonLoadPage";
 
+// Pages - Oylik zayavkalari (o'qituvchi/xodim so'rovlari — paneldan tasdiqlash)
+import PayrollRequestsPage from "@/features/payroll/pages/PayrollRequestsPage";
+
 // Pages - Inventar (moddiy-texnik baza)
 import InventoryLayout from "@/features/inventory/layouts/InventoryLayout";
 import InventoryIndex from "@/features/inventory/layouts/InventoryIndex";
@@ -475,6 +478,7 @@ const Routes = () => {
             <Route path="accounts" element={<AccountsPage />} />
             <Route path="income" element={<ExternalIncomePage />} />
             <Route path="payroll" element={<PayrollPage />} />
+            <Route path="salary-requests" element={<PayrollRequestsPage />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="tariffs" element={<TariffsPage />} />
             <Route path="discounts" element={<DiscountsPage />} />
