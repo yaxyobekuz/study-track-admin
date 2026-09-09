@@ -14,6 +14,7 @@ import {
   PiggyBank,
   Receipt,
   School,
+  Sparkles,
   TrendingDown,
   Users,
   Wallet,
@@ -24,8 +25,14 @@ import { useQuery } from "@tanstack/react-query";
 
 // Components
 import Card from "@/shared/components/ui/Card";
+import Can from "@/shared/components/guards/Can";
+import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import EmptyState from "@/shared/components/ui/EmptyState";
+import GenerateInvoicesModal from "../components/GenerateInvoicesModal";
+
+// Hooks
+import useModal from "@/shared/hooks/useModal";
 
 // Utils & helpers
 import { cn } from "@/shared/utils/cn";
@@ -39,6 +46,7 @@ import {
 import { currentMonthKey, buildMonthOptions } from "@/shared/helpers/month.helpers";
 
 // Data & queries
+import { GENERATE_BLOCKED_LABELS } from "../data/finance.data";
 import { financeQueries } from "../queries/finance.queries";
 
 const MONTH_OPTIONS = buildMonthOptions({ back: 12, forward: 1 });
@@ -56,6 +64,7 @@ const MONTH_OPTIONS = buildMonthOptions({ back: 12, forward: 1 });
  * umuman ko'rinmasdi.
  */
 const OverviewPage = () => {
+  const { openModal } = useModal();
   const navigate = useNavigate();
   const [month, setMonth] = useState(currentMonthKey);
 
@@ -74,17 +83,37 @@ const OverviewPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Toolbar — faqat oy tanlash. Hisob-fakturalar AVTOMATIK shakllanadi
-          (kunlik cron + o'quvchi qo'shilganda), shuning uchun qo'lda
-          "shakllantirish / qayta shakllantirish / tozalash" tugmalari yo'q. */}
-      <div className="flex items-center gap-2">
+      {/* Toolbar — oy tanlash + qo'lda shakllantirish.
+          Hisob-fakturalar odatda AVTOMATIK shakllanadi (kunlik cron + server
+          ishga tushganda + o'quvchi qo'shilganda), lekin admin istagan vaqtda
+          qo'lda ham shakllantira olishi uchun tugma bor. */}
+      <div className="flex flex-col gap-3 xs:flex-row xs:items-center xs:justify-between">
         <Select
           value={String(month)}
           triggerClassName="min-w-40"
           options={MONTH_OPTIONS}
           onChange={(v) => setMonth(Number(v))}
         />
+
+        <Can do="finance.generate">
+          <Button
+            disabled={!summary?.canGenerate}
+            onClick={() => openModal("generateInvoices", { month, summary })}
+          >
+            <Sparkles />
+            Shakllantirish
+          </Button>
+        </Can>
       </div>
+
+      {/* Nima uchun shakllantirib bo'lmaydi — jim qolmasin */}
+      {summary && !summary.canGenerate && (
+        <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          {summary.monthLabel}:{" "}
+          {GENERATE_BLOCKED_LABELS[summary.blockedReason] ??
+            "hisob-faktura shakllantirilmaydi"}
+        </p>
+      )}
 
       {/* ── O'QUVCHILAR SANOG'I: jami / grant / to'lovchi ── */}
       {counts && (
@@ -285,6 +314,9 @@ const OverviewPage = () => {
           </div>
         </Card>
       )}
+
+      {/* Qo'lda shakllantirish oynasi */}
+      <GenerateInvoicesModal />
     </div>
   );
 };
