@@ -30,6 +30,9 @@ const todayInputValue = () => {
   return local.toISOString().slice(0, 10);
 };
 
+/** Bugungi oy `<input type="month">` qiymati sifatida (YYYY-MM). */
+const currentMonthInputValue = () => todayInputValue().slice(0, 7);
+
 const CreateUserModal = () => (
   <ResponsiveModal name="createUser" title="Yangi foydalanuvchi">
     <Content />
@@ -67,6 +70,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     hasCustomSchedule: false,
     // O'quvchi moliyasi
     enrollmentDate: todayInputValue(),
+    firstMonthKey: currentMonthInputValue(),
     firstMonthAmount: "",
     tariffId: "",
   });
@@ -115,6 +119,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       hasCustomSchedule: undefined,
       // Moliya maydonlari faqat o'quvchi uchun yuboriladi
       enrollmentDate: isStudent ? state.enrollmentDate || undefined : undefined,
+      firstMonthKey: isStudent ? state.firstMonthKey || undefined : undefined,
       firstMonthAmount: isStudent
         ? state.firstMonthAmount || undefined
         : undefined,
@@ -205,10 +210,10 @@ const Content = ({ close, isLoading, setIsLoading }) => {
             options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
           />
 
-          {/* ── Moliya: kirgan sana + birinchi oy summasi + tarif ── */}
+          {/* ── Moliya: kirgan sana + to'lov oyi + birinchi oy summasi + tarif ── */}
           <div className="rounded-xl bg-gray-50 p-3 space-y-3.5">
             <p className="text-xs font-medium text-gray-500">
-              Moliya — birinchi oy qo'lda, keyingi oylar tarif bo'yicha
+              Moliya — birinchi (to'lov) oyi qo'lda, keyingi oylar tarif bo'yicha
             </p>
 
             <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
@@ -220,16 +225,24 @@ const Content = ({ close, isLoading, setIsLoading }) => {
                 onChange={(e) => setField("enrollmentDate", e.target.value)}
               />
               <InputField
-                min="0"
-                step="0.01"
-                type="number"
-                name="firstMonthAmount"
-                label="Birinchi oy to'lovi (so'm)"
-                value={state.firstMonthAmount}
-                placeholder="Masalan: 300000"
-                onChange={(e) => setField("firstMonthAmount", e.target.value)}
+                type="month"
+                name="firstMonthKey"
+                label="Birinchi to'lov oyi"
+                value={state.firstMonthKey}
+                onChange={(e) => setField("firstMonthKey", e.target.value)}
               />
             </div>
+
+            <InputField
+              min="0"
+              step="0.01"
+              type="number"
+              name="firstMonthAmount"
+              label="Birinchi oy to'lovi (so'm)"
+              value={state.firstMonthAmount}
+              placeholder="Masalan: 300000"
+              onChange={(e) => setField("firstMonthAmount", e.target.value)}
+            />
 
             <SelectField
               label="Tarif"
