@@ -124,6 +124,23 @@ export const financeQueries = {
       placeholderData: keepPreviousData,
     }),
 
+  /** Moliya bosh sahifasi: sanoq + pul + sinf/yo'nalish kesimi (bir oy). */
+  overviewDashboard: (month) =>
+    queryOptions({
+      queryKey: [...invoicesKey, "overview", month],
+      queryFn: () =>
+        invoicesAPI.getOverview({ month }).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** O'quvchilar registri (sinf detali) → `{ data, pagination, totals }`. */
+  studentRegistry: (params) =>
+    queryOptions({
+      queryKey: [...invoicesKey, "registry", params],
+      queryFn: () => invoicesAPI.getStudentRegistry(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
   /** Bitta hisob-faktura — to'lovlari bilan. */
   invoiceDetail: (id) =>
     queryOptions({
