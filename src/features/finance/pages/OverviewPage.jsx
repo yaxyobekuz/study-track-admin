@@ -4,23 +4,16 @@ import { useState } from "react";
 // Router
 import { useNavigate } from "react-router-dom";
 
-// Toast
-import { toast } from "sonner";
-
 // Icons
 import {
   ArrowDownRight,
   ArrowUpRight,
-  Ban,
   ChevronRight,
   Gift,
   Minus,
   PiggyBank,
   Receipt,
-  RefreshCw,
   School,
-  SlidersHorizontal,
-  Sparkles,
   TrendingDown,
   Users,
   Wallet,
@@ -31,16 +24,8 @@ import { useQuery } from "@tanstack/react-query";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import Can from "@/shared/components/guards/Can";
-import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import EmptyState from "@/shared/components/ui/EmptyState";
-import ReasonModal from "../components/ReasonModal";
-import GenerateInvoicesModal from "../components/GenerateInvoicesModal";
-import BulkMonthOverrideModal from "../components/BulkMonthOverrideModal";
-
-// Hooks
-import useModal from "@/shared/hooks/useModal";
 
 // Utils & helpers
 import { cn } from "@/shared/utils/cn";
@@ -54,12 +39,7 @@ import {
 import { currentMonthKey, buildMonthOptions } from "@/shared/helpers/month.helpers";
 
 // Data & queries
-import { GENERATE_BLOCKED_LABELS } from "../data/finance.data";
 import { financeQueries } from "../queries/finance.queries";
-import {
-  useCancelInvoiceMonth,
-  useRegenerateInvoiceMonth,
-} from "../queries/finance.mutations";
 
 const MONTH_OPTIONS = buildMonthOptions({ back: 12, forward: 1 });
 
@@ -76,7 +56,6 @@ const MONTH_OPTIONS = buildMonthOptions({ back: 12, forward: 1 });
  * umuman ko'rinmasdi.
  */
 const OverviewPage = () => {
-  const { openModal } = useModal();
   const navigate = useNavigate();
   const [month, setMonth] = useState(currentMonthKey);
 
@@ -84,79 +63,9 @@ const OverviewPage = () => {
   const { data: summary } = useQuery(financeQueries.invoiceSummary(month));
   const { data: report } = useQuery(financeQueries.accountReport({}));
 
-  const { mutate: cancelMonth } = useCancelInvoiceMonth();
-  const { mutate: regenerateMonth } = useRegenerateInvoiceMonth();
-
   const counts = dashboard?.counts;
   const byClass = dashboard?.byClass ?? [];
   const byDirection = dashboard?.byDirection ?? [];
-  const invoiceCount = summary?.counts?.invoiced ?? 0;
-
-  const handleError = (err) =>
-    toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-
-  // ── OY DARAJASIDAGI AMALLAR (butun oyga) ──────
-  const askRegenerateMonth = () =>
-    openModal("financeReason", {
-      description: `${summary?.monthLabel ?? ""} oyining barcha hisob-fakturasi joriy tarif va chegirmalar bo'yicha qaytadan hisoblanadi.`,
-      consequences: [
-        "Tarifni o'zgartirgandan keyin summalar shu tugma bilan yangilanadi",
-        "To'lov tushgan hisob-fakturalar o'zgarmaydi — ular chetda qoladi",
-        "Bekor qilinganlariga tegilmaydi",
-      ],
-      confirmLabel: "Qayta shakllantirish",
-      onConfirm: (reason, { close, setIsLoading }) => {
-        setIsLoading(true);
-        regenerateMonth(
-          { month, reason },
-          {
-            onSuccess: (result) => {
-              close();
-              toast.success(
-                `${result.done} ta hisob-faktura qayta shakllantirildi` +
-                  (result.skipped?.length
-                    ? `, ${result.skipped.length} tasi o'tkazib yuborildi (to'lov tushgan)`
-                    : ""),
-                {
-                  description: `Jami: ${formatMoney(result.amountBefore)} → ${formatMoney(result.amountAfter)}`,
-                },
-              );
-              result?.failed?.forEach((f) =>
-                toast.error(`${f.studentName}: ${f.reason}`),
-              );
-            },
-            onError: handleError,
-            onSettled: () => setIsLoading(false),
-          },
-        );
-      },
-    });
-
-  const askCancelMonth = () =>
-    openModal("financeReason", {
-      description: `${summary?.monthLabel ?? ""} oyining BARCHA hisob-fakturasi bekor qilinadi.`,
-      warning:
-        "Bu oyda qarz umuman qolmaydi. O'quvchilar, tariflar va to'lov turlari joyida qoladi. To'lov tushgan bo'lsa, pul o'quvchining depozitiga qaytadi.",
-      confirmLabel: "Qarzlarni tozalash",
-      onConfirm: (reason, { close, setIsLoading }) => {
-        setIsLoading(true);
-        cancelMonth(
-          { month, reason },
-          {
-            onSuccess: (result) => {
-              close();
-              toast.success(`${result.done} ta hisob-faktura bekor qilindi`);
-              result?.warnings?.forEach((w) => toast.warning(w));
-              result?.failed?.forEach((f) =>
-                toast.error(`${f.studentName}: ${f.reason}`),
-              );
-            },
-            onError: handleError,
-            onSettled: () => setIsLoading(false),
-          },
-        );
-      },
-    });
 
   const openClass = (row) => {
     if (!row.classId) return; // "Sinfsiz" — bosib bo'lmaydi
@@ -165,66 +74,17 @@ const OverviewPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-col gap-3 xs:flex-row xs:items-center xs:justify-between">
-        <div className="flex items-center gap-2">
-          <Select
-            value={String(month)}
-            triggerClassName="min-w-40"
-            options={MONTH_OPTIONS}
-            onChange={(v) => setMonth(Number(v))}
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {invoiceCount > 0 && (
-            <>
-              <Can do="finance.adjust">
-                <Button variant="outline" onClick={askRegenerateMonth}>
-                  <RefreshCw />
-                  Oyni qayta shakllantirish
-                </Button>
-              </Can>
-
-              <Can do="finance.cancel">
-                <Button variant="outline" onClick={askCancelMonth}>
-                  <Ban />
-                  Qarzlarni tozalash
-                </Button>
-              </Can>
-            </>
-          )}
-
-          <Can do="finance.adjust">
-            <Button
-              variant="outline"
-              onClick={() => openModal("bulkMonthOverride", { month })}
-            >
-              <SlidersHorizontal />
-              Ommaviy oy summasi
-            </Button>
-          </Can>
-
-          <Can do="finance.generate">
-            <Button
-              disabled={!summary?.canGenerate}
-              onClick={() => openModal("generateInvoices", { month, summary })}
-            >
-              <Sparkles />
-              Shakllantirish
-            </Button>
-          </Can>
-        </div>
+      {/* Toolbar — faqat oy tanlash. Hisob-fakturalar AVTOMATIK shakllanadi
+          (kunlik cron + o'quvchi qo'shilganda), shuning uchun qo'lda
+          "shakllantirish / qayta shakllantirish / tozalash" tugmalari yo'q. */}
+      <div className="flex items-center gap-2">
+        <Select
+          value={String(month)}
+          triggerClassName="min-w-40"
+          options={MONTH_OPTIONS}
+          onChange={(v) => setMonth(Number(v))}
+        />
       </div>
-
-      {/* Nima uchun shakllantirib bo'lmaydi — jim qolmasin */}
-      {summary && !summary.canGenerate && (
-        <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          {summary.monthLabel}:{" "}
-          {GENERATE_BLOCKED_LABELS[summary.blockedReason] ??
-            "hisob-faktura shakllantirilmaydi"}
-        </p>
-      )}
 
       {/* ── O'QUVCHILAR SANOG'I: jami / grant / to'lovchi ── */}
       {counts && (
@@ -425,11 +285,6 @@ const OverviewPage = () => {
           </div>
         </Card>
       )}
-
-      {/* Modals */}
-      <GenerateInvoicesModal />
-      <BulkMonthOverrideModal />
-      <ReasonModal />
     </div>
   );
 };
