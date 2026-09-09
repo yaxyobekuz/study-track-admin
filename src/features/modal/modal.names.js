@@ -161,6 +161,11 @@ export const MODAL_NAMES = [
   "cancelPayrollEntry",
   "regeneratePayrollEntry",
   "reviewSalaryRequest",
+  // Oylik strukturasi — bo'lim/lavozim/toifa
+  "department",
+  "position",
+  "categoryV2",
+  "assignStaff",
   "expense",
   "voidExpense",
   "expenseCategory",

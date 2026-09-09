@@ -10,6 +10,38 @@ export const salaryRequestsAPI = {
   review: (id, data) => http.post(`/salary-requests/${id}/review`, data),
 };
 
+// ── Oylik STRUKTURASI (bo'lim / lavozim / toifa) — tashkiliy qatlam ──
+export const departmentsAPI = {
+  getAll: (params) => http.get("/payroll/departments", { params }),
+  create: (data) => http.post("/payroll/departments", data),
+  update: (id, data) => http.put(`/payroll/departments/${id}`, data),
+  remove: (id) => http.delete(`/payroll/departments/${id}`),
+};
+
+export const positionsAPI = {
+  getAll: (params) => http.get("/payroll/positions", { params }),
+  create: (data) => http.post("/payroll/positions", data),
+  update: (id, data) => http.put(`/payroll/positions/${id}`, data),
+  remove: (id) => http.delete(`/payroll/positions/${id}`),
+};
+
+export const salaryCategoriesAPI = {
+  getAll: (params) => http.get("/payroll/categories", { params }),
+  getActive: () => http.get("/payroll/categories/active"),
+  create: (data) => http.post("/payroll/categories", data),
+  update: (id, data) => http.put(`/payroll/categories/${id}`, data),
+  archive: (id, isArchived) =>
+    http.patch(`/payroll/categories/${id}/archive`, { isArchived }),
+  remove: (id) => http.delete(`/payroll/categories/${id}`),
+};
+
+/** Hisoblangan oylik ko'rinishlari (Struktura) + biriktirish. */
+export const payrollViewAPI = {
+  staff: (params) => http.get("/payroll/view/staff", { params }),
+  teachers: (params) => http.get("/payroll/view/teachers", { params }),
+  assign: (staffId, data) => http.patch(`/payroll/staff/${staffId}/assign`, data),
+};
+
 /** Oylik qoidalari — kimga qancha fiksa belgilangan. */
 export const staffSalariesAPI = {
   getAll: (params) => http.get("/payroll/salaries", { params }),

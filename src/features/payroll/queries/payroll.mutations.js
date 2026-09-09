@@ -2,7 +2,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { staffSalariesAPI, payrollAPI, salaryRequestsAPI } from "../api/payroll.api";
+import {
+  staffSalariesAPI,
+  payrollAPI,
+  salaryRequestsAPI,
+  departmentsAPI,
+  positionsAPI,
+  salaryCategoriesAPI,
+  payrollViewAPI,
+} from "../api/payroll.api";
 import { payrollKeys } from "./payroll.queries";
 
 // Oylik to'lovi KASSAGA tegadi, ya'ni to'lov turlari qoldig'i va moliya
@@ -104,6 +112,52 @@ export const useVoidSalaryPayment = () => {
       payrollAPI.voidPayment(id, reason).then((r) => r.data.data),
     onSuccess: invalidate,
   });
+};
+
+// ── Oylik STRUKTURASI (bo'lim / lavozim / toifa) ──
+export const useCreateDepartment = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (data) => departmentsAPI.create(data).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useUpdateDepartment = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: ({ id, data }) => departmentsAPI.update(id, data).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useDeleteDepartment = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (id) => departmentsAPI.remove(id).then((r) => r.data), onSuccess: invalidate });
+};
+export const useCreatePosition = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (data) => positionsAPI.create(data).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useUpdatePosition = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: ({ id, data }) => positionsAPI.update(id, data).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useDeletePosition = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (id) => positionsAPI.remove(id).then((r) => r.data), onSuccess: invalidate });
+};
+export const useAssignStaff = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: ({ staffId, data }) => payrollViewAPI.assign(staffId, data).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useCreateCategory = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (data) => salaryCategoriesAPI.create(data).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useUpdateCategory = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: ({ id, data }) => salaryCategoriesAPI.update(id, data).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useArchiveCategory = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: ({ id, isArchived }) => salaryCategoriesAPI.archive(id, isArchived).then((r) => r.data.data), onSuccess: invalidate });
+};
+export const useDeleteCategory = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (id) => salaryCategoriesAPI.remove(id).then((r) => r.data), onSuccess: invalidate });
 };
 
 // ── Oylik so'rovlari ─────────────────────────

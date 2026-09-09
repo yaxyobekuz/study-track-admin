@@ -8,6 +8,7 @@ import { formatMoney } from "@/shared/utils/formatMoney";
 
 /** Bo'limning ichki tablari. */
 export const PAYROLL_TABS = [
+  { value: "structure", label: "Struktura" },
   { value: "entries", label: "Oyliklar" },
   { value: "rules", label: "Qoidalar" },
 ];
@@ -142,6 +143,33 @@ export const PAYROLL_SEAL_HINT =
 export const NO_ADVANCE_HINT =
   "Avans qo'llab-quvvatlanmaydi: to'lov qarzdan ko'p bo'lishi mumkin emas. " +
   "Lekin bitta oylikni bir necha marta bo'lib to'lash mumkin.";
+
+// ── Oylik STRUKTURASI (Yo'nalish × Bo'lim) ──
+/** Yo'nalish (payroll ko'rinishi). */
+export const DIRECTION_OPTIONS = [
+  { value: "salary", label: "Oylik maosh" },
+  { value: "bonus", label: "Ustama haq" },
+];
+
+/** Staff bo'lim xodimlari jadvali. */
+export const STAFF_PAYROLL_COLUMNS = ["Xodim", "Lavozim", "Bazaviy maosh", "Ustama", "Yakuniy oylik", ""];
+
+/** Lavozimlar jadvali. */
+export const POSITION_COLUMNS = ["Lavozim", "Bazaviy maosh", "Xodimlar", ""];
+
+/** Teaching toifalar jadvali (reference). */
+export const CATEGORY_V2_COLUMNS = [
+  "Toifa turi",
+  "Bir soat uchun",
+  "Bir oy uchun",
+  "Dars soati / stavka",
+  "Asosiy maosh",
+  "O'qituvchilar",
+  "",
+];
+
+/** Toifa o'qituvchilari jadvali. */
+export const TEACHER_PAYROLL_COLUMNS = ["O'qituvchi", "Dars soati", "Soatbay hisob", "Ustama", "Yakuniy oylik"];
 
 // ── Oylik so'rovlari (admin ko'rib chiqadi) ──
 export const REQUEST_TYPE_LABELS = {

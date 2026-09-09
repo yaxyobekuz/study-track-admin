@@ -5,7 +5,15 @@ import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 import { createQueryKeys } from "@/shared/lib/query";
 
 // API
-import { staffSalariesAPI, payrollAPI, salaryRequestsAPI } from "../api/payroll.api";
+import {
+  staffSalariesAPI,
+  payrollAPI,
+  salaryRequestsAPI,
+  departmentsAPI,
+  positionsAPI,
+  salaryCategoriesAPI,
+  payrollViewAPI,
+} from "../api/payroll.api";
 
 export const payrollKeys = createQueryKeys("payroll");
 
@@ -13,6 +21,10 @@ const salariesKey = [...payrollKeys.all, "salaries"];
 const entriesKey = [...payrollKeys.all, "entries"];
 const paymentsKey = [...payrollKeys.all, "payments"];
 const requestsKey = [...payrollKeys.all, "salary-requests"];
+const deptKey = [...payrollKeys.all, "departments"];
+const posKey = [...payrollKeys.all, "positions"];
+const categoriesKey = [...payrollKeys.all, "categories"];
+const viewKey = [...payrollKeys.all, "view"];
 
 export const payrollQueries = {
   /** Oylik qoidalari (sahifalangan). */
@@ -60,6 +72,48 @@ export const payrollQueries = {
     queryOptions({
       queryKey: [...requestsKey, params],
       queryFn: () => salaryRequestsAPI.getAll(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  // ── Oylik STRUKTURASI (bo'lim / lavozim / toifa) ──
+  /** Bo'limlar (staff/teaching). */
+  departments: (params) =>
+    queryOptions({
+      queryKey: [...deptKey, params],
+      queryFn: () => departmentsAPI.getAll(params).then((r) => r.data.data),
+    }),
+
+  /** Bir bo'lim lavozimlari. */
+  positions: (departmentId) =>
+    queryOptions({
+      queryKey: [...posKey, departmentId],
+      queryFn: () => positionsAPI.getAll({ departmentId }).then((r) => r.data.data),
+      enabled: Boolean(departmentId),
+    }),
+
+  /** Staff bo'lim xodimlari + hisoblangan oylik. */
+  staffPayroll: (params) =>
+    queryOptions({
+      queryKey: [...viewKey, "staff", params],
+      queryFn: () => payrollViewAPI.staff(params).then((r) => r.data),
+      enabled: Boolean(params?.departmentId),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Toifa o'qituvchilari + hisoblangan oylik. */
+  teacherPayroll: (params) =>
+    queryOptions({
+      queryKey: [...viewKey, "teachers", params],
+      queryFn: () => payrollViewAPI.teachers(params).then((r) => r.data),
+      enabled: Boolean(params?.categoryId),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Malaka toifalari (soatlik stavka) — status bo'yicha. */
+  categories: (params) =>
+    queryOptions({
+      queryKey: [...categoriesKey, params],
+      queryFn: () => salaryCategoriesAPI.getAll(params).then((r) => r.data.data),
       placeholderData: keepPreviousData,
     }),
 };
