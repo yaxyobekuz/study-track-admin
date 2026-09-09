@@ -150,12 +150,20 @@ const Content = ({
         {
           onSuccess: (result) => {
             const created = result?.created?.length ?? 0;
+            const changed = result?.changed?.length ?? 0;
+            const unchanged = result?.unchanged?.length ?? 0;
             const skipped = result?.skipped?.length ?? 0;
+
+            // Yangi biriktirilgan + tarifi almashtirilganlar birga
+            const applied = created + changed;
+            const parts = [];
+            if (applied) parts.push(`${applied} ta o'quvchiga qo'llandi`);
+            if (unchanged) parts.push(`${unchanged} tasi allaqachon shu tarifda`);
+            if (skipped) parts.push(`${skipped} tasi o'tkazib yuborildi`);
+
             onSuccess(
               result,
-              skipped
-                ? `${created} ta o'quvchiga biriktirildi, ${skipped} tasi o'tkazib yuborildi`
-                : `${created} ta o'quvchiga biriktirildi`,
+              parts.length ? parts.join(", ") : "O'zgarish bo'lmadi",
             );
           },
           onError: handleError,
