@@ -70,9 +70,9 @@ const Content = ({
   const { mutate: assignTariff } = useAssignTariff();
   const { mutate: bulkAssign } = useBulkAssignTariff();
 
-  // Qaysi tomon oldindan ma'lum
+  // O'quvchi tomoni oldindan ma'lum bo'lishi mumkin (o'quvchi kartasidan
+  // ochilganda). Tarif esa har doim tanlanadi — oldindan tanlangan bo'lsa ham.
   const isStudentLocked = Boolean(student?.id);
-  const isTariffLocked = Boolean(tariff?.id);
 
   const {
     scope,
@@ -100,15 +100,15 @@ const Content = ({
     note: "",
   });
 
-  // Tariflar faqat o'quvchi tomonidan ochilganda kerak
-  const { data: tariffs = [] } = useQuery({
-    ...financeQueries.assignableTariffs(),
-    enabled: !isTariffLocked,
-  });
+  // Tariflar — har doim yuklanadi: tarif tarif sahifasidan oldindan tanlangan
+  // bo'lsa ham foydalanuvchi BOSHQA tarifni tanlay olishi kerak.
+  const { data: tariffs = [] } = useQuery(financeQueries.assignableTariffs());
   const { data: classes = [] } = useQuery(classesQueries.list());
   const { data: students = [] } = useQuery(classesQueries.students(classId));
 
-  const selectedTariff = tariff ?? tariffs.find((t) => t.id === tariffId) ?? null;
+  // Narx izohida tanlangan tarifning narxini ko'rsatamiz (o'zgarganda yangilanadi)
+  const selectedTariff =
+    tariffs.find((t) => t.id === tariffId) ?? tariff ?? null;
 
   const handleError = (err) =>
     toast.error(err.response?.data?.message || "Xatolik yuz berdi");
@@ -187,37 +187,29 @@ const Content = ({
         </div>
       )}
 
-      {isTariffLocked && (
-        <div className="rounded-xl bg-gray-50 p-3 text-sm">
-          <p className="text-gray-500">Tarif</p>
-          <p className="font-medium text-gray-900">{tariff.name}</p>
-        </div>
-      )}
-
-      {/* Tarif tanlash — o'quvchi kartasidan ochilganda */}
-      {!isTariffLocked && (
-        <div className="space-y-1.5">
-          <p className="text-sm font-medium text-gray-700">Tarif</p>
-          <SelectSearch
-            inline
-            value={tariffId}
-            placeholder="Tarifni tanlang"
-            onChange={(v) => setField("tariffId", v)}
-            options={tariffs.map((t) => ({
-              label: t.currentVersion?.monthlyAmount
-                ? `${t.name} — ${formatMoney(t.currentVersion.monthlyAmount)}`
-                : t.name,
-              value: t.id,
-            }))}
-          />
-          {tariffs.length === 0 && (
-            <p className="text-xs text-amber-700">
-              Faol tarif yo'q — avval "Tariflar" bo'limida tarif va uning
-              narxini yarating.
-            </p>
-          )}
-        </div>
-      )}
+      {/* Tarif — tarif sahifasidan ochilsa oldindan tanlangan, lekin BOSHQA
+          tarifni ham tanlash mumkin (masalan sinfga boshqa tarif biriktirish) */}
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Tarif</p>
+        <SelectSearch
+          inline
+          value={tariffId}
+          placeholder="Tarifni tanlang"
+          onChange={(v) => setField("tariffId", v)}
+          options={tariffs.map((t) => ({
+            label: t.currentVersion?.monthlyAmount
+              ? `${t.name} — ${formatMoney(t.currentVersion.monthlyAmount)}`
+              : t.name,
+            value: t.id,
+          }))}
+        />
+        {tariffs.length === 0 && (
+          <p className="text-xs text-amber-700">
+            Faol tarif yo'q — avval "Tariflar" bo'limida tarif va uning
+            narxini yarating.
+          </p>
+        )}
+      </div>
 
       {/* Kimga — faqat tarif tomonidan ochilganda */}
       {!isStudentLocked && (
