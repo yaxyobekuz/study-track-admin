@@ -48,12 +48,14 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
   const { mutate: changeTariff } = useChangeAssignmentTariff();
   const { data: tariffs = [] } = useQuery(financeQueries.assignableTariffs());
 
-  const { tariffId, fromMonth, note, setField } = useObjectState({
+  const { tariffId, fromMonth, customAmount, note, setField } = useObjectState({
     tariffId: "",
     // Odatda tarif joriy oydan almashtiriladi — narx bugun kelishiladi.
     // O'tgan oy yopiq (server ham shuni talab qiladi): u yerdagi
     // hisob-fakturalar muhrlangan fakt.
     fromMonth: monthKeyToInputValue(currentMonthKey()),
+    // Individual (maxsus) narx — bo'sh bo'lsa yangi tarif katalog narxi
+    customAmount: "",
     note: "",
   });
 
@@ -67,7 +69,15 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
     setIsLoading(true);
 
     changeTariff(
-      { id: assignment.id, data: { tariffId, fromMonth: fromMonthKey, note } },
+      {
+        id: assignment.id,
+        data: {
+          tariffId,
+          fromMonth: fromMonthKey,
+          customAmount: customAmount.trim(),
+          note,
+        },
+      },
       {
         onSuccess: (result) => {
           close();
@@ -117,6 +127,17 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
         value={fromMonth}
         min={monthKeyToInputValue(currentMonthKey())}
         onChange={(e) => setField("fromMonth", e.target.value)}
+      />
+
+      {/* Individual narx — bu o'quvchi uchun katalog narxidan farqli doimiy
+          summa. Bo'sh qolsa yangi tarifning katalog narxi ishlaydi. */}
+      <InputField
+        type="number"
+        name="customAmount"
+        label="Individual narx (so'm)"
+        value={customAmount}
+        placeholder="Bo'sh qolsa — katalog narxi"
+        onChange={(e) => setField("customAmount", e.target.value)}
       />
 
       <InputField

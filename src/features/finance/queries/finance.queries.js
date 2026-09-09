@@ -5,7 +5,11 @@ import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 import { createQueryKeys } from "@/shared/lib/query";
 
 // API
-import { tariffsAPI, studentTariffsAPI } from "../api/finance.api";
+import {
+  tariffsAPI,
+  studentTariffsAPI,
+  studentMonthOverridesAPI,
+} from "../api/finance.api";
 import {
   invoicesAPI,
   paymentsAPI,
@@ -89,6 +93,15 @@ export const financeQueries = {
       queryKey: [...assignmentsKey, "student", studentId],
       queryFn: () =>
         studentTariffsAPI.getStudentHistory(studentId).then((r) => r.data),
+      enabled: Boolean(studentId),
+    }),
+
+  /** Bitta o'quvchining oy summasi override'lari (id bilan — o'chirish uchun). */
+  studentMonthOverrides: (studentId) =>
+    queryOptions({
+      queryKey: [...assignmentsKey, "month-overrides", studentId],
+      queryFn: () =>
+        studentMonthOverridesAPI.getForStudent(studentId).then((r) => r.data.data),
       enabled: Boolean(studentId),
     }),
 

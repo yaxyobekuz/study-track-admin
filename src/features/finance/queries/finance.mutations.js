@@ -2,7 +2,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { tariffsAPI, studentTariffsAPI } from "../api/finance.api";
+import {
+  tariffsAPI,
+  studentTariffsAPI,
+  studentMonthOverridesAPI,
+} from "../api/finance.api";
 import {
   invoicesAPI,
   paymentsAPI,
@@ -178,6 +182,41 @@ export const useDeleteAssignment = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id) => studentTariffsAPI.delete(id).then((r) => r.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+// ── Oy summasi override'i ────────────────────
+
+/**
+ * Bitta o'quvchi + oy uchun sababli summa. Server yozgach o'sha oy
+ * hisob-fakturasini avtomat qayta muhrlaydi — shuning uchun butun moliya
+ * invalidatsiya qilinadi.
+ */
+export const useUpsertMonthOverride = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ studentId, data }) =>
+      studentMonthOverridesAPI.upsert(studentId, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+/** OMMAVIY: tanlangan o'quvchilar (yoki sinf) uchun bir oy bir summa (grant). */
+export const useBulkMonthOverride = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) =>
+      studentMonthOverridesAPI.bulk(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+/** Override'ni olib tashlash — o'sha oy odatdagi tarifga qaytadi. */
+export const useDeleteMonthOverride = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => studentMonthOverridesAPI.delete(id).then((r) => r.data.data),
     onSuccess: () => invalidateFinance(qc),
   });
 };

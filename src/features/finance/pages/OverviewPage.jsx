@@ -17,6 +17,7 @@ import {
   PiggyBank,
   Receipt,
   RotateCcw,
+  SlidersHorizontal,
   Sparkles,
   RefreshCw,
   TrendingDown,
@@ -40,6 +41,7 @@ import Pagination from "@/shared/components/ui/Pagination";
 import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 import ReasonModal from "../components/ReasonModal";
 import GenerateInvoicesModal from "../components/GenerateInvoicesModal";
+import BulkMonthOverrideModal from "../components/BulkMonthOverrideModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -337,6 +339,16 @@ const OverviewPage = () => {
             </>
           )}
 
+          <Can do="finance.adjust">
+            <Button
+              variant="outline"
+              onClick={() => openModal("bulkMonthOverride", { month })}
+            >
+              <SlidersHorizontal />
+              Ommaviy oy summasi
+            </Button>
+          </Can>
+
           <Can do="finance.generate">
             <Button
               disabled={!summary?.canGenerate}
@@ -590,6 +602,7 @@ const OverviewPage = () => {
 
       {/* Modals */}
       <GenerateInvoicesModal />
+      <BulkMonthOverrideModal />
       <ReasonModal />
     </div>
   );

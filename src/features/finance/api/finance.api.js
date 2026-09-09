@@ -52,3 +52,17 @@ export const studentTariffsAPI = {
     http.post(`/student-tariffs/${id}/change-tariff`, data),
   delete: (id) => http.delete(`/student-tariffs/${id}`),
 };
+
+/**
+ * Oy summasi override'i — bitta oy uchun sababli maxsus summa (kech qo'shilgan,
+ * kasallik, oilaviy, boshqa). Ommaviy grant `bulk` orqali. Server yozgach
+ * o'sha oy hisob-fakturasini avtomat qayta muhrlaydi.
+ */
+export const studentMonthOverridesAPI = {
+  getForStudent: (studentId) =>
+    http.get(`/student-month-overrides/student/${studentId}`),
+  upsert: (studentId, data) =>
+    http.post(`/student-month-overrides/student/${studentId}`, data),
+  bulk: (data) => http.post("/student-month-overrides/bulk", data),
+  delete: (id) => http.delete(`/student-month-overrides/${id}`),
+};
