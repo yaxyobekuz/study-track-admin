@@ -84,6 +84,7 @@ export const VERSION_TABLE_COLUMNS = ["Davr", "Oylik summa", "Holat", ""];
 /** Tarif detalidagi biriktirilgan o'quvchilar jadvali. */
 export const ASSIGNED_STUDENT_TABLE_COLUMNS = [
   "O'quvchi",
+  "Sinf",
   "Davr",
   "Joriy oydagi summa",
   "Holat",

@@ -57,7 +57,16 @@ const AssignTariffModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
+const Content = ({
+  close,
+  isLoading,
+  setIsLoading,
+  tariff,
+  student,
+  // Tarif detali sahifasidan "Bu sinfga biriktirish" — oldindan to'ldiriladi
+  classId: initialClassId,
+  scope: initialScope,
+}) => {
   const { mutate: assignTariff } = useAssignTariff();
   const { mutate: bulkAssign } = useBulkAssignTariff();
 
@@ -77,9 +86,9 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
     note,
     setField,
   } = useObjectState({
-    scope: "student",
+    scope: initialScope ?? "student",
     tariffId: tariff?.id ?? "",
-    classId: "",
+    classId: initialClassId ?? "",
     studentId: student?.id ?? "",
     // "Tanlangan o'quvchilar" rejimi uchun
     studentIds: [],
