@@ -178,6 +178,22 @@ export const DISCOUNT_TABLE_COLUMNS = [
   "",
 ];
 
+export const SERVICE_TABLE_COLUMNS = [
+  "Xizmat",
+  { label: "Oylik narx", align: "right" },
+  { label: "O'quvchilar", align: "right" },
+  "Holat",
+  "",
+];
+
+export const SERVICE_STUDENT_TABLE_COLUMNS = [
+  "O'quvchi",
+  "Sinf",
+  "Xizmatlari",
+  { label: "Xizmatlar jami", align: "right" },
+  "",
+];
+
 export const DISCOUNT_ASSIGNMENT_TABLE_COLUMNS = [
   "O'quvchi",
   "Chegirma",

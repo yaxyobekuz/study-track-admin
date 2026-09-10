@@ -13,6 +13,7 @@ import {
   paymentAccountsAPI,
   studentAccountsAPI,
   discountsAPI,
+  servicesAPI,
   vacationMonthsAPI,
   financeStatusAPI,
   financeSettingsAPI,
@@ -456,6 +457,78 @@ export const useDeleteDiscountAssignment = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id) => discountsAPI.deleteAssignment(id).then((r) => r.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+// ── Qo'shimcha xizmatlar ─────────────────────
+//
+// Har bir mutatsiyadan keyin server to'lanmagan hisob-fakturalarni AVTOMATIK
+// qayta hisoblaydi — shu sababli butun moliya invalidatsiya qilinadi.
+
+export const useCreateService = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => servicesAPI.create(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useUpdateService = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => servicesAPI.update(id, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useArchiveService = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isArchived }) =>
+      servicesAPI.archive(id, isArchived).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useDeleteService = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => servicesAPI.delete(id).then((r) => r.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useAssignService = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => servicesAPI.assign(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useUpdateServiceAssignment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      servicesAPI.updateAssignment(id, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useCloseServiceAssignment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, endMonth }) =>
+      servicesAPI.closeAssignment(id, endMonth).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useDeleteServiceAssignment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => servicesAPI.deleteAssignment(id).then((r) => r.data),
     onSuccess: () => invalidateFinance(qc),
   });
 };

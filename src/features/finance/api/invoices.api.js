@@ -113,6 +113,29 @@ export const discountsAPI = {
   deleteAssignment: (id) => http.delete(`/discounts/assignments/${id}`),
 };
 
+/**
+ * Qo'shimcha xizmatlar (yotoqxona, ovqat, ...) — katalog va o'quvchiga
+ * biriktirish. Xizmat summasi hisob-fakturaga tarif USTIGA qo'shiladi va
+ * o'zgarishlar avtomatik qayta hisoblanadi.
+ */
+export const servicesAPI = {
+  getAll: (params) => http.get("/services", { params }),
+  create: (data) => http.post("/services", data),
+  update: (id, data) => http.put(`/services/${id}`, data),
+  archive: (id, isArchived) =>
+    http.patch(`/services/${id}/archive`, { isArchived }),
+  delete: (id) => http.delete(`/services/${id}`),
+
+  // Barcha o'quvchilar + joriy oydagi xizmatlari (sahifaning asosiy jadvali)
+  getStudents: (params) => http.get("/services/students", { params }),
+
+  assign: (data) => http.post("/services/assignments", data),
+  updateAssignment: (id, data) => http.put(`/services/assignments/${id}`, data),
+  closeAssignment: (id, endMonth) =>
+    http.patch(`/services/assignments/${id}/close`, { endMonth }),
+  deleteAssignment: (id) => http.delete(`/services/assignments/${id}`),
+};
+
 /** Ta'til oylari — o'sha oyda hech kimga to'lov yozilmaydi. */
 export const vacationMonthsAPI = {
   getAll: (params) => http.get("/vacation-months", { params }),
