@@ -12,6 +12,9 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import SelectField from "@/shared/components/ui/select/SelectField";
 import Button from "@/shared/components/ui/button/Button";
 
+// Utils
+import { cn } from "@/shared/utils/cn";
+
 // Hooks
 import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 
@@ -143,26 +146,65 @@ const ImportContent = ({ close, isLoading, setIsLoading }) => {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3 rounded-xl bg-gray-50 p-4">
-          <CheckCircle2 className="size-8 text-emerald-500" strokeWidth={1.5} />
+          <CheckCircle2
+            className={cn(
+              "size-8",
+              result.created > 0 ? "text-emerald-500" : "text-gray-400",
+            )}
+            strokeWidth={1.5}
+          />
           <div>
             <p className="font-semibold text-gray-900">
               {result.created} ta savol qo'shildi
             </p>
+            {/* ⚠️ UCH SON HAM AYTILADI. Faqat "qo'shildi" ko'rsatilsa,
+                300 qatorli fayldan 40 tasi tushib qolgani jimgina o'tib
+                ketardi — foydalanuvchi buni faqat testda savol yetmay
+                qolganda sezardi. */}
             <p className="text-sm text-gray-500">
               Jami {result.total} qator o'qildi
+              {result.duplicates > 0
+                ? `, ${result.duplicates} tasi takroriy`
+                : ""}
               {result.failed > 0 ? `, ${result.failed} tasida xato` : ""}
             </p>
           </div>
         </div>
 
         {result.errors?.length > 0 && (
-          <div className="max-h-64 space-y-1.5 overflow-y-auto rounded-xl bg-rose-50 p-3">
-            {result.errors.map((error, i) => (
-              <p key={i} className="text-xs text-rose-800">
-                {error.line ? `${error.line}-qator: ` : ""}
-                {error.message}
-              </p>
-            ))}
+          <div>
+            <p className="mb-1.5 text-sm font-medium text-rose-700">
+              Qo'shilmagan qatorlar
+            </p>
+            <div className="max-h-48 space-y-1.5 overflow-y-auto rounded-xl bg-rose-50 p-3">
+              {result.errors.map((error, i) => (
+                <p key={i} className="text-xs text-rose-800">
+                  {error.line ? `${error.line}-qator: ` : ""}
+                  {error.message}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ⚠️ OGOHLANTIRISH XATO EMAS: savol SAQLANDI, lekin biror
+            tafsiloti tushmadi (masalan mavzu topilmadi) yoki qator
+            takroriy bo'lgani uchun o'tkazib yuborildi. Ikkalasini bitta
+            qizil ro'yxatga qo'shish "import yiqildi" degan taassurot
+            berardi. */}
+        {result.warnings?.length > 0 && (
+          <div>
+            <p className="mb-1.5 text-sm font-medium text-amber-700">
+              Diqqat qiling
+            </p>
+            <div className="max-h-48 space-y-1.5 overflow-y-auto rounded-xl bg-amber-50 p-3">
+              {result.warnings.map((warning, i) => (
+                <p key={i} className="text-xs text-amber-800">
+                  {warning.line ? `${warning.line}-qator: ` : ""}
+                  {warning.message}
+                </p>
+              ))}
+            </div>
           </div>
         )}
 

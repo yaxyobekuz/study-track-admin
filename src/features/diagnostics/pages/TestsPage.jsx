@@ -12,7 +12,16 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 // Icons
-import { Edit, Trash2, ClipboardList, Search } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  ClipboardList,
+  Search,
+  Rocket,
+  CalendarClock,
+  Archive,
+  Undo2,
+} from "lucide-react";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -23,6 +32,7 @@ import Pagination from "@/shared/components/ui/Pagination";
 import SelectField from "@/shared/components/ui/select/SelectField";
 import InputField from "@/shared/components/ui/input/InputField";
 import Can from "@/shared/components/guards/Can";
+import ConfirmPopover from "@/shared/components/ui/ConfirmPopover";
 import { Badge } from "../components/ToneBadge";
 import TestBuilder from "../components/TestBuilder";
 import TestFormModal from "../components/TestFormModal";
@@ -36,7 +46,10 @@ import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 
 // Queries
 import { testQueries } from "../queries/diagnostics.queries";
-import { useCreateTest } from "../queries/diagnostics.mutations";
+import {
+  useCreateTest,
+  useUpdateTestStatus,
+} from "../queries/diagnostics.mutations";
 
 // Data
 import {
@@ -75,6 +88,59 @@ const STATUS_TABS = [
   { value: "archived", label: "Tugallangan" },
 ];
 
+/**
+ * HOLATNI O'ZGARTIRISH AMALLARI.
+ *
+ * ⚠️ RO'YXAT SERVERNIKI BILAN AYNI (`STATUS_TRANSITIONS`,
+ * `diagnosticTest.service.js`). Bu yerda kengroq ro'yxat ko'rsatilsa,
+ * foydalanuvchi tugmani bosib "bu holatga o'tib bo'lmaydi" degan xatoni
+ * olardi — ya'ni panel imkonsiz ishni taklif qilardi.
+ *
+ * ⚠️ NASHR QILISH TUGMASI ILGARI UMUMAN YO'Q EDI: server tomonida to'liq
+ * `updateTestStatus` bo'lsa ham, panel uni hech qachon chaqirmasdi.
+ * Natijada yaratilgan test abadiy `draft` bo'lib qolar va o'quvchiga
+ * HECH QACHON ko'rinmasdi — testlar bo'limining butun mohiyati shu
+ * bitta tugmaga bog'liq edi.
+ */
+const STATUS_ACTIONS = {
+  active: {
+    icon: Rocket,
+    tooltip: "Nashr qilish",
+    title: "Test nashr qilinsinmi?",
+    description:
+      "Test darhol faol bo'ladi va o'quvchilar ro'yxatida ko'rinadi. Bankda yetarli savol bo'lmasa server nashrni to'xtatadi.",
+    confirmLabel: "Nashr qilish",
+    className: "text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50",
+  },
+  scheduled: {
+    icon: CalendarClock,
+    tooltip: "Rejaga qo'yish",
+    title: "Test rejaga qo'yilsinmi?",
+    description:
+      "Test belgilangan sanada avtomatik ochiladi. Sana ko'rsatilmagan bo'lsa avval uni tahrirlashdan kiriting.",
+    confirmLabel: "Rejaga qo'yish",
+    className: "text-blue-600 hover:border-blue-200 hover:bg-blue-50",
+  },
+  archived: {
+    icon: Archive,
+    tooltip: "Yopish",
+    title: "Test yopilsinmi?",
+    description:
+      "Test o'quvchilar ro'yxatidan chiqadi. Topshirilgan urinishlar va natijalar saqlanib qoladi.",
+    confirmLabel: "Yopish",
+    className: "text-amber-600 hover:border-amber-200 hover:bg-amber-50",
+  },
+  draft: {
+    icon: Undo2,
+    tooltip: "Qoralamaga qaytarish",
+    title: "Qoralamaga qaytarilsinmi?",
+    description:
+      "Test o'quvchilardan yopiladi va qaytadan tahrirlash mumkin bo'ladi.",
+    confirmLabel: "Qaytarish",
+    className: "text-gray-600 hover:border-gray-300 hover:bg-gray-50",
+  },
+};
+
 const TestsPage = () => {
   const { filterSlot } = useOutletContext();
   const { openModal } = useModal();
@@ -98,6 +164,22 @@ const TestsPage = () => {
   const { data: subjects = [] } = useSubjects();
   const { data: classes = [] } = useQuery(classesQueries.list());
   const { mutate: createTest, isPending: isCreating } = useCreateTest();
+  const { mutate: updateStatus } = useUpdateTestStatus();
+
+  /**
+   * ⚠️ SERVER RAD ETSA SABAB KO'RSATILADI. Nashr paytida bank
+   * tekshiriladi ("mos savol yetarli emas") — bu xabar aynan testni
+   * tuzayotgan odamga kerak, o'quvchiga emas.
+   */
+  const handleStatus = (test, status) =>
+    updateStatus(
+      { id: test.id, status },
+      {
+        onSuccess: () => toast.success(`"${test.title}" — holat yangilandi`),
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Holat o'zgarmadi"),
+      },
+    );
 
   /**
    * ⚠️ OGOHLANTIRISHLAR XATO EMAS — test YARATILDI, faqat bankda
@@ -292,6 +374,35 @@ const TestsPage = () => {
 
                   <Td align="center">
                     <span className="inline-flex gap-1.5">
+                      <Can do="diagnostics.update">
+                        {(TEST_STATUS_TRANSITIONS[test.status] || []).map(
+                          (next) => {
+                            const action = STATUS_ACTIONS[next];
+                            if (!action) return null;
+                            const Icon = action.icon;
+                            return (
+                              <ConfirmPopover
+                                key={next}
+                                tooltip={action.tooltip}
+                                title={action.title}
+                                description={action.description}
+                                confirmLabel={action.confirmLabel}
+                                onConfirm={() => handleStatus(test, next)}
+                              >
+                                <button
+                                  type="button"
+                                  className={cn(
+                                    "rounded-lg border border-gray-200 p-1.5 transition-colors",
+                                    action.className,
+                                  )}
+                                >
+                                  <Icon className="size-4" strokeWidth={1.5} />
+                                </button>
+                              </ConfirmPopover>
+                            );
+                          },
+                        )}
+                      </Can>
                       <Can do="diagnostics.update">
                         <button
                           type="button"

@@ -49,7 +49,10 @@ import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 
 // Queries
 import { questionQueries } from "../queries/diagnostics.queries";
-import { useUpdateQuestionStatus } from "../queries/diagnostics.mutations";
+import {
+  useUpdateQuestionStatus,
+  useBulkQuestionStatus,
+} from "../queries/diagnostics.mutations";
 
 // API
 import { diagnosticQuestionsAPI } from "../api/diagnostics.api";
@@ -86,9 +89,22 @@ const QuestionsPage = () => {
   const { filterSlot } = useOutletContext();
   const { openModal } = useModal();
   const { can } = usePermissions();
+  // ⚠️ Ommaviy tanlov FAQAT moderatsiya huquqi bilan ko'rinadi: belgilash
+  // katakchasi tasdiqlash tugmasini ochadi, u esa `diagnostics.moderate`
+  // ortida (savol yozish huquqi uni o'zi tasdiqlash huquqini bermaydi).
+  const canModerate = can("diagnostics.moderate");
 
   const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState(null);
+
+  /**
+   * OMMAVIY TANLOV — id lar MASSIVI (Set emas).
+   *
+   * ⚠️ Set'ni holatda saqlab, uni `add`/`delete` bilan o'zgartirish
+   * react-compiler qoidasini buzadi (render tugagach o'zgaruvchini qayta
+   * yozish) va React o'zgarishni sezmasdi. Har amal YANGI massiv qaytaradi.
+   */
+  const [selectedIds, setSelectedIds] = useState([]);
   const [filters, setFilters] = useState({
     search: "",
     subjectId: "",
@@ -120,13 +136,61 @@ const QuestionsPage = () => {
   const { data: stats } = useQuery(questionQueries.stats());
   const { data: subjects = [] } = useSubjects();
   const { mutate: updateStatus } = useUpdateQuestionStatus();
+  const { mutate: bulkStatus, isPending: isBulkPending } =
+    useBulkQuestionStatus();
 
   const rows = data?.data ?? [];
   const pagination = data?.pagination;
   const total = pagination?.total ?? 0;
   const totalAll = data?.totalAll ?? null;
 
+  /**
+   * ⚠️ SAHIFA/FILTR O'ZGARSA TANLOV TOZALANADI. Aks holda ko'rinmayotgan
+   * qatorlar tanlangan bo'lib qolar va "Tasdiqlash" tugmasi ekranda
+   * turmagan savollarga ham ta'sir qilardi.
+   */
+  const pageIds = rows.map((q) => q.id);
+  const selectedOnPage = selectedIds.filter((id) => pageIds.includes(id));
+  const allChecked = pageIds.length > 0 && selectedOnPage.length === pageIds.length;
+
+  const toggleAll = () =>
+    setSelectedIds(allChecked ? [] : pageIds);
+
+  const toggleOne = (id) =>
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+
+  /**
+   * ⚠️ SERVER HAR SAVOLNI ALOHIDA TEKSHIRADI va o'tmaganini `skipped`
+   * bilan qaytaradi (masalan "draft" dan to'g'ridan-to'g'ri "approved" ga
+   * o'tib bo'lmaydi). Shuning uchun natija SONLAR bilan aytiladi —
+   * "bajarildi" deb qo'yish 40 ta savol o'tmaganini yashirardi.
+   */
+  const handleBulk = (status) =>
+    bulkStatus(
+      { ids: selectedOnPage, status },
+      {
+        onSuccess: (res) => {
+          const updated = res?.data?.updated ?? 0;
+          const skipped = res?.data?.skipped?.length ?? 0;
+          if (updated > 0) toast.success(`${updated} ta savol yangilandi`);
+          if (skipped > 0) {
+            toast.warning(
+              `${skipped} tasi o'zgarmadi: ${res.data.skipped[0].reason}`,
+              { duration: 8000 },
+            );
+          }
+          if (!updated && !skipped) toast.info("O'zgarish bo'lmadi");
+          setSelectedIds([]);
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Amal bajarilmadi"),
+      },
+    );
+
   const setFilter = (key, value) => {
+    setSelectedIds([]);
     setFilters((prev) => ({ ...prev, [key]: value }));
     setPage(1);
   };
@@ -381,6 +445,39 @@ const QuestionsPage = () => {
         </Can>
       </div>
 
+      {/* ── OMMAVIY AMALLAR ────────────────── */}
+      {/* ⚠️ IMPORT QILINGAN SAVOL `draft` BO'LADI va testga faqat
+          `approved` savollar tushadi. Bu panelsiz 300 ta yuklangan savolni
+          bittalab, ikki bosqichda (qoralama → ko'rib chiqish → tasdiq)
+          o'tkazishga to'g'ri kelardi — ya'ni Excel'dan yuklashning butun
+          foydasi yo'qolardi. Ikki bosqich SAQLANADI (bank sifati aynan
+          shundan), lekin har biri endi bitta bosish. */}
+      {canModerate && selectedOnPage.length > 0 && (
+        <Card className="flex flex-wrap items-center gap-3 p-3.5 xs:p-4">
+          <p className="text-sm font-medium text-gray-900">
+            {selectedOnPage.length} ta savol tanlandi
+          </p>
+          <span className="flex-1" />
+          <Button
+            variant="secondary"
+            disabled={isBulkPending}
+            onClick={() => handleBulk("review")}
+          >
+            Ko'rib chiqishga
+          </Button>
+          <Button disabled={isBulkPending} onClick={() => handleBulk("approved")}>
+            Tasdiqlash
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={isBulkPending}
+            onClick={() => setSelectedIds([])}
+          >
+            Bekor qilish
+          </Button>
+        </Card>
+      )}
+
       {/* ── RO'YXAT ────────────────────────── */}
       {isLoading ? (
         <Card className="py-10 text-center text-gray-400">Yuklanmoqda…</Card>
@@ -406,6 +503,23 @@ const QuestionsPage = () => {
         <>
           <Table
             columns={[
+              ...(canModerate
+                ? [
+                    {
+                      key: "select",
+                      align: "center",
+                      label: (
+                        <input
+                          type="checkbox"
+                          checked={allChecked}
+                          onChange={toggleAll}
+                          aria-label="Sahifadagi barcha savollarni tanlash"
+                          className="size-4 rounded border-gray-300 accent-primary"
+                        />
+                      ),
+                    },
+                  ]
+                : []),
               { label: "#", align: "right" },
               "Savol",
               "Fan",
@@ -426,6 +540,18 @@ const QuestionsPage = () => {
                   setOpenId((prev) => (prev === question.id ? null : question.id))
                 }
               >
+                {canModerate && (
+                  <Td align="center" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(question.id)}
+                      onChange={() => toggleOne(question.id)}
+                      aria-label="Savolni tanlash"
+                      className="size-4 rounded border-gray-300 accent-primary"
+                    />
+                  </Td>
+                )}
+
                 <Td align="right" className="tabular-nums text-gray-400">
                   {(page - 1) * 25 + index + 1}
                 </Td>
@@ -537,7 +663,7 @@ const QuestionsPage = () => {
               {/* ── OCHILGAN PANEL ─────────────── */}
               {openId === question.id && (
                 <Tr className="bg-gray-50/60">
-                  <Td colSpan={10} nowrap={false} className="!py-4">
+                  <Td colSpan={canModerate ? 11 : 10} nowrap={false} className="!py-4">
                     <QuestionDetail question={question} />
                   </Td>
                 </Tr>
