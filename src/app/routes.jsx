@@ -185,6 +185,20 @@ import SeasonRewardsPage from "@/features/test-seasons/pages/SeasonRewardsPage";
 import StudentResultsPage from "@/features/test-seasons/pages/StudentResultsPage";
 import ResultAnswersPage from "@/features/test-seasons/pages/ResultAnswersPage";
 
+// Pages - Diagnostika
+import DiagnosticsLayout from "@/features/diagnostics/layouts/DiagnosticsLayout";
+import DiagnosticsOverviewPage from "@/features/diagnostics/pages/OverviewPage";
+import DiagnosticQuestionsPage from "@/features/diagnostics/pages/QuestionsPage";
+import DiagnosticTestsPage from "@/features/diagnostics/pages/TestsPage";
+import DiagnosticAttemptsPage from "@/features/diagnostics/pages/AttemptsPage";
+import DiagnosticAttemptDetailPage from "@/features/diagnostics/pages/AttemptDetailPage";
+import DiagnosticClassesPage from "@/features/diagnostics/pages/ClassesPage";
+import DiagnosticStudentsPage from "@/features/diagnostics/pages/StudentsPage";
+import DiagnosticTopicsPage from "@/features/diagnostics/pages/TopicsPage";
+import DiagnosticSubjectsPage from "@/features/diagnostics/pages/SubjectsPage";
+import DiagnosticClassDetailPage from "@/features/diagnostics/pages/ClassDetailPage";
+import DiagnosticStudentProfilePage from "@/features/diagnostics/pages/StudentProfilePage";
+
 // Router
 import { Routes as RoutesWrapper, Route, Navigate } from "react-router-dom";
 
@@ -567,6 +581,43 @@ const Routes = () => {
           <Route
             path="/test-seasons/:seasonId/students/:studentId/results"
             element={<StudentResultsPage />}
+          />
+
+          {/* DIAGNOSTIKA — mavjud test tizimidan ALOHIDA bo'lim.
+              "Testlar" mavsum bo'yicha baho qo'yadi, diagnostika esa
+              o'quvchi QAYERDA turganini o'lchaydi va reja beradi
+              (`features/diagnostics/data/diagnostics.data.js` izohi). */}
+          <Route element={<DiagnosticsLayout />}>
+            <Route path="/diagnostics" element={<DiagnosticsOverviewPage />} />
+            <Route
+              path="/diagnostics/questions"
+              element={<DiagnosticQuestionsPage />}
+            />
+            <Route path="/diagnostics/tests" element={<DiagnosticTestsPage />} />
+            <Route path="/diagnostics/classes" element={<DiagnosticClassesPage />} />
+            <Route path="/diagnostics/subjects" element={<DiagnosticSubjectsPage />} />
+            <Route path="/diagnostics/topics" element={<DiagnosticTopicsPage />} />
+            <Route path="/diagnostics/students" element={<DiagnosticStudentsPage />} />
+            <Route
+              path="/diagnostics/attempts"
+              element={<DiagnosticAttemptsPage />}
+            />
+          </Route>
+
+          {/* Natija va o'quvchi profili — LAYOUTDAN TASHQARIDA: ular
+              bo'lim tablari ostidagi ro'yxat emas, alohida ekran va
+              o'z "orqaga" havolasiga ega. */}
+          <Route
+            path="/diagnostics/attempts/:attemptId"
+            element={<DiagnosticAttemptDetailPage />}
+          />
+          <Route
+            path="/diagnostics/classes/:classId"
+            element={<DiagnosticClassDetailPage />}
+          />
+          <Route
+            path="/diagnostics/students/:studentId"
+            element={<DiagnosticStudentProfilePage />}
           />
         </Route>
 

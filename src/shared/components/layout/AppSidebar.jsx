@@ -18,6 +18,7 @@ import {
   Wallet,
   Boxes,
   Radar,
+  Brain,
   Timer,
   Clock,
 } from "lucide-react";
@@ -179,6 +180,63 @@ const navItems = [
       {
         title: "Test sozlamalari",
         url: "/test-settings",
+      },
+    ],
+  },
+  {
+    // DIAGNOSTIKA — "Ta'lim" guruhidan ALOHIDA bo'lim.
+    //
+    // ⚠️ "Test mavsumlari" bilan chalkashtirmang: u MAVSUM bo'yicha baho
+    // qo'yadi (natija jurnalga tushadi, tanga taqsimlanadi), diagnostika
+    // esa o'quvchi QAYERDA turganini o'lchaydi — baho qo'yilmaydi,
+    // kamchilik va o'quv rejasi chiqadi. Ular alohida ruxsat bo'limlari
+    // (`tests` va `diagnostics`) va bir-birining ma'lumotini ochmaydi.
+    //
+    // Bo'g'inlar ichki tablar bilan ochiladi (`DiagnosticsLayout`), lekin
+    // yon menyuda ham turadi: har biri o'z ruxsati ortida va
+    // `permissionForPath` ularni avtomatik filtrlaydi.
+    title: "Diagnostika",
+    url: "/diagnostics",
+    icon: Brain,
+    isActive: false,
+    items: [
+      {
+        title: "Umumiy manzara",
+        url: "/diagnostics",
+      },
+      {
+        title: "Savollar bazasi",
+        url: "/diagnostics/questions",
+      },
+      {
+        title: "Diagnostika testlari",
+        url: "/diagnostics/tests",
+      },
+      // ⚠️ KESIMLAR KENGDAN TORGA: sinf → fan → mavzu → o'quvchi.
+      // Tartib ichki tablar bilan AYNI — yon menyu va tab qatori
+      // boshqa-boshqa tartibda bo'lsa, foydalanuvchi har safar
+      // qidirib yurardi.
+      {
+        title: "Sinflar kesimi",
+        url: "/diagnostics/classes",
+      },
+      {
+        title: "Fanlar kesimi",
+        url: "/diagnostics/subjects",
+      },
+      {
+        title: "Mavzular kesimi",
+        url: "/diagnostics/topics",
+      },
+      {
+        // "Reytingi" — pastdagi "natijalari" bilan chalkashmasligi
+        // uchun: biri o'quvchilar ro'yxati, ikkinchisi urinishlar.
+        title: "O'quvchilar reytingi",
+        url: "/diagnostics/students",
+      },
+      {
+        title: "O'quvchilar natijalari",
+        url: "/diagnostics/attempts",
       },
     ],
   },

@@ -23,6 +23,7 @@ export const SECTIONS = {
   CLASSES: "classes",
   SUBJECTS: "subjects",
   TESTS: "tests",
+  DIAGNOSTICS: "diagnostics",
   MARKET: "market",
   TASKS: "tasks",
   PENALTIES: "penalties",
@@ -246,6 +247,34 @@ export const PERMISSION_SECTIONS = [
       { key: "distribute", label: "Tanga taqsimlash" },
       { key: "finalize", label: "Mavsumni yakunlash" },
       A.settings,
+    ],
+  },
+  {
+    // DIAGNOSTIKA — mavjud "Testlar" bo'limidan ALOHIDA.
+    //
+    // ⚠️ Ikkalasi bir xil ko'rinsa ham, boshqa savolga javob beradi:
+    // "Testlar" — MAVSUM bo'yicha baho qo'yish (natija jurnalga tushadi,
+    // tanga taqsimlanadi), "Diagnostika" — o'quvchi QAYERDA turganini
+    // o'lchash (baho qo'yilmaydi, kamchilik va reja chiqadi). Bitta
+    // bo'limga qo'shilsa, test mavsumini boshqaradigan odam avtomatik
+    // ravishda har bir o'quvchining zaif tomonlari ro'yxatini ham olardi.
+    //
+    // ⚠️ SERVER BILAN QO'LDA SINXRON: `server/src/utils/permissions.js`.
+    key: SECTIONS.DIAGNOSTICS,
+    label: "Diagnostika",
+    group: "Ta'lim",
+    actions: [
+      A.view,
+      A.create,
+      A.update,
+      A.delete,
+      { key: "questions", label: "Savollar bazasi" },
+      { key: "moderate", label: "Savolni tasdiqlash" },
+      { key: "attempts", label: "O'quvchilar natijalari" },
+      { key: "analytics", label: "Tahlil" },
+      { key: "ai", label: "AI tahlilini ishga tushirish" },
+      A.settings,
+      A.export,
     ],
   },
   {
@@ -755,6 +784,18 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/subjects", key: "subjects.view" },
   { prefix: "/test-seasons", key: "tests.view" },
   { prefix: "/test-settings", key: "tests.view" },
+  // Diagnostika — bo'limga kirish `diagnostics.view` bilan; ichki tablar
+  // o'z kalitini talab qiladi (eng UZUN mos prefiks yutadi).
+  { prefix: "/diagnostics", key: "diagnostics.view" },
+  { prefix: "/diagnostics/questions", key: "diagnostics.questions" },
+  { prefix: "/diagnostics/attempts", key: "diagnostics.attempts" },
+  // ⚠️ KESIM EKRANLARI `diagnostics.analytics` ORTIDA: ular butun
+  // registrni (sinf, fan, mavzu, o'quvchi) ochadi, `diagnostics.view`
+  // esa faqat bo'limga kirish huquqi.
+  { prefix: "/diagnostics/classes", key: "diagnostics.analytics" },
+  { prefix: "/diagnostics/subjects", key: "diagnostics.analytics" },
+  { prefix: "/diagnostics/topics", key: "diagnostics.analytics" },
+  { prefix: "/diagnostics/students", key: "diagnostics.analytics" },
   { prefix: "/market", key: "market.view" },
   { prefix: "/tasks", key: "tasks.view" },
   { prefix: "/penalties", key: "penalties.view" },

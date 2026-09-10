@@ -32,6 +32,14 @@ export const MODAL_NAMES = [
   "moveClassStudents",
   "removeClassStudents",
 
+  // Diagnostika
+  "diagnosticQuestion",
+  "deleteDiagnosticQuestion",
+  "importDiagnosticQuestions",
+  "diagnosticTest",
+  "deleteDiagnosticTest",
+  "deleteDiagnosticAttempt",
+
   // Subject / Topics
   "createSubject",
   "editSubject",
