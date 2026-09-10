@@ -134,8 +134,6 @@ export const MODAL_NAMES = [
   "assignTariff",
   "changeStudentTariff",
   "monthOverride",
-  "bulkMonthOverride",
-  "generateInvoices",
   "recordPayment",
   "editStudentFinanceStatus",
 
