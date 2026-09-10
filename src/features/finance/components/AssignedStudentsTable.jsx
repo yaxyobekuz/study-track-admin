@@ -109,6 +109,12 @@ const AssignedStudentsTable = ({
                   )}
                 </td>
 
+                <td className="px-4 py-3 whitespace-nowrap text-gray-600">
+                  {assignment.student?.classes?.[0]?.class?.name ?? (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </td>
+
                 <td className="px-4 py-3 whitespace-nowrap text-gray-500">
                   {formatMonthRange(assignment.startMonth, assignment.endMonth)}
                 </td>

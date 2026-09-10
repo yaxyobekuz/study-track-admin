@@ -16,6 +16,7 @@ import Can from "@/shared/components/guards/Can";
 import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
 import InputSearch from "@/shared/components/ui/input/InputSearch";
+import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 import TariffVersionsTable from "../components/TariffVersionsTable";
 import AssignedStudentsTable from "../components/AssignedStudentsTable";
 import AddTariffVersionModal from "../components/AddTariffVersionModal";
@@ -35,6 +36,7 @@ import { formatMonthRange } from "@/shared/helpers/month.helpers";
 // Data & queries
 import { getTariffStatus } from "../data/finance.data";
 import { financeQueries } from "../queries/finance.queries";
+import { classesQueries } from "@/features/classes/queries/classes.queries";
 
 /**
  * Tarif detali — to'liq sahifa.
@@ -50,11 +52,14 @@ const TariffDetailPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
 
-  // Qidiruv URL'da emas, lokal holatda: u sahifaga emas, shu jadvalga tegishli
+  // Qidiruv va sinf filtri URL'da emas, lokal holatda: ular sahifaga emas,
+  // shu jadvalga tegishli
   const [search, setSearch] = useState("");
+  const [classId, setClassId] = useState("");
   const debouncedSearch = useDebounce(search, 400);
 
   const { data: tariff, isLoading } = useQuery(financeQueries.tariffDetail(id));
+  const { data: classes = [] } = useQuery(classesQueries.list());
 
   // Biriktirilgan o'quvchilar — summasi joriy oyga hal qilingan holda
   const { data: assignmentData, isFetching: isAssignmentsFetching } = useQuery(
@@ -63,6 +68,7 @@ const TariffDetailPage = () => {
       page,
       limit: 24,
       ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      ...(classId ? { classId } : {}),
     }),
   );
 
@@ -73,9 +79,7 @@ const TariffDetailPage = () => {
    * Yangi so'rovda sahifa birinchisiga qaytadi — aks holda 3-sahifada
    * turib qidirilganda natija bor-u, sahifa bo'sh ko'rinardi.
    */
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value);
-
+  const resetPage = () => {
     if (page !== 1) {
       setSearchParams(
         (prev) => {
@@ -85,6 +89,16 @@ const TariffDetailPage = () => {
         { replace: true },
       );
     }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    resetPage();
+  };
+
+  const handleClassChange = (value) => {
+    setClassId(value);
+    resetPage();
   };
 
   if (isLoading) {
@@ -238,12 +252,37 @@ const TariffDetailPage = () => {
             )}
           </div>
 
-          <div className="w-full sm:w-72">
-            <InputSearch
-              value={search}
-              onChange={handleSearchChange}
-              placeholder="Ism yoki username..."
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+            {/* Sinf tanlanganda — shu tarifni BUTUN sinfga biriktirish */}
+            {classId && (
+              <Can do="tariffs.assign">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    openModal("assignTariff", { tariff, classId, scope: "class" })
+                  }
+                >
+                  <UserPlus className="size-4" />
+                  Bu sinfga biriktirish
+                </Button>
+              </Can>
+            )}
+
+            <SelectSearch
+              value={classId}
+              triggerClassName="min-w-44"
+              placeholder="Barcha sinflar"
+              onChange={handleClassChange}
+              options={classes.map((c) => ({ label: c.name, value: c.id }))}
             />
+
+            <div className="w-full sm:w-64">
+              <InputSearch
+                value={search}
+                onChange={handleSearchChange}
+                placeholder="Ism yoki username..."
+              />
+            </div>
           </div>
         </div>
 
