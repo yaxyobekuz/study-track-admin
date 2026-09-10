@@ -148,6 +148,7 @@ import AccountsPage from "@/features/finance/pages/AccountsPage";
 import TariffsPage from "@/features/finance/pages/TariffsPage";
 import TariffDetailPage from "@/features/finance/pages/TariffDetailPage";
 import DiscountsPage from "@/features/finance/pages/DiscountsPage";
+import ServicesPage from "@/features/finance/pages/ServicesPage";
 import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
 import ExternalIncomePage from "@/features/externalIncome/pages/ExternalIncomePage";
 import PayrollPage from "@/features/payroll/pages/PayrollPage";
@@ -496,6 +497,7 @@ const Routes = () => {
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="tariffs" element={<TariffsPage />} />
             <Route path="discounts" element={<DiscountsPage />} />
+            <Route path="services" element={<ServicesPage />} />
             <Route path="settings" element={<FinanceSettingsPage />} />
             {/* Eski havolalar uchun */}
             <Route

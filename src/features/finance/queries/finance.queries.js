@@ -16,6 +16,7 @@ import {
   paymentAccountsAPI,
   studentAccountsAPI,
   discountsAPI,
+  servicesAPI,
   vacationMonthsAPI,
   financeStatusAPI,
   financeSettingsAPI,
@@ -33,6 +34,7 @@ const paymentsKey = [...financeKeys.all, "payments"];
 const accountsKey = [...financeKeys.all, "accounts"];
 const depositsKey = [...financeKeys.all, "deposits"];
 const discountsKey = [...financeKeys.all, "discounts"];
+const servicesKey = [...financeKeys.all, "services"];
 const vacationsKey = [...financeKeys.all, "vacations"];
 const statusesKey = [...financeKeys.all, "statuses"];
 const settingsKey = [...financeKeys.all, "settings"];
@@ -299,6 +301,24 @@ export const financeQueries = {
       queryKey: [...discountsKey, "student", studentId],
       queryFn: () => discountsAPI.getForStudent(studentId).then((r) => r.data.data),
       enabled: Boolean(studentId),
+    }),
+
+  // ── Qo'shimcha xizmatlar ───────────────────
+
+  /** Xizmatlar katalogi (biriktirilganlar soni bilan). */
+  serviceList: (params) =>
+    queryOptions({
+      queryKey: [...servicesKey, "list", params],
+      queryFn: () => servicesAPI.getAll(params).then((r) => r.data.data ?? []),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Barcha o'quvchilar + joriy oydagi xizmatlari → `{ data, pagination }`. */
+  serviceStudents: (params) =>
+    queryOptions({
+      queryKey: [...servicesKey, "students", params],
+      queryFn: () => servicesAPI.getStudents(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
     }),
 
   // ── Ta'til oylari ──────────────────────────

@@ -87,6 +87,13 @@ export const MAIN_TABS = [
     exact: false,
   },
   {
+    to: "/finance/main/services",
+    label: "Qo'shimcha xizmatlar",
+    title: "Moliya",
+    can: "services.view",
+    exact: false,
+  },
+  {
     to: "/finance/main/settings",
     label: "Sozlamalar",
     title: "Moliya",

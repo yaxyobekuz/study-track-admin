@@ -145,6 +145,12 @@ export const MODAL_NAMES = [
   "recordPayment",
   "editStudentFinanceStatus",
 
+  // Moliya - qo'shimcha xizmatlar (yotoqxona, ovqat, ...)
+  "createService",
+  "editService",
+  "assignService",
+  "editServiceAssignment",
+
   // Moliya - chegirmalar
   "createDiscount",
   "editDiscount",
