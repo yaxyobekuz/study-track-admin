@@ -202,16 +202,6 @@ export const useUpsertMonthOverride = () => {
   });
 };
 
-/** OMMAVIY: tanlangan o'quvchilar (yoki sinf) uchun bir oy bir summa (grant). */
-export const useBulkMonthOverride = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data) =>
-      studentMonthOverridesAPI.bulk(data).then((r) => r.data.data),
-    onSuccess: () => invalidateFinance(qc),
-  });
-};
-
 /** Override'ni olib tashlash — o'sha oy odatdagi tarifga qaytadi. */
 export const useDeleteMonthOverride = () => {
   const qc = useQueryClient();
@@ -222,18 +212,11 @@ export const useDeleteMonthOverride = () => {
 };
 
 // ── Hisob-fakturalar ─────────────────────────
-
-/** Majburiyat shakllantirish. `dryRun` bilan chaqirilsa hech narsa yozilmaydi. */
-export const useGenerateInvoices = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data) => invoicesAPI.generate(data).then((r) => r.data.data),
-    onSuccess: (summary) => {
-      // dryRun hech narsa o'zgartirmagan — keshni bekorga tashlamaymiz
-      if (!summary?.dryRun) invalidateFinance(qc);
-    },
-  });
-};
+//
+// ⚠️ Qo'lda "Shakllantirish" / "Oyni qayta shakllantirish" / "Qarzlarni
+// tozalash" hooklari OLIB TASHLANGAN: hisob-fakturalar cron orqali avtomatik
+// shakllanadi va tarif/narx/chegirma o'zgarishida server tomonda AVTOMATIK
+// qayta shakllantiriladi. Qo'lda tugma yo'q.
 
 export const useUpdateInvoiceNote = () => {
   const qc = useQueryClient();
@@ -279,32 +262,6 @@ export const useRegenerateInvoice = () => {
   return useMutation({
     mutationFn: ({ id, reason }) =>
       invoicesAPI.regenerate(id, reason).then((r) => r.data.data),
-    onSuccess: () => invalidateFinance(qc),
-  });
-};
-
-/**
- * OMMAVIY AMALLAR — bitta oyning hamma hisob-fakturasi ustida.
- *
- * ⚠️ Ikkalasi ham qaytmaydigan amal, shuning uchun chaqiruvchi tomonda
- * sabab so'raladi (`financeReason` modali) va natija paket hisoboti
- * sifatida ochiq ko'rsatiladi: nechtasi bajarildi, nechtasi o'tkazib
- * yuborildi va NEGA. Jim "bajarildi" xabari bu yerda yetarli emas —
- * to'lov tushgan qatorlar ataylab chetda qoladi.
- */
-export const useCancelInvoiceMonth = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data) => invoicesAPI.cancelMonth(data).then((r) => r.data.data),
-    onSuccess: () => invalidateFinance(qc),
-  });
-};
-
-export const useRegenerateInvoiceMonth = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data) =>
-      invoicesAPI.regenerateMonth(data).then((r) => r.data.data),
     onSuccess: () => invalidateFinance(qc),
   });
 };

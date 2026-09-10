@@ -23,22 +23,14 @@ export const invoicesAPI = {
   getForStudent: (studentId, params) =>
     http.get(`/invoices/student/${studentId}`, { params }),
 
-  // Natija — paket hisoboti, yaratilgan resurs emas
-  generate: (data) => http.post("/invoices/generate", data),
-
   // Faqat izoh — summa/oy/o'quvchi o'zgarmas
   updateNote: (id, note) => http.patch(`/invoices/${id}`, { note }),
   cancel: (id, reason) => http.post(`/invoices/${id}/cancel`, { reason }),
-  // Summa muhrlangani uchun uni tahrirlab bo'lmaydi — bekor qilib qayta yaratish
+  // Summa muhrlangani uchun uni tahrirlab bo'lmaydi — bekor qilib qayta yaratish.
+  // Qo'lda tugma yo'q: bu endpoint tarif/chegirma o'zgarishida AVTOMATIK
+  // ishga tushadigan regeneratsiya dvigateli (server tomonda chaqiriladi).
   regenerate: (id, reason) => http.post(`/invoices/${id}/regenerate`, { reason }),
   restore: (id) => http.post(`/invoices/${id}/restore`),
-
-  // ── OMMAVIY AMALLAR (bitta oy bo'yicha) ──
-  // Bittalab bosib chiqish 100+ o'quvchida amalda bajarib bo'lmaydigan ish.
-  // Natija — paket hisoboti (nechtasi bajarildi, nechtasi o'tkazib
-  // yuborildi), yaratilgan resurs emas.
-  cancelMonth: (data) => http.post("/invoices/cancel-month", data),
-  regenerateMonth: (data) => http.post("/invoices/regenerate-month", data),
 
   // Hisob-fakturaga tushgan to'lovlar (chek raqami bilan)
   getPayments: (id, params) => http.get(`/invoices/${id}/payments`, { params }),
