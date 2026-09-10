@@ -93,7 +93,7 @@ const Content = ({ close, isLoading, setIsLoading, period }) => {
 
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Ketish sababi</p>
-        <Select
+        <Select searchable
           value={endReason}
           placeholder="Sababni tanlang"
           options={END_REASON_OPTIONS}

@@ -98,7 +98,7 @@ const Form = ({ close, isLoading, setIsLoading, discount }) => {
       <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
         <div className="space-y-1.5">
           <p className="text-sm font-medium text-gray-700">Turi</p>
-          <Select
+          <Select searchable
             value={type}
             options={DISCOUNT_TYPE_OPTIONS}
             onChange={(v) => setField("type", v)}
@@ -109,7 +109,7 @@ const Form = ({ close, isLoading, setIsLoading, discount }) => {
           required
           min="0"
           step="0.01"
-          type="number"
+          type="amount"
           name="value"
           value={value}
           max={type === "percent" ? "100" : undefined}

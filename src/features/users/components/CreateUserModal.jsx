@@ -1,11 +1,15 @@
 // Toast
 import { toast } from "sonner";
 
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
+
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 import { useClasses } from "@/features/classes/queries/classes.queries";
 import { useCreateUser } from "@/features/users/queries/users.mutations";
+import { financeQueries } from "@/features/finance/queries/finance.queries";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -19,6 +23,16 @@ import { Field, FieldLabel } from "@/shared/components/shadcn/field";
 import { genderOptions } from "../data/users.data";
 import { WORK_DAYS_OPTIONS } from "@/features/attendance/data/attendance.data";
 
+/** Bugungi sana `<input type="date">` qiymati sifatida (mahalliy, YYYY-MM-DD). */
+const todayInputValue = () => {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+};
+
+/** Bugungi oy `<input type="month">` qiymati sifatida (YYYY-MM). */
+const currentMonthInputValue = () => todayInputValue().slice(0, 7);
+
 const CreateUserModal = () => (
   <ResponsiveModal name="createUser" title="Yangi foydalanuvchi">
     <Content />
@@ -29,6 +43,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
   const { data: classes = [] } = useClasses();
   const { data: rolesData = [] } = useRoles();
   const roles = rolesData.filter((r) => r.value !== "owner");
+  const { data: tariffs = [] } = useQuery(financeQueries.assignableTariffs());
 
   const { mutate: createUser } = useCreateUser();
 
@@ -53,6 +68,11 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     workEndTime: "",
     workStartTime: "",
     hasCustomSchedule: false,
+    // O'quvchi moliyasi
+    enrollmentDate: todayInputValue(),
+    firstMonthKey: currentMonthInputValue(),
+    firstMonthAmount: "",
+    tariffId: "",
   });
 
   const toggleWorkDay = (day) => {
@@ -86,6 +106,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     }
 
     setIsLoading(true);
+    const isStudent = role === "student";
     const data = {
       ...state,
       password: password?.trim(),
@@ -96,6 +117,13 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       workEndTime: state.hasCustomSchedule ? state.workEndTime || null : null,
       workDays: state.hasCustomSchedule ? state.workDays : null,
       hasCustomSchedule: undefined,
+      // Moliya maydonlari faqat o'quvchi uchun yuboriladi
+      enrollmentDate: isStudent ? state.enrollmentDate || undefined : undefined,
+      firstMonthKey: isStudent ? state.firstMonthKey || undefined : undefined,
+      firstMonthAmount: isStudent
+        ? state.firstMonthAmount || undefined
+        : undefined,
+      tariffId: isStudent ? state.tariffId || undefined : undefined,
     };
 
     createUser(data, {
@@ -172,14 +200,59 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       />
 
       {role === "student" && (
-        <MultiSelect
-          required
-          label="Sinflar"
-          value={state.classes}
-          placeholder="Sinflarni tanlang..."
-          onChange={(v) => setField("classes", v)}
-          options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
-        />
+        <>
+          <MultiSelect
+            required
+            label="Sinflar"
+            value={state.classes}
+            placeholder="Sinflarni tanlang..."
+            onChange={(v) => setField("classes", v)}
+            options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
+          />
+
+          {/* ── Moliya: kirgan sana + to'lov oyi + birinchi oy summasi + tarif ── */}
+          <div className="rounded-xl bg-gray-50 p-3 space-y-3.5">
+            <p className="text-xs font-medium text-gray-500">
+              Moliya — birinchi (to'lov) oyi qo'lda, keyingi oylar tarif bo'yicha
+            </p>
+
+            <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
+              <InputField
+                type="date"
+                name="enrollmentDate"
+                label="Kirgan sana"
+                value={state.enrollmentDate}
+                onChange={(e) => setField("enrollmentDate", e.target.value)}
+              />
+              <InputField
+                type="month"
+                name="firstMonthKey"
+                label="Birinchi to'lov oyi"
+                value={state.firstMonthKey}
+                onChange={(e) => setField("firstMonthKey", e.target.value)}
+              />
+            </div>
+
+            <InputField
+              min="0"
+              step="0.01"
+              type="number"
+              name="firstMonthAmount"
+              label="Birinchi oy to'lovi (so'm)"
+              value={state.firstMonthAmount}
+              placeholder="Masalan: 300000"
+              onChange={(e) => setField("firstMonthAmount", e.target.value)}
+            />
+
+            <SelectField
+              label="Tarif"
+              value={state.tariffId}
+              placeholder="Tarifni tanlang"
+              onChange={(v) => setField("tariffId", v)}
+              options={tariffs.map((t) => ({ label: t.name, value: t.id }))}
+            />
+          </div>
+        </>
       )}
 
       {showScheduleSection && (

@@ -5,7 +5,11 @@ import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 import { createQueryKeys } from "@/shared/lib/query";
 
 // API
-import { tariffsAPI, studentTariffsAPI } from "../api/finance.api";
+import {
+  tariffsAPI,
+  studentTariffsAPI,
+  studentMonthOverridesAPI,
+} from "../api/finance.api";
 import {
   invoicesAPI,
   paymentsAPI,
@@ -92,6 +96,15 @@ export const financeQueries = {
       enabled: Boolean(studentId),
     }),
 
+  /** Bitta o'quvchining oy summasi override'lari (id bilan — o'chirish uchun). */
+  studentMonthOverrides: (studentId) =>
+    queryOptions({
+      queryKey: [...assignmentsKey, "month-overrides", studentId],
+      queryFn: () =>
+        studentMonthOverridesAPI.getForStudent(studentId).then((r) => r.data.data),
+      enabled: Boolean(studentId),
+    }),
+
   // ── Hisob-fakturalar ───────────────────────
 
   /** Majburiyatlar ro'yxati → `{ data, pagination, totals }`. */
@@ -108,6 +121,23 @@ export const financeQueries = {
       queryKey: [...invoicesKey, "summary", month],
       queryFn: () =>
         invoicesAPI.getSummary({ month }).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Moliya bosh sahifasi: sanoq + pul + sinf/yo'nalish kesimi (bir oy). */
+  overviewDashboard: (month) =>
+    queryOptions({
+      queryKey: [...invoicesKey, "overview", month],
+      queryFn: () =>
+        invoicesAPI.getOverview({ month }).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** O'quvchilar registri (sinf detali) → `{ data, pagination, totals }`. */
+  studentRegistry: (params) =>
+    queryOptions({
+      queryKey: [...invoicesKey, "registry", params],
+      queryFn: () => invoicesAPI.getStudentRegistry(params).then((r) => r.data),
       placeholderData: keepPreviousData,
     }),
 

@@ -141,6 +141,8 @@ export const MODAL_NAMES = [
   "editTariffVersion",
   "assignTariff",
   "changeStudentTariff",
+  "monthOverride",
+  "bulkMonthOverride",
   "generateInvoices",
   "recordPayment",
   "editStudentFinanceStatus",
@@ -164,10 +166,18 @@ export const MODAL_NAMES = [
 
   // Moliya - chiqim (oylik va xarajatlar)
   "staffSalary",
+  "salaryCategory",
+  // Payroll v2 — bo'lim/lavozim/toifa strukturasi
+  "department",
+  "position",
+  "categoryV2",
+  "assignStaff",
   "salaryPayment",
   "voidSalaryPayment",
   "cancelPayrollEntry",
   "regeneratePayrollEntry",
+  // Payroll v2 — oylik zayavkalarini ko'rib chiqish (paneldan tasdiqlash)
+  "reviewPayrollRequest",
   "expense",
   "voidExpense",
   "expenseCategory",

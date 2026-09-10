@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Icons
-import { Ban, Pencil, Plus, RefreshCw, Trash2, Users, Wallet, XCircle } from "lucide-react";
+import { Ban, Pencil, Plus, RefreshCw, Users, Wallet, XCircle, Award, Archive, Trash2 } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -19,14 +19,21 @@ import Select from "@/shared/components/ui/select/Select";
 import Pagination from "@/shared/components/ui/Pagination";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
-import ConfirmPopover from "@/shared/components/ui/ConfirmPopover";
 import {
   SalaryRuleModal,
+  SalaryCategoryModal,
   SalaryPaymentModal,
   VoidSalaryPaymentModal,
   CancelPayrollEntryModal,
-  RegeneratePayrollEntryModal,
 } from "../components/PayrollModals";
+import {
+  DepartmentModal,
+  PositionModal,
+  CategoryV2Modal,
+  AssignStaffModal,
+} from "../components/PayrollV2Modals";
+import StaffDepartmentView from "../components/StaffDepartmentView";
+import TeachingDepartmentView from "../components/TeachingDepartmentView";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -47,16 +54,21 @@ import {
   ENTRY_STATUS_OPTIONS,
   ENTRY_TABLE_COLUMNS,
   PAYROLL_TABS,
+  PAYROLL_MAIN_TABS,
+  DIRECTION_OPTIONS,
   RULE_TABLE_COLUMNS,
-  getRuleFormula,
-  getRuleFormulaHint,
+  SALARY_TYPE_META,
+  CATEGORY_TABLE_COLUMNS,
+  CATEGORY_STATUS_OPTIONS,
   getRuleStatus,
 } from "../data/payroll.data";
 import { payrollQueries } from "../queries/payroll.queries";
 import {
   useGeneratePayroll,
   useCloseSalary,
-  useDeleteSalary,
+  useArchiveCategory,
+  useDeleteCategory,
+  useDeleteDepartment,
 } from "../queries/payroll.mutations";
 
 /**
@@ -66,30 +78,111 @@ import {
  * Shu tufayli "kimga qancha qarzdormiz" degan savolga javob bor.
  */
 const PayrollPage = () => {
-  const [tab, setTab] = useState("entries");
+  const [tab, setTab] = useState("structure");
 
-  const tabs = PAYROLL_TABS.map((item) => ({
+  const tabs = PAYROLL_MAIN_TABS.map((item) => ({
     ...item,
-    content: item.value === "entries" ? <EntriesView /> : <RulesView />,
+    content: item.value === "structure" ? <StructureView /> : <EntriesView />,
   }));
 
   return (
     <div className="space-y-4">
-      <TabsButtons
-        items={tabs}
-        value={tab}
-        onChange={setTab}
-        contentClassName="mt-4"
-      />
+      <TabsButtons items={tabs} value={tab} onChange={setTab} contentClassName="mt-4" />
 
+      {/* Struktura modallari */}
+      <DepartmentModal />
+      <PositionModal />
+      <CategoryV2Modal />
+      <AssignStaffModal />
+      {/* Majburiyat/to'lov modallari */}
       <SalaryRuleModal />
+      <SalaryCategoryModal />
       <SalaryPaymentModal />
       <VoidSalaryPaymentModal />
       <CancelPayrollEntryModal />
-      <RegeneratePayrollEntryModal />
     </div>
   );
 };
+
+// ─────────────────────────────────────────────
+// STRUKTURA — Yo'nalish × Bo'lim → dinamik kontent
+// ─────────────────────────────────────────────
+
+const StructureView = () => {
+  const { openModal } = useModal();
+  const [direction, setDirection] = useState("salary");
+  const [departmentId, setDepartmentId] = useState("");
+  const [month, setMonth] = useState(monthKeyToInputValue(currentMonthKey()));
+  const monthKey = inputValueToMonthKey(month);
+
+  const { data: departments = [] } = useQuery(payrollQueries.departments());
+  const { mutate: deleteDepartment } = useDeleteDepartment();
+
+  const department = departments.find((d) => d.id === departmentId);
+
+  const handleDeleteDept = () => {
+    if (!department) return;
+    if (!window.confirm(`"${department.name}" bo'limini o'chirasizmi?`)) return;
+    deleteDepartment(department.id, {
+      onSuccess: () => { toast.success("O'chirildi"); setDepartmentId(""); },
+      onError: (err) => toast.error(err.response?.data?.message || "Xatolik"),
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Filterlar */}
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-gray-500">Yo'nalish</p>
+          <Select triggerClassName="min-w-44" value={direction} options={DIRECTION_OPTIONS} onChange={setDirection} />
+        </div>
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-gray-500">Bo'lim</p>
+          <Select searchable triggerClassName="min-w-52" value={departmentId} placeholder="Bo'limni tanlang"
+            onChange={setDepartmentId}
+            options={departments.map((d) => ({ label: `${d.name} (${d.kind === "staff" ? "lavozim" : "toifa"})`, value: d.id }))}
+          />
+        </div>
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-gray-500">Oy</p>
+          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
+            className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary" />
+        </div>
+
+        <div className="ml-auto flex items-center gap-2">
+          {department && (
+            <Can do="payroll.assign">
+              <Button variant="outline" onClick={handleDeleteDept}><Trash2 className="size-4" /></Button>
+            </Can>
+          )}
+          <Can do="payroll.assign">
+            <Button onClick={() => openModal("department", {})}><Plus /> Bo'lim</Button>
+          </Can>
+        </div>
+      </div>
+
+      {/* Kontent */}
+      {direction === "bonus" ? (
+        <BonusInfo />
+      ) : !department ? (
+        <Card className="py-12 text-center text-gray-500">Yuqoridan bo'lim tanlang</Card>
+      ) : department.kind === "staff" ? (
+        <StaffDepartmentView department={department} month={monthKey} />
+      ) : (
+        <TeachingDepartmentView department={department} month={monthKey} />
+      )}
+    </div>
+  );
+};
+
+// Ustama haq yo'nalishi — to'liq ko'rinish Zayavka fazasida ulanadi
+const BonusInfo = () => (
+  <Card className="py-10 text-center text-gray-500">
+    Ustama haqlar — o'qituvchilardan kelgan tasdiqlangan zayavkalar asosida.
+    Ustama yo'nalishi "Zayavkalar" bo'limi bilan bog'liq.
+  </Card>
+);
 
 // ─────────────────────────────────────────────
 // Oyliklar — majburiyatlar va to'lovlar
@@ -122,49 +215,12 @@ const EntriesView = () => {
       { month: monthKey },
       {
         onSuccess: (result) => {
-          const { alreadyExists, noSalary, archived, monthOpen, noHours } =
-            result.skipped;
-          const restored = result.restored ?? 0;
-
-          // ⚠️ "Allaqachon shakllantirilgan" YETARLI EMAS: shakllantirish
-          // idempotent, ya'ni uni qayta bosish YANGI xodimlarga majburiyat
-          // yaratadi. Nima bo'lgani va NIMA BO'LMAGANI aytilmasa,
-          // foydalanuvchi tugma umuman ishlamadi deb o'ylardi.
-          //
-          // ⚠️ BEKOR QILINGANI endi TO'SIQ EMAS — u shu tugmaning o'zi
-          // bilan qayta hisoblanib tiklanadi. Shuning uchun "qatordagi
-          // Qayta shakllantirishdan foydalaning" degan yo'riqnoma olib
-          // tashlandi: u boshi berk ko'chaga boshlardi.
-          if (result.created > 0 || restored > 0) {
-            const parts = [];
-            if (result.created > 0) parts.push(`${result.created} ta shakllantirildi`);
-            if (restored > 0) parts.push(`${restored} tasi bekordan qaytarildi`);
-
-            toast.success(`${result.monthLabel}: ${parts.join(", ")}`);
-          } else if (alreadyExists > 0) {
-            toast.info(
-              `${result.monthLabel}: yangi majburiyat yo'q — ${alreadyExists} ta allaqachon bor`,
+          if (result.created > 0) {
+            toast.success(
+              `${result.monthLabel}: ${result.created} ta oylik shakllantirildi`,
             );
-          } else if (monthOpen > 0) {
-            // ⚠️ SOATBAY OY YOPILGANDAN KEYIN MUHRLANADI. Bu sabab jim
-            // qolsa, "shakllantirish ishlamayapti" degan xulosa chiqardi —
-            // holbuki tizim ataylab kutyapti, soat hali o'zgaradi.
-            toast.info(
-              `${result.monthLabel}: ${monthOpen} ta soatbay xodim oy yakunlanishini kutyapti`,
-              {
-                description:
-                  "Dars soatiga bog'liq oylik oy tugagach shakllantiriladi — soat hali o'zgarishi mumkin.",
-              },
-            );
-          } else if (noHours > 0) {
-            toast.warning(
-              `${result.monthLabel}: ${noHours} ta soatbay xodimda dars soati yo'q — majburiyat yozilmadi`,
-            );
-          } else if (noSalary > 0 || archived > 0) {
-            toast.warning(
-              `Majburiyat yaratilmadi: ${noSalary} ta xodimda oylik qoidasi yo'q` +
-                (archived > 0 ? `, ${archived} tasi arxivlangan` : ""),
-            );
+          } else if (result.skipped.alreadyExists > 0) {
+            toast.info("Bu oy allaqachon shakllantirilgan");
           } else {
             toast.warning("Oylik belgilangan xodim topilmadi");
           }
@@ -177,8 +233,7 @@ const EntriesView = () => {
 
   return (
     <div className="space-y-4">
-      {/* Filtr paneli */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="month"
@@ -190,7 +245,7 @@ const EntriesView = () => {
             className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
           />
 
-          <Select
+          <Select searchable
             triggerClassName="min-w-40"
             value={status}
             options={ENTRY_STATUS_OPTIONS}
@@ -271,14 +326,25 @@ const EntriesView = () => {
                   </Td>
 
                   <Td className="text-gray-500">{entry.monthLabel}</Td>
-                  <Td align="right" className="font-medium">
+                  <Td className="font-medium">
                     {formatMoney(entry.amount)}
+                    {(Number(entry.kpiAmount) > 0 || Number(entry.allowanceAmount) > 0) && (
+                      <span className="block text-xs font-normal text-gray-400">
+                        {Number(entry.fixedAmount) > 0
+                          ? `Fiksa ${formatMoney(entry.fixedAmount)}`
+                          : ""}
+                        {Number(entry.allowanceAmount) > 0
+                          ? ` + ustama ${formatMoney(entry.allowanceAmount)}`
+                          : ""}
+                        {Number(entry.kpiAmount) > 0
+                          ? ` + KPI ${formatMoney(entry.kpiAmount)} (${entry.lessonHours} soat${entry.categoryName ? ", " + entry.categoryName : ""})`
+                          : ""}
+                      </span>
+                    )}
                   </Td>
-                  <Td align="right" className="text-green-600">
-                    {formatMoney(entry.paidAmount)}
-                  </Td>
+                  <Td className="text-green-600">{formatMoney(entry.paidAmount)}</Td>
 
-                  <Td align="right">
+                  <Td>
                     {isCancelled ? (
                       <span className="text-gray-400">—</span>
                     ) : (
@@ -298,24 +364,6 @@ const EntriesView = () => {
 
                   <Td>
                     <div className="flex items-center justify-end gap-1">
-                      {/* QAYTA SHAKLLANTIRISH — bekor qilinganini qaytarish
-                          yoki qoida to'g'rilangandan keyin summani yangilash.
-                          To'lov tushgan qatorda ko'rinmaydi: summani
-                          o'zgartirish taqsimotni yolg'onga aylantirardi. */}
-                      {Number(entry.paidAmount) === 0 && (
-                        <Can do="payroll.generate">
-                          <button
-                            title="Qayta shakllantirish"
-                            onClick={() =>
-                              openModal("regeneratePayrollEntry", { entry })
-                            }
-                            className="rounded-lg p-1.5 text-gray-400 hover:bg-blue-50 hover:text-blue-600"
-                          >
-                            <RefreshCw className="size-3.5" />
-                          </button>
-                        </Can>
-                      )}
-
                       {!isCancelled && entry.status !== "paid" && (
                         <>
                           <Can do="payroll.pay">
@@ -382,40 +430,26 @@ const RulesView = () => {
 
   const { data, isLoading } = useQuery(payrollQueries.salaries({ page, limit: 20 }));
   const { mutate: closeSalary } = useCloseSalary();
-  const { mutate: deleteSalary } = useDeleteSalary();
 
   const items = data?.data ?? [];
-
-  const showError = (err) =>
-    toast.error(err.response?.data?.message || "Xatolik yuz berdi");
 
   const handleClose = (rule) => {
     closeSalary(
       { id: rule.id },
       {
         onSuccess: () => toast.success("Qoida yopildi"),
-        onError: showError,
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
       },
     );
-  };
-
-  // ⚠️ O'CHIRISH SHARTSIZ va bu XAVFSIZ: shakllangan majburiyat bu
-  // qatorga ishora qilmaydi — summa, stavka, norma va formula uning
-  // ichiga muhrlangan. Ya'ni o'chirish o'tgan vedomostga ham, to'lovga
-  // ham tegmaydi, faqat KELAJAKDAGI shakllantirishni to'xtatadi.
-  const handleDelete = (rule) => {
-    deleteSalary(rule.id, {
-      onSuccess: () => toast.success("Qoida o'chirildi"),
-      onError: showError,
-    });
   };
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-gray-500">
-          Kimga qancha fiksa oylik belgilangani. Har oy shu qoidadan majburiyat
-          hisoblanadi.
+          Kimga qancha oylik belgilangani — fiksa, dars soatlariga qarab KPI, yoki
+          ikkalasi. Har oy shu qoidadan majburiyat hisoblanadi.
         </p>
 
         <Can do="payroll.assign">
@@ -449,6 +483,7 @@ const RulesView = () => {
           <Table columns={RULE_TABLE_COLUMNS}>
             {items.map((rule) => {
               const badge = getRuleStatus(rule, now);
+              const typeMeta = SALARY_TYPE_META[rule.type] ?? SALARY_TYPE_META.fixed;
 
               return (
                 <Tr key={rule.id}>
@@ -461,16 +496,39 @@ const RulesView = () => {
                     )}
                   </Td>
 
-                  {/* Soatbay va aralash qoidada "summa" bitta son emas —
-                      formulaning o'zi ko'rsatiladi, aks holda soatbay
-                      qatori "0 so'm" bo'lib turardi */}
-                  <Td align="right" nowrap={false} className="font-medium">
-                    {getRuleFormula(rule)}
-                    {getRuleFormulaHint(rule) && (
-                      <span className="block text-xs font-normal text-gray-400">
-                        {getRuleFormulaHint(rule)}
+                  <Td>
+                    <span
+                      className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${typeMeta.className}`}
+                    >
+                      {typeMeta.label}
+                    </span>
+                  </Td>
+
+                  <Td className="font-medium">
+                    {Number(rule.fixedAmount) > 0 && (
+                      <span className="block">{formatMoney(rule.fixedAmount)}</span>
+                    )}
+                    {rule.categoryName ? (
+                      <span className="block text-xs font-normal text-indigo-600">
+                        {rule.categoryName} · {formatMoney(rule.categoryRate)}/soat
+                      </span>
+                    ) : (
+                      Number(rule.perHourRate) > 0 && (
+                        <span className="block text-xs font-normal text-indigo-600">
+                          {formatMoney(rule.perHourRate)}/soat
+                        </span>
+                      )
+                    )}
+                    {Number(rule.allowanceTotal) > 0 && (
+                      <span className="block text-xs font-normal text-emerald-600">
+                        + ustama {formatMoney(rule.allowanceTotal)}
                       </span>
                     )}
+                    {Number(rule.fixedAmount) === 0 &&
+                      !rule.categoryName &&
+                      Number(rule.perHourRate) === 0 && (
+                        <span className="text-gray-400">—</span>
+                      )}
                   </Td>
                   <Td nowrap={false} className="text-gray-500">
                     {rule.periodLabel}
@@ -510,24 +568,6 @@ const RulesView = () => {
                           </button>
                         </Can>
                       )}
-
-                      <Can do="payroll.assign">
-                        <ConfirmPopover
-                          tooltip="O'chirish"
-                          title="Qoida o'chirilsinmi?"
-                          description="Shakllangan majburiyatlar joyida qoladi — ularning summasi allaqachon muhrlangan. Bundan keyin bu xodimga oylik hisoblanmaydi."
-                          confirmLabel="O'chirish"
-                          danger
-                          onConfirm={() => handleDelete(rule)}
-                        >
-                          <button
-                            type="button"
-                            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
-                          >
-                            <Trash2 className="size-3.5" />
-                          </button>
-                        </ConfirmPopover>
-                      </Can>
                     </div>
                   </Td>
                 </Tr>
@@ -543,6 +583,147 @@ const RulesView = () => {
             />
           )}
         </>
+      )}
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────
+// Toifalar — malaka toifasi (soatlik KPI stavka)
+// ─────────────────────────────────────────────
+
+const CategoriesView = () => {
+  const { openModal } = useModal();
+  const [status, setStatus] = useState("active");
+
+  const { data: categories = [], isLoading } = useQuery(
+    payrollQueries.categories({ status }),
+  );
+  const { mutate: archiveCategory } = useArchiveCategory();
+  const { mutate: deleteCategory } = useDeleteCategory();
+
+  const handleArchive = (cat) =>
+    archiveCategory(
+      { id: cat.id, isArchived: !cat.isArchived },
+      {
+        onSuccess: () => toast.success(cat.isArchived ? "Qaytarildi" : "Arxivlandi"),
+        onError: (err) => toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      },
+    );
+
+  const handleDelete = (cat) => {
+    if (!window.confirm(`"${cat.name}" toifasini o'chirasizmi?`)) return;
+    deleteCategory(cat.id, {
+      onSuccess: () => toast.success("Toifa o'chirildi"),
+      onError: (err) => toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Select searchable
+            triggerClassName="min-w-40"
+            value={status}
+            options={CATEGORY_STATUS_OPTIONS}
+            onChange={setStatus}
+          />
+          <p className="hidden text-sm text-gray-500 sm:block">
+            Har toifa soatiga har xil KPI stavka oladi
+          </p>
+        </div>
+
+        <Can do="payroll.assign">
+          <Button onClick={() => openModal("salaryCategory", {})}>
+            <Plus />
+            Toifa qo'shish
+          </Button>
+        </Can>
+      </div>
+
+      {isLoading ? (
+        <Card className="py-10 text-center text-gray-500">Yuklanmoqda...</Card>
+      ) : categories.length === 0 ? (
+        <Card className="p-0 xs:p-0">
+          <EmptyState
+            icon={Award}
+            title="Malaka toifasi yo'q"
+            description="Toifa qo'shing (Mutaxassis, 1/2-malaka, Oliy malaka) — har biri soatiga har xil KPI stavka oladi. Keyin xodim oyligiga toifa biriktiriladi."
+            action={
+              <Can do="payroll.assign">
+                <Button onClick={() => openModal("salaryCategory", {})}>
+                  <Plus />
+                  Toifa qo'shish
+                </Button>
+              </Can>
+            }
+          />
+        </Card>
+      ) : (
+        <Table columns={CATEGORY_TABLE_COLUMNS}>
+          {categories.map((cat) => {
+            const badge = cat.isArchived
+              ? { label: "Arxivlangan", className: "bg-gray-100 text-gray-600" }
+              : cat.isActive
+                ? { label: "Faol", className: "bg-green-100 text-green-700" }
+                : { label: "Nofaol", className: "bg-amber-100 text-amber-700" };
+
+            return (
+              <Tr key={cat.id} className={cn(cat.isArchived && "opacity-60")}>
+                <Td className="font-medium text-gray-900">
+                  {cat.name}
+                  {cat.description && (
+                    <span className="block text-xs font-normal text-gray-400">
+                      {cat.description}
+                    </span>
+                  )}
+                </Td>
+                <Td className="font-medium">
+                  {formatMoney(cat.perHourRate)}
+                  <span className="text-xs font-normal text-gray-400"> / soat</span>
+                </Td>
+                <Td className="text-gray-500">{cat.usageCount}</Td>
+                <Td>
+                  <span
+                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${badge.className}`}
+                  >
+                    {badge.label}
+                  </span>
+                </Td>
+                <Td>
+                  <div className="flex items-center justify-end gap-1">
+                    <Can do="payroll.assign">
+                      <button
+                        title="Tahrirlash"
+                        onClick={() => openModal("salaryCategory", { category: cat })}
+                        className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                      <button
+                        title={cat.isArchived ? "Arxivdan qaytarish" : "Arxivlash"}
+                        onClick={() => handleArchive(cat)}
+                        className="rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600"
+                      >
+                        <Archive className="size-3.5" />
+                      </button>
+                      {cat.usageCount === 0 && (
+                        <button
+                          title="O'chirish"
+                          onClick={() => handleDelete(cat)}
+                          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      )}
+                    </Can>
+                  </div>
+                </Td>
+              </Tr>
+            );
+          })}
+        </Table>
       )}
     </div>
   );

@@ -140,6 +140,7 @@ import InventoryDashboardPage from "@/features/inventoryDashboard/pages/Inventor
 import ActivityDashboardPage from "@/features/activityDashboard/pages/ActivityDashboardPage";
 import SecurityPage from "@/features/security/pages/SecurityPage";
 import OverviewPage from "@/features/finance/pages/OverviewPage";
+import ClassFinancePage from "@/features/finance/pages/ClassFinancePage";
 import DebtorsPage from "@/features/finance/pages/DebtorsPage";
 import PaymentsPage from "@/features/finance/pages/PaymentsPage";
 import PaymentReceiptPage from "@/features/finance/pages/PaymentReceiptPage";
@@ -158,6 +159,9 @@ import LessonHoursOverviewPage from "@/features/lessonHours/pages/LessonHoursOve
 import LessonHoursLedgerPage from "@/features/lessonHours/pages/LessonHoursLedgerPage";
 import SubstitutionsPage from "@/features/lessonHours/pages/SubstitutionsPage";
 import LessonLoadPage from "@/features/lessonHours/pages/LessonLoadPage";
+
+// Pages - Oylik zayavkalari (o'qituvchi/xodim so'rovlari — paneldan tasdiqlash)
+import PayrollRequestsPage from "@/features/payroll/pages/PayrollRequestsPage";
 
 // Pages - Inventar (moddiy-texnik baza)
 import InventoryLayout from "@/features/inventory/layouts/InventoryLayout";
@@ -481,11 +485,14 @@ const Routes = () => {
             {/* Rahbar dashboardi — moliya bo'limining bosh ekrani */}
             <Route path="dashboard" element={<FinanceDashboardPage />} />
             <Route path="overview" element={<OverviewPage />} />
+            {/* Sinf moliyaviy sahifasi — overview'dagi sinf qatoridan ochiladi */}
+            <Route path="classes/:classId" element={<ClassFinancePage />} />
             <Route path="debtors" element={<DebtorsPage />} />
             <Route path="payments" element={<PaymentsPage />} />
             <Route path="accounts" element={<AccountsPage />} />
             <Route path="income" element={<ExternalIncomePage />} />
             <Route path="payroll" element={<PayrollPage />} />
+            <Route path="salary-requests" element={<PayrollRequestsPage />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="tariffs" element={<TariffsPage />} />
             <Route path="discounts" element={<DiscountsPage />} />

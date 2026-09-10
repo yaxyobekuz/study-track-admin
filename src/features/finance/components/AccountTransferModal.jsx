@@ -120,7 +120,7 @@ const Content = ({ close, isLoading, setIsLoading, fromAccount }) => {
       <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
         <div className="min-w-0 space-y-1.5">
           <p className="text-sm font-medium text-gray-700">Qayerdan</p>
-          <Select
+          <Select searchable
             value={fromAccountId}
             options={accountOptions}
             placeholder="Tanlang"
@@ -133,7 +133,7 @@ const Content = ({ close, isLoading, setIsLoading, fromAccount }) => {
 
         <div className="min-w-0 space-y-1.5">
           <p className="text-sm font-medium text-gray-700">Qayerga</p>
-          <Select
+          <Select searchable
             value={toAccountId}
             placeholder="Tanlang"
             onChange={(v) => setField("toAccountId", v)}
@@ -150,7 +150,7 @@ const Content = ({ close, isLoading, setIsLoading, fromAccount }) => {
           required
           min="0"
           step="0.01"
-          type="number"
+          type="amount"
           name="amount"
           label="Summa (so'm)"
           value={amount}
@@ -160,7 +160,7 @@ const Content = ({ close, isLoading, setIsLoading, fromAccount }) => {
         <InputField
           min="0"
           step="0.01"
-          type="number"
+          type="amount"
           name="fee"
           label="Komissiya (so'm)"
           value={fee}

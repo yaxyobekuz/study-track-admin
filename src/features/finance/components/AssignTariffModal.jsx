@@ -15,6 +15,7 @@ import {
 import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import SelectSearch from "@/shared/components/ui/select/SelectSearch";
+import MultiSelect from "@/shared/components/form/multi-select";
 import InputField from "@/shared/components/ui/input/InputField";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
@@ -33,6 +34,7 @@ import { classesQueries } from "@/features/classes/queries/classes.queries";
 
 const SCOPE_OPTIONS = [
   { label: "Bitta o'quvchi", value: "student" },
+  { label: "Tanlangan o'quvchilar", value: "students" },
   { label: "Butun sinf", value: "class" },
 ];
 
@@ -63,17 +65,31 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
   const isStudentLocked = Boolean(student?.id);
   const isTariffLocked = Boolean(tariff?.id);
 
-  const { scope, tariffId, classId, studentId, startMonth, endMonth, note, setField } =
-    useObjectState({
-      scope: "student",
-      tariffId: tariff?.id ?? "",
-      classId: "",
-      studentId: student?.id ?? "",
-      startMonth: monthKeyToInputValue(currentMonthKey()),
-      // Bo'sh = butun o'qish davri
-      endMonth: "",
-      note: "",
-    });
+  const {
+    scope,
+    tariffId,
+    classId,
+    studentId,
+    studentIds,
+    customAmount,
+    startMonth,
+    endMonth,
+    note,
+    setField,
+  } = useObjectState({
+    scope: "student",
+    tariffId: tariff?.id ?? "",
+    classId: "",
+    studentId: student?.id ?? "",
+    // "Tanlangan o'quvchilar" rejimi uchun
+    studentIds: [],
+    // Individual (maxsus) narx — bo'sh bo'lsa katalog narxi
+    customAmount: "",
+    startMonth: monthKeyToInputValue(currentMonthKey()),
+    // Bo'sh = butun o'qish davri
+    endMonth: "",
+    note: "",
+  });
 
   // Tariflar faqat o'quvchi tomonidan ochilganda kerak
   const { data: tariffs = [] } = useQuery({
@@ -93,6 +109,8 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
 
     if (!tariffId) return toast.error("Tarifni tanlang");
     if (scope === "student" && !studentId) return toast.error("O'quvchini tanlang");
+    if (scope === "students" && studentIds.length === 0)
+      return toast.error("Kamida bitta o'quvchi tanlang");
     if (scope === "class" && !classId) return toast.error("Sinfni tanlang");
 
     setIsLoading(true);
@@ -101,6 +119,8 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
       tariffId,
       startMonth: inputValueToMonthKey(startMonth),
       endMonth: inputValueToMonthKey(endMonth),
+      // Bo'sh string yuborilsa server null (katalog narxi) deb qabul qiladi
+      customAmount: customAmount.trim(),
       note,
     };
 
@@ -111,9 +131,13 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
       result?.warnings?.forEach((warning) => toast.warning(warning));
     };
 
-    if (scope === "class") {
+    // Ommaviy — sinf yoki qo'lda tanlangan o'quvchilar. Bitta o'quvchidagi xato
+    // butun paketni to'xtatmaydi: server `skipped` ro'yxatini qaytaradi.
+    if (scope === "class" || scope === "students") {
       bulkAssign(
-        { ...payload, classId },
+        scope === "class"
+          ? { ...payload, classId }
+          : { ...payload, studentIds },
         {
           onSuccess: (result) => {
             const created = result?.created?.length ?? 0;
@@ -191,7 +215,7 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
         <>
           <div className="space-y-1.5">
             <p className="text-sm font-medium text-gray-700">Kimga</p>
-            <Select
+            <Select searchable
               value={scope}
               options={SCOPE_OPTIONS}
               onChange={(v) => setField("scope", v)}
@@ -208,6 +232,7 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
               onChange={(v) => {
                 setField("classId", v);
                 setField("studentId", "");
+                setField("studentIds", []);
               }}
             />
           </div>
@@ -227,6 +252,21 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
                 }))}
               />
             </div>
+          )}
+
+          {/* Bir sinf ichidan bir nechta o'quvchini qo'lda tanlash (grant) */}
+          {scope === "students" && (
+            <MultiSelect
+              label="O'quvchilar"
+              value={studentIds}
+              disabled={!classId}
+              placeholder={classId ? "O'quvchilarni tanlang" : "Avval sinfni tanlang"}
+              onChange={(v) => setField("studentIds", v)}
+              options={students.map((s) => ({
+                label: `${s.firstName} ${s.lastName ?? ""}`.trim(),
+                value: s.id,
+              }))}
+            />
           )}
         </>
       )}
@@ -249,6 +289,17 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
           onChange={(e) => setField("endMonth", e.target.value)}
         />
       </div>
+
+      {/* Individual (maxsus) narx — kategoriya narxi o'rniga shu o'quvchi(lar)
+          uchun doimiy summa. Bo'sh qolsa katalog narxi ishlaydi. */}
+      <InputField
+        type="number"
+        name="customAmount"
+        label="Individual narx (so'm)"
+        value={customAmount}
+        placeholder="Bo'sh qolsa — katalog narxi"
+        onChange={(e) => setField("customAmount", e.target.value)}
+      />
 
       <InputField
         name="note"

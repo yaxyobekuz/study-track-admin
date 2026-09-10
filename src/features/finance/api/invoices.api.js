@@ -14,6 +14,11 @@ export const invoicesAPI = {
   remindDebtors: (data) => http.post("/invoices/debtors/remind", data),
 
   getSummary: (params) => http.get("/invoices/summary", { params }),
+  // Moliya bosh sahifasi: sanoq (jami/grant/to'lovchi) + pul + sinf/yo'nalish kesimi
+  getOverview: (params) => http.get("/invoices/overview", { params }),
+  // O'quvchilar registri (barcha o'quvchi — hisob-fakturasi bor-yo'qligidan
+  // qat'i nazar). `classId` bilan sinf detaliga xizmat qiladi.
+  getStudentRegistry: (params) => http.get("/invoices/students", { params }),
   // Kassirning asosiy ekrani: o'quvchi + tarif + chegirma + depozit + qarz
   getForStudent: (studentId, params) =>
     http.get(`/invoices/student/${studentId}`, { params }),

@@ -2,7 +2,7 @@
 import { days } from "@/shared/data/days.data";
 
 // React
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Router
 import { useNavigate, useParams } from "react-router-dom";
@@ -23,7 +23,13 @@ import { useClassSchedule } from "@/features/schedules/queries/schedules.queries
 import { useClasses } from "@/features/classes/queries/classes.queries";
 
 // Icons
-import { Edit, Calendar, Download } from "lucide-react";
+import { Edit, Calendar, Download, History } from "lucide-react";
+
+// Components
+import ScheduleHistoryModal from "@/features/schedules/components/ScheduleHistoryModal";
+
+// Utils
+import { formatDateUz } from "@/shared/utils/date.utils";
 
 const Schedules = () => {
   const { user } = useAuth();
@@ -32,8 +38,10 @@ const Schedules = () => {
   const isOwner = user?.role === "owner";
 
   const { data: classes = [] } = useClasses();
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const { data: schedules = [], isLoading } = useClassSchedule(classId);
+  const className = classes.find((cls) => cls.id === classId)?.name || "Sinf";
 
   // Redirect to the first class when no class is selected in the URL
   useEffect(() => {
@@ -110,6 +118,13 @@ const Schedules = () => {
           />
 
           {isOwner && (
+            <Button variant="outline" onClick={() => setHistoryOpen(true)}>
+              <History strokeWidth={1.5} />
+              Tarix
+            </Button>
+          )}
+
+          {isOwner && (
             <Button
               variant="outline"
               onClick={() => navigate(`/schedules/${classId}/edit`)}
@@ -140,9 +155,19 @@ const Schedules = () => {
                     strokeWidth={1.5}
                     className="size-5 text-blue-500"
                   />
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {day.label}
-                  </h3>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {day.label}
+                    </h3>
+                    {schedule?.effectiveFrom && (
+                      <p className="text-xs text-gray-400">
+                        {formatDateUz(schedule.effectiveFrom)} dan
+                        {schedule.effectiveTo
+                          ? ` ${formatDateUz(schedule.effectiveTo)} gacha`
+                          : ""}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -188,6 +213,14 @@ const Schedules = () => {
           );
         })}
       </div>
+
+      {historyOpen && (
+        <ScheduleHistoryModal
+          classId={classId}
+          className={className}
+          onClose={() => setHistoryOpen(false)}
+        />
+      )}
     </div>
   );
 };
