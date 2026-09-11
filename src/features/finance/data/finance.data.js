@@ -84,6 +84,7 @@ export const VERSION_TABLE_COLUMNS = ["Davr", "Oylik summa", "Holat", ""];
 /** Tarif detalidagi biriktirilgan o'quvchilar jadvali. */
 export const ASSIGNED_STUDENT_TABLE_COLUMNS = [
   "O'quvchi",
+  "Sinf",
   "Davr",
   "Joriy oydagi summa",
   "Holat",
@@ -133,6 +134,23 @@ export const GENERATE_BLOCKED_LABELS = {
   before_first_invoice_month: "Bu oy tizimga o'tishdan oldingi davrga tegishli",
 };
 
+// ── Oy summasi override'i ────────────────────
+
+/**
+ * Oy summasini qo'lda o'zgartirish sababi. Server enum'i bilan bir xil
+ * (`MonthOverrideReason`): kod o'zgarsa ikkalasi ham tahrirlanadi.
+ */
+export const MONTH_OVERRIDE_REASON_OPTIONS = [
+  { label: "Kech qo'shilgan", value: "late_join" },
+  { label: "Kasallik sababli", value: "sickness" },
+  { label: "Oilaviy sabab", value: "family" },
+  { label: "Boshqa", value: "other" },
+];
+
+export const MONTH_OVERRIDE_REASON_LABELS = Object.fromEntries(
+  MONTH_OVERRIDE_REASON_OPTIONS.map((o) => [o.value, o.label]),
+);
+
 // ── Chegirmalar ──────────────────────────────
 
 export const DISCOUNT_TYPE_OPTIONS = [
@@ -157,6 +175,22 @@ export const DISCOUNT_TABLE_COLUMNS = [
   { label: "Miqdori", align: "right" },
   { label: "O'quvchilar", align: "right" },
   "Holat",
+  "",
+];
+
+export const SERVICE_TABLE_COLUMNS = [
+  "Xizmat",
+  { label: "Oylik narx", align: "right" },
+  { label: "O'quvchilar", align: "right" },
+  "Holat",
+  "",
+];
+
+export const SERVICE_STUDENT_TABLE_COLUMNS = [
+  "O'quvchi",
+  "Sinf",
+  "Xizmatlari",
+  { label: "Xizmatlar jami", align: "right" },
   "",
 ];
 

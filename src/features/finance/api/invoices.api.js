@@ -14,26 +14,23 @@ export const invoicesAPI = {
   remindDebtors: (data) => http.post("/invoices/debtors/remind", data),
 
   getSummary: (params) => http.get("/invoices/summary", { params }),
+  // Moliya bosh sahifasi: sanoq (jami/grant/to'lovchi) + pul + sinf/yo'nalish kesimi
+  getOverview: (params) => http.get("/invoices/overview", { params }),
+  // O'quvchilar registri (barcha o'quvchi — hisob-fakturasi bor-yo'qligidan
+  // qat'i nazar). `classId` bilan sinf detaliga xizmat qiladi.
+  getStudentRegistry: (params) => http.get("/invoices/students", { params }),
   // Kassirning asosiy ekrani: o'quvchi + tarif + chegirma + depozit + qarz
   getForStudent: (studentId, params) =>
     http.get(`/invoices/student/${studentId}`, { params }),
 
-  // Natija — paket hisoboti, yaratilgan resurs emas
-  generate: (data) => http.post("/invoices/generate", data),
-
   // Faqat izoh — summa/oy/o'quvchi o'zgarmas
   updateNote: (id, note) => http.patch(`/invoices/${id}`, { note }),
   cancel: (id, reason) => http.post(`/invoices/${id}/cancel`, { reason }),
-  // Summa muhrlangani uchun uni tahrirlab bo'lmaydi — bekor qilib qayta yaratish
+  // Summa muhrlangani uchun uni tahrirlab bo'lmaydi — bekor qilib qayta yaratish.
+  // Qo'lda tugma yo'q: bu endpoint tarif/chegirma o'zgarishida AVTOMATIK
+  // ishga tushadigan regeneratsiya dvigateli (server tomonda chaqiriladi).
   regenerate: (id, reason) => http.post(`/invoices/${id}/regenerate`, { reason }),
   restore: (id) => http.post(`/invoices/${id}/restore`),
-
-  // ── OMMAVIY AMALLAR (bitta oy bo'yicha) ──
-  // Bittalab bosib chiqish 100+ o'quvchida amalda bajarib bo'lmaydigan ish.
-  // Natija — paket hisoboti (nechtasi bajarildi, nechtasi o'tkazib
-  // yuborildi), yaratilgan resurs emas.
-  cancelMonth: (data) => http.post("/invoices/cancel-month", data),
-  regenerateMonth: (data) => http.post("/invoices/regenerate-month", data),
 
   // Hisob-fakturaga tushgan to'lovlar (chek raqami bilan)
   getPayments: (id, params) => http.get(`/invoices/${id}/payments`, { params }),
@@ -114,6 +111,29 @@ export const discountsAPI = {
   closeAssignment: (id, endMonth) =>
     http.patch(`/discounts/assignments/${id}/close`, { endMonth }),
   deleteAssignment: (id) => http.delete(`/discounts/assignments/${id}`),
+};
+
+/**
+ * Qo'shimcha xizmatlar (yotoqxona, ovqat, ...) — katalog va o'quvchiga
+ * biriktirish. Xizmat summasi hisob-fakturaga tarif USTIGA qo'shiladi va
+ * o'zgarishlar avtomatik qayta hisoblanadi.
+ */
+export const servicesAPI = {
+  getAll: (params) => http.get("/services", { params }),
+  create: (data) => http.post("/services", data),
+  update: (id, data) => http.put(`/services/${id}`, data),
+  archive: (id, isArchived) =>
+    http.patch(`/services/${id}/archive`, { isArchived }),
+  delete: (id) => http.delete(`/services/${id}`),
+
+  // Barcha o'quvchilar + joriy oydagi xizmatlari (sahifaning asosiy jadvali)
+  getStudents: (params) => http.get("/services/students", { params }),
+
+  assign: (data) => http.post("/services/assignments", data),
+  updateAssignment: (id, data) => http.put(`/services/assignments/${id}`, data),
+  closeAssignment: (id, endMonth) =>
+    http.patch(`/services/assignments/${id}/close`, { endMonth }),
+  deleteAssignment: (id) => http.delete(`/services/assignments/${id}`),
 };
 
 /** Ta'til oylari — o'sha oyda hech kimga to'lov yozilmaydi. */

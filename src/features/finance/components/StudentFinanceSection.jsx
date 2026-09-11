@@ -8,6 +8,7 @@ import {
   PiggyBank,
   Repeat,
   Scale,
+  SlidersHorizontal,
   Trash2,
   Undo2,
   UserCog,
@@ -26,6 +27,7 @@ import RecordPaymentModal from "./RecordPaymentModal";
 import StudentFinanceStatusModal from "./StudentFinanceStatusModal";
 import AssignTariffModal from "./AssignTariffModal";
 import AssignDiscountModal from "./AssignDiscountModal";
+import MonthOverrideModal from "./MonthOverrideModal";
 import {
   AdjustStudentBalanceModal,
   RefundDepositModal,
@@ -423,6 +425,14 @@ const StudentFinanceSection = ({ studentId }) => {
                                 {invoice.prorationLabel}
                               </span>
                             )}
+                            {invoice.overrideReasonLabel && (
+                              <span
+                                title={invoice.overrideNote || undefined}
+                                className="ml-1.5 rounded bg-purple-50 px-1.5 py-0.5 text-xs text-purple-700"
+                              >
+                                {invoice.overrideReasonLabel}
+                              </span>
+                            )}
                           </>
                         ) : (
                           <span className="text-gray-400">—</span>
@@ -455,9 +465,37 @@ const StudentFinanceSection = ({ studentId }) => {
                         )}
                       </td>
 
-                      <td className="px-3 py-2 text-right text-xs text-gray-400">
-                        {/* Chek raqamlari — ota-ona telefon qilganda kerak */}
-                        {invoice?.payments?.map((p) => p.receiptLabel).join(", ")}
+                      <td className="px-3 py-2 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-2">
+                          {/* Chek raqamlari — ota-ona telefon qilganda kerak */}
+                          <span className="text-xs text-gray-400">
+                            {invoice?.payments
+                              ?.map((p) => p.receiptLabel)
+                              .join(", ")}
+                          </span>
+
+                          {/* Oy summasini sabab bilan o'zgartirish — faqat
+                              o'qigan, ta'til bo'lmagan va o'tgan/joriy oy uchun */}
+                          {row.isEnrolled && !row.isVacation && !row.isFuture && (
+                            <Can do="finance.adjust">
+                              <button
+                                type="button"
+                                title="Oy summasini o'zgartirish"
+                                onClick={() =>
+                                  openModal("monthOverride", {
+                                    studentId,
+                                    month: row.month,
+                                    invoice,
+                                    student,
+                                  })
+                                }
+                                className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                              >
+                                <SlidersHorizontal className="size-3.5" />
+                              </button>
+                            </Can>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -507,6 +545,7 @@ const StudentFinanceSection = ({ studentId }) => {
       {/* Modallar shu bo'lim ichida — users feature'i moliyadan bexabar qoladi */}
       <AssignTariffModal />
       <ChangeStudentTariffModal />
+      <MonthOverrideModal />
       <RecordPaymentModal />
       <StudentFinanceStatusModal />
       <AssignDiscountModal />

@@ -61,6 +61,13 @@ export const MAIN_TABS = [
     exact: false,
   },
   {
+    to: "/finance/main/salary-requests",
+    label: "Oylik zayavkalari",
+    title: "Moliya",
+    can: "payrollRequests.view",
+    exact: false,
+  },
+  {
     to: "/finance/main/expenses",
     label: "Chiqimlar",
     title: "Moliya",
@@ -77,6 +84,13 @@ export const MAIN_TABS = [
     to: "/finance/main/discounts",
     label: "Chegirmalar",
     title: "Moliya",
+    exact: false,
+  },
+  {
+    to: "/finance/main/services",
+    label: "Qo'shimcha xizmatlar",
+    title: "Moliya",
+    can: "services.view",
     exact: false,
   },
   {

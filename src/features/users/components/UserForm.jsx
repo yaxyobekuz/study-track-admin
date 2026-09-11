@@ -4,12 +4,16 @@ import { toast } from "sonner";
 // Router
 import { useNavigate } from "react-router-dom";
 
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
+
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 import usePermissions from "@/shared/hooks/usePermissions";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 import { useClasses } from "@/features/classes/queries/classes.queries";
 import { useCreateUser } from "@/features/users/queries/users.mutations";
+import { financeQueries } from "@/features/finance/queries/finance.queries";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
@@ -38,12 +42,23 @@ import { WORK_DAYS_OPTIONS } from "@/features/attendance/data/attendance.data";
  * @param {string} [props.defaultRole] - boshlang'ich rol (qaysi ro'yxatdan
  *   kelinganiga qarab)
  */
+/** Bugungi sana `<input type="date">` qiymati sifatida (mahalliy, YYYY-MM-DD). */
+const todayInputValue = () => {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+};
+
+/** Bugungi oy `<input type="month">` qiymati sifatida (YYYY-MM). */
+const currentMonthInputValue = () => todayInputValue().slice(0, 7);
+
 const UserForm = ({ defaultRole = "student" }) => {
   const navigate = useNavigate();
   const { can } = usePermissions();
   const { data: classes = [] } = useClasses();
   const { data: rolesData = [] } = useRoles();
   const roles = rolesData.filter((r) => r.value !== "owner");
+  const { data: tariffs = [] } = useQuery(financeQueries.assignableTariffs());
 
   // Telefon maydonlari faqat `users.phone` bilan: ruxsatsiz aktyor bo'sh
   // bo'lmagan raqam yuborsa server butun yaratishni rad etadi, shuning
@@ -68,6 +83,11 @@ const UserForm = ({ defaultRole = "student" }) => {
     weeklySchedule: {},
     hasCustomSchedule: false,
     isLoading: false,
+    // O'quvchi moliyasi
+    enrollmentDate: todayInputValue(),
+    firstMonthKey: currentMonthInputValue(),
+    firstMonthAmount: "",
+    tariffId: "",
   });
 
   const toggleWorkDay = (day) => {
@@ -115,6 +135,13 @@ const UserForm = ({ defaultRole = "student" }) => {
       password: state.password,
       role: state.role,
       classes: state.role === "student" ? state.classes : undefined,
+      // Moliya — faqat o'quvchi uchun (kirgan sana, to'lov oyi, birinchi oy, tarif)
+      ...(state.role === "student" && {
+        enrollmentDate: state.enrollmentDate || undefined,
+        firstMonthKey: state.firstMonthKey || undefined,
+        firstMonthAmount: state.firstMonthAmount || undefined,
+        tariffId: state.tariffId || undefined,
+      }),
       ...(canEditPhone && {
         phone: maskedPhoneOrNull(state.phone),
         parentPhone: maskedPhoneOrNull(state.parentPhone),
@@ -198,14 +225,59 @@ const UserForm = ({ defaultRole = "student" }) => {
       />
 
       {state.role === "student" && (
-        <MultiSelect
-          required
-          label="Sinflar"
-          value={state.classes}
-          placeholder="Sinflarni tanlang..."
-          onChange={(v) => setField("classes", v)}
-          options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
-        />
+        <>
+          <MultiSelect
+            required
+            label="Sinflar"
+            value={state.classes}
+            placeholder="Sinflarni tanlang..."
+            onChange={(v) => setField("classes", v)}
+            options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
+          />
+
+          {/* ── Moliya: kirgan sana + to'lov oyi + birinchi oy summasi + tarif ── */}
+          <div className="rounded-xl bg-gray-50 p-3 space-y-3.5">
+            <p className="text-xs font-medium text-gray-500">
+              Moliya — birinchi (to'lov) oyi qo'lda, keyingi oylar tarif bo'yicha
+            </p>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <InputField
+                type="date"
+                name="enrollmentDate"
+                label="Kirgan sana"
+                value={state.enrollmentDate}
+                onChange={(e) => setField("enrollmentDate", e.target.value)}
+              />
+              <InputField
+                type="month"
+                name="firstMonthKey"
+                label="Birinchi to'lov oyi"
+                value={state.firstMonthKey}
+                onChange={(e) => setField("firstMonthKey", e.target.value)}
+              />
+            </div>
+
+            <InputField
+              min="0"
+              step="0.01"
+              type="number"
+              name="firstMonthAmount"
+              label="Birinchi oy to'lovi (so'm)"
+              value={state.firstMonthAmount}
+              placeholder="Masalan: 300000"
+              onChange={(e) => setField("firstMonthAmount", e.target.value)}
+            />
+
+            <SelectField
+              label="Tarif"
+              value={state.tariffId}
+              placeholder="Tarifni tanlang"
+              onChange={(v) => setField("tariffId", v)}
+              options={tariffs.map((t) => ({ label: t.name, value: t.id }))}
+            />
+          </div>
+        </>
       )}
 
       {canEditPhone && (

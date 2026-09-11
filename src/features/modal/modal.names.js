@@ -32,6 +32,14 @@ export const MODAL_NAMES = [
   "moveClassStudents",
   "removeClassStudents",
 
+  // Diagnostika
+  "diagnosticQuestion",
+  "deleteDiagnosticQuestion",
+  "importDiagnosticQuestions",
+  "diagnosticTest",
+  "deleteDiagnosticTest",
+  "deleteDiagnosticAttempt",
+
   // Subject / Topics
   "createSubject",
   "editSubject",
@@ -133,9 +141,15 @@ export const MODAL_NAMES = [
   "editTariffVersion",
   "assignTariff",
   "changeStudentTariff",
-  "generateInvoices",
+  "monthOverride",
   "recordPayment",
   "editStudentFinanceStatus",
+
+  // Moliya - qo'shimcha xizmatlar (yotoqxona, ovqat, ...)
+  "createService",
+  "editService",
+  "assignService",
+  "editServiceAssignment",
 
   // Moliya - chegirmalar
   "createDiscount",
@@ -156,10 +170,18 @@ export const MODAL_NAMES = [
 
   // Moliya - chiqim (oylik va xarajatlar)
   "staffSalary",
+  "salaryCategory",
+  // Payroll v2 — bo'lim/lavozim/toifa strukturasi
+  "department",
+  "position",
+  "categoryV2",
+  "assignStaff",
   "salaryPayment",
   "voidSalaryPayment",
   "cancelPayrollEntry",
   "regeneratePayrollEntry",
+  // Payroll v2 — oylik zayavkalarini ko'rib chiqish (paneldan tasdiqlash)
+  "reviewPayrollRequest",
   "expense",
   "voidExpense",
   "expenseCategory",

@@ -28,6 +28,13 @@ const todayInputValue = () => {
   return local.toISOString().slice(0, 10);
 };
 
+/** YYYYMM (Int) → `input[type=month]` qiymati (YYYY-MM). Bo'sh bo'lsa "". */
+const monthKeyToInput = (key) => {
+  if (key == null || key === "") return "";
+  const s = String(key);
+  return `${s.slice(0, 4)}-${s.slice(4, 6)}`;
+};
+
 /**
  * O'qish davri qo'shish yoki tahrirlash.
  *
@@ -49,12 +56,24 @@ const Content = ({ close, isLoading, setIsLoading, studentId, period }) => {
   const { mutate: createEnrollment } = useCreateEnrollment();
   const { mutate: updateEnrollment } = useUpdateEnrollment();
 
-  const { startDate, endDate, endReason, reason, note, setField } = useObjectState({
+  const {
+    startDate,
+    endDate,
+    endReason,
+    reason,
+    note,
+    firstMonthKey,
+    firstMonthAmount,
+    setField,
+  } = useObjectState({
     startDate: period?.startDate ?? todayInputValue(),
     endDate: period?.endDate ?? "",
     endReason: period?.endReason ?? "",
     reason: period?.reason ?? "",
     note: period?.note ?? "",
+    firstMonthKey: monthKeyToInput(period?.firstMonthKey),
+    firstMonthAmount:
+      period?.firstMonthAmount != null ? String(period.firstMonthAmount) : "",
   });
 
   const handleError = (err) =>
@@ -76,6 +95,10 @@ const Content = ({ close, isLoading, setIsLoading, studentId, period }) => {
       endReason: endDate ? endReason : null,
       reason,
       note,
+      // Boshlang'ich (birinchi oy) summasi va uning to'lov oyi. Bo'sh yuborilsa
+      // server null qiladi → odatiy hisobga qaytadi.
+      firstMonthKey: firstMonthKey || null,
+      firstMonthAmount: firstMonthAmount || null,
     };
 
     const onSuccess = (result) => {
@@ -118,9 +141,9 @@ const Content = ({ close, isLoading, setIsLoading, studentId, period }) => {
         autoFocus
         type="date"
         name="startDate"
-        label="Boshlanish sanasi"
+        label="Boshlanish (kirgan) sanasi"
         value={startDate}
-        description="Oy o'rtasi bo'lsa o'sha oy ulushga hisoblanadi"
+        description="O'quvchi qachon kelgani — kun aniqligida"
         onChange={(e) => setField("startDate", e.target.value)}
       />
 
@@ -137,7 +160,7 @@ const Content = ({ close, isLoading, setIsLoading, studentId, period }) => {
       {endDate && (
         <div className="space-y-1.5">
           <p className="text-sm font-medium text-gray-700">Ketish sababi</p>
-          <Select
+          <Select searchable
             value={endReason}
             placeholder="Sababni tanlang"
             options={END_REASON_OPTIONS}
@@ -145,6 +168,37 @@ const Content = ({ close, isLoading, setIsLoading, studentId, period }) => {
           />
         </div>
       )}
+
+      {/* ── Boshlang'ich (birinchi oy) summasi ── */}
+      <div className="space-y-3.5 rounded-xl bg-gray-50 p-3">
+        <p className="text-xs font-medium text-gray-500">
+          Boshlang'ich to'lov — belgilangan oyga aynan shu summa qarz sifatida
+          yoziladi (kun-proratsiyasiz). Bo'sh qolsa — tarif bo'yicha hisoblanadi.
+        </p>
+        <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
+          <InputField
+            type="month"
+            name="firstMonthKey"
+            label="Birinchi to'lov oyi"
+            value={firstMonthKey}
+            onChange={(e) => setField("firstMonthKey", e.target.value)}
+          />
+          <InputField
+            min="0"
+            step="0.01"
+            type="number"
+            name="firstMonthAmount"
+            label="Birinchi oy to'lovi (so'm)"
+            value={firstMonthAmount}
+            placeholder="Masalan: 300000"
+            onChange={(e) => setField("firstMonthAmount", e.target.value)}
+          />
+        </div>
+        <p className="text-[11px] text-gray-400">
+          Summa o'zgartirilsa, o'sha oy hisob-fakturasini "Qayta shakllantirish"
+          bilan yangilang.
+        </p>
+      </div>
 
       <InputField
         name="reason"

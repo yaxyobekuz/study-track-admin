@@ -15,6 +15,7 @@ import {
 import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import SelectSearch from "@/shared/components/ui/select/SelectSearch";
+import MultiSelect from "@/shared/components/form/multi-select";
 import InputField from "@/shared/components/ui/input/InputField";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
@@ -33,6 +34,7 @@ import { classesQueries } from "@/features/classes/queries/classes.queries";
 
 const SCOPE_OPTIONS = [
   { label: "Bitta o'quvchi", value: "student" },
+  { label: "Tanlangan o'quvchilar", value: "students" },
   { label: "Butun sinf", value: "class" },
 ];
 
@@ -55,35 +57,58 @@ const AssignTariffModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
+const Content = ({
+  close,
+  isLoading,
+  setIsLoading,
+  tariff,
+  student,
+  // Tarif detali sahifasidan "Bu sinfga biriktirish" — oldindan to'ldiriladi
+  classId: initialClassId,
+  scope: initialScope,
+}) => {
   const { mutate: assignTariff } = useAssignTariff();
   const { mutate: bulkAssign } = useBulkAssignTariff();
 
-  // Qaysi tomon oldindan ma'lum
+  // O'quvchi tomoni oldindan ma'lum bo'lishi mumkin (o'quvchi kartasidan
+  // ochilganda). Tarif esa har doim tanlanadi — oldindan tanlangan bo'lsa ham.
   const isStudentLocked = Boolean(student?.id);
-  const isTariffLocked = Boolean(tariff?.id);
 
-  const { scope, tariffId, classId, studentId, startMonth, endMonth, note, setField } =
-    useObjectState({
-      scope: "student",
-      tariffId: tariff?.id ?? "",
-      classId: "",
-      studentId: student?.id ?? "",
-      startMonth: monthKeyToInputValue(currentMonthKey()),
-      // Bo'sh = butun o'qish davri
-      endMonth: "",
-      note: "",
-    });
-
-  // Tariflar faqat o'quvchi tomonidan ochilganda kerak
-  const { data: tariffs = [] } = useQuery({
-    ...financeQueries.assignableTariffs(),
-    enabled: !isTariffLocked,
+  const {
+    scope,
+    tariffId,
+    classId,
+    studentId,
+    studentIds,
+    customAmount,
+    startMonth,
+    endMonth,
+    note,
+    setField,
+  } = useObjectState({
+    scope: initialScope ?? "student",
+    tariffId: tariff?.id ?? "",
+    classId: initialClassId ?? "",
+    studentId: student?.id ?? "",
+    // "Tanlangan o'quvchilar" rejimi uchun
+    studentIds: [],
+    // Individual (maxsus) narx — bo'sh bo'lsa katalog narxi
+    customAmount: "",
+    startMonth: monthKeyToInputValue(currentMonthKey()),
+    // Bo'sh = butun o'qish davri
+    endMonth: "",
+    note: "",
   });
+
+  // Tariflar — har doim yuklanadi: tarif tarif sahifasidan oldindan tanlangan
+  // bo'lsa ham foydalanuvchi BOSHQA tarifni tanlay olishi kerak.
+  const { data: tariffs = [] } = useQuery(financeQueries.assignableTariffs());
   const { data: classes = [] } = useQuery(classesQueries.list());
   const { data: students = [] } = useQuery(classesQueries.students(classId));
 
-  const selectedTariff = tariff ?? tariffs.find((t) => t.id === tariffId) ?? null;
+  // Narx izohida tanlangan tarifning narxini ko'rsatamiz (o'zgarganda yangilanadi)
+  const selectedTariff =
+    tariffs.find((t) => t.id === tariffId) ?? tariff ?? null;
 
   const handleError = (err) =>
     toast.error(err.response?.data?.message || "Xatolik yuz berdi");
@@ -93,6 +118,8 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
 
     if (!tariffId) return toast.error("Tarifni tanlang");
     if (scope === "student" && !studentId) return toast.error("O'quvchini tanlang");
+    if (scope === "students" && studentIds.length === 0)
+      return toast.error("Kamida bitta o'quvchi tanlang");
     if (scope === "class" && !classId) return toast.error("Sinfni tanlang");
 
     setIsLoading(true);
@@ -101,6 +128,8 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
       tariffId,
       startMonth: inputValueToMonthKey(startMonth),
       endMonth: inputValueToMonthKey(endMonth),
+      // Bo'sh string yuborilsa server null (katalog narxi) deb qabul qiladi
+      customAmount: customAmount.trim(),
       note,
     };
 
@@ -111,18 +140,30 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
       result?.warnings?.forEach((warning) => toast.warning(warning));
     };
 
-    if (scope === "class") {
+    // Ommaviy — sinf yoki qo'lda tanlangan o'quvchilar. Bitta o'quvchidagi xato
+    // butun paketni to'xtatmaydi: server `skipped` ro'yxatini qaytaradi.
+    if (scope === "class" || scope === "students") {
       bulkAssign(
-        { ...payload, classId },
+        scope === "class"
+          ? { ...payload, classId }
+          : { ...payload, studentIds },
         {
           onSuccess: (result) => {
             const created = result?.created?.length ?? 0;
+            const changed = result?.changed?.length ?? 0;
+            const unchanged = result?.unchanged?.length ?? 0;
             const skipped = result?.skipped?.length ?? 0;
+
+            // Yangi biriktirilgan + tarifi almashtirilganlar birga
+            const applied = created + changed;
+            const parts = [];
+            if (applied) parts.push(`${applied} ta o'quvchiga qo'llandi`);
+            if (unchanged) parts.push(`${unchanged} tasi allaqachon shu tarifda`);
+            if (skipped) parts.push(`${skipped} tasi o'tkazib yuborildi`);
+
             onSuccess(
               result,
-              skipped
-                ? `${created} ta o'quvchiga biriktirildi, ${skipped} tasi o'tkazib yuborildi`
-                : `${created} ta o'quvchiga biriktirildi`,
+              parts.length ? parts.join(", ") : "O'zgarish bo'lmadi",
             );
           },
           onError: handleError,
@@ -154,44 +195,36 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
         </div>
       )}
 
-      {isTariffLocked && (
-        <div className="rounded-xl bg-gray-50 p-3 text-sm">
-          <p className="text-gray-500">Tarif</p>
-          <p className="font-medium text-gray-900">{tariff.name}</p>
-        </div>
-      )}
-
-      {/* Tarif tanlash — o'quvchi kartasidan ochilganda */}
-      {!isTariffLocked && (
-        <div className="space-y-1.5">
-          <p className="text-sm font-medium text-gray-700">Tarif</p>
-          <SelectSearch
-            inline
-            value={tariffId}
-            placeholder="Tarifni tanlang"
-            onChange={(v) => setField("tariffId", v)}
-            options={tariffs.map((t) => ({
-              label: t.currentVersion?.monthlyAmount
-                ? `${t.name} — ${formatMoney(t.currentVersion.monthlyAmount)}`
-                : t.name,
-              value: t.id,
-            }))}
-          />
-          {tariffs.length === 0 && (
-            <p className="text-xs text-amber-700">
-              Faol tarif yo'q — avval "Tariflar" bo'limida tarif va uning
-              narxini yarating.
-            </p>
-          )}
-        </div>
-      )}
+      {/* Tarif — tarif sahifasidan ochilsa oldindan tanlangan, lekin BOSHQA
+          tarifni ham tanlash mumkin (masalan sinfga boshqa tarif biriktirish) */}
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Tarif</p>
+        <SelectSearch
+          inline
+          value={tariffId}
+          placeholder="Tarifni tanlang"
+          onChange={(v) => setField("tariffId", v)}
+          options={tariffs.map((t) => ({
+            label: t.currentVersion?.monthlyAmount
+              ? `${t.name} — ${formatMoney(t.currentVersion.monthlyAmount)}`
+              : t.name,
+            value: t.id,
+          }))}
+        />
+        {tariffs.length === 0 && (
+          <p className="text-xs text-amber-700">
+            Faol tarif yo'q — avval "Tariflar" bo'limida tarif va uning
+            narxini yarating.
+          </p>
+        )}
+      </div>
 
       {/* Kimga — faqat tarif tomonidan ochilganda */}
       {!isStudentLocked && (
         <>
           <div className="space-y-1.5">
             <p className="text-sm font-medium text-gray-700">Kimga</p>
-            <Select
+            <Select searchable
               value={scope}
               options={SCOPE_OPTIONS}
               onChange={(v) => setField("scope", v)}
@@ -208,6 +241,7 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
               onChange={(v) => {
                 setField("classId", v);
                 setField("studentId", "");
+                setField("studentIds", []);
               }}
             />
           </div>
@@ -227,6 +261,21 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
                 }))}
               />
             </div>
+          )}
+
+          {/* Bir sinf ichidan bir nechta o'quvchini qo'lda tanlash (grant) */}
+          {scope === "students" && (
+            <MultiSelect
+              label="O'quvchilar"
+              value={studentIds}
+              disabled={!classId}
+              placeholder={classId ? "O'quvchilarni tanlang" : "Avval sinfni tanlang"}
+              onChange={(v) => setField("studentIds", v)}
+              options={students.map((s) => ({
+                label: `${s.firstName} ${s.lastName ?? ""}`.trim(),
+                value: s.id,
+              }))}
+            />
           )}
         </>
       )}
@@ -249,6 +298,17 @@ const Content = ({ close, isLoading, setIsLoading, tariff, student }) => {
           onChange={(e) => setField("endMonth", e.target.value)}
         />
       </div>
+
+      {/* Individual (maxsus) narx — kategoriya narxi o'rniga shu o'quvchi(lar)
+          uchun doimiy summa. Bo'sh qolsa katalog narxi ishlaydi. */}
+      <InputField
+        type="number"
+        name="customAmount"
+        label="Individual narx (so'm)"
+        value={customAmount}
+        placeholder="Bo'sh qolsa — katalog narxi"
+        onChange={(e) => setField("customAmount", e.target.value)}
+      />
 
       <InputField
         name="note"

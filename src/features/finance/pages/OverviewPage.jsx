@@ -1,25 +1,21 @@
 // React
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 // Router
-import { useSearchParams } from "react-router-dom";
-
-// Toast
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 // Icons
 import {
   ArrowDownRight,
   ArrowUpRight,
-  Ban,
-  FileText,
+  ChevronRight,
+  Gift,
   Minus,
   PiggyBank,
   Receipt,
-  RotateCcw,
-  Sparkles,
-  RefreshCw,
+  School,
   TrendingDown,
+  Users,
   Wallet,
 } from "lucide-react";
 
@@ -28,27 +24,14 @@ import { useQuery } from "@tanstack/react-query";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-
-// Utils
-import { cn } from "@/shared/utils/cn";
-import Can from "@/shared/components/guards/Can";
-import Table, { Td, Tr } from "@/shared/components/ui/Table";
-import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import EmptyState from "@/shared/components/ui/EmptyState";
-import Pagination from "@/shared/components/ui/Pagination";
-import SelectSearch from "@/shared/components/ui/select/SelectSearch";
-import ReasonModal from "../components/ReasonModal";
-import GenerateInvoicesModal from "../components/GenerateInvoicesModal";
-
-// Hooks
-import useModal from "@/shared/hooks/useModal";
 
 // Utils & helpers
+import { cn } from "@/shared/utils/cn";
 import { formatMoney } from "@/shared/utils/formatMoney";
 // ⚠️ O'zgarish strelkasining rangi va matni MOLIYA DASHBOARDIDAN olinadi:
-// bir bo'limda "+12%" ikki xil ko'rinishda va ikki xil rangda bo'lmasligi
-// kerak. Shu sababli bu yerda o'z `trendTone` imiz yozilmaydi.
+// bir bo'limda "+12%" ikki xil ko'rinishda va ikki xil rangda bo'lmasligi kerak.
 import {
   formatChange,
   trendTone,
@@ -56,311 +39,83 @@ import {
 import { currentMonthKey, buildMonthOptions } from "@/shared/helpers/month.helpers";
 
 // Data & queries
-import {
-  GENERATE_BLOCKED_LABELS,
-
-  INVOICE_STATUS_OPTIONS,
-} from "../data/finance.data";
 import { financeQueries } from "../queries/finance.queries";
-import {
-  useCancelInvoice,
-  useCancelInvoiceMonth,
-  useRegenerateInvoice,
-  useRegenerateInvoiceMonth,
-  useRestoreInvoice,
-} from "../queries/finance.mutations";
-import { classesQueries } from "@/features/classes/queries/classes.queries";
 
 const MONTH_OPTIONS = buildMonthOptions({ back: 12, forward: 1 });
 
 /**
- * Moliyaning oylik manzarasi.
+ * MOLIYA BOSH SAHIFASI.
  *
- * Bitta savolga javob beradi: "shu oyda qancha hisoblandi, qancha
- * yig'ildi, qancha qarz qoldi va pul qaysi turga tushdi?" Shu yerdan
- * majburiyat shakllantiriladi va o'sha oy hisob-fakturalari ko'riladi.
+ * Bitta ekranda maktabning oylik moliyaviy manzarasi: nechta o'quvchi bor,
+ * nechtasi grant (bepul), nechtasi to'laydi; qancha hisoblandi/yig'ildi/qarz;
+ * sinf va yo'nalish (maktab/bog'cha/o'quv markazi) kesimi. Sinfni bosganda
+ * o'sha sinfning to'liq moliyaviy sahifasiga o'tiladi.
+ *
+ * ⚠️ Bu yerda BITTALAB o'quvchi ro'yxati YO'Q — u sinf sahifasida. Ilgari bu
+ * ekran faqat hisob-fakturasi bor o'quvchini ko'rsatib, grantdagilar (0 so'm)
+ * umuman ko'rinmasdi.
  */
 const OverviewPage = () => {
-  const { openModal } = useModal();
+  const navigate = useNavigate();
   const [month, setMonth] = useState(currentMonthKey);
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const page = Number(searchParams.get("page")) || 1;
-  const status = searchParams.get("status") || "all";
-  const classId = searchParams.get("classId") || "";
-
-  const setParam = (key, value) =>
-    setSearchParams((prev) => {
-      if (value == null || value === "") prev.delete(key);
-      else prev.set(key, String(value));
-      if (key !== "page") prev.delete("page");
-      return prev;
-    });
-
-  const { data: classes = [] } = useQuery(classesQueries.list());
+  const { data: dashboard } = useQuery(financeQueries.overviewDashboard(month));
   const { data: summary } = useQuery(financeQueries.invoiceSummary(month));
   const { data: report } = useQuery(financeQueries.accountReport({}));
 
-  const { data, isLoading } = useQuery(
-    financeQueries.invoiceList({
-      page,
-      limit: 24,
-      month,
-      ...(status !== "all" ? { status } : { includeCancelled: "true" }),
-      ...(classId ? { classId } : {}),
-    }),
-  );
+  const counts = dashboard?.counts;
+  const byClass = dashboard?.byClass ?? [];
+  const byDirection = dashboard?.byDirection ?? [];
 
-  const invoices = data?.data ?? [];
-  const pagination = data?.pagination;
-
-  // ⚠️ Ro'yxatning `pagination.total` i EMAS: u filtr (holat, sinf) ostida
-  // qisqaradi va "sinf tanlangani uchun tugma yo'qolib qoldi" degan holatga
-  // olib kelardi. Yig'ma sanoq filtrga bog'liq emas.
-  const invoiceCount = summary?.counts?.invoiced ?? 0;
-
-  // ⚠️ TO'LOV TURI USTUNLARI DINAMIK. "Naqd" va "Plastik" — qotib qolgan
-  // ro'yxat emas: to'lov turlari katalogdan keladi va maktab istalgan
-  // vaqtda yangisini qo'shishi mumkin. Shuning uchun ustunlar ham
-  // katalogdan quriladi.
-  const accountColumns = useMemo(
-    () => (report?.items ?? []).map((account) => ({ id: account.id, name: account.name })),
-    [report],
-  );
-
-  const invoiceColumns = useMemo(
-    () => [
-      "O'quvchi",
-      "Tarif",
-      { label: "Summa", align: "right" },
-      { label: "To'langan", align: "right" },
-      ...accountColumns.map((account) => ({ label: account.name, align: "right" })),
-      { label: "Qarz", align: "right" },
-      "",
-    ],
-    [accountColumns],
-  );
-
-  const { mutate: cancelInvoice } = useCancelInvoice();
-  const { mutate: restoreInvoice } = useRestoreInvoice();
-  const { mutate: regenerateInvoice } = useRegenerateInvoice();
-  const { mutate: cancelMonth } = useCancelInvoiceMonth();
-  const { mutate: regenerateMonth } = useRegenerateInvoiceMonth();
-
-  const handleError = (err) =>
-    toast.error(err.response?.data?.message || "Xatolik yuz berdi");
-
-  const askCancel = (invoice) =>
-    openModal("financeReason", {
-      description: `${invoice.studentName} — ${invoice.monthLabel} hisob-fakturasi bekor qilinadi.`,
-      consequences: [
-        "Qarz ro'yxatidan chiqadi va hisobotlarga kirmaydi",
-        Number(invoice.paidAmount) > 0
-          ? `${formatMoney(invoice.paidAmount)} o'quvchining depozitiga qaytadi`
-          : "Bu hisob-fakturaga to'lov tushmagan",
-      ],
-      confirmLabel: "Bekor qilish",
-      onConfirm: (reason, { close, setIsLoading }) => {
-        setIsLoading(true);
-        cancelInvoice(
-          { id: invoice.id, reason },
-          {
-            onSuccess: (result) => {
-              close();
-              toast.success("Hisob-faktura bekor qilindi");
-              result?.warnings?.forEach((w) => toast.warning(w));
-            },
-            onError: handleError,
-            onSettled: () => setIsLoading(false),
-          },
-        );
-      },
-    });
-
-  const askRegenerate = (invoice) =>
-    openModal("financeReason", {
-      description: `${invoice.studentName} — ${invoice.monthLabel} hisob-fakturasi joriy tarif va chegirmalar bo'yicha qaytadan hisoblanadi.`,
-      warning:
-        "Eski yozuv o'chiriladi va o'rniga yangisi yaratiladi. To'lov tushgan hisob-fakturani qayta shakllantirib bo'lmaydi.",
-      confirmLabel: "Qayta shakllantirish",
-      onConfirm: (reason, { close, setIsLoading }) => {
-        setIsLoading(true);
-        regenerateInvoice(
-          { id: invoice.id, reason },
-          {
-            onSuccess: (result) => {
-              close();
-              toast.success(`Yangi summa: ${formatMoney(result.amount)}`);
-            },
-            onError: handleError,
-            onSettled: () => setIsLoading(false),
-          },
-        );
-      },
-    });
-
-  // ── OMMAVIY AMALLAR ──────────────────────────
-  //
-  // ⚠️ Ikkalasi ham BUTUN OYGA tegadi, shuning uchun tasdiqlash matnida
-  // nechta hisob-faktura borligi va nima bo'lishi ochiq yoziladi.
-  // Natijada esa "N ta bajarildi" bilan cheklanilmaydi: o'tkazib
-  // yuborilganlari (to'lov tushganlar) alohida aytiladi — aks holda
-  // foydalanuvchi hammasi o'zgardi deb o'ylardi.
-
-  const askRegenerateMonth = () =>
-    openModal("financeReason", {
-      description: `${summary?.monthLabel ?? ""} oyining barcha hisob-fakturasi joriy tarif va chegirmalar bo'yicha qaytadan hisoblanadi.`,
-      consequences: [
-        "Tarifni o'zgartirgandan keyin summalar shu tugma bilan yangilanadi",
-        "To'lov tushgan hisob-fakturalar o'zgarmaydi — ular chetda qoladi",
-        "Bekor qilinganlariga tegilmaydi",
-      ],
-      confirmLabel: "Qayta shakllantirish",
-      onConfirm: (reason, { close, setIsLoading }) => {
-        setIsLoading(true);
-        regenerateMonth(
-          { month, reason },
-          {
-            onSuccess: (result) => {
-              close();
-              toast.success(
-                `${result.done} ta hisob-faktura qayta shakllantirildi` +
-                  (result.skipped?.length
-                    ? `, ${result.skipped.length} tasi o'tkazib yuborildi (to'lov tushgan)`
-                    : ""),
-                {
-                  description: `Jami: ${formatMoney(result.amountBefore)} → ${formatMoney(result.amountAfter)}`,
-                },
-              );
-              result?.failed?.forEach((f) =>
-                toast.error(`${f.studentName}: ${f.reason}`),
-              );
-            },
-            onError: handleError,
-            onSettled: () => setIsLoading(false),
-          },
-        );
-      },
-    });
-
-  const askCancelMonth = () =>
-    openModal("financeReason", {
-      description: `${summary?.monthLabel ?? ""} oyining BARCHA hisob-fakturasi bekor qilinadi.`,
-      warning:
-        "Bu oyda qarz umuman qolmaydi. O'quvchilar, tariflar va to'lov turlari joyida qoladi. To'lov tushgan bo'lsa, pul o'quvchining depozitiga qaytadi.",
-      confirmLabel: "Qarzlarni tozalash",
-      onConfirm: (reason, { close, setIsLoading }) => {
-        setIsLoading(true);
-        cancelMonth(
-          { month, reason },
-          {
-            onSuccess: (result) => {
-              close();
-              toast.success(`${result.done} ta hisob-faktura bekor qilindi`);
-              result?.warnings?.forEach((w) => toast.warning(w));
-              result?.failed?.forEach((f) =>
-                toast.error(`${f.studentName}: ${f.reason}`),
-              );
-            },
-            onError: handleError,
-            onSettled: () => setIsLoading(false),
-          },
-        );
-      },
-    });
-
-  const askRestore = (invoice) =>
-    openModal("financeReason", {
-      description: `${invoice.studentName} — ${invoice.monthLabel} hisob-fakturasi qaytariladi.`,
-      label: "Izoh",
-      confirmLabel: "Qaytarish",
-      onConfirm: (_reason, { close, setIsLoading }) => {
-        setIsLoading(true);
-        restoreInvoice(invoice.id, {
-          onSuccess: () => {
-            close();
-            toast.success("Hisob-faktura qaytarildi");
-          },
-          onError: handleError,
-          onSettled: () => setIsLoading(false),
-        });
-      },
-    });
+  const openClass = (row) => {
+    if (!row.classId) return; // "Sinfsiz" — bosib bo'lmaydi
+    navigate(`/finance/main/classes/${row.classId}?month=${month}`);
+  };
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Select
-            value={String(month)}
-            triggerClassName="min-w-40"
-            options={MONTH_OPTIONS}
-            onChange={(v) => setMonth(Number(v))}
-          />
-
-          <Select
-            value={status}
-            triggerClassName="min-w-40"
-            options={INVOICE_STATUS_OPTIONS}
-            onChange={(v) => setParam("status", v)}
-          />
-
-          <SelectSearch
-            value={classId}
-            triggerClassName="min-w-44"
-            placeholder="Barcha sinflar"
-            onChange={(v) => setParam("classId", v)}
-            options={classes.map((c) => ({ label: c.name, value: c.id }))}
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {/* ⚠️ Ommaviy tugmalar faqat oyda hisob-faktura BOR bo'lganda
-              ko'rinadi: bo'sh oyda ular hech nima qilmasdi va "bosdim,
-              hech narsa bo'lmadi" degan holatga olib kelardi */}
-          {invoiceCount > 0 && (
-            <>
-              <Can do="finance.adjust">
-                <Button variant="outline" onClick={askRegenerateMonth}>
-                  <RefreshCw />
-                  Oyni qayta shakllantirish
-                </Button>
-              </Can>
-
-              <Can do="finance.cancel">
-                <Button variant="outline" onClick={askCancelMonth}>
-                  <Ban />
-                  Qarzlarni tozalash
-                </Button>
-              </Can>
-            </>
-          )}
-
-          <Can do="finance.generate">
-            <Button
-              disabled={!summary?.canGenerate}
-              onClick={() => openModal("generateInvoices", { month, summary })}
-            >
-              <Sparkles />
-              Shakllantirish
-            </Button>
-          </Can>
-        </div>
+      {/* Toolbar — faqat oy tanlash. Hisob-fakturalar AVTOMATIK shakllanadi
+          (kunlik cron + o'quvchi qo'shilganda), shuning uchun qo'lda
+          "shakllantirish / qayta shakllantirish / tozalash" tugmalari yo'q. */}
+      <div className="flex items-center gap-2">
+        <Select
+          value={String(month)}
+          triggerClassName="min-w-40"
+          options={MONTH_OPTIONS}
+          onChange={(v) => setMonth(Number(v))}
+        />
       </div>
 
-      {/* Nima uchun shakllantirib bo'lmaydi — jim qolmasin */}
-      {summary && !summary.canGenerate && (
-        <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          {summary.monthLabel}:{" "}
-          {GENERATE_BLOCKED_LABELS[summary.blockedReason] ??
-            "hisob-faktura shakllantirilmaydi"}
-        </p>
+      {/* ── O'QUVCHILAR SANOG'I: jami / grant / to'lovchi ── */}
+      {counts && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <SummaryCard
+            icon={Users}
+            accent="bg-slate-600"
+            label="Jami o'quvchi"
+            value={String(counts.totalStudents)}
+            hint="Arxivlanmagan, faol o'quvchilar"
+          />
+          <SummaryCard
+            icon={Gift}
+            accent="bg-purple-500"
+            label="Grant (bepul)"
+            value={String(counts.grantStudents)}
+            valueClassName="text-purple-700"
+            hint="Homiylik/grant chegirmasi bilan"
+          />
+          <SummaryCard
+            icon={Wallet}
+            accent="bg-blue-500"
+            label="To'lovchi"
+            value={String(counts.payingStudents)}
+            valueClassName="text-blue-700"
+            hint="Oylik to'lov qiladigan o'quvchilar"
+          />
+        </div>
       )}
 
-      {/* Yig'ma kartalar — moliya dashboardidagi KPI qatori bilan bir xil
-          shakl: rangli ikona, katta raqam, ostida izoh. Ikki ekranda ikki
-          xil karta uslubi bo'lsa, ular boshqa modulga tegishlidek ko'rinardi */}
+      {/* ── PUL: hisoblangan / yig'ilgan / qarz / depozit ── */}
       {summary && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
@@ -373,17 +128,7 @@ const OverviewPage = () => {
               previous: summary.previous?.amount,
               change: summary.change?.amount,
             }}
-            hint={
-              <>
-                {summary.counts.invoiced} ta majburiyat
-                {Number(summary.totals.discountAmount) > 0 &&
-                  ` · ${formatMoney(summary.totals.discountAmount)} chegirma`}
-                {/* Proratsiya farqi yorliqsiz g'oyib bo'lmasligi kerak:
-                    baza − proratsiya − chegirma = summa */}
-                {Number(summary.totals.prorationAmount) > 0 &&
-                  ` · ${formatMoney(summary.totals.prorationAmount)} qisman oy`}
-              </>
-            }
+            hint={`${summary.counts.invoiced} ta majburiyat`}
           />
 
           <SummaryCard
@@ -407,7 +152,6 @@ const OverviewPage = () => {
             value={formatMoney(summary.totals.debt)}
             valueClassName="text-red-600"
             hint={`${summary.counts.unpaid + summary.counts.partial} ta to'lanmagan`}
-            // ⚠️ Qarzning O'SISHI yomon — strelka rangi teskari
             compare={{
               label: summary.compareMonthLabel,
               previous: summary.previous?.debt,
@@ -426,6 +170,98 @@ const OverviewPage = () => {
           />
         </div>
       )}
+
+      {/* ── SINF VA YO'NALISH KESIMI ── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {/* Sinflar — bosiladigan (sinf sahifasiga o'tadi) */}
+        <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-gray-100 lg:col-span-2">
+          <div className="border-b border-gray-100 px-4 py-3">
+            <h2 className="font-semibold text-gray-900">Sinflar bo'yicha</h2>
+          </div>
+          {byClass.length === 0 ? (
+            <EmptyState
+              icon={School}
+              title="Ma'lumot yo'q"
+              description="Bu oy uchun o'quvchi yoki hisob-faktura topilmadi."
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 text-left text-xs text-gray-500">
+                    <th className="px-4 py-2.5 font-medium">Sinf</th>
+                    <th className="px-4 py-2.5 text-center font-medium">O'quvchi</th>
+                    <th className="px-4 py-2.5 text-right font-medium">Yig'ilgan</th>
+                    <th className="px-4 py-2.5 text-right font-medium">Qarz</th>
+                    <th className="w-8" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {byClass.map((row) => (
+                    <tr
+                      key={row.classId ?? "__none__"}
+                      onClick={() => openClass(row)}
+                      className={cn(
+                        "border-b border-gray-50 last:border-0",
+                        row.classId
+                          ? "cursor-pointer hover:bg-gray-50"
+                          : "opacity-70",
+                      )}
+                    >
+                      <td className="px-4 py-2.5 font-medium text-gray-900">
+                        {row.className}
+                      </td>
+                      <td className="px-4 py-2.5 text-center text-gray-600">
+                        {row.studentCount}
+                        {row.grantCount > 0 && (
+                          <span className="ml-1.5 rounded bg-purple-50 px-1.5 py-0.5 text-xs text-purple-700">
+                            {row.grantCount} grant
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2.5 text-right text-green-700">
+                        {formatMoney(row.collected)}
+                      </td>
+                      <td className="px-4 py-2.5 text-right font-medium text-red-600">
+                        {formatMoney(row.debt)}
+                      </td>
+                      <td className="px-2 text-gray-300">
+                        {row.classId && <ChevronRight className="size-4" />}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Yo'nalishlar — maktab / bog'cha / o'quv markazi bo'yicha daromad */}
+        <Card title="Yo'nalishlar bo'yicha daromad" className="space-y-3">
+          {byDirection.length === 0 ? (
+            <p className="py-6 text-center text-sm text-gray-400">
+              Yo'nalish bo'yicha ma'lumot yo'q
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {byDirection.map((dir) => (
+                <div key={dir.directionName} className="space-y-1">
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    <span className="min-w-0 flex-1 truncate text-gray-700">
+                      {dir.directionName}
+                    </span>
+                    <span className="shrink-0 font-medium text-green-700">
+                      {formatMoney(dir.collected)}
+                    </span>
+                  </div>
+                  {/* Kutilgandan qancha yig'ilgani — ingichka progress */}
+                  <DirectionBar collected={dir.collected} expected={dir.expected} />
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
 
       {/* To'lov turlari bo'yicha qoldiq */}
       {report?.items?.length > 0 && (
@@ -449,158 +285,33 @@ const OverviewPage = () => {
           </div>
         </Card>
       )}
+    </div>
+  );
+};
 
-      {/* Jadval */}
-      {isLoading ? (
-        <Card className="py-10 text-center text-gray-500">Yuklanmoqda...</Card>
-      ) : invoices.length === 0 ? (
-        <Card className="p-0 xs:p-0">
-          <EmptyState
-            icon={FileText}
-            title="Bu oy uchun hisob-faktura yo'q"
-            description={
-              summary?.canGenerate
-                ? "\"Shakllantirish\" tugmasi bilan oylik majburiyatlarni yarating."
-                : "Filtrlarni o'zgartiring yoki boshqa oyni tanlang."
-            }
-          />
-        </Card>
-      ) : (
-        <Table columns={invoiceColumns}>
-          {invoices.map((invoice) => {
-
-            const isCancelled = invoice.status === "cancelled";
-
-            return (
-              <Tr key={invoice.id}>
-                <Td nowrap={false}>
-                  <p className="font-medium text-gray-900">{invoice.studentName}</p>
-                  {/* Snapshot: o'quvchi arxivlangan bo'lsa ham sinfi ko'rinadi */}
-                  {invoice.studentSnapshot?.className && (
-                    <p className="text-xs text-gray-500">
-                      {invoice.studentSnapshot.className}
-                    </p>
-                  )}
-                </Td>
-
-                <Td className="text-gray-500">
-                  {invoice.tariffName || "—"}
-                  {invoice.hasDiscount && (
-                    <span className="ml-1.5 rounded-md bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700">
-                      −{formatMoney(invoice.discountAmount)}
-                    </span>
-                  )}
-                </Td>
-
-                <Td align="right" className="font-medium">
-                  {formatMoney(invoice.amount)}
-                  {invoice.isProrated && (
-                    <span className="block text-xs font-normal text-blue-600">
-                      {invoice.prorationLabel}
-                    </span>
-                  )}
-                </Td>
-
-                <Td align="right" className="text-green-600">
-                  {formatMoney(invoice.paidAmount)}
-                </Td>
-
-                {/* To'lov turi kesimi — qaysi puldan qanchasi kelgani.
-                    Nol summa "0" emas, "—" bilan ko'rsatiladi: nol raqami
-                    ustunni to'ldirib, ko'zni chalg'itardi */}
-                {accountColumns.map((account) => {
-                  const paid = invoice.paidByAccount?.find(
-                    (row) => row.accountId === account.id,
-                  );
-
-                  return (
-                    <Td key={account.id} align="right" className="text-gray-500">
-                      {paid ? (
-                        formatMoney(paid.amount, { withLabel: false })
-                      ) : (
-                        <span className="text-gray-300">—</span>
-                      )}
-                    </Td>
-                  );
-                })}
-
-                <Td align="right">
-                  {isCancelled ? (
-                    <span className="text-gray-400">—</span>
-                  ) : (
-                    <span className="font-medium text-red-600">
-                      {formatMoney(invoice.debt)}
-                    </span>
-                  )}
-                </Td>
-
-
-                <Td>
-                  <div className="flex items-center justify-end gap-1">
-                    {!isCancelled && Number(invoice.paidAmount) === 0 && (
-                      <Can do="finance.adjust">
-                        <button
-                          title="Qayta shakllantirish"
-                          onClick={() => askRegenerate(invoice)}
-                          className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                        >
-                          <RefreshCw className="size-3.5" />
-                        </button>
-                      </Can>
-                    )}
-
-                    {isCancelled ? (
-                      <Can do="finance.adjust">
-                        <button
-                          title="Qaytarish"
-                          onClick={() => askRestore(invoice)}
-                          className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                        >
-                          <RotateCcw className="size-3.5" />
-                        </button>
-                      </Can>
-                    ) : (
-                      <Can do="finance.cancel">
-                        <button
-                          title="Bekor qilish"
-                          onClick={() => askCancel(invoice)}
-                          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
-                        >
-                          <Ban className="size-3.5" />
-                        </button>
-                      </Can>
-                    )}
-                  </div>
-                </Td>
-              </Tr>
-            );
-          })}
-        </Table>
-      )}
-
-      {pagination && pagination.totalPages > 1 && (
-        <Pagination
-          currentPage={pagination.page}
-          totalPages={pagination.totalPages}
-          hasNextPage={pagination.hasNextPage}
-          hasPrevPage={pagination.hasPrevPage}
-          onPageChange={(next) => setParam("page", next)}
+/** Yo'nalish uchun "yig'ilgan / kutilgan" nisbatini ko'rsatuvchi ingichka chiziq. */
+const DirectionBar = ({ collected, expected }) => {
+  const exp = Number(expected) || 0;
+  const col = Number(collected) || 0;
+  const pct = exp > 0 ? Math.min(100, Math.round((col / exp) * 100)) : 0;
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+        <div
+          className="h-full rounded-full bg-green-500"
+          style={{ width: `${pct}%` }}
         />
-      )}
-
-      {/* Modals */}
-      <GenerateInvoicesModal />
-      <ReasonModal />
+      </div>
+      <span className="w-24 shrink-0 text-right text-[11px] text-gray-400">
+        {formatMoney(expected)} kutilgan
+      </span>
     </div>
   );
 };
 
 /**
- * Yig'ma karta — rangli ikona, katta raqam va ostida izoh.
- *
- * Moliya dashboardidagi KPI qatori bilan bir xil shakl: bir bo'limda ikki
- * xil karta uslubi bo'lsa, foydalanuvchi ular boshqa modulga tegishli deb
- * o'ylardi.
+ * Yig'ma karta — rangli ikona, katta raqam va ostida izoh. Moliya
+ * dashboardidagi KPI qatori bilan bir xil shakl.
  */
 const SummaryCard = ({
   icon: Icon,
@@ -639,10 +350,6 @@ const SummaryCard = ({
 
     {hint && <p className="relative mt-1.5 text-[11px] text-gray-400">{hint}</p>}
 
-    {/* O'TGAN OY BILAN TAQQOSLASH.
-        ⚠️ `previous` bo'lmasa qator umuman chizilmaydi: "Depozitda"
-        kartasi oyga bog'liq emas (u BUGUNGI qoldiq), unga o'tgan oy
-        raqamini yozib qo'yish soxta taqqoslash bo'lardi. */}
     {compare?.previous != null && (
       <div className="relative mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5 text-[11px]">
         <span className="truncate text-gray-400">
@@ -654,13 +361,7 @@ const SummaryCard = ({
   </div>
 );
 
-/**
- * O'tgan oyga nisbatan o'zgarish — strelka va foiz.
- *
- * ⚠️ `null` bo'lsa HECH NARSA chizilmaydi. O'tgan oyda raqam nol bo'lsa
- * o'sish foizining maxraji yo'q va uni "+100%" deb ko'rsatish yolg'on
- * bo'lardi (server ham shu sababli `null` yuboradi).
- */
+/** O'tgan oyga nisbatan o'zgarish — strelka va foiz. */
 const Delta = ({ change, inverse }) => {
   if (change == null) return null;
 

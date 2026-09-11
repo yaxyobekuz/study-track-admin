@@ -23,6 +23,7 @@ export const SECTIONS = {
   CLASSES: "classes",
   SUBJECTS: "subjects",
   TESTS: "tests",
+  DIAGNOSTICS: "diagnostics",
   MARKET: "market",
   TASKS: "tasks",
   PENALTIES: "penalties",
@@ -30,11 +31,13 @@ export const SECTIONS = {
   COINS: "coins",
   TARIFFS: "tariffs",
   DISCOUNTS: "discounts",
+  SERVICES: "services",
   FINANCE: "finance",
   DEBTORS: "debtors",
   REPORTS: "reports",
   INCOME: "income",
   PAYROLL: "payroll",
+  PAYROLL_REQUESTS: "payrollRequests",
   EXPENSES: "expenses",
   INVENTORY: "inventory",
   MONITORING: "monitoring",
@@ -249,6 +252,34 @@ export const PERMISSION_SECTIONS = [
     ],
   },
   {
+    // DIAGNOSTIKA — mavjud "Testlar" bo'limidan ALOHIDA.
+    //
+    // ⚠️ Ikkalasi bir xil ko'rinsa ham, boshqa savolga javob beradi:
+    // "Testlar" — MAVSUM bo'yicha baho qo'yish (natija jurnalga tushadi,
+    // tanga taqsimlanadi), "Diagnostika" — o'quvchi QAYERDA turganini
+    // o'lchash (baho qo'yilmaydi, kamchilik va reja chiqadi). Bitta
+    // bo'limga qo'shilsa, test mavsumini boshqaradigan odam avtomatik
+    // ravishda har bir o'quvchining zaif tomonlari ro'yxatini ham olardi.
+    //
+    // ⚠️ SERVER BILAN QO'LDA SINXRON: `server/src/utils/permissions.js`.
+    key: SECTIONS.DIAGNOSTICS,
+    label: "Diagnostika",
+    group: "Ta'lim",
+    actions: [
+      A.view,
+      A.create,
+      A.update,
+      A.delete,
+      { key: "questions", label: "Savollar bazasi" },
+      { key: "moderate", label: "Savolni tasdiqlash" },
+      { key: "attempts", label: "O'quvchilar natijalari" },
+      { key: "analytics", label: "Tahlil" },
+      { key: "ai", label: "AI tahlilini ishga tushirish" },
+      A.settings,
+      A.export,
+    ],
+  },
+  {
     key: SECTIONS.MARKET,
     label: "Do'kon",
     group: "Do'kon",
@@ -327,6 +358,21 @@ export const PERMISSION_SECTIONS = [
     // "kimga qancha chegirma" qarorini ham qabul qila olmasligi kerak.
     key: SECTIONS.DISCOUNTS,
     label: "Chegirmalar",
+    group: "Moliya",
+    actions: [
+      A.view,
+      A.create,
+      A.update,
+      A.delete,
+      { key: "assign", label: "O'quvchiga biriktirish" },
+    ],
+  },
+  {
+    // Qo'shimcha xizmatlar (yotoqxona, ovqat, ...) — chegirmalar uslubida
+    // alohida bo'lim: xizmat katalogini boshqaradigan xodim tarif/chegirma
+    // qarorlarini ham qabul qila olmasligi kerak.
+    key: SECTIONS.SERVICES,
+    label: "Qo'shimcha xizmatlar",
     group: "Moliya",
     actions: [
       A.view,
@@ -453,6 +499,18 @@ export const PERMISSION_SECTIONS = [
       { key: "pay", label: "To'lash" },
       { key: "void", label: "To'lovni bekor qilish" },
       { key: "cancel", label: "Majburiyatni bekor qilish" },
+    ],
+  },
+  {
+    // OYLIK ZAYAVKALARI — o'qituvchi/xodim o'zi uchun TOIFA o'zgartirish yoki
+    // USTAMA haq so'raydi (hujjat biriktirib). Ko'rib chiqish oylik miqdoriga
+    // TA'SIR QILADI — shuning uchun alohida bo'lim (server bilan qo'lda sinxron).
+    key: SECTIONS.PAYROLL_REQUESTS,
+    label: "Oylik zayavkalari",
+    group: "Moliya",
+    actions: [
+      A.view,
+      { key: "review", label: "Ko'rib chiqish (tasdiqlash / rad etish)" },
     ],
   },
   {
@@ -755,6 +813,18 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/subjects", key: "subjects.view" },
   { prefix: "/test-seasons", key: "tests.view" },
   { prefix: "/test-settings", key: "tests.view" },
+  // Diagnostika — bo'limga kirish `diagnostics.view` bilan; ichki tablar
+  // o'z kalitini talab qiladi (eng UZUN mos prefiks yutadi).
+  { prefix: "/diagnostics", key: "diagnostics.view" },
+  { prefix: "/diagnostics/questions", key: "diagnostics.questions" },
+  { prefix: "/diagnostics/attempts", key: "diagnostics.attempts" },
+  // ⚠️ KESIM EKRANLARI `diagnostics.analytics` ORTIDA: ular butun
+  // registrni (sinf, fan, mavzu, o'quvchi) ochadi, `diagnostics.view`
+  // esa faqat bo'limga kirish huquqi.
+  { prefix: "/diagnostics/classes", key: "diagnostics.analytics" },
+  { prefix: "/diagnostics/subjects", key: "diagnostics.analytics" },
+  { prefix: "/diagnostics/topics", key: "diagnostics.analytics" },
+  { prefix: "/diagnostics/students", key: "diagnostics.analytics" },
   { prefix: "/market", key: "market.view" },
   { prefix: "/tasks", key: "tasks.view" },
   { prefix: "/penalties", key: "penalties.view" },
@@ -768,6 +838,7 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/finance/main/dashboard", key: "reports.view" },
   { prefix: "/finance/main/income", key: "income.view" },
   { prefix: "/finance/main/payroll", key: "payroll.view" },
+  { prefix: "/finance/main/salary-requests", key: "payrollRequests.view" },
   { prefix: "/finance/main/expenses", key: "expenses.view" },
   { prefix: "/finance", key: "finance.view" },
   { prefix: "/finance/main/tariffs", key: "tariffs.view" },

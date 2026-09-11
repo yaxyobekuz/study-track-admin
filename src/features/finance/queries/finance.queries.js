@@ -5,13 +5,18 @@ import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 import { createQueryKeys } from "@/shared/lib/query";
 
 // API
-import { tariffsAPI, studentTariffsAPI } from "../api/finance.api";
+import {
+  tariffsAPI,
+  studentTariffsAPI,
+  studentMonthOverridesAPI,
+} from "../api/finance.api";
 import {
   invoicesAPI,
   paymentsAPI,
   paymentAccountsAPI,
   studentAccountsAPI,
   discountsAPI,
+  servicesAPI,
   vacationMonthsAPI,
   financeStatusAPI,
   financeSettingsAPI,
@@ -29,6 +34,7 @@ const paymentsKey = [...financeKeys.all, "payments"];
 const accountsKey = [...financeKeys.all, "accounts"];
 const depositsKey = [...financeKeys.all, "deposits"];
 const discountsKey = [...financeKeys.all, "discounts"];
+const servicesKey = [...financeKeys.all, "services"];
 const vacationsKey = [...financeKeys.all, "vacations"];
 const statusesKey = [...financeKeys.all, "statuses"];
 const settingsKey = [...financeKeys.all, "settings"];
@@ -92,6 +98,15 @@ export const financeQueries = {
       enabled: Boolean(studentId),
     }),
 
+  /** Bitta o'quvchining oy summasi override'lari (id bilan — o'chirish uchun). */
+  studentMonthOverrides: (studentId) =>
+    queryOptions({
+      queryKey: [...assignmentsKey, "month-overrides", studentId],
+      queryFn: () =>
+        studentMonthOverridesAPI.getForStudent(studentId).then((r) => r.data.data),
+      enabled: Boolean(studentId),
+    }),
+
   // ── Hisob-fakturalar ───────────────────────
 
   /** Majburiyatlar ro'yxati → `{ data, pagination, totals }`. */
@@ -108,6 +123,23 @@ export const financeQueries = {
       queryKey: [...invoicesKey, "summary", month],
       queryFn: () =>
         invoicesAPI.getSummary({ month }).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Moliya bosh sahifasi: sanoq + pul + sinf/yo'nalish kesimi (bir oy). */
+  overviewDashboard: (month) =>
+    queryOptions({
+      queryKey: [...invoicesKey, "overview", month],
+      queryFn: () =>
+        invoicesAPI.getOverview({ month }).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** O'quvchilar registri (sinf detali) → `{ data, pagination, totals }`. */
+  studentRegistry: (params) =>
+    queryOptions({
+      queryKey: [...invoicesKey, "registry", params],
+      queryFn: () => invoicesAPI.getStudentRegistry(params).then((r) => r.data),
       placeholderData: keepPreviousData,
     }),
 
@@ -269,6 +301,24 @@ export const financeQueries = {
       queryKey: [...discountsKey, "student", studentId],
       queryFn: () => discountsAPI.getForStudent(studentId).then((r) => r.data.data),
       enabled: Boolean(studentId),
+    }),
+
+  // ── Qo'shimcha xizmatlar ───────────────────
+
+  /** Xizmatlar katalogi (biriktirilganlar soni bilan). */
+  serviceList: (params) =>
+    queryOptions({
+      queryKey: [...servicesKey, "list", params],
+      queryFn: () => servicesAPI.getAll(params).then((r) => r.data.data ?? []),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Barcha o'quvchilar + joriy oydagi xizmatlari → `{ data, pagination }`. */
+  serviceStudents: (params) =>
+    queryOptions({
+      queryKey: [...servicesKey, "students", params],
+      queryFn: () => servicesAPI.getStudents(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
     }),
 
   // ── Ta'til oylari ──────────────────────────

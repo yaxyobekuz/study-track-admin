@@ -140,6 +140,7 @@ import InventoryDashboardPage from "@/features/inventoryDashboard/pages/Inventor
 import ActivityDashboardPage from "@/features/activityDashboard/pages/ActivityDashboardPage";
 import SecurityPage from "@/features/security/pages/SecurityPage";
 import OverviewPage from "@/features/finance/pages/OverviewPage";
+import ClassFinancePage from "@/features/finance/pages/ClassFinancePage";
 import DebtorsPage from "@/features/finance/pages/DebtorsPage";
 import PaymentsPage from "@/features/finance/pages/PaymentsPage";
 import PaymentReceiptPage from "@/features/finance/pages/PaymentReceiptPage";
@@ -147,6 +148,7 @@ import AccountsPage from "@/features/finance/pages/AccountsPage";
 import TariffsPage from "@/features/finance/pages/TariffsPage";
 import TariffDetailPage from "@/features/finance/pages/TariffDetailPage";
 import DiscountsPage from "@/features/finance/pages/DiscountsPage";
+import ServicesPage from "@/features/finance/pages/ServicesPage";
 import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
 import ExternalIncomePage from "@/features/externalIncome/pages/ExternalIncomePage";
 import PayrollPage from "@/features/payroll/pages/PayrollPage";
@@ -158,6 +160,9 @@ import LessonHoursOverviewPage from "@/features/lessonHours/pages/LessonHoursOve
 import LessonHoursLedgerPage from "@/features/lessonHours/pages/LessonHoursLedgerPage";
 import SubstitutionsPage from "@/features/lessonHours/pages/SubstitutionsPage";
 import LessonLoadPage from "@/features/lessonHours/pages/LessonLoadPage";
+
+// Pages - Oylik zayavkalari (o'qituvchi/xodim so'rovlari — paneldan tasdiqlash)
+import PayrollRequestsPage from "@/features/payroll/pages/PayrollRequestsPage";
 
 // Pages - Inventar (moddiy-texnik baza)
 import InventoryLayout from "@/features/inventory/layouts/InventoryLayout";
@@ -184,6 +189,20 @@ import CreateAssignmentsPage from "@/features/test-seasons/pages/CreateAssignmen
 import SeasonRewardsPage from "@/features/test-seasons/pages/SeasonRewardsPage";
 import StudentResultsPage from "@/features/test-seasons/pages/StudentResultsPage";
 import ResultAnswersPage from "@/features/test-seasons/pages/ResultAnswersPage";
+
+// Pages - Diagnostika
+import DiagnosticsLayout from "@/features/diagnostics/layouts/DiagnosticsLayout";
+import DiagnosticsOverviewPage from "@/features/diagnostics/pages/OverviewPage";
+import DiagnosticQuestionsPage from "@/features/diagnostics/pages/QuestionsPage";
+import DiagnosticTestsPage from "@/features/diagnostics/pages/TestsPage";
+import DiagnosticAttemptsPage from "@/features/diagnostics/pages/AttemptsPage";
+import DiagnosticAttemptDetailPage from "@/features/diagnostics/pages/AttemptDetailPage";
+import DiagnosticClassesPage from "@/features/diagnostics/pages/ClassesPage";
+import DiagnosticStudentsPage from "@/features/diagnostics/pages/StudentsPage";
+import DiagnosticTopicsPage from "@/features/diagnostics/pages/TopicsPage";
+import DiagnosticSubjectsPage from "@/features/diagnostics/pages/SubjectsPage";
+import DiagnosticClassDetailPage from "@/features/diagnostics/pages/ClassDetailPage";
+import DiagnosticStudentProfilePage from "@/features/diagnostics/pages/StudentProfilePage";
 
 // Router
 import { Routes as RoutesWrapper, Route, Navigate } from "react-router-dom";
@@ -467,14 +486,18 @@ const Routes = () => {
             {/* Rahbar dashboardi — moliya bo'limining bosh ekrani */}
             <Route path="dashboard" element={<FinanceDashboardPage />} />
             <Route path="overview" element={<OverviewPage />} />
+            {/* Sinf moliyaviy sahifasi — overview'dagi sinf qatoridan ochiladi */}
+            <Route path="classes/:classId" element={<ClassFinancePage />} />
             <Route path="debtors" element={<DebtorsPage />} />
             <Route path="payments" element={<PaymentsPage />} />
             <Route path="accounts" element={<AccountsPage />} />
             <Route path="income" element={<ExternalIncomePage />} />
             <Route path="payroll" element={<PayrollPage />} />
+            <Route path="salary-requests" element={<PayrollRequestsPage />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="tariffs" element={<TariffsPage />} />
             <Route path="discounts" element={<DiscountsPage />} />
+            <Route path="services" element={<ServicesPage />} />
             <Route path="settings" element={<FinanceSettingsPage />} />
             {/* Eski havolalar uchun */}
             <Route
@@ -567,6 +590,43 @@ const Routes = () => {
           <Route
             path="/test-seasons/:seasonId/students/:studentId/results"
             element={<StudentResultsPage />}
+          />
+
+          {/* DIAGNOSTIKA — mavjud test tizimidan ALOHIDA bo'lim.
+              "Testlar" mavsum bo'yicha baho qo'yadi, diagnostika esa
+              o'quvchi QAYERDA turganini o'lchaydi va reja beradi
+              (`features/diagnostics/data/diagnostics.data.js` izohi). */}
+          <Route element={<DiagnosticsLayout />}>
+            <Route path="/diagnostics" element={<DiagnosticsOverviewPage />} />
+            <Route
+              path="/diagnostics/questions"
+              element={<DiagnosticQuestionsPage />}
+            />
+            <Route path="/diagnostics/tests" element={<DiagnosticTestsPage />} />
+            <Route path="/diagnostics/classes" element={<DiagnosticClassesPage />} />
+            <Route path="/diagnostics/subjects" element={<DiagnosticSubjectsPage />} />
+            <Route path="/diagnostics/topics" element={<DiagnosticTopicsPage />} />
+            <Route path="/diagnostics/students" element={<DiagnosticStudentsPage />} />
+            <Route
+              path="/diagnostics/attempts"
+              element={<DiagnosticAttemptsPage />}
+            />
+          </Route>
+
+          {/* Natija va o'quvchi profili — LAYOUTDAN TASHQARIDA: ular
+              bo'lim tablari ostidagi ro'yxat emas, alohida ekran va
+              o'z "orqaga" havolasiga ega. */}
+          <Route
+            path="/diagnostics/attempts/:attemptId"
+            element={<DiagnosticAttemptDetailPage />}
+          />
+          <Route
+            path="/diagnostics/classes/:classId"
+            element={<DiagnosticClassDetailPage />}
+          />
+          <Route
+            path="/diagnostics/students/:studentId"
+            element={<DiagnosticStudentProfilePage />}
           />
         </Route>
 

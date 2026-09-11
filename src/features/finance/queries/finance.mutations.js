@@ -2,13 +2,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { tariffsAPI, studentTariffsAPI } from "../api/finance.api";
+import {
+  tariffsAPI,
+  studentTariffsAPI,
+  studentMonthOverridesAPI,
+} from "../api/finance.api";
 import {
   invoicesAPI,
   paymentsAPI,
   paymentAccountsAPI,
   studentAccountsAPI,
   discountsAPI,
+  servicesAPI,
   vacationMonthsAPI,
   financeStatusAPI,
   financeSettingsAPI,
@@ -182,19 +187,37 @@ export const useDeleteAssignment = () => {
   });
 };
 
-// ── Hisob-fakturalar ─────────────────────────
+// ── Oy summasi override'i ────────────────────
 
-/** Majburiyat shakllantirish. `dryRun` bilan chaqirilsa hech narsa yozilmaydi. */
-export const useGenerateInvoices = () => {
+/**
+ * Bitta o'quvchi + oy uchun sababli summa. Server yozgach o'sha oy
+ * hisob-fakturasini avtomat qayta muhrlaydi — shuning uchun butun moliya
+ * invalidatsiya qilinadi.
+ */
+export const useUpsertMonthOverride = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data) => invoicesAPI.generate(data).then((r) => r.data.data),
-    onSuccess: (summary) => {
-      // dryRun hech narsa o'zgartirmagan — keshni bekorga tashlamaymiz
-      if (!summary?.dryRun) invalidateFinance(qc);
-    },
+    mutationFn: ({ studentId, data }) =>
+      studentMonthOverridesAPI.upsert(studentId, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
   });
 };
+
+/** Override'ni olib tashlash — o'sha oy odatdagi tarifga qaytadi. */
+export const useDeleteMonthOverride = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => studentMonthOverridesAPI.delete(id).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+// ── Hisob-fakturalar ─────────────────────────
+//
+// ⚠️ Qo'lda "Shakllantirish" / "Oyni qayta shakllantirish" / "Qarzlarni
+// tozalash" hooklari OLIB TASHLANGAN: hisob-fakturalar cron orqali avtomatik
+// shakllanadi va tarif/narx/chegirma o'zgarishida server tomonda AVTOMATIK
+// qayta shakllantiriladi. Qo'lda tugma yo'q.
 
 export const useUpdateInvoiceNote = () => {
   const qc = useQueryClient();
@@ -240,32 +263,6 @@ export const useRegenerateInvoice = () => {
   return useMutation({
     mutationFn: ({ id, reason }) =>
       invoicesAPI.regenerate(id, reason).then((r) => r.data.data),
-    onSuccess: () => invalidateFinance(qc),
-  });
-};
-
-/**
- * OMMAVIY AMALLAR — bitta oyning hamma hisob-fakturasi ustida.
- *
- * ⚠️ Ikkalasi ham qaytmaydigan amal, shuning uchun chaqiruvchi tomonda
- * sabab so'raladi (`financeReason` modali) va natija paket hisoboti
- * sifatida ochiq ko'rsatiladi: nechtasi bajarildi, nechtasi o'tkazib
- * yuborildi va NEGA. Jim "bajarildi" xabari bu yerda yetarli emas —
- * to'lov tushgan qatorlar ataylab chetda qoladi.
- */
-export const useCancelInvoiceMonth = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data) => invoicesAPI.cancelMonth(data).then((r) => r.data.data),
-    onSuccess: () => invalidateFinance(qc),
-  });
-};
-
-export const useRegenerateInvoiceMonth = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data) =>
-      invoicesAPI.regenerateMonth(data).then((r) => r.data.data),
     onSuccess: () => invalidateFinance(qc),
   });
 };
@@ -460,6 +457,78 @@ export const useDeleteDiscountAssignment = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id) => discountsAPI.deleteAssignment(id).then((r) => r.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+// ── Qo'shimcha xizmatlar ─────────────────────
+//
+// Har bir mutatsiyadan keyin server to'lanmagan hisob-fakturalarni AVTOMATIK
+// qayta hisoblaydi — shu sababli butun moliya invalidatsiya qilinadi.
+
+export const useCreateService = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => servicesAPI.create(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useUpdateService = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => servicesAPI.update(id, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useArchiveService = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isArchived }) =>
+      servicesAPI.archive(id, isArchived).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useDeleteService = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => servicesAPI.delete(id).then((r) => r.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useAssignService = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => servicesAPI.assign(data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useUpdateServiceAssignment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      servicesAPI.updateAssignment(id, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useCloseServiceAssignment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, endMonth }) =>
+      servicesAPI.closeAssignment(id, endMonth).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+export const useDeleteServiceAssignment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => servicesAPI.deleteAssignment(id).then((r) => r.data),
     onSuccess: () => invalidateFinance(qc),
   });
 };

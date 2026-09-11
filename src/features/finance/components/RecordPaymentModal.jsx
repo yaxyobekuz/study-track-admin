@@ -147,7 +147,7 @@ const Content = ({ close, isLoading, setIsLoading, student }) => {
         autoFocus
         min="0"
         step="0.01"
-        type="number"
+        type="amount"
         name="amount"
         label="Qabul qilingan summa (so'm)"
         value={amount}
@@ -210,7 +210,7 @@ const Content = ({ close, isLoading, setIsLoading, student }) => {
 
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Pul qayerga tushdi</p>
-        <Select
+        <Select searchable
           value={resolvedAccountId}
           placeholder="To'lov turini tanlang"
           onChange={(v) => setField("accountId", v)}
