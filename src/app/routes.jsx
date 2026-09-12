@@ -145,6 +145,7 @@ import SecurityPage from "@/features/security/pages/SecurityPage";
 import OverviewPage from "@/features/finance/pages/OverviewPage";
 import ClassFinancePage from "@/features/finance/pages/ClassFinancePage";
 import DebtorsPage from "@/features/finance/pages/DebtorsPage";
+import ReportsPage from "@/features/finance/pages/ReportsPage";
 import PaymentsPage from "@/features/finance/pages/PaymentsPage";
 import PaymentReceiptPage from "@/features/finance/pages/PaymentReceiptPage";
 import AccountsPage from "@/features/finance/pages/AccountsPage";
@@ -496,6 +497,7 @@ const Routes = () => {
             {/* Sinf moliyaviy sahifasi — overview'dagi sinf qatoridan ochiladi */}
             <Route path="classes/:classId" element={<ClassFinancePage />} />
             <Route path="debtors" element={<DebtorsPage />} />
+            <Route path="reports" element={<ReportsPage />} />
             <Route path="payments" element={<PaymentsPage />} />
             <Route path="accounts" element={<AccountsPage />} />
             <Route path="income" element={<ExternalIncomePage />} />

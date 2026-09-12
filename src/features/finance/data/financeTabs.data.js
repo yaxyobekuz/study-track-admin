@@ -35,6 +35,13 @@ export const MAIN_TABS = [
     exact: false,
   },
   {
+    to: "/finance/main/reports",
+    label: "Hisoblar",
+    title: "Moliya",
+    can: "debtors.view",
+    exact: false,
+  },
+  {
     to: "/finance/main/payments",
     label: "To'lovlar",
     title: "Moliya",
