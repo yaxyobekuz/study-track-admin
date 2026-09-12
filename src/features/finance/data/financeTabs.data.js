@@ -36,7 +36,7 @@ export const MAIN_TABS = [
   },
   {
     to: "/finance/main/reports",
-    label: "Hisoblar",
+    label: "Hisobotlar",
     title: "Moliya",
     can: "debtors.view",
     exact: false,
