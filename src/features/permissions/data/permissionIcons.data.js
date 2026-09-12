@@ -25,6 +25,7 @@ import {
   TriangleAlert,
   ClipboardList,
   GraduationCap,
+  FileSpreadsheet,
 } from "lucide-react";
 
 // Data
@@ -37,6 +38,7 @@ export const SECTION_ICONS = {
   [SECTIONS.ATTENDANCE]: CalendarCheck,
   [SECTIONS.GRADES]: GraduationCap,
   [SECTIONS.SCHEDULES]: CalendarDays,
+  [SECTIONS.SCHEDULE_SYNC]: FileSpreadsheet,
   [SECTIONS.PLANNER]: CalendarCog,
   [SECTIONS.TOPICS]: BookOpen,
   [SECTIONS.CLASSES]: School,

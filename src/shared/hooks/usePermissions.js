@@ -14,6 +14,7 @@ import {
  * @example
  * const { can, canSection, isOwner } = usePermissions();
  * if (can("users.create")) { ... }   // tugmani ko'rsatish
+ * if (can(["a.view", "b.view"])) { ... } // istalgan biri bo'lsa yetarli
  * if (canSection("users")) { ... }   // bo'limda umuman biror amali bormi
  */
 const usePermissions = () => {
@@ -22,7 +23,8 @@ const usePermissions = () => {
   const permissions = user?.permissions || [];
 
   /**
-   * @param {string|null} key - ruxsat kaliti ("users.create"); `null` → doim ochiq
+   * @param {string|string[]|null} key - ruxsat kaliti ("users.create") yoki
+   *   kalitlar ro'yxati (istalgan biri yetarli); `null` → doim ochiq
    * @returns {boolean}
    */
   const can = (key) => {

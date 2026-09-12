@@ -154,6 +154,12 @@ const navItems = [
         url: "/schedules",
       },
       {
+        // Alohida ruxsat bo'limi (`scheduleSync.*`, istalgan biri) —
+        // `permissionForPath` uni o'zi filtrlaydi.
+        title: "Google Sheets",
+        url: "/schedules/sheets",
+      },
+      {
         title: "Dars jadvalini rejalashtirish",
         url: "/schedule-planner",
       },

@@ -1,16 +1,10 @@
 import http from "@/shared/api/http";
 
+// ⚠️ Jadval versiyalari va tiklash bu yerda EMAS — ular butun maktab
+// jadvali bo'yicha `schedule-sync` bo'limida (`/schedule-sync/snapshots`).
+// Eski sinf-bo'yicha "tarix" endpointlari serverda hech qachon bo'lmagan.
 export const schedulesAPI = {
-  // asOf — qaysi sanada amaldagi jadval (bo'sh → bugun)
-  getByClass: (classId, asOf) =>
-    http.get(`/schedules/class/${classId}`, { params: asOf ? { asOf } : {} }),
-  // Barcha versiyalar (tarix)
-  getVersions: (classId) => http.get(`/schedules/class/${classId}/versions`),
-  // Tahrirlar tarixi (revision)
-  getRevisions: (classId, params) =>
-    http.get(`/schedules/class/${classId}/revisions`, { params }),
-  getRevision: (revId) => http.get(`/schedules/revisions/${revId}`),
-  restoreRevision: (revId) => http.post(`/schedules/revisions/${revId}/restore`),
+  getByClass: (classId) => http.get(`/schedules/class/${classId}`),
   getByDay: (classId, day) => http.get(`/schedules/class/${classId}/day/${day}`),
   getBySubject: (subjectId) => http.get(`/schedules/subject/${subjectId}`),
   // Dars biriktirish uchun o'qituvchilar ma'lumotnomasi: id, ism va
@@ -24,7 +18,8 @@ export const schedulesAPI = {
   exportByClass: (classId) =>
     http.get(`/schedules/class/${classId}/export`, { responseType: "blob" }),
   createOrUpdate: (data) => http.post("/schedules", data),
-  // payload: { schedules, effectiveFrom, effectiveTo }
+  // payload: { schedules } — sinfning butun haftasi.
+  // ⚠️ Sheet rejimida server 409 (`details.reason: "sheet_mode"`) qaytaradi.
   saveClassSchedule: (classId, payload) =>
     http.put(`/schedules/class/${classId}`, payload),
   updateCurrentTopic: (classId, subjectId, topicNumber) =>

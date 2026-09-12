@@ -38,6 +38,9 @@ import { useTeacherOptions } from "@/features/schedules/queries/schedules.querie
 import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 import { usePeriods } from "@/features/schedule-settings/queries/scheduleSettings.queries";
 
+// Helpers
+import { isSheetModeError } from "@/features/schedule-sync/helpers/scheduleSync.helpers";
+
 // Components
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
@@ -50,6 +53,12 @@ import ConfirmPopover from "@/shared/components/ui/ConfirmPopover";
 // yubormaslik uchun, lekin odam sahifadan chiqib ketguncha ulgurish uchun
 // qisqa: bir soniya.
 const DRAFT_DEBOUNCE_MS = 1000;
+
+// Sheet rejimi xabari — avtomatik zaxira va "Saqlash" bir vaqtda rad
+// etilsa ham ekranda BITTA xabar turadi (sonner `id` bo'yicha birlashtiradi).
+const SHEET_MODE_TOAST_ID = "schedule-sheet-mode";
+const SHEET_MODE_MESSAGE =
+  "Jadval Google Sheets orqali boshqarilmoqda — platformadagi o'zgarishni saqlab bo'lmaydi";
 
 const createEmptyLesson = (order) => ({
   subject: "",
@@ -283,6 +292,16 @@ const ScheduleForm = ({
   const draftMutation = useSaveScheduleDraft();
   const dropDraftMutation = useDeleteScheduleDraft();
 
+  /**
+   * Jadval manbai Google Sheets'ga o'tgan (409 `sheet_mode`): bu yerdagi
+   * tahrir endi saqlanmaydi. Manba so'rovini mutatsiya hook'i yangilaydi,
+   * forma esa odamni jadval sahifasiga qaytaradi.
+   */
+  const leaveOnSheetMode = () => {
+    toast.error(SHEET_MODE_MESSAGE, { id: SHEET_MODE_TOAST_ID });
+    navigate(`/schedules/${classId}`);
+  };
+
   // Serverda turgan holat: qoralama bo'lsa — o'sha, aks holda saqlangan
   // jadvalning o'zi. Shu tufayli "tahrirni qaytarib, jadvalga tenglashtirdim"
   // holati ham avtomat ravishda "zaxiralanadigan narsa yo'q" bo'lib chiqadi.
@@ -321,6 +340,9 @@ const ScheduleForm = ({
             signature: snapshot,
             updatedAt: res?.data?.updatedAt || new Date().toISOString(),
           }),
+        onError: (err) => {
+          if (isSheetModeError(err)) leaveOnSheetMode();
+        },
       },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -362,8 +384,14 @@ const ScheduleForm = ({
           updatedAt: res?.data?.updatedAt || new Date().toISOString(),
         });
       }
-    } catch {
-      toast.error("Qoralamani zaxiralab bo'lmadi");
+    } catch (err) {
+      // Sahifadan baribir chiqilyapti — faqat sababni aytamiz. Sheet
+      // rejimida qoralama ham yozilmaydi (tahrirning o'zi yopiq).
+      if (isSheetModeError(err)) {
+        toast.error(SHEET_MODE_MESSAGE, { id: SHEET_MODE_TOAST_ID });
+      } else {
+        toast.error("Qoralamani zaxiralab bo'lmadi");
+      }
     }
   }, [
     week,
@@ -500,6 +528,8 @@ const ScheduleForm = ({
           navigate(`/schedules/${classId}`);
         },
         onError: (err) => {
+          if (isSheetModeError(err)) return leaveOnSheetMode();
+
           const data = err.response?.data;
           setConflicts(data?.details?.conflicts || []);
           toast.error(data?.message || "Xatolik yuz berdi");

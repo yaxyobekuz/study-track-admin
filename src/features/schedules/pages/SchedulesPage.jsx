@@ -1,14 +1,19 @@
 // Data
 import { days } from "@/shared/data/days.data";
+import { SCHEDULE_SYNC_ACCESS } from "@/features/permissions/data/permissions.data";
 
 // React
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 // Router
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
 
 // Store
 import useAuth from "@/shared/hooks/useAuth";
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // API
 import { schedulesAPI } from "@/features/schedules/api/schedules.api";
@@ -21,27 +26,55 @@ import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 // Queries
 import { useClassSchedule } from "@/features/schedules/queries/schedules.queries";
 import { useClasses } from "@/features/classes/queries/classes.queries";
+import {
+  scheduleSyncQueries,
+  useScheduleSourceMode,
+} from "@/features/schedule-sync/queries/scheduleSync.queries";
 
 // Icons
-import { Edit, Calendar, Download, History } from "lucide-react";
-
-// Components
-import ScheduleHistoryModal from "@/features/schedules/components/ScheduleHistoryModal";
-
-// Utils
-import { formatDateUz } from "@/shared/utils/date.utils";
+import {
+  Edit,
+  Calendar,
+  Download,
+  ArrowRight,
+  FileSpreadsheet,
+  TriangleAlert,
+} from "lucide-react";
 
 const Schedules = () => {
   const { user } = useAuth();
+  const { can } = usePermissions();
   const navigate = useNavigate();
   const { classId } = useParams();
   const isOwner = user?.role === "owner";
+  const canOpenSync = can(SCHEDULE_SYNC_ACCESS);
 
   const { data: classes = [] } = useClasses();
-  const [historyOpen, setHistoryOpen] = useState(false);
 
   const { data: schedules = [], isLoading } = useClassSchedule(classId);
-  const className = classes.find((cls) => cls.id === classId)?.name || "Sinf";
+
+  // ── Jadval manbai ──
+  //
+  // "Tahrirlash" faqat manba ANIQ "platform" bo'lganda ko'rinadi: sheet
+  // rejimida platformadagi tahrir yopiq (server ham rad etadi), manba
+  // noma'lum bo'lsa esa tahrir sahifasi baribir formani ochmaydi.
+  const { data: modeData } = useScheduleSourceMode();
+  const isSheetMode = modeData?.mode === "sheet";
+  const isPlatformMode = modeData?.mode === "platform";
+
+  // Holat faqat bo'limga ruxsati borlarga so'raladi (endpoint `scheduleSync.*`).
+  const { data: syncStatus } = useQuery({
+    ...scheduleSyncQueries.status(),
+    enabled: canOpenSync,
+  });
+
+  // Qo'llash faqat sheet rejimida mavjud — platforma rejimida o'qilgan
+  // holat "Manbani almashtirish" orqali ko'rib chiqiladi, bu yerda
+  // doimiy eslatma bo'lib turmasligi kerak.
+  const hasPendingChange =
+    isSheetMode &&
+    Boolean(syncStatus?.can?.review) &&
+    syncStatus?.latestRevision?.status === "pending";
 
   // Redirect to the first class when no class is selected in the URL
   useEffect(() => {
@@ -100,12 +133,12 @@ const Schedules = () => {
   return (
     <div>
       {/* Top */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         {/* Title */}
         <h1 className="page-title">Dars jadvali</h1>
 
         {/* Filter & Action buttons */}
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2 xs:gap-4">
           <SelectSearch
             value={classId}
             placeholder="Sinfni tanlang"
@@ -117,14 +150,17 @@ const Schedules = () => {
             }))}
           />
 
-          {isOwner && (
-            <Button variant="outline" onClick={() => setHistoryOpen(true)}>
-              <History strokeWidth={1.5} />
-              Tarix
+          {canOpenSync && (
+            <Button
+              variant="outline"
+              onClick={() => navigate("/schedules/sheets")}
+            >
+              <FileSpreadsheet strokeWidth={1.5} />
+              Google Sheets
             </Button>
           )}
 
-          {isOwner && (
+          {isOwner && isPlatformMode && (
             <Button
               variant="outline"
               onClick={() => navigate(`/schedules/${classId}/edit`)}
@@ -141,6 +177,43 @@ const Schedules = () => {
         </div>
       </div>
 
+      {/* Manba: Google Sheets */}
+      {isSheetMode && (
+        <Card className="mb-4 flex items-start gap-2.5 border border-emerald-200 bg-emerald-50/60">
+          <FileSpreadsheet
+            className="mt-0.5 size-4 shrink-0 text-emerald-600"
+            strokeWidth={1.5}
+          />
+          <p className="text-sm text-gray-700">
+            Jadval Google Sheets orqali boshqarilmoqda — tahrirlash sheet'da
+            qilinadi
+          </p>
+        </Card>
+      )}
+
+      {/* Sheet'da ko'rib chiqilmagan o'zgarish */}
+      {hasPendingChange && (
+        <Card className="mb-4 flex flex-col gap-3 border border-amber-200 bg-amber-50/70 xs:flex-row xs:items-center xs:justify-between">
+          <div className="flex items-start gap-2.5">
+            <TriangleAlert
+              className="mt-0.5 size-4 shrink-0 text-amber-600"
+              strokeWidth={1.5}
+            />
+            <p className="text-sm text-gray-700">
+              Google Sheets'da yangi o'zgarish bor — ko'rib chiqing
+            </p>
+          </div>
+
+          <Link
+            to="/schedules/sheets?tab=changes"
+            className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800"
+          >
+            Ko'rib chiqish
+            <ArrowRight className="size-4" strokeWidth={1.5} />
+          </Link>
+        </Card>
+      )}
+
       {/* Schedule Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {days.map((day) => {
@@ -155,19 +228,9 @@ const Schedules = () => {
                     strokeWidth={1.5}
                     className="size-5 text-blue-500"
                   />
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {day.label}
-                    </h3>
-                    {schedule?.effectiveFrom && (
-                      <p className="text-xs text-gray-400">
-                        {formatDateUz(schedule.effectiveFrom)} dan
-                        {schedule.effectiveTo
-                          ? ` ${formatDateUz(schedule.effectiveTo)} gacha`
-                          : ""}
-                      </p>
-                    )}
-                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {day.label}
+                  </h3>
                 </div>
               </div>
 
@@ -213,14 +276,6 @@ const Schedules = () => {
           );
         })}
       </div>
-
-      {historyOpen && (
-        <ScheduleHistoryModal
-          classId={classId}
-          className={className}
-          onClose={() => setHistoryOpen(false)}
-        />
-      )}
     </div>
   );
 };

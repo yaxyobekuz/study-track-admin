@@ -47,12 +47,26 @@ import useSound from "@/shared/hooks/useSound";
 // Icons
 import { Check, ChevronDown } from "lucide-react";
 
+/**
+ * `idValues` rejimidagi qidiruv: faqat YORLIQ bo'yicha (cmdk qiymati id —
+ * u qidiruvga aralashsa, hex belgilar tasodifiy mos kelib qolardi).
+ */
+const filterByLabel = (value, search, keywords = []) =>
+  keywords.join(" ").toLowerCase().includes(search.trim().toLowerCase()) ? 1 : 0;
+
+/**
+ * @param {boolean} [props.idValues] - cmdk elementining qiymati `option.value`
+ *   (id) bo'ladi. ⚠️ Sukut bo'yicha qiymat — YORLIQ, ya'ni yorlig'i bir xil
+ *   ikki variant (adash o'qituvchilar) cmdk uchun BITTA element bo'lib
+ *   qolardi. Qidiruv baribir yorliq bo'yicha ishlaydi (`keywords`).
+ */
 const SelectSearch = ({
   value,
   onChange,
   options = [],
   isLoading = false,
   inline = false,
+  idValues = false,
   playClickSound = true,
   triggerClassName = "",
   searchPlaceholder = "Qidirish...",
@@ -118,7 +132,7 @@ const SelectSearch = ({
   );
 
   const list = (
-    <Command>
+    <Command filter={idValues ? filterByLabel : undefined}>
       <CommandInput placeholder={searchPlaceholder} />
       <CommandList>
         <CommandEmpty>{emptyText}</CommandEmpty>
@@ -126,7 +140,8 @@ const SelectSearch = ({
           {options.map((option) => (
             <CommandItem
               key={option.value}
-              value={option.label}
+              value={idValues ? String(option.value) : option.label}
+              keywords={idValues ? [String(option.label)] : undefined}
               onSelect={() => handleChange(option)}
               className="flex items-center justify-between gap-1.5"
             >

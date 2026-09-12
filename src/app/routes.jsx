@@ -47,6 +47,9 @@ import MissingGradesPage from "@/features/grades/pages/MissingGradesPage";
 import SchedulesPage from "@/features/schedules/pages/SchedulesPage";
 import EditSchedulePage from "@/features/schedules/pages/EditSchedulePage";
 
+// Pages - Dars jadvali Google Sheets orqali
+import ScheduleSyncPage from "@/features/schedule-sync/pages/ScheduleSyncPage";
+
 // Pages - Messages
 import MessagesPage from "@/features/messages/pages/MessagesPage";
 
@@ -324,6 +327,10 @@ const Routes = () => {
 
           {/* Schedules */}
           <Route path="/schedules" element={<SchedulesPage />} />
+          {/* ⚠️ Statik bo'g'in `:classId` dan oldin turadi (router uni baribir
+              yuqoriroq baholaydi, sinf id si esa 24 belgili hex). Ruxsat —
+              `scheduleSync.*` (`ROUTE_PERMISSIONS`). */}
+          <Route path="/schedules/sheets" element={<ScheduleSyncPage />} />
           <Route path="/schedules/:classId" element={<SchedulesPage />} />
           <Route
             path="/schedules/:classId/edit"

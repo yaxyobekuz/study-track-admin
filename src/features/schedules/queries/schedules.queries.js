@@ -119,7 +119,14 @@ export const useTeacherOptions = () => useQuery(schedulesQueries.teacherOptions(
 /**
  * Sinf jadvalining MENING qoralamam (tugallanmagan tahrir).
  *
+ * `enabled: false` — so'rov yuborilmaydi (masalan sheet rejimida: u yerda
+ * platformadagi tahrir ham, uning zaxirasi ham yo'q).
+ *
  * @param {string} classId
+ * @param {{ enabled?: boolean }} [options]
  */
-export const useScheduleDraft = (classId) =>
-  useQuery(schedulesQueries.draft(classId));
+export const useScheduleDraft = (classId, { enabled = true } = {}) =>
+  useQuery({
+    ...schedulesQueries.draft(classId),
+    enabled: Boolean(classId) && enabled,
+  });

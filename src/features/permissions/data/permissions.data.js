@@ -17,6 +17,7 @@ export const SECTIONS = {
   ACHIEVEMENTS: "achievements",
   CLUBS: "clubs",
   SCHEDULES: "schedules",
+  SCHEDULE_SYNC: "scheduleSync",
   PLANNER: "planner",
   SUBSTITUTIONS: "substitutions",
   TOPICS: "topics",
@@ -186,6 +187,29 @@ export const PERMISSION_SECTIONS = [
     label: "Dars jadvali",
     group: "Ta'lim",
     actions: [A.view, A.create, A.update, A.delete, A.export, A.settings],
+  },
+  {
+    // Dars jadvalini Google Sheets orqali boshqarish.
+    //
+    // ⚠️ ALOHIDA BO'LIM, `schedules` ichidagi amal EMAS. Eski yozuvlardagi
+    // bare "schedules" kaliti o'z bo'limining HAMMA amalini beradi
+    // (`hasPermission`, `expandLegacyKeys`). Bu amallar o'sha yerda bo'lsa,
+    // "Dars jadvali" ga eski umumiy ruxsati bor har kim butun maktab
+    // jadvalini almashtira olardi — owner hech kimga bermagan bo'lsa ham.
+    //
+    // `review` — kunlik ish (o'zgarishni ko'rish, nomlarni moslash,
+    // qo'llash / rad etish). `source` — butun maktab jadvalini bir bosishda
+    // almashtiradigan qaror (manba, havola, versiyani tiklash).
+    //
+    // ⚠️ Server katalogi bilan QO'LDA sinxron: `server/src/utils/permissions.js`.
+    key: SECTIONS.SCHEDULE_SYNC,
+    label: "Google Sheets jadvali",
+    group: "Ta'lim",
+    actions: [
+      A.view,
+      { key: "review", label: "O'zgarishlarni ko'rib chiqish va qo'llash" },
+      { key: "source", label: "Manbani almashtirish va versiyani tiklash" },
+    ],
   },
   {
     // REJALASHTIRISH — amaldagi jadvaldan ALOHIDA bo'lim.
@@ -728,8 +752,12 @@ export const SECTIONS_BY_GROUP = PERMISSION_SECTIONS.reduce((acc, s) => {
 /** Bo'lim kaliti bo'yicha label: "users" → "Foydalanuvchilar". */
 export const sectionLabel = (section) => SECTION_BY_KEY[section]?.label || section;
 
-/** Amal kaliti bo'yicha label: "users.create" → "Qo'shish". */
+/**
+ * Amal kaliti bo'yicha label: "users.create" → "Qo'shish".
+ * Kalitlar ro'yxati (`ROUTE_PERMISSIONS` dagi "istalgan biri") " / " bilan.
+ */
 export const actionLabel = (key = "") => {
+  if (Array.isArray(key)) return key.map(actionLabel).join(" / ");
   const [section, action] = key.split(".");
   const found = SECTION_BY_KEY[section]?.actions.find((a) => a.key === action);
   return found?.label || action || key;
@@ -737,6 +765,7 @@ export const actionLabel = (key = "") => {
 
 /** To'liq label: "users.create" → "Foydalanuvchilar → Qo'shish". */
 export const permissionLabel = (key = "") => {
+  if (Array.isArray(key)) return key.map(permissionLabel).join(" / ");
   const [section, action] = key.split(".");
   if (!action) return sectionLabel(section);
   return `${sectionLabel(section)} → ${actionLabel(key)}`;
@@ -745,8 +774,18 @@ export const permissionLabel = (key = "") => {
 /**
  * Foydalanuvchida berilgan ruxsat bormi? (server `hasPermission` bilan bir xil)
  * Eski, amalga bo'linmagan bo'lim kaliti ham qabul qilinadi.
+ *
+ * Kalitlar RO'YXATI — "istalgan biri" (any-of): sahifaga bir nechta
+ * amaldan istalgani bilan kirish mumkin bo'lganda (`ROUTE_PERMISSIONS`).
+ * ⚠️ Ro'yxat `.split` dan OLDIN tekshiriladi — massivda `split` yo'q.
+ *
+ * @param {string[]} permissions
+ * @param {string|string[]|null} key
  */
 export const hasPermission = (permissions = [], key) => {
+  if (Array.isArray(key)) {
+    return key.length === 0 || key.some((k) => hasPermission(permissions, k));
+  }
   if (!key) return true;
   if (permissions.includes(key)) return true;
   return permissions.includes(key.split(".")[0]);
@@ -795,10 +834,26 @@ export const normalizePermissions = (keys = []) => {
 export const toPermissionSet = (permissions = []) =>
   new Set(normalizePermissions(expandLegacyKeys(permissions)));
 
+/**
+ * Google Sheets jadvali bo'limiga kirish — uchala amaldan ISTALGAN biri.
+ *
+ * `view` ni avtomatik qo'shish (`normalizePermissions`) eski yozuvlarda
+ * bo'lmasligi mumkin: faqat `review` yoki `source` berilgan odam ham
+ * sahifani ochishi kerak. Sidebar, route guard va "Dars jadvali"
+ * sahifasidagi tugma shu bitta ro'yxatdan o'qiydi.
+ */
+export const SCHEDULE_SYNC_ACCESS = [
+  "scheduleSync.view",
+  "scheduleSync.review",
+  "scheduleSync.source",
+];
+
 // Route prefiks → talab qilinadigan ruxsat kaliti. Sidebar filtri va route
 // guard shu jadvaldan foydalanadi — sahifaga kirish uchun `.view` yetarli.
 // `/roles` va `/permissions` grant qilinmaydi — kalitlari katalogda yo'q,
 // shuning uchun can() ular uchun faqat owner'ga true qaytaradi (owner-only).
+//
+// `key` RO'YXAT bo'lishi mumkin — "istalgan biri" (`hasPermission`).
 const ROUTE_PERMISSIONS = [
   { prefix: "/branches", key: "branches.view" },
   { prefix: "/users", key: "users.view" },
@@ -806,6 +861,9 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/attendance", key: "attendance.view" },
   { prefix: "/grades", key: "grades.view" },
   { prefix: "/schedules", key: "schedules.view" },
+  // ⚠️ `/schedules` dan UZUNROQ — eng uzun mos prefiks yutadi. Aks holda
+  // sahifa `schedules.view` bilan ochilib ketardi (bo'limlar alohida).
+  { prefix: "/schedules/sheets", key: SCHEDULE_SYNC_ACCESS },
   { prefix: "/schedule-settings", key: "schedules.view" },
   { prefix: "/schedule-planner", key: "planner.view" },
   { prefix: "/topics", key: "topics.view" },
@@ -887,8 +945,11 @@ const ROUTE_PERMISSIONS = [
  * Berilgan yo'l (pathname yoki sidebar url) uchun talab qilinadigan ruxsat
  * kalitini qaytaradi. Hech bir prefiks mos kelmasa `null` (masalan "/",
  * "/profile" — doim ochiq). Eng aniq (uzun) mos kelgan prefiks tanlanadi.
+ *
+ * ⚠️ Kalitlar ro'yxati ("istalgan biri") qaytishi mumkin — natijani faqat
+ * `can()` / `hasPermission` ga bering, `.split` qilmang.
  * @param {string} pathname
- * @returns {string|null}
+ * @returns {string|string[]|null}
  */
 export const permissionForPath = (pathname = "") => {
   let match = null;

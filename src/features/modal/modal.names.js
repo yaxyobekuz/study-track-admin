@@ -229,6 +229,11 @@ export const MODAL_NAMES = [
   // Dars jadvalini rejalashtirish
   "plannerSubjectSplit",
 
+  // Dars jadvali — Google Sheets orqali boshqarish
+  "scheduleSyncConfig",
+  "scheduleSyncSwitch",
+  "scheduleSyncReject",
+
   // Changelog
   "createChangelog",
   "editChangelog",

@@ -16,7 +16,8 @@ import usePermissions from "@/shared/hooks/usePermissions";
  * </Can>
  *
  * @param {object} props
- * @param {string} props.do - ruxsat kaliti ("users.create")
+ * @param {string|string[]} props.do - ruxsat kaliti ("users.create") yoki
+ *   kalitlar ro'yxati — istalgan biri bo'lsa yetarli
  * @param {React.ReactNode} [props.fallback] - ruxsat bo'lmasa ko'rsatiladigan element
  * @param {React.ReactNode} props.children
  */

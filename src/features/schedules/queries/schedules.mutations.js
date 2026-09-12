@@ -6,16 +6,37 @@ import { schedulesAPI } from "../api/schedules.api";
 
 // Keys
 import { schedulesKeys } from "./schedules.queries";
+import { scheduleSyncKeys } from "@/features/schedule-sync/queries/scheduleSync.queries";
 
-/** Replace the whole-week schedule of a class as a new version (with a validity range). */
+// Helpers
+import { isSheetModeError } from "@/features/schedule-sync/helpers/scheduleSync.helpers";
+
+/**
+ * Sheet rejimida platformadagi yozuv rad etilsa (409 `sheet_mode`), manba
+ * so'rovi qayta o'qiladi — tahrir sahifasi formani yopib, sabab kartasini
+ * ko'rsatadi. Ekran hali ham "platforma" deb turgan bo'lsa, odam
+ * saqlanmaydigan ishni davom ettirib yurardi.
+ */
+const useRefreshModeOnSheetError = () => {
+  const qc = useQueryClient();
+
+  return (err) => {
+    if (isSheetModeError(err)) {
+      qc.invalidateQueries({ queryKey: scheduleSyncKeys.mode() });
+    }
+  };
+};
+
+/** Sinfning butun haftalik jadvalini saqlash. */
 export const useSaveClassSchedule = () => {
   const qc = useQueryClient();
+  const refreshMode = useRefreshModeOnSheetError();
+
   return useMutation({
-    mutationFn: ({ classId, schedules, effectiveFrom, effectiveTo }) =>
-      schedulesAPI
-        .saveClassSchedule(classId, { schedules, effectiveFrom, effectiveTo })
-        .then((r) => r.data),
+    mutationFn: ({ classId, schedules }) =>
+      schedulesAPI.saveClassSchedule(classId, { schedules }).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: schedulesKeys.all }),
+    onError: refreshMode,
   });
 };
 
@@ -26,11 +47,15 @@ export const useSaveClassSchedule = () => {
  * ochiq turgan forma. Qayta so'rov serverdagi nusxani qaytarib, odam
  * yozayotgan paytda formani orqaga tashlab yuborardi.
  */
-export const useSaveScheduleDraft = () =>
-  useMutation({
+export const useSaveScheduleDraft = () => {
+  const refreshMode = useRefreshModeOnSheetError();
+
+  return useMutation({
     mutationFn: ({ classId, week, baseHash }) =>
       schedulesAPI.saveDraft(classId, { week, baseHash }).then((r) => r.data),
+    onError: refreshMode,
   });
+};
 
 /** Qoralamani tashlash — "saqlangan jadvalga qaytish". */
 export const useDeleteScheduleDraft = () => {
@@ -48,9 +73,12 @@ export const useDeleteScheduleDraft = () => {
 /** Create or update a single schedule entry. */
 export const useCreateOrUpdateSchedule = () => {
   const qc = useQueryClient();
+  const refreshMode = useRefreshModeOnSheetError();
+
   return useMutation({
     mutationFn: (data) => schedulesAPI.createOrUpdate(data).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: schedulesKeys.all }),
+    onError: refreshMode,
   });
 };
 
@@ -69,17 +97,11 @@ export const useUpdateCurrentTopic = () => {
 /** Delete a schedule entry by id. */
 export const useDeleteSchedule = () => {
   const qc = useQueryClient();
+  const refreshMode = useRefreshModeOnSheetError();
+
   return useMutation({
     mutationFn: (id) => schedulesAPI.delete(id).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: schedulesKeys.all }),
-  });
-};
-
-/** Tarixdagi versiyaga qaytarish (restore). */
-export const useRestoreRevision = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (revId) => schedulesAPI.restoreRevision(revId).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: schedulesKeys.all }),
+    onError: refreshMode,
   });
 };
