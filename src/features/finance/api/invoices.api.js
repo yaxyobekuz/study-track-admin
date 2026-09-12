@@ -7,6 +7,9 @@ export const invoicesAPI = {
   getById: (id, params) => http.get(`/invoices/${id}`, { params }),
   /** Qarzdorlar — qarzdan boshlanadigan ro'yxat. */
   getDebtors: (params) => http.get("/invoices/debtors", { params }),
+  /** Qarzdorlar ro'yxatini Excel (xlsx) qilib yuklab olish — blob. */
+  exportDebtors: (params) =>
+    http.get("/invoices/debtors/export", { params, responseType: "blob" }),
   /**
    * Qarzdorlarga Telegram eslatmasi.
    * `{ studentIds, note }` — summa YUBORILMAYDI, server uni qayta hisoblaydi.
