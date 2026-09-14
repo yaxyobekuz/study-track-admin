@@ -3,6 +3,7 @@ import { cn } from "@/shared/utils/cn";
 import { formatDurationUz, formatTimeUz } from "@/shared/utils/date.utils";
 
 // Components
+import LocationLine from "./LocationLine";
 import Tooltip from "@/shared/components/ui/tooltip/Tooltip";
 
 // Data
@@ -148,7 +149,7 @@ const TooltipContent = ({ record }) => (
       </p>
     )}
 
-    {record.outOfOffice && <p className="text-red-300">Ofisdan tashqarida</p>}
+    {record.locationWarning && <LocationLine record={record} />}
   </div>
 );
 

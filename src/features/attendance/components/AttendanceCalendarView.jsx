@@ -3,6 +3,7 @@ import { cn } from "@/shared/utils/cn";
 import { formatDurationUZ, formatTimeUZ } from "@/shared/utils/date.utils";
 
 // Components
+import LocationLine from "./LocationLine";
 import Tooltip from "@/shared/components/ui/tooltip/Tooltip";
 
 // Helpers
@@ -164,9 +165,7 @@ const DayTooltip = ({ record, variant }) => {
               {formatDurationUZ(record.earlyOutMinutes)} erta ketdi
             </p>
           )}
-          {record.outOfOffice && (
-            <p className="text-red-300">Ofisdan tashqarida</p>
-          )}
+          {record.locationWarning && <LocationLine record={record} />}
         </>
       ) : (
         <>

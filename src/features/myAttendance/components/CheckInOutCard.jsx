@@ -21,8 +21,14 @@ import Button from "@/shared/components/ui/button/Button";
 import ConfirmPopover from "@/shared/components/ui/ConfirmPopover";
 import AttendanceStatusPill from "@/features/attendance/components/AttendanceStatusPill";
 
+// Data
+import {
+  LOCATION_STATUS_LABELS,
+  worstLocationStatus,
+} from "@/features/attendance/data/attendance.data";
+
 // Hooks
-import useGeolocation from "../hooks/useGeolocation";
+import useGeolocation from "@/shared/hooks/useGeolocation";
 
 // Queries
 import { myAttendanceQueries } from "../queries/myAttendance.queries";
@@ -46,7 +52,12 @@ const CheckInOutCard = ({ showTitle = true }) => {
   const { data: today, isLoading } = useQuery(myAttendanceQueries.today());
   const { data: schedule } = useQuery(myAttendanceQueries.schedule());
 
-  const { accuracy, error: gpsError, request: requestLocation } = useGeolocation();
+  const {
+    accuracy,
+    error: gpsError,
+    loading: gpsLoading,
+    request: requestLocation,
+  } = useGeolocation();
 
   const checkInMutation = useCheckIn();
   const checkOutMutation = useCheckOut();
@@ -83,7 +94,10 @@ const CheckInOutCard = ({ showTitle = true }) => {
     const location = await requestLocation();
 
     mutation.mutate(location || {}, {
-      onSuccess: () => toast.success(successMessage),
+      onSuccess: () =>
+        toast.success(
+          location ? successMessage : `${successMessage} — joylashuvsiz`,
+        ),
       onError: (error) =>
         toast.error(error?.response?.data?.message || "Xatolik yuz berdi"),
     });
@@ -109,10 +123,14 @@ const CheckInOutCard = ({ showTitle = true }) => {
           </span>
         )}
 
-        {today?.outOfOffice && (
+        {/* ⚠️ Sabab OCHIQ aytiladi: "ofisdan tashqarida" va "joylashuv
+            berilmagan" ikki xil holat — xodim qaysi biri ekanini bilsagina
+            uni tuzata oladi. */}
+        {today?.locationWarning && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-600">
             <MapPinOff className="size-3.5" strokeWidth={2} />
-            Ofisdan tashqarida qayd etilgan
+            {LOCATION_STATUS_LABELS[worstLocationStatus(today)] ||
+              "Ofisdan tashqarida qayd etilgan"}
           </span>
         )}
       </div>
@@ -123,7 +141,11 @@ const CheckInOutCard = ({ showTitle = true }) => {
         <TimeBox label="Ketdim" value={today?.checkOut} />
       </div>
 
-      <GeolocationStatus accuracy={accuracy} error={gpsError} />
+      <GeolocationStatus
+        accuracy={accuracy}
+        error={gpsError}
+        loading={gpsLoading}
+      />
 
       {/* Amal */}
       {!hasCheckedIn && (

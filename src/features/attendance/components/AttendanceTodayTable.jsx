@@ -6,7 +6,10 @@ import { formatDurationUz, formatTimeUz } from "@/shared/utils/date.utils";
 import {
   STATUS_COLORS,
   STATUS_LABELS,
+  LOCATION_STATUS_COLORS,
   buildRoleLabelMap,
+  locationSummary,
+  formatDistance,
 } from "../data/attendance.data";
 
 // Hooks
@@ -45,6 +48,7 @@ const AttendanceTodayTable = ({ rows }) => {
             <th className="text-left px-4 py-3">Keldi</th>
             <th className="text-left px-4 py-3">Ketdi</th>
             <th className="text-left px-4 py-3">Kechikish</th>
+            <th className="text-left px-4 py-3">Joylashuv</th>
           </tr>
         </thead>
         <tbody>
@@ -88,11 +92,39 @@ const AttendanceTodayTable = ({ rows }) => {
                   <span className="text-gray-300">-</span>
                 )}
               </td>
+              <td className="px-4 py-3">
+                <LocationCell row={row} />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+  );
+};
+
+/**
+ * Qayd etish joyi — bir qarashda.
+ *
+ * ⚠️ "Joylashuv berilmagan" ham ALOHIDA ko'rsatiladi: ilgari bunday
+ * qator toza qator bilan bir xil ko'rinardi, ya'ni GPS-ni o'chirib
+ * qo'yish tekshiruvdan butunlay qutulish yo'li edi.
+ */
+const LocationCell = ({ row }) => {
+  const summary = locationSummary(row);
+
+  if (!summary) return <span className="text-gray-300">-</span>;
+
+  return (
+    <span
+      className={cn(
+        "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
+        LOCATION_STATUS_COLORS[summary.status] || "bg-gray-100 text-gray-600",
+      )}
+    >
+      {summary.label}
+      {summary.distance !== null && ` · ${formatDistance(summary.distance)}`}
+    </span>
   );
 };
 

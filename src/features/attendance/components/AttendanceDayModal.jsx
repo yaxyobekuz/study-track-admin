@@ -12,7 +12,35 @@ import {
 } from "@/shared/utils/date.utils";
 
 // Data
-import { WORK_TIME_SOURCE } from "../data/attendance.data";
+import {
+  WORK_TIME_SOURCE,
+  LOCATION_STATUS_LABELS,
+  LOCATION_STATUS_HINTS,
+  formatDistance,
+} from "../data/attendance.data";
+
+/**
+ * Bitta qaydning joylashuvi: holat + ofisgacha masofa.
+ *
+ * Masofa ataylab ko'rsatiladi — "12 m narida" va "5 km narida" ni
+ * ajratmasdan turib, chekka holatni chin buzilishdan farqlab bo'lmaydi.
+ */
+const LocationValue = ({ status, distance }) => {
+  if (!status) return <span className="text-gray-400">—</span>;
+
+  const isClean = status === "inside";
+  const label = LOCATION_STATUS_LABELS[status] || status;
+  const hint = LOCATION_STATUS_HINTS[status];
+
+  return (
+    <span className={isClean ? "text-gray-900" : "text-amber-700"} title={hint}>
+      {label}
+      {distance !== null && distance !== undefined && (
+        <span className="text-gray-500"> · {formatDistance(distance)}</span>
+      )}
+    </span>
+  );
+};
 
 /**
  * Shu KUN uchun kutilgan ish vaqti.
@@ -117,13 +145,30 @@ const Content = ({ close, record, variant = "staff", user }) => {
     value: record.autoMarked ? "Avtomatik" : "Qo'lda",
   });
 
-  if (isStaff && (record.outOfOffice || record.locationWarning)) {
+  // ⚠️ KELISH va KETISH ALOHIDA ko'rsatiladi. Ilgari ikkalasi bitta
+  // bayroqqa siqilgani uchun "kelganda ofisda edi, ketganda tashqarida"
+  // degan holat umuman ko'rinmasdi — ekranda faqat "Ogohlantirish bor"
+  // turardi va uni tekshirishning iloji yo'q edi.
+  if (isStaff && record.checkIn) {
     rows.push({
-      label: "Joylashuv",
+      label: "Kelish joylashuvi",
       value: (
-        <span className="text-amber-700">
-          {record.outOfOffice ? "Ofisdan tashqarida" : "Ogohlantirish bor"}
-        </span>
+        <LocationValue
+          status={record.checkInLocationStatus}
+          distance={record.checkInDistance}
+        />
+      ),
+    });
+  }
+
+  if (isStaff && record.checkOut) {
+    rows.push({
+      label: "Ketish joylashuvi",
+      value: (
+        <LocationValue
+          status={record.checkOutLocationStatus}
+          distance={record.checkOutDistance}
+        />
       ),
     });
   }
