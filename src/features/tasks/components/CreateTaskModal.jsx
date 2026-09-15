@@ -6,17 +6,12 @@ import { useState } from "react";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
-import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Queries
-import { useTaskAssignees } from "../queries/tasks.queries";
 import { useCreateTask } from "../queries/tasks.mutations";
 
-// Helpers
-import { getRoleLabel } from "@/shared/helpers/role.helpers";
-
 // Components
-import MultiSelect from "@/shared/components/form/multi-select";
+import AssigneePicker from "./AssigneePicker";
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
@@ -32,7 +27,6 @@ const CreateTaskModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading }) => {
-  const { data: roles = [] } = useRoles();
   const { mutate: createTask } = useCreateTask();
 
   const { title, description, dueDate, penaltyPoints, setField } =
@@ -43,22 +37,13 @@ const Content = ({ close, isLoading, setIsLoading }) => {
       penaltyPoints: "1",
     });
 
-  const [assigneeIds, setAssigneeIds] = useState([]);
+  const [assignees, setAssignees] = useState([]);
   const [files, setFiles] = useState(null);
-
-  const { data: usersData = [], isLoading: usersLoading } = useTaskAssignees();
-
-  const userOptions = usersData
-    .filter((u) => u.role !== "owner")
-    .map((u) => ({
-      label: `${u.firstName}${u.lastName ? ` ${u.lastName}` : ""} (${getRoleLabel(u.role, roles)})`,
-      value: u.id,
-    }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (assigneeIds.length === 0) {
+    if (assignees.length === 0) {
       toast.error("Kamida bitta ijrochi tanlash kerak");
       return;
     }
@@ -68,7 +53,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     formData.append("description", description);
     formData.append("dueDate", dueDate);
     formData.append("penaltyPoints", penaltyPoints || "1");
-    formData.append("assigneeIds", JSON.stringify(assigneeIds));
+    formData.append("assigneeIds", JSON.stringify(assignees.map((u) => u.id)));
 
     if (files) {
       for (const file of files) formData.append("files", file);
@@ -89,16 +74,10 @@ const Content = ({ close, isLoading, setIsLoading }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3.5">
-      <MultiSelect
-        required
-        label="Ijrochilar"
-        value={assigneeIds}
-        options={userOptions}
-        disabled={usersLoading}
-        onChange={setAssigneeIds}
-        placeholder={
-          usersLoading ? "Yuklanmoqda..." : "Ijrochilarni tanlang..."
-        }
+      <AssigneePicker
+        value={assignees}
+        disabled={isLoading}
+        onChange={setAssignees}
       />
 
       <InputField
@@ -144,7 +123,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         accept="image/*,video/mp4,video/webm,application/pdf"
       />
 
-      <Button disabled={isLoading || assigneeIds.length === 0 || !title || !dueDate}>
+      <Button disabled={isLoading || assignees.length === 0 || !title || !dueDate}>
         Yaratish{isLoading && "..."}
       </Button>
     </form>

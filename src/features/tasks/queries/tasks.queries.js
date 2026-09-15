@@ -12,10 +12,10 @@ import { usersAPI } from "@/features/users/api/users.api";
 // so it stays in sync with user mutations (create / archive / …).
 import { usersKeys } from "@/features/users/queries/users.queries";
 
-export const tasksKeys = createQueryKeys("tasks");
+// Data
+import { ASSIGNEES_PAGE_LIMIT } from "../data/tasks.data";
 
-/** Params used by the assignable-users picker in CreateTaskModal. */
-const ASSIGNEES_PARAMS = { limit: 500 };
+export const tasksKeys = createQueryKeys("tasks");
 
 export const tasksQueries = {
   /** Paginated, filterable tasks list (owner) → `{ data, pagination }`. */
@@ -35,21 +35,35 @@ export const tasksQueries = {
     }),
 
   /**
-   * Full users list used as assignee options in the create modal. Keyed under
-   * the users namespace so it is deduped/invalidated with the rest of users.
+   * Assignee options for the create modal → `{ data, pagination }`.
+   *
+   * ⚠️ Filtered and searched ON THE SERVER. The old picker loaded the 500
+   * newest users of every role: with 500+ students, staff never made it into
+   * the list. Keyed under the users namespace with the users list's shape so
+   * it is deduped/invalidated with the rest of users.
+   *
+   * @param {{ group: "staff" | "student", search?: string }} params
    */
-  assignees: () =>
-    queryOptions({
-      queryKey: usersKeys.list(ASSIGNEES_PARAMS),
-      queryFn: () => usersAPI.getAll(ASSIGNEES_PARAMS).then((r) => r.data.data ?? []),
+  assignees: ({ group, search }) => {
+    const params = {
+      role: group,
+      limit: ASSIGNEES_PAGE_LIMIT,
+      ...(search && { search }),
+    };
+
+    return queryOptions({
+      queryKey: usersKeys.list(params),
+      queryFn: () => usersAPI.getAll(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
       staleTime: 5 * 60 * 1000,
-    }),
+    });
+  },
 };
 
 /**
- * Assignable users for the task create picker (all users, full objects).
+ * Assignable users for the task create picker.
  *
  * @example
- * const { data: users = [], isLoading } = useTaskAssignees();
+ * const { data, isFetching } = useTaskAssignees({ group: "staff", search });
  */
-export const useTaskAssignees = () => useQuery(tasksQueries.assignees());
+export const useTaskAssignees = (params) => useQuery(tasksQueries.assignees(params));

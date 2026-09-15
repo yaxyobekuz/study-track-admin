@@ -26,6 +26,17 @@ export const taskStatusOptions = [
   { value: "completed", label: "Muvaffaqiyatli yakunlangan" },
 ];
 
+// Ijrochi tanlash oynasidagi guruhlar. `value` — serverdagi `role` filtri:
+// "staff" rol emas, guruh (o'quvchidan boshqa hamma).
+export const assigneeGroupTabs = [
+  { value: "staff", label: "Xodimlar" },
+  { value: "student", label: "O'quvchilar" },
+];
+
+// Bir so'rovda yuklanadigan ijrochilar soni. O'quvchilar yuzlab — qolgani
+// qidiruv orqali topiladi.
+export const ASSIGNEES_PAGE_LIMIT = 50;
+
 export const ACTIVE_TASK_STATUSES = [
   "pending",
   "extended",
