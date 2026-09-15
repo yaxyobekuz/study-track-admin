@@ -64,9 +64,34 @@ const todayInputValue = () => {
 
 export const SalaryRuleModal = () => (
   <ResponsiveModal name="staffSalary" title="Oylik belgilash">
-    <SalaryRuleForm />
+    <SalaryRuleLoader />
   </ResponsiveModal>
 );
+
+/**
+ * Xodim bilan ochilganda (qoida berilmasdan) uning JORIY qoidasini yuklaydi:
+ * bo'lsa — tahrirlash (aks holda createSalary davr kesishuvi bilan yiqilardi),
+ * bo'lmasa — yangi qoida yaratish.
+ */
+const SalaryRuleLoader = ({ rule, staff, ...rest }) => {
+  const needsLookup = Boolean(staff?.id) && !rule;
+  const { data: history, isLoading } = useQuery({
+    ...payrollQueries.staffSalary(staff?.id),
+    enabled: needsLookup,
+  });
+
+  if (needsLookup && isLoading) {
+    return <p className="py-8 text-center text-sm text-gray-500">Yuklanmoqda...</p>;
+  }
+
+  return (
+    <SalaryRuleForm
+      {...rest}
+      staff={staff}
+      rule={rule ?? (needsLookup ? history?.current ?? null : null)}
+    />
+  );
+};
 
 // Serverdan formatlangan summa ("4500000.00") → input qiymati ("4500000")
 const toInputAmount = (value) =>
@@ -143,7 +168,10 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
   const kpiValue = wantsKpi ? categoryRate * hours : 0;
   const allowancesTotal = allowances.reduce((sum, a) => sum + allowanceAmount(a, fixedAmount), 0);
   const totalValue = (Number(fixedAmount) || 0) + allowancesTotal + kpiValue;
-  const hasAmount = Number(fixedAmount) > 0 || wantsKpi;
+  // Ustama-FAQAT qoida ham qonuniy: baza lavozimdan keladi, admin bu yerda
+  // faqat ustama (summa/foiz) qo'shadi
+  const hasAllowanceValue = allowances.some((a) => Number(a.value) > 0);
+  const hasAmount = Number(fixedAmount) > 0 || wantsKpi || hasAllowanceValue;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -267,7 +295,8 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
 
         {allowances.length === 0 && (
           <p className="text-xs text-gray-400">
-            Sertifikat, tajriba ustamasi va h.k. Foizli ustama fiksa maoshdan olinadi.
+            Sertifikat, tajriba ustamasi va h.k. Foizli ustama hisoblangan
+            boshlang'ich oylikdan (lavozim bazasi + fiksa + KPI) olinadi.
           </p>
         )}
 
@@ -305,7 +334,9 @@ const SalaryRuleForm = ({ close, isLoading, setIsLoading, rule, staff }) => {
             {Number(a.value) > 0 && (
               <p className="text-xs text-gray-500">
                 = {formatMoney(allowanceAmount(a, fixedAmount))}
-                {a.type === "percent" ? " (fiksadan)" : ""}
+                {a.type === "percent"
+                  ? " (taxminan — aniq summa boshlang'ich oylikdan hisoblanadi)"
+                  : ""}
               </p>
             )}
           </div>

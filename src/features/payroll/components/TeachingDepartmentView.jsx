@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 
 // Icons
-import { Plus, Pencil, Trash2, Archive, ChevronLeft, GraduationCap } from "lucide-react";
+import { Plus, Pencil, Trash2, Archive, ChevronLeft, GraduationCap, UserCog, UserPlus } from "lucide-react";
 
 // Components
 import Can from "@/shared/components/guards/Can";
@@ -105,6 +105,7 @@ const CategoryList = ({ department, month, onOpen }) => {
 
 // ── Toifa o'qituvchilari (drill-down) ──
 const CategoryTeachers = ({ department, category, month, onBack }) => {
+  const { openModal } = useModal();
   const [search, setSearch] = useState("");
   const { data, isLoading } = useQuery(
     payrollQueries.teacherPayroll({ categoryId: category.id, month, limit: 100, ...(search ? { search } : {}) }),
@@ -118,7 +119,16 @@ const CategoryTeachers = ({ department, category, month, onBack }) => {
         <button onClick={onBack} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
           <ChevronLeft className="size-4" /> Toifalar
         </button>
-        <input value={search} placeholder="Qidirish..." onChange={(e) => setSearch(e.target.value)} className="h-10 w-56 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary" />
+        <div className="flex items-center gap-2">
+          <input value={search} placeholder="Qidirish..." onChange={(e) => setSearch(e.target.value)} className="h-10 w-56 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary" />
+          {/* Admin O'ZI to'g'ridan-to'g'ri biriktiradi — zayavka shart emas
+              (zayavka oqimi ham ishlayveradi, bu unga qo'shimcha yo'l) */}
+          <Can do="payroll.assign">
+            <Button onClick={() => openModal("assignStaff", { department, category })}>
+              <UserPlus /> O'qituvchi biriktirish
+            </Button>
+          </Can>
+        </div>
       </div>
 
       <Card className="flex flex-wrap items-center gap-x-6 gap-y-1 bg-indigo-50 text-sm">
@@ -142,6 +152,22 @@ const CategoryTeachers = ({ department, category, month, onBack }) => {
               <Td className="font-medium">{formatMoney(t.kpiAmount)}</Td>
               <Td className={Number(t.allowanceAmount) > 0 ? "text-amber-600" : "text-gray-400"}>{formatMoney(t.allowanceAmount)}</Td>
               <Td className="font-semibold text-green-700">{formatMoney(t.amount)}</Td>
+              <Td>
+                <Can do="payroll.assign">
+                  <button
+                    title="Toifani o'zgartirish"
+                    onClick={() =>
+                      openModal("assignStaff", {
+                        staff: { id: t.id, fullName: t.fullName, salaryCategoryId: category.id },
+                        department,
+                      })
+                    }
+                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  >
+                    <UserCog className="size-3.5" />
+                  </button>
+                </Can>
+              </Td>
             </Tr>
           ))}
         </Table>
