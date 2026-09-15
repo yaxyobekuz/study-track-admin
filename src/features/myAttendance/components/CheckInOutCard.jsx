@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // React
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Icons
 import { LogIn, LogOut, MapPinOff } from "lucide-react";
@@ -52,23 +52,28 @@ const CheckInOutCard = ({ showTitle = true }) => {
   const { data: today, isLoading } = useQuery(myAttendanceQueries.today());
   const { data: schedule } = useQuery(myAttendanceQueries.schedule());
 
+  // ⚠️ `auto` — joylashuv oldindan aniqlanadi, lekin FAQAT ruxsat
+  // allaqachon berilgan bo'lsa. Ruxsat hali so'ralmagan qurilmada oyna
+  // odam tugmani bosganda chiqadi (`useGeolocation` sarlavhasidagi sabab:
+  // javobsiz qolgan oynalar Chrome'da saytni jimgina bloklaydi).
   const {
     accuracy,
     error: gpsError,
     loading: gpsLoading,
+    permission: gpsPermission,
     request: requestLocation,
-  } = useGeolocation();
+  } = useGeolocation({ auto: true });
 
   const checkInMutation = useCheckIn();
   const checkOutMutation = useCheckOut();
-  const isBusy = checkInMutation.isPending || checkOutMutation.isPending;
 
-  // Joylashuvni oldindan so'raymiz: tugma bosilgan payt ruxsat oynasi
-  // chiqsa, xodim "bosdim-ku, nega hech narsa bo'lmadi?" deb ikkinchi
-  // marta bosardi.
-  useEffect(() => {
-    requestLocation();
-  }, [requestLocation]);
+  // ⚠️ JOYLASHUV KUTILAYOTGAN PAYT HAM tugma yopiq. So'rov hali serverga
+  // ketmagan (mutatsiya `isPending` emas) — ikkinchi bosish ikkinchi
+  // qaydni yuborib, "allaqachon qayd etilgan" xatosini chiqarardi.
+  // Ref — bitta kadr ichidagi ikki bosish holatni ko'rmasdan o'tib ketmasin.
+  const [locating, setLocating] = useState(false);
+  const locatingRef = useRef(false);
+  const isBusy = locating || checkInMutation.isPending || checkOutMutation.isPending;
 
   // "Men ketdim" tugmasi vaqt bilan ochiladi — sekundni jonli sanaymiz.
   const [now, setNow] = useState(() => Date.now());
@@ -91,7 +96,17 @@ const CheckInOutCard = ({ showTitle = true }) => {
 
   /** Qayd etish — joylashuv olinmasa ham davom etadi (server ixtiyoriy). */
   const submit = async (mutation, successMessage) => {
-    const location = await requestLocation();
+    if (locatingRef.current || mutation.isPending) return;
+
+    locatingRef.current = true;
+    setLocating(true);
+    let location = null;
+    try {
+      location = await requestLocation();
+    } finally {
+      locatingRef.current = false;
+      setLocating(false);
+    }
 
     mutation.mutate(location || {}, {
       onSuccess: () =>
@@ -145,6 +160,8 @@ const CheckInOutCard = ({ showTitle = true }) => {
         accuracy={accuracy}
         error={gpsError}
         loading={gpsLoading}
+        permission={gpsPermission}
+        onRequest={requestLocation}
       />
 
       {/* Amal */}
@@ -155,7 +172,7 @@ const CheckInOutCard = ({ showTitle = true }) => {
           onClick={() => submit(checkInMutation, "Kelganligingiz qayd etildi")}
         >
           <LogIn strokeWidth={1.5} />
-          Men keldim{checkInMutation.isPending && "..."}
+          Men keldim{(locating || checkInMutation.isPending) && "..."}
         </Button>
       )}
 
@@ -170,7 +187,7 @@ const CheckInOutCard = ({ showTitle = true }) => {
           <Button variant="danger" className="w-full" disabled={isBusy || !canCheckOut}>
             <LogOut strokeWidth={1.5} />
             {canCheckOut
-              ? `Men ketdim${checkOutMutation.isPending ? "..." : ""}`
+              ? `Men ketdim${locating || checkOutMutation.isPending ? "..." : ""}`
               : `Men ketdim (${formatCountdown(remainingSeconds)})`}
           </Button>
         </ConfirmPopover>

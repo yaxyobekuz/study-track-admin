@@ -66,6 +66,21 @@ const MAX_ROW_ANIM = 10;
 const rowDelay = (base, index) => contentDelay(base, Math.min(index, MAX_ROW_ANIM));
 
 /**
+ * QURILMA BELGISI — "#3F9A1C".
+ *
+ * ⚠️ Yorliq ("Chrome · Android") ikkita turli telefonni ajrata olmaydi:
+ * o'quvchi ikki telefondan kirganda ro'yxatda ikkita bir xil qator
+ * turardi. Belgi serverdan keladi va faqat identifikator yuborgan
+ * paneldagi seansda bo'ladi — bo'lmasa hech narsa chizilmaydi.
+ */
+export const DeviceTag = ({ tag }) =>
+  tag ? (
+    <span className={cn(T.mono, "ml-1.5")} title="Qurilma belgisi">
+      {tag}
+    </span>
+  ) : null;
+
+/**
  * "HOZIR TIZIMDA" BELGISI.
  *
  * ⚠️ Ekranning yagona doimiy harakati hero'dagi `scan` edi; bu nuqta
@@ -293,7 +308,10 @@ export const MultiSessionPanel = ({
                     <LiveDot />
 
                     <div className="min-w-0 flex-1">
-                      <p className={cn(T.td, "truncate")}>{orDash(session.device)}</p>
+                      <p className={cn(T.td, "truncate")}>
+                        {orDash(session.device)}
+                        <DeviceTag tag={session.deviceTag} />
+                      </p>
 
                       {/* ⚠️ "Oxirgi ko'rinish" ALOHIDA USTUNDA EMAS, shu
                           satrda: telefonda o'ng ustun tugatish tugmasi bilan
@@ -438,6 +456,7 @@ export const LiveSessionsPanel = ({
               <div className="flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1 pl-5 sm:w-auto sm:flex-1 sm:flex-nowrap sm:gap-x-3 sm:pl-0">
                 <p className={cn(T.td, "min-w-0 flex-1 truncate")}>
                   {orDash(session.device)}
+                  <DeviceTag tag={session.deviceTag} />
                 </p>
 
                 <span className={cn(T.mono, "shrink-0 tabular-nums")}>

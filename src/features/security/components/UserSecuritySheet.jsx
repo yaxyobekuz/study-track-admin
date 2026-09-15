@@ -45,6 +45,9 @@ import {
   statusOf,
 } from "../data/sentinel.tokens";
 
+// Components
+import { DeviceTag } from "./SessionsPanel";
+
 /**
  * BITTA FOYDALANUVCHINING XAVFSIZLIK KARTASI.
  *
@@ -561,6 +564,7 @@ const SessionRow = ({ session, canRevoke, onRevoke, isBusy, delay }) => (
         <div className="flex flex-wrap items-center gap-1.5">
           <span className={cn(T.tdName, "min-w-0 break-words")}>
             {session.device || "Noma'lum qurilma"}
+            <DeviceTag tag={session.deviceTag} />
           </span>
           <span className={cn(CHIP.base, CHIP.tone.neutral)}>
             {channelLabel(session.channel)}
