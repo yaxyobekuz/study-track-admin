@@ -33,7 +33,6 @@ import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Modals
 import CreateTaskModal from "../components/CreateTaskModal";
-import DeleteTaskButton from "../components/DeleteTaskButton";
 import SelectAllUsers from "@/shared/components/ui/select/SelectAllUsers";
 
 const TasksPage = () => {
@@ -184,16 +183,12 @@ const TasksPage = () => {
                     {formatDateUZ(task.createdAt)}
                   </td>
                   <td className="py-2.5 px-3 text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <Link
-                        to={`/tasks/${task.id}`}
-                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        Batafsil
-                      </Link>
-                      {/* ⚠️ VAQTINCHA */}
-                      <DeleteTaskButton taskId={task.id} />
-                    </div>
+                    <Link
+                      to={`/tasks/${task.id}`}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      Batafsil
+                    </Link>
                   </td>
                 </tr>
               ))}
