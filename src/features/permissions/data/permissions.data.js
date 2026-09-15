@@ -939,6 +939,10 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/watch", key: "security.view" },
   { prefix: "/roles", key: "roles" },
   { prefix: "/permissions", key: "permissions" },
+  // AI yordamchi — BERILMAYDIGAN kalit (`PERMISSION_SECTIONS` da yo'q): u
+  // hech kimning `permissions` ro'yxatiga tushmaydi, ya'ni bo'lim faqat
+  // egaga ochiq. Server ham faqat `role === "owner"` ni o'tkazadi.
+  { prefix: "/ai-assistant", key: "aiAssistant" },
 ];
 
 /**

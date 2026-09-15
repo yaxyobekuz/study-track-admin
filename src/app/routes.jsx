@@ -24,6 +24,10 @@ import UserDetailPage from "@/features/users/pages/UserDetailPage";
 // Pages - Branches (filiallar)
 import BranchesPage from "@/features/branches/pages/BranchesPage";
 
+// Pages - AI yordamchi (faqat tizim egasi)
+import AiAssistantPage from "@/features/aiAssistant/pages/AiAssistantPage";
+import AiActionsPage from "@/features/aiAssistant/pages/AiActionsPage";
+
 // Pages - Roles
 import RolesPage from "@/features/roles/pages/RolesPage";
 
@@ -303,6 +307,15 @@ const Routes = () => {
               bu "hisobga kim kirdi" ni ko'rsatadi va shaxsiy ma'lumot
               (IP, qurilma) bilan ishlaydi. */}
           <Route path="/security" element={<SecurityPage />} />
+
+          {/* AI YORDAMCHI — faqat tizim egasi (`ROUTE_PERMISSIONS` dagi
+              berilmaydigan `aiAssistant` kaliti + sahifadagi `isOwner`).
+              ⚠️ `/actions` statik yo'li `:conversationId?` dan OLDIN yoziladi.
+              ⚠️ Suhbat — BITTA marshrut, ixtiyoriy parametr bilan: yangi
+              suhbat birinchi javobda `/ai-assistant/<id>` ga o'tganda sahifa
+              qayta o'rnatilmasin (yozilayotgan javob oqimi yo'qolardi). */}
+          <Route path="/ai-assistant/actions" element={<AiActionsPage />} />
+          <Route path="/ai-assistant/:conversationId?" element={<AiAssistantPage />} />
 
           {/* Roles */}
           <Route path="/roles" element={<RolesPage />} />

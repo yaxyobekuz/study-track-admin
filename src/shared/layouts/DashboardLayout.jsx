@@ -1,5 +1,5 @@
 // Router
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 // Components
 import {
@@ -43,7 +43,17 @@ import EditBranchModal from "@/features/branches/components/EditBranchModal";
 import ArchiveBranchModal from "@/features/branches/components/ArchiveBranchModal";
 import BugReport from "../components/layout/BugReport";
 
+/**
+ * Xatolik tugmasi (BugReport FAB) yashiriladigan sahifalar.
+ *
+ * ⚠️ AI YORDAMCHIDA pastki o'ng burchakda yuborish tugmasi turadi va
+ * `fixed` FAB aynan uning ustiga tushib, xabar yuborishni to'sardi.
+ */
+const hidesBugReport = (pathname) => pathname === "/ai-assistant" || pathname.startsWith("/ai-assistant/");
+
 const DashboardLayout = () => {
+  const { pathname } = useLocation();
+
   return (
     <>
       {/* Main */}
@@ -60,7 +70,7 @@ const DashboardLayout = () => {
       </SidebarProvider>
 
       {/* Bug Report */}
-      <BugReport />
+      {!hidesBugReport(pathname) && <BugReport />}
 
       {/* Background Patterns */}
       <MainBackgroundPatterns />

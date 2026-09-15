@@ -21,6 +21,7 @@ import {
   Brain,
   Timer,
   Clock,
+  Sparkles,
 } from "lucide-react";
 
 // Router
@@ -108,6 +109,28 @@ const navItems = [
       {
         title: "Statistika",
         url: "/statistics",
+      },
+    ],
+  },
+  {
+    // AI YORDAMCHI — FAQAT TIZIM EGASI (`ownerOnly`).
+    //
+    // ⚠️ Ruxsat filtri ham uni yashiradi (`/ai-assistant` kaliti berilmaydi),
+    // lekin `ownerOnly` niyatni aniq yozadi: bo'lim ROLGA bog'liq, va kimdir
+    // kelajakda kalitni katalogga qo'shib yuborsa ham u xodimlarga
+    // ko'rinib qolmaydi.
+    title: "AI yordamchi",
+    icon: Sparkles,
+    isActive: false,
+    ownerOnly: true,
+    items: [
+      {
+        title: "Suhbat",
+        url: "/ai-assistant",
+      },
+      {
+        title: "Amallar tarixi",
+        url: "/ai-assistant/actions",
       },
     ],
   },
@@ -564,8 +587,10 @@ const Main = () => {
   // Ruxsati bo'lmagan sahifalarni yashiramiz; bo'lim bo'sh qolsa — butun bo'limni.
   // `hideForOwner` — ruxsatga emas, ROLGA bog'liq bo'lim (owner'da davomat
   // yozuvi yo'q): "ruxsati bor, lekin ishlamaydi" degan holat bo'lmasin.
+  // `ownerOnly` — aksincha, faqat egaga (AI yordamchi).
   const visibleNavItems = navItems
     .filter((item) => !(item.hideForOwner && isOwner))
+    .filter((item) => !item.ownerOnly || isOwner)
     .map((item) => ({
       ...item,
       items: (item.items || []).filter((sub) =>
