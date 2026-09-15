@@ -19,6 +19,7 @@ import { formatMoney } from "@/shared/utils/formatMoney";
 
 // Queries
 import { payrollQueries } from "../queries/payroll.queries";
+import { usersQueries } from "@/features/users/queries/users.queries";
 import {
   useCreateDepartment,
   useUpdateDepartment,
@@ -195,7 +196,15 @@ export const AssignStaffModal = () => (
   </ResponsiveModal>
 );
 
-const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department }) => {
+/**
+ * IKKI YO'L bilan ochiladi:
+ *   - `{ staff, department }` — xodim qatoridan: xodim qulflangan, toifa/lavozim tanlanadi
+ *   - `{ department, category? }` — bo'lim/toifa sahifasidan: xodim RO'YXATDAN
+ *     tanlanadi (admin o'zi to'g'ridan-to'g'ri biriktiradi, zayavkasiz).
+ *     `category` berilsa toifa oldindan tanlangan bo'ladi.
+ * Zayavka (PayrollRequest) oqimi bunga TEGMAYDI — u alohida ishlayveradi.
+ */
+const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, category }) => {
   const { mutate: assign } = useAssignStaff();
   const isTeaching = department?.kind === "teaching";
 
@@ -207,21 +216,39 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department }) 
     ...payrollQueries.categories({ departmentId: department?.id, status: "active" }),
     enabled: Boolean(department?.id) && isTeaching,
   });
+  // Xodim berilmagan — ro'yxatdan tanlanadi
+  const { data: people = [] } = useQuery({
+    ...usersQueries.allShort(),
+    enabled: !staff,
+  });
 
-  const { targetId, setField } = useObjectState({
-    targetId: (isTeaching ? staff?.salaryCategoryId : staff?.positionId) ?? "",
+  const { staffId, targetId, setField } = useObjectState({
+    staffId: staff?.id ?? "",
+    targetId:
+      category?.id ??
+      ((isTeaching ? staff?.salaryCategoryId : staff?.positionId) ?? ""),
   });
 
   const options = isTeaching
     ? categories.map((c) => ({ label: `${c.name} — ${formatMoney(c.perHourRate)}/soat`, value: c.id }))
     : positions.map((p) => ({ label: `${p.name} — ${formatMoney(p.baseSalary)}`, value: p.id }));
 
+  // Teaching bo'limga faqat o'qituvchilar, staff bo'limga qolgan xodimlar
+  const peopleOptions = people
+    .filter((p) =>
+      isTeaching ? p.role === "teacher" : p.role !== "student" && p.role !== "teacher",
+    )
+    .map((p) => ({
+      label: p.fullName || `${p.firstName ?? ""} ${p.lastName ?? ""}`.trim(),
+      value: p.id,
+    }));
+
   const submit = (e) => {
     e.preventDefault();
     setIsLoading(true);
     const data = isTeaching ? { salaryCategoryId: targetId } : { positionId: targetId };
     assign(
-      { staffId: staff.id, data },
+      { staffId: staff?.id || staffId, data },
       {
         onSuccess: () => { close(); toast.success("Biriktirildi"); },
         onError: (err) => toast.error(err.response?.data?.message || "Xatolik"),
@@ -232,15 +259,30 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department }) 
 
   return (
     <InputGroup onSubmit={submit} as="form">
-      <div className="rounded-xl bg-gray-50 p-3 text-sm">
-        <p className="font-medium text-gray-900">{staff?.fullName || `${staff?.firstName ?? ""} ${staff?.lastName ?? ""}`.trim()}</p>
-        <p className="text-gray-500">{department?.name}</p>
-      </div>
+      {staff ? (
+        <div className="rounded-xl bg-gray-50 p-3 text-sm">
+          <p className="font-medium text-gray-900">{staff?.fullName || `${staff?.firstName ?? ""} ${staff?.lastName ?? ""}`.trim()}</p>
+          <p className="text-gray-500">{department?.name}</p>
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium text-gray-700">
+            {isTeaching ? "O'qituvchi" : "Xodim"}
+          </p>
+          <Select
+            searchable
+            value={staffId}
+            placeholder={isTeaching ? "O'qituvchini tanlang" : "Xodimni tanlang"}
+            onChange={(v) => setField("staffId", v)}
+            options={peopleOptions}
+          />
+        </div>
+      )}
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">{isTeaching ? "Toifa" : "Lavozim"}</p>
         <Select searchable value={targetId} placeholder={isTeaching ? "Toifani tanlang" : "Lavozimni tanlang"} onChange={(v) => setField("targetId", v)} options={options} />
       </div>
-      <Button type="submit" className="w-full" loading={isLoading} disabled={!targetId}>
+      <Button type="submit" className="w-full" loading={isLoading} disabled={!targetId || (!staff && !staffId)}>
         Biriktirish
       </Button>
     </InputGroup>

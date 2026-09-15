@@ -33,7 +33,7 @@ export const CATEGORY_V2_COLUMNS = [
 ];
 
 /** Toifa o'qituvchilari jadvali. */
-export const TEACHER_PAYROLL_COLUMNS = ["O'qituvchi", "Dars soati", "Soatbay hisob", "Ustama", "Yakuniy oylik"];
+export const TEACHER_PAYROLL_COLUMNS = ["O'qituvchi", "Dars soati", "Soatbay hisob", "Ustama", "Yakuniy oylik", ""];
 
 /** Bo'limning ichki tablari (eski). */
 export const PAYROLL_TABS = [

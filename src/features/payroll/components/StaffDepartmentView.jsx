@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 
 // Icons
-import { Plus, Pencil, Trash2, UserCog, Briefcase } from "lucide-react";
+import { Plus, Pencil, Trash2, UserCog, Briefcase, Wallet } from "lucide-react";
 
 // Components
 import Can from "@/shared/components/guards/Can";
@@ -139,11 +139,19 @@ const StaffDepartmentView = ({ department, month }) => {
                 <Td className={Number(e.allowanceAmount) > 0 ? "text-amber-600" : "text-gray-400"}>{formatMoney(e.allowanceAmount)}</Td>
                 <Td className="font-semibold text-green-700">{formatMoney(e.amount)}</Td>
                 <Td>
-                  <Can do="payroll.assign">
-                    <button title="Biriktirish" onClick={() => openModal("assignStaff", { staff: e, department })} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
-                      <UserCog className="size-3.5" />
-                    </button>
-                  </Can>
+                  <div className="flex items-center justify-end gap-1">
+                    <Can do="payroll.assign">
+                      <button title="Lavozimga biriktirish" onClick={() => openModal("assignStaff", { staff: e, department })} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                        <UserCog className="size-3.5" />
+                      </button>
+                      {/* Fiksa oylik va USTAMA (summa yoki foiz) — admin O'ZI
+                          belgilaydi. Foizli ustama hisoblangan boshlang'ich
+                          oylikdan olinadi. Ustama zayavkasi ham ishlayveradi. */}
+                      <button title="Oylik/ustama belgilash" onClick={() => openModal("staffSalary", { staff: e })} className="rounded-lg p-1.5 text-gray-400 hover:bg-green-50 hover:text-green-600">
+                        <Wallet className="size-3.5" />
+                      </button>
+                    </Can>
+                  </div>
                 </Td>
               </Tr>
             ))}
