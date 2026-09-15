@@ -36,6 +36,7 @@ import Button from "@/shared/components/ui/button/Button";
 import ReviewTaskModal from "../components/ReviewTaskModal";
 import ExtendDeadlineModal from "../components/ExtendDeadlineModal";
 import StopTaskModal from "../components/StopTaskModal";
+import DeleteTaskButton from "../components/DeleteTaskButton";
 
 const TaskDetailPage = () => {
   const { data: roles = [] } = useRoles();
@@ -353,6 +354,15 @@ const TaskDetailPage = () => {
               </div>
             </Card>
           )}
+
+          {/* ⚠️ VAQTINCHA — o'chirish (har qanday holatda) */}
+          <Card>
+            <DeleteTaskButton
+              full
+              taskId={task.id}
+              onDeleted={() => navigate("/tasks", { replace: true })}
+            />
+          </Card>
 
           {/* User stats */}
           <Card>

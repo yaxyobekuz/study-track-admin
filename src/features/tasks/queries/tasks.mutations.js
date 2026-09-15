@@ -42,6 +42,19 @@ export const useStopTask = () => {
   });
 };
 
+/**
+ * ⚠️ TEMPORARY — delete a task (will be removed later).
+ * Only lists are invalidated: the detail page navigates away itself, and
+ * dropping its query while mounted would refetch a 404.
+ */
+export const useDeleteTask = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => tasksAPI.remove(id).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: tasksKeys.lists() }),
+  });
+};
+
 /** Extend a task's deadline. */
 export const useExtendDeadline = () => {
   const qc = useQueryClient();

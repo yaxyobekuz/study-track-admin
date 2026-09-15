@@ -33,4 +33,7 @@ export const tasksAPI = {
 
   // Owner muddatni uzaytiradi
   extend: (id, data) => http.put(`/tasks/${id}/extend`, data),
+
+  // ⚠️ VAQTINCHA — topshiriqni o'chirish (keyin olib tashlanadi)
+  remove: (id) => http.delete(`/tasks/${id}`),
 };
