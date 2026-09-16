@@ -244,6 +244,8 @@ const PayrollDeductionsPage = () => {
             <Pagination
               currentPage={page}
               totalPages={data.pagination.totalPages}
+              hasNextPage={page < data.pagination.totalPages}
+              hasPrevPage={page > 1}
               onPageChange={setPage}
             />
           )}

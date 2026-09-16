@@ -115,7 +115,12 @@ const StaffDepartmentView = ({ department, month }) => {
 
       {/* Xodimlar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-gray-700">Xodimlar</h3>
+        <h3 className="text-sm font-semibold text-gray-700">
+          Xodimlar
+          {data?.pagination?.total > 0 && (
+            <span className="ml-1.5 font-normal text-gray-400">({data.pagination.total} ta)</span>
+          )}
+        </h3>
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={sort}
@@ -175,8 +180,18 @@ const StaffDepartmentView = ({ department, month }) => {
               </Tr>
             ))}
           </Table>
-          {data?.pagination?.totalPages > 1 && (
-            <Pagination currentPage={page} totalPages={data.pagination.totalPages} onPageChange={setPage} />
+          {/* Bitta sahifa bo'lsa ham ko'rinadi — "hammasi shu" ekani aniq bo'lsin */}
+          {data?.pagination && (
+            <div className="overflow-x-auto pb-1.5">
+              <Pagination
+                className="min-w-max"
+                currentPage={page}
+                totalPages={Math.max(1, data.pagination.totalPages)}
+                hasNextPage={page < data.pagination.totalPages}
+                hasPrevPage={page > 1}
+                onPageChange={setPage}
+              />
+            </div>
           )}
         </>
       )}

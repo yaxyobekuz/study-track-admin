@@ -132,7 +132,7 @@ const RequestsView = () => {
             ))}
           </Table>
           {data?.pagination?.totalPages > 1 && (
-            <Pagination currentPage={page} totalPages={data.pagination.totalPages} onPageChange={setPage} />
+            <Pagination currentPage={page} totalPages={data.pagination.totalPages} hasNextPage={page < data.pagination.totalPages} hasPrevPage={page > 1} onPageChange={setPage} />
           )}
         </>
       )}
@@ -171,7 +171,7 @@ const AuditView = () => {
             ))}
           </Table>
           {data?.pagination?.totalPages > 1 && (
-            <Pagination currentPage={page} totalPages={data.pagination.totalPages} onPageChange={setPage} />
+            <Pagination currentPage={page} totalPages={data.pagination.totalPages} hasNextPage={page < data.pagination.totalPages} hasPrevPage={page > 1} onPageChange={setPage} />
           )}
         </>
       )}
