@@ -9,7 +9,7 @@ import { formatMoney } from "@/shared/utils/formatMoney";
 import Panel from "./Panel";
 
 // Data & tokens
-import { CHIP, MODE, MOTION, SURFACE, T } from "../data/ledger.tokens";
+import { CHIP, MOTION, SURFACE, T, modeOf } from "../data/ledger.tokens";
 import { formatHourNumber, normRatio } from "../data/lessonHours.data";
 
 /**
@@ -20,8 +20,13 @@ import { formatHourNumber, normRatio } from "../data/lessonHours.data";
  * yuqori qiymatga nisbatan o'lchanadigan chiziq bor. To'liq ro'yxat va
  * barcha ustunlar vedomost sahifasida; bu yerda ataylab o'nta.
  *
- * ⚠️ NORMA HALQASI FAQAT "ARALASH" REJIMDA. Soatbayda norma tushunchasi
- * yo'q va bo'sh halqa "norma bajarilmagan" deb o'qilardi.
+ * ⚠️ RO'YXAT OYLIK REJIMI BO'YICHA FILTRLANMAYDI — o'lchov SOAT. Oyligi
+ * hali biriktirilmagan o'qituvchi ham reytingda bo'lishi kerak, aks holda
+ * eng ko'p dars beradigan odam ekranda umuman ko'rinmay qolardi.
+ *
+ * ⚠️ NORMA HALQASI — payroll-v2 da norma tushunchasi yo'q (`normProgress`
+ * doim `null`), shuning uchun halqa hozir chizilmaydi. Kod qoladi: norma
+ * qaytarilsa, server bitta maydonni to'ldirishi kifoya.
  */
 const LoadRanking = ({ data, isLoading, isError, delay = 0, onSelect }) => {
   const rows = data?.topTeachers ?? [];
@@ -37,7 +42,7 @@ const LoadRanking = ({ data, isLoading, isError, delay = 0, onSelect }) => {
       isLoading={isLoading}
       isError={isError}
       isEmpty={!isLoading && rows.length === 0}
-      emptyText="Bu oyda soatbay yoki aralash rejimdagi o'qituvchi yo'q"
+      emptyText="Bu oyda dars jadvalida soati bor o'qituvchi yo'q"
       padding="flush"
     >
       <ul className="px-2 pb-2">
@@ -64,10 +69,8 @@ const LoadRanking = ({ data, isLoading, isError, delay = 0, onSelect }) => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className={cn(T.tdName, "truncate")}>{row.staffName}</p>
-                    <span
-                      className={cn(CHIP, MODE[row.salaryType]?.chip)}
-                    >
-                      {MODE[row.salaryType]?.short}
+                    <span className={cn(CHIP, modeOf(row.salaryType).chip)}>
+                      {modeOf(row.salaryType).short}
                     </span>
                     {overNorm && (
                       <span className={cn(CHIP, "bg-amber-50 text-amber-800")}>
@@ -82,7 +85,7 @@ const LoadRanking = ({ data, isLoading, isError, delay = 0, onSelect }) => {
                       className={cn("block h-full rounded-full", MOTION.bar)}
                       style={{
                         width: `${(row.hours / max) * 100}%`,
-                        background: MODE[row.salaryType]?.hex ?? "#4F46E5",
+                        background: modeOf(row.salaryType).hex,
                         animationDelay: `${delay + 200 + index * 34}ms`,
                       }}
                     />

@@ -112,23 +112,44 @@ export const MODE = {
     chip: "bg-slate-100 text-slate-700",
     hex: "#475569",
   },
-  hourly: {
-    key: "hourly",
-    label: "Soatbay",
-    short: "Soatbay",
-    hint: "Har bir o'tilgan akademik soat uchun",
+  kpi: {
+    key: "kpi",
+    label: "KPI (dars soati)",
+    short: "KPI",
+    hint: "Har bir dars soati uchun toifa stavkasi",
     chip: "bg-indigo-50 text-indigo-700",
     hex: "#4F46E5",
   },
   mixed: {
     key: "mixed",
-    label: "Fiksa + ortiqcha soat",
+    label: "Fiksa + KPI",
     short: "Aralash",
-    hint: "Bazaviy oylik + normadan ortig'i uchun stavka",
+    hint: "Lavozim maoshi + dars soati uchun stavka",
     chip: "bg-amber-50 text-amber-800",
     hex: "#B45309",
   },
+  /**
+   * ⚠️ OYLIGI BELGILANMAGAN — bu HOLAT, rejim emas, lekin ro'yxatda
+   * o'z chipiga ega bo'lishi kerak. Dars beradigan-u oyligi biriktirilmagan
+   * o'qituvchi bo'sh katak bilan ko'rsatilsa, u "fiksa" bilan bir xil
+   * ko'rinib, ekrandagi eng muhim bo'shliq jim qolardi.
+   */
+  none: {
+    key: "none",
+    label: "Belgilanmagan",
+    short: "Yo'q",
+    hint: "Oylik qoidasi hali biriktirilmagan",
+    chip: "bg-rose-50 text-rose-600",
+    hex: "#E11D48",
+  },
 };
+
+/**
+ * Qatorning rejim tokeni — `salaryType` null bo'lsa "Belgilanmagan".
+ * Har komponentda `?? none` yozilsa, biri esdan chiqib bo'sh chip
+ * qolardi (`LoadRanking` da aynan shunday bo'lgan edi).
+ */
+export const modeOf = (salaryType) => MODE[salaryType] ?? MODE.none;
 
 /**
  * O'RINBOSARLIK YO'NALISHI — kim kimga.

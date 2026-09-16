@@ -9,7 +9,7 @@ import { formatMoney } from "@/shared/utils/formatMoney";
 import Panel from "./Panel";
 
 // Data & tokens
-import { CHIP, MODE, MOTION, STAGE, SURFACE, T, rowDelay } from "../data/ledger.tokens";
+import { CHIP, MOTION, STAGE, SURFACE, T, modeOf, rowDelay } from "../data/ledger.tokens";
 import { formatHourNumber } from "../data/lessonHours.data";
 
 /**
@@ -97,25 +97,31 @@ const LedgerTable = ({ data, isLoading, isError, onSelect, delay = 0 }) => {
                     </p>
                   </div>
 
-                  <span className={cn(CHIP, MODE[row.salaryType]?.chip ?? "bg-slate-100 text-slate-500")}>
-                    {MODE[row.salaryType]?.short ?? "—"}
+                  <span className={cn(CHIP, modeOf(row.salaryType).chip)}>
+                    {modeOf(row.salaryType).short}
+                  </span>
+
+                  {/* ⚠️ SOAT HAR DOIM KO'RSATILADI — oylik rejimidan
+                      QAT'IY NAZAR. Ilgari bu uch katak `usesHours` bilan
+                      to'silgan edi va oyligi biriktirilmagan o'qituvchi
+                      butun qatorda "—" bo'lib turardi, go'yo u dars
+                      bermaydigandek. Soat — jadval fakti, pul esa alohida
+                      qaror. */}
+                  <span className={cn(T.tdNum, "text-right")}>
+                    {formatHourNumber(row.weeklyHours)}
                   </span>
 
                   <span className={cn(T.tdNum, "text-right")}>
-                    {row.usesHours ? formatHourNumber(row.weeklyHours) : "—"}
-                  </span>
-
-                  <span className={cn(T.tdNum, "text-right")}>
-                    {row.usesHours ? formatHourNumber(row.hours) : "—"}
+                    {formatHourNumber(row.hours)}
                   </span>
 
                   <span
                     className={cn(
                       "text-right text-[12.5px] font-semibold tabular-nums",
-                      row.usesHours ? "text-indigo-600" : "text-slate-300",
+                      row.hours > 0 ? "text-indigo-600" : "text-slate-300",
                     )}
                   >
-                    {row.usesHours ? formatHourNumber(row.taughtHours) : "—"}
+                    {formatHourNumber(row.taughtHours)}
                   </span>
 
                   {/* Ikki yo'nalish bitta katakda, lekin QO'SHILMAYDI */}
@@ -173,6 +179,15 @@ const LedgerTable = ({ data, isLoading, isError, onSelect, delay = 0 }) => {
         <div className={cn(SURFACE.tile, "mx-4 mb-4 mt-1 flex flex-wrap items-center gap-x-6 gap-y-2")}>
           <Summary label="Xodim" value={String(data.totals.staffCount)} />
           <Summary label="Jami soat" value={formatHourNumber(data.totals.totalHours)} />
+          {/* Dars beradigan-u oyligi biriktirilmaganlar — jim qolmasligi
+              kerak bo'lgan yagona ogohlantirish. Nol bo'lsa ko'rinmaydi. */}
+          {data.totals.unassignedCount > 0 && (
+            <Summary
+              label="Oyligi yo'q"
+              value={String(data.totals.unassignedCount)}
+              tone="warn"
+            />
+          )}
           <Summary label="Hozirgacha" value={formatMoney(data.totals.accruedAmount)} />
           <Summary
             label="Oy oxirida"
@@ -185,10 +200,17 @@ const LedgerTable = ({ data, isLoading, isError, onSelect, delay = 0 }) => {
   );
 };
 
-const Summary = ({ label, value, emphasis }) => (
+const Summary = ({ label, value, emphasis, tone }) => (
   <div>
     <p className={T.label}>{label}</p>
-    <p className={cn(T.value, emphasis ? T.sizeMd : "text-[13px]", "mt-1")}>
+    <p
+      className={cn(
+        T.value,
+        emphasis ? T.sizeMd : "text-[13px]",
+        tone === "warn" && "text-rose-600",
+        "mt-1",
+      )}
+    >
       {value}
     </p>
   </div>

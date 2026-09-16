@@ -13,7 +13,7 @@ import { cn } from "@/shared/utils/cn";
 import { formatMoney } from "@/shared/utils/formatMoney";
 
 // Data & queries
-import { CHIP, MODE, SCALE, SURFACE, T } from "../data/ledger.tokens";
+import { CHIP, SCALE, SURFACE, T, modeOf } from "../data/ledger.tokens";
 import { formatHourNumber } from "../data/lessonHours.data";
 import { lessonHoursQueries } from "../queries/lessonHours.queries";
 
@@ -74,10 +74,12 @@ const TeacherHoursBody = ({ staffId, month }) => {
         <div className="min-w-0 flex-1">
           <p className={T.label}>Shartnoma sharti</p>
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
-            <span className={cn(CHIP, MODE[data.salaryType]?.chip ?? "bg-slate-100 text-slate-500")}>
-              {MODE[data.salaryType]?.label ?? "Qoida yo'q"}
+            <span className={cn(CHIP, modeOf(data.salaryType).chip)}>
+              {modeOf(data.salaryType).label}
             </span>
-            <span className={T.formula}>{data.formulaLabel ?? "—"}</span>
+            <span className={T.formula}>
+              {data.formulaLabel ?? "Oylik qoidasi biriktirilmagan"}
+            </span>
           </div>
         </div>
 

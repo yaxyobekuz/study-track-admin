@@ -6,8 +6,6 @@
  * eskirardi (`payroll.data.js` bilan bir xil qoida).
  */
 
-import { MODE } from "./ledger.tokens";
-
 /* ─────────────────────── TABLAR ─────────────────────── */
 
 /**
@@ -94,30 +92,6 @@ export const SUBSTITUTION_COLUMNS = [
   { label: "Darslar", align: "center" },
   "Holat",
   "",
-];
-
-/* ─────────────────────── REJIM TANLOVI ─────────────────────── */
-
-/**
- * Rejim tanlash kartochkalari — modal ichida.
- * `MODE` tokendan keladi, bu yerda faqat TARTIB va tanlov matni.
- */
-export const MODE_OPTIONS = [
-  {
-    ...MODE.fixed,
-    fields: ["amount"],
-    example: "5 000 000 so'm/oy — dars soati summaga ta'sir qilmaydi",
-  },
-  {
-    ...MODE.hourly,
-    fields: ["hourlyRate"],
-    example: "60 000 so'm × o'tilgan soat",
-  },
-  {
-    ...MODE.mixed,
-    fields: ["amount", "hourlyRate", "monthlyHourNorm"],
-    example: "4 000 000 so'm + 80 soatdan ortig'i uchun 70 000 so'm/soat",
-  },
 ];
 
 /* ─────────────────────── YORDAMCHILAR ─────────────────────── */

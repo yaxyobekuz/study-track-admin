@@ -125,11 +125,15 @@ const HeroSummary = ({ data, isLoading, monthLabel }) => {
           <HeroTile
             index={2}
             icon={Users}
-            label="Soatbay xodimlar"
+            label="Dars beruvchilar"
             value={
               totals ? `${totals.hourlyStaffCount} / ${totals.staffCount}` : "—"
             }
-            hint="jami oylik oluvchidan"
+            hint={
+              totals?.unassignedCount
+                ? `${totals.unassignedCount} tasining oyligi yo'q`
+                : "ro'yxatdagi xodimdan"
+            }
             isLoading={isLoading}
           />
           <HeroTile

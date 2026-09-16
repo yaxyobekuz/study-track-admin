@@ -119,9 +119,12 @@ const LessonHoursLedgerPage = () => {
 const ModeFilter = ({ value, onChange }) => {
   const options = [
     { key: "", label: "Barchasi" },
-    { key: "hourly", label: MODE.hourly.short },
+    { key: "kpi", label: MODE.kpi.short },
     { key: "mixed", label: MODE.mixed.short },
     { key: "fixed", label: MODE.fixed.short },
+    // "Oyligi yo'q" — dars beradigan-u qoidasi biriktirilmaganlar.
+    // Rejim emas, lekin aynan shu kesim bo'yicha ish qilinadi.
+    { key: "none", label: MODE.none.short },
   ];
 
   return (
