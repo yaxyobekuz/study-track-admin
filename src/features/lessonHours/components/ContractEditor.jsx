@@ -270,7 +270,7 @@ const ContractForm = ({ contract, onDone }) => {
                 placeholder="Toifani tanlang"
                 options={categoryOptions}
                 onChange={(value) => setField("categoryId", value)}
-                triggerClassName="h-11 w-full rounded-xl border-0 bg-slate-50 text-[12.5px] shadow-none"
+                triggerClassName="h-11 w-full rounded-xl border-0 bg-slate-50 text-[12.5px] shadow-none outline-0"
               />
             ) : (
               <p className={cn(SURFACE.tile, T.hint)}>
@@ -417,7 +417,10 @@ const ContractForm = ({ contract, onDone }) => {
         </div>
       )}
 
-      <div className="flex gap-2.5 pt-1">
+      {/* ⚠️ STICKY: ustama va ogohlantirishlar qo'shilganda forma oyna
+          balandligidan oshadi, aylantirish chizig'i esa yashirin — tugmalar
+          pastda qolib, "saqlash qayerda" degan savol tug'ilardi. */}
+      <div className="sticky bottom-0 z-10 -mb-px flex gap-2.5 bg-white pt-3 shadow-[0_-14px_14px_-14px_rgba(15,23,42,0.18)]">
         <Button
           type="button"
           variant="outline"
@@ -588,6 +591,9 @@ const INPUT =
   "h-11 w-full rounded-xl border-0 bg-slate-50 px-3 text-[12.5px] text-slate-900 " +
   "transition-colors duration-200 focus:bg-slate-100 focus:outline-none focus:ring-0";
 
-const AMOUNT_INPUT = cn(INPUT, "outline-none tabular-nums md:text-[12.5px]");
+// ⚠️ `outline-0`: umumiy `InputNumber` doimiy `outline-2 outline-primary`
+// beradi va summa maydoni yonidagi oddiy maydonlardan farqli ko'k ramkada
+// turardi. Fokus bu yerda fon bilan ko'rsatiladi (`INPUT`).
+const AMOUNT_INPUT = cn(INPUT, "outline-0 tabular-nums md:text-[12.5px]");
 
 export default ContractEditor;

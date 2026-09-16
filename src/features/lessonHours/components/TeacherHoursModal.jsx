@@ -137,6 +137,14 @@ const TeacherHoursBody = ({ staffId, month }) => {
         </div>
       </div>
 
+      {/* ── Fanlar va toifa ──────────────────────────────────── */}
+      <TeacherProfile
+        subjects={data.subjects}
+        categoryName={data.categoryName}
+        positionName={data.positionName}
+        departmentName={data.departmentName}
+      />
+
       {/* ── Uch raqam ────────────────────────────────────────── */}
       <div className="grid grid-cols-3 gap-2.5">
         <Metric
@@ -214,6 +222,118 @@ const TeacherHoursBody = ({ staffId, month }) => {
         </Section>
       )}
     </div>
+  );
+};
+
+/**
+ * KIM BU O'QITUVCHI — fanlari va toifasi.
+ *
+ * ⚠️ FANLAR RO'YXATI SERVERDA BIRLASHTIRILADI (`buildSubjects`): jadval,
+ * o'rinbosarlik va profil. Panel manbalarni o'zi qo'shmaydi — ikkinchi
+ * yig'uvchi bir kuni boshqa ro'yxat chiqarib qo'yardi.
+ *
+ * ⚠️ MANBA MATN BILAN HAM KO'RSATILADI ("o'rinbosar", "jadvalda yo'q"),
+ * faqat ohang bilan emas: bir kun kimningdir o'rniga chiqilgan fan va
+ * profilda qolib ketgan fan asosiy fanlar bilan bir xil ko'rinsa, "bu
+ * o'qituvchi uch fandan dars beradi" degan noto'g'ri xulosa chiqardi.
+ *
+ * ⚠️ TOIFA BITTA. U `User.salaryCategoryId` da, fan bo'yicha emas; lavozim
+ * bilan esa birga bo'lmaydi — shuning uchun toifa yo'q bo'lsa lavozim
+ * ko'rsatiladi (`finance.md` §10).
+ */
+const TeacherProfile = ({ subjects = [], categoryName, positionName, departmentName }) => {
+  const grade = categoryName
+    ? { label: "Toifa", name: categoryName }
+    : positionName
+      ? { label: "Lavozim", name: positionName }
+      : { label: "Toifa", name: null };
+
+  return (
+    <div
+      className={cn(
+        SURFACE.tile,
+        "grid gap-x-6 gap-y-3.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,180px)]",
+      )}
+    >
+      <div className="min-w-0">
+        <p className={T.label}>
+          {subjects.length > 1 ? `Fanlar · ${subjects.length}` : "Fan"}
+        </p>
+
+        {subjects.length > 0 ? (
+          <ul aria-label="Fanlar" className="mt-2 flex flex-wrap gap-1.5">
+            {subjects.map((subject) => (
+              <SubjectChip key={subject.id} subject={subject} />
+            ))}
+          </ul>
+        ) : (
+          <p className={cn(T.hint, "mt-1.5")}>
+            Fan biriktirilmagan, jadvalda darsi yo'q
+          </p>
+        )}
+      </div>
+
+      <div className="min-w-0 sm:text-right">
+        <p className={T.label}>{grade.label}</p>
+        <p className={cn("mt-2 truncate", grade.name ? T.tdName : T.hint)}>
+          {grade.name ?? "Biriktirilmagan"}
+        </p>
+        {grade.name && departmentName && (
+          <p className={cn(T.meta, "mt-1 truncate")}>{departmentName}</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Fan manbasi — ohang va IZOH. Jadvaldagi fan izohsiz: u odatiy holat,
+ * izoh esa faqat istisnoga beriladi.
+ */
+const SUBJECT_SOURCE = {
+  schedule: {
+    chip: "bg-white text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.06)]",
+    note: null,
+  },
+  substitution: { chip: "bg-white/60 text-slate-600", note: "o'rinbosar" },
+  profile: { chip: "bg-slate-200/50 text-slate-500", note: "jadvalda yo'q" },
+};
+
+const subjectTitle = (subject) => {
+  if (subject.source === "substitution") {
+    return `${subject.name}: o'z darsi yo'q, o'rinbosarlikdan ${formatHourNumber(subject.coveredHours)} soat`;
+  }
+  if (subject.source === "profile") {
+    return `${subject.name}: profilda biriktirilgan, jadvalda darsi yo'q`;
+  }
+  return `${subject.name}: haftasiga ${formatHourNumber(subject.weeklyHours)} soat, oyda ${formatHourNumber(subject.hours)} soat`;
+};
+
+const SubjectChip = ({ subject }) => {
+  const source = SUBJECT_SOURCE[subject.source] ?? SUBJECT_SOURCE.schedule;
+
+  return (
+    <li
+      title={subjectTitle(subject)}
+      className={cn(
+        "inline-flex max-w-full items-center gap-1.5 rounded-full py-1 pl-2.5 pr-2",
+        "text-[11.5px] font-medium leading-none",
+        source.chip,
+      )}
+    >
+      <span className="truncate">{subject.name}</span>
+
+      {/* Profildagi fanda soat yo'q — "0" "o'tilmadi" deb o'qilardi */}
+      {subject.source !== "profile" && (
+        <span className="font-semibold tabular-nums text-slate-900">
+          {formatHourNumber(subject.hours)}
+        </span>
+      )}
+
+      {source.note && (
+        <span className="text-[10px] font-normal text-slate-400">{source.note}</span>
+      )}
+    </li>
   );
 };
 
