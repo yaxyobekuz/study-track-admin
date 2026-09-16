@@ -54,6 +54,7 @@ const FinanceSettingsPage = () => {
     autoGenerateEnabled,
     catchUpMonths,
     firstInvoiceMonth,
+    firstPayrollMonth,
     depositAutoApply,
     defaultTariffId,
     setFields,
@@ -63,6 +64,7 @@ const FinanceSettingsPage = () => {
     autoGenerateEnabled: true,
     catchUpMonths: 1,
     firstInvoiceMonth: "",
+    firstPayrollMonth: "",
     depositAutoApply: true,
     defaultTariffId: "",
   });
@@ -75,6 +77,7 @@ const FinanceSettingsPage = () => {
       autoGenerateEnabled: settings.autoGenerateEnabled,
       catchUpMonths: settings.catchUpMonths,
       firstInvoiceMonth: monthKeyToInputValue(settings.firstInvoiceMonth),
+      firstPayrollMonth: monthKeyToInputValue(settings.firstPayrollMonth),
       depositAutoApply: settings.depositAutoApply,
       defaultTariffId: settings.defaultTariffId ?? "",
     });
@@ -90,6 +93,7 @@ const FinanceSettingsPage = () => {
         autoGenerateEnabled,
         catchUpMonths: Number(catchUpMonths),
         firstInvoiceMonth: inputValueToMonthKey(firstInvoiceMonth),
+        firstPayrollMonth: inputValueToMonthKey(firstPayrollMonth),
         depositAutoApply,
         // Bo'sh satr ATAYLAB yuboriladi: server uni "standart tarif yo'q"
         // deb tushunadi va avtomat biriktirishni o'chiradi
@@ -163,6 +167,15 @@ const FinanceSettingsPage = () => {
             value={firstInvoiceMonth}
             description="Bundan oldin hech qachon yaralmaydi"
             onChange={(e) => setField("firstInvoiceMonth", e.target.value)}
+          />
+
+          <InputField
+            type="month"
+            name="firstPayrollMonth"
+            label="Oylik boshlanish oyi"
+            value={firstPayrollMonth}
+            description="Xodimlar shu oydan ish boshlagan — undan oldin oylik yaralmaydi"
+            onChange={(e) => setField("firstPayrollMonth", e.target.value)}
           />
         </div>
 

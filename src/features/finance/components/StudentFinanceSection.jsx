@@ -309,6 +309,28 @@ const StudentFinanceSection = ({ studentId }) => {
           <p className="mt-1 text-xl font-semibold text-red-600">
             {formatMoney(invoiceData?.totals?.debt)}
           </p>
+
+          {/* Qarz manba bo'yicha — tarifdan qancha, qo'shimcha xizmatlardan
+              (yotoqxona, ovqat) qancha. Faqat o'quvchida xizmat bo'lsa
+              ko'rinadi; yig'indisi aynan jami qarzga teng. */}
+          {invoiceData?.totals?.hasServices &&
+            Number(invoiceData.totals.debt) > 0 && (
+              <div className="mt-1.5 space-y-0.5 border-t border-gray-100 pt-1.5 text-xs">
+                <div className="flex justify-between gap-2">
+                  <span className="text-gray-500">Tarifdan</span>
+                  <span className="font-medium text-gray-700">
+                    {formatMoney(invoiceData.totals.debtTariff)}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-gray-500">Xizmatlardan</span>
+                  <span className="font-medium text-gray-700">
+                    {formatMoney(invoiceData.totals.debtServices)}
+                  </span>
+                </div>
+              </div>
+            )}
+
           {invoiceData?.totals && (
             <p className="mt-0.5 text-xs text-gray-500">
               {/* Maxraj — HOZIRGA QADAR KELGAN oylar. Kelgusi oylar sanalmaydi:

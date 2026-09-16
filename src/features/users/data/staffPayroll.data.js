@@ -8,7 +8,7 @@
 // ikki ekranda boshqa rangda ko'rinmasligi kerak.
 
 // Icons
-import { CalendarClock, HandCoins, TrendingDown, Wallet } from "lucide-react";
+import { HandCoins, TrendingDown, Wallet } from "lucide-react";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
@@ -42,7 +42,6 @@ export const PAYROLL_ENTRY_COLUMNS = [
  * @returns {Array<{key: string, label: string, value: string, hint: string, icon: Function, valueClassName?: string}>}
  */
 export const buildPayrollTiles = ({ salary, entries }) => {
-  const rule = salary?.current ?? null;
   const totals = entries?.totals ?? null;
 
   // Joriy oy majburiyati — qoida bo'lsa ham shakllantirilmagan bo'lishi
@@ -52,17 +51,10 @@ export const buildPayrollTiles = ({ salary, entries }) => {
 
   return [
     {
-      key: "rule",
-      label: "Amaldagi oylik",
-      value: formatMoney(rule?.amount),
-      icon: Wallet,
-      hint: rule?.periodLabel ?? "Oylik qoidasi belgilanmagan",
-    },
-    {
       key: "currentMonth",
-      label: "Joriy oy majburiyati",
+      label: "Joriy oy oyligi",
       value: formatMoney(currentEntry?.amount),
-      icon: CalendarClock,
+      icon: Wallet,
       hint: currentEntry
         ? `${currentEntry.monthLabel}: ${currentEntry.statusLabel}`
         : `${salary?.currentMonthLabel ?? "Joriy oy"} uchun shakllantirilmagan`,
