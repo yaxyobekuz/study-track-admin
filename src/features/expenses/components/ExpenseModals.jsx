@@ -26,6 +26,9 @@ import { formatMoney } from "@/shared/utils/formatMoney";
 
 // Queries
 import { financeQueries } from "@/features/finance/queries/finance.queries";
+import { usersQueries } from "@/features/users/queries/users.queries";
+import { payrollQueries } from "@/features/payroll/queries/payroll.queries";
+import { useCreateSalaryPayment } from "@/features/payroll/queries/payroll.mutations";
 import { expenseQueries } from "../queries/expenses.queries";
 import {
   useCreateExpense,
@@ -33,6 +36,10 @@ import {
   useCreateCategory,
   useUpdateCategory,
 } from "../queries/expenses.mutations";
+
+/** Chiqim kategoriyasi xodimlar oyligimi — nomiga qarab (foydalanuvchi "Oylik"
+ *  deb ataydi). Shu holatda modal oylik to'lash rejimiga o'tadi. */
+const isSalaryName = (name) => String(name ?? "").trim().toLowerCase() === "oylik";
 
 /** Bugungi sana — `<input type="date">` qiymati. */
 const todayInputValue = () => {
@@ -69,7 +76,7 @@ const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
   const [newCategory, setNewCategory] = useState(null);
   const isNewCategory = newCategory !== null;
 
-  const { categoryId, accountId, amount, payee, note, occurredAt, setField } =
+  const { categoryId, accountId, amount, payee, note, occurredAt, staffId, setField } =
     useObjectState({
       categoryId: "",
       accountId: "",
@@ -77,11 +84,35 @@ const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
       payee: "",
       note: "",
       occurredAt: todayInputValue(),
+      staffId: "",
     });
 
   // Bitta variant bo'lsa tanlash shart emas — kassirning ishini qisqartiradi
   const resolvedCategory = categoryId || (categories.length === 1 ? categories[0].id : "");
   const resolvedAccount = accountId || (accounts.length === 1 ? accounts[0].id : "");
+
+  // ── OYLIK REJIMI ──────────────────────────────────────────────────────
+  // Kategoriya "Oylik" bo'lsa: xarajat o'rniga XODIM OYLIGI to'lanadi.
+  // Bu bitta amalda: (1) xodim majburiyatidan ayriladi, (2) "tarqatildi"ga
+  // qo'shiladi, (3) kassadan chiqim bo'lib hisobotga tushadi — hammasi
+  // mavjud `salaryPayment` mexanizmi orqali (qo'sh hisoblanish yo'q).
+  const selectedCat = categories.find((c) => c.id === resolvedCategory);
+  const isSalary = !isNewCategory && isSalaryName(selectedCat?.name);
+
+  const { mutate: createSalaryPayment } = useCreateSalaryPayment();
+  const { data: allUsers = [] } = useQuery({ ...usersQueries.allShort(), enabled: isSalary });
+  const staffOptions = allUsers
+    .filter((u) => u.role !== "student")
+    .map((u) => ({
+      label: `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim(),
+      value: u.id,
+    }));
+
+  const { data: staffSummary } = useQuery({
+    ...payrollQueries.staffEntries(staffId),
+    enabled: isSalary && Boolean(staffId),
+  });
+  const staffTotals = staffSummary?.totals;
 
   /** Xarajatning o'zini yozish — kategoriya allaqachon aniq. */
   const submitExpense = (targetCategoryId) =>
@@ -128,6 +159,33 @@ const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // ── OYLIK: xarajat emas, XODIM OYLIGI to'lanadi ──────────────────────
+    if (isSalary) {
+      if (!staffId) return toast.error("Xodimni tanlang");
+      if (!(Number(amount) > 0)) return toast.error("Summani kiriting");
+      if (!resolvedAccount) return toast.error("To'lov turini tanlang");
+
+      setIsLoading(true);
+      return createSalaryPayment(
+        {
+          staffId,
+          accountId: resolvedAccount,
+          amount: String(amount),
+          paidAt: occurredAt,
+        },
+        {
+          onSuccess: () => {
+            close();
+            toast.success("Oylik to'landi");
+          },
+          onError: (err) =>
+            toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+          onSettled: () => setIsLoading(false),
+        },
+      );
+    }
+
     setIsLoading(true);
 
     // ⚠️ IKKI QADAM, BITTA TUGMA: avval kategoriya yaratiladi, keyin
@@ -218,6 +276,45 @@ const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
         )}
       </div>
 
+      {/* OYLIK rejimi — xodim tanlash + uning oylik holati */}
+      {isSalary && (
+        <>
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium text-gray-700">Qaysi xodimga</p>
+            <Select
+              searchable
+              value={staffId}
+              placeholder="Xodimni tanlang"
+              onChange={(v) => setField("staffId", v)}
+              options={staffOptions}
+            />
+          </div>
+
+          {staffId && staffTotals && (
+            <div className="grid grid-cols-3 gap-2 rounded-xl bg-gray-50 p-3 text-center">
+              <div>
+                <p className="text-[11px] text-gray-500">Olishi kerak</p>
+                <p className="mt-0.5 text-sm font-bold text-gray-900">
+                  {formatMoney(staffTotals.accrued)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] text-gray-500">Olgan</p>
+                <p className="mt-0.5 text-sm font-bold text-green-700">
+                  {formatMoney(staffTotals.paid)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] text-gray-500">Qolgan</p>
+                <p className="mt-0.5 text-sm font-bold text-red-600">
+                  {formatMoney(staffTotals.debt)}
+                </p>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
       <InputField
         required
         min="1"
@@ -251,29 +348,40 @@ const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
         onChange={(e) => setField("occurredAt", e.target.value)}
       />
 
-      <InputField
-        name="payee"
-        label="Kimga (ixtiyoriy)"
-        value={payee}
-        placeholder="Hududgaz / Anvar aka"
-        onChange={(e) => setField("payee", e.target.value)}
-      />
+      {/* Oylik rejimida "kimga" — xodim yuqorida tanlanadi */}
+      {!isSalary && (
+        <InputField
+          name="payee"
+          label="Kimga (ixtiyoriy)"
+          value={payee}
+          placeholder="Hududgaz / Anvar aka"
+          onChange={(e) => setField("payee", e.target.value)}
+        />
+      )}
 
-      <InputField
-        name="note"
-        label="Izoh (ixtiyoriy)"
-        value={note}
-        placeholder="Avgust oyi uchun gaz to'lovi"
-        onChange={(e) => setField("note", e.target.value)}
-      />
+      {!isSalary && (
+        <InputField
+          name="note"
+          label="Izoh (ixtiyoriy)"
+          value={note}
+          placeholder="Avgust oyi uchun gaz to'lovi"
+          onChange={(e) => setField("note", e.target.value)}
+        />
+      )}
 
       <Button
         type="submit"
         className="w-full"
         loading={isLoading}
-        disabled={blocked || !categoryReady || !resolvedAccount || !amount}
+        disabled={
+          blocked ||
+          !categoryReady ||
+          !resolvedAccount ||
+          !amount ||
+          (isSalary && !staffId)
+        }
       >
-        Qayd etish
+        {isSalary ? "Oylik to'lash" : "Qayd etish"}
       </Button>
     </InputGroup>
   );
