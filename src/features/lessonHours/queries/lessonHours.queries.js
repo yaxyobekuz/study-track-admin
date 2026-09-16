@@ -5,7 +5,7 @@ import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 import { createQueryKeys } from "@/shared/lib/query";
 
 // API
-import { lessonHoursAPI, substitutionAPI } from "../api/lessonHours.api";
+import { contractAPI, lessonHoursAPI, substitutionAPI } from "../api/lessonHours.api";
 
 export const lessonHoursKeys = createQueryKeys("lessonHours");
 
@@ -13,6 +13,7 @@ const overviewKey = [...lessonHoursKeys.all, "overview"];
 const ledgerKey = [...lessonHoursKeys.all, "ledger"];
 const teacherKey = [...lessonHoursKeys.all, "teacher"];
 const substitutionsKey = [...lessonHoursKeys.all, "substitutions"];
+const contractKey = [...lessonHoursKeys.all, "contract"];
 
 export const lessonHoursQueries = {
   /** Boshliq ko'rinishi → `{ totals, modes, series, topTeachers }`. */
@@ -39,6 +40,32 @@ export const lessonHoursQueries = {
       queryFn: () =>
         lessonHoursAPI.getTeacher(teacherId, params).then((r) => r.data.data),
       enabled: Boolean(teacherId),
+    }),
+};
+
+export const contractQueries = {
+  /** Shartnoma sharti formasi → qiymatlar + toifalar katalogi. */
+  one: (staffId, month) =>
+    queryOptions({
+      queryKey: [...contractKey, staffId, month],
+      queryFn: () => contractAPI.get(staffId, { month }).then((r) => r.data.data),
+      enabled: Boolean(staffId && month),
+    }),
+
+  /**
+   * Jonli hisob. `draft` — chaqiruvchi KECHIKTIRGAN qoralama: har harfda
+   * so'rov ketmasligi uchun (`useDebounce`).
+   *
+   * ⚠️ `retry: false` — tekshiruv xatosi (400) "hali to'liq kiritilmagan"
+   * degani, uni uch marta qayta yuborish ma'nosiz.
+   */
+  preview: (staffId, draft) =>
+    queryOptions({
+      queryKey: [...contractKey, staffId, "preview", draft],
+      queryFn: () => contractAPI.preview(staffId, draft).then((r) => r.data.data),
+      enabled: Boolean(staffId && draft),
+      placeholderData: keepPreviousData,
+      retry: false,
     }),
 };
 

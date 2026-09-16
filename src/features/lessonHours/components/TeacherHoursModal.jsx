@@ -1,5 +1,8 @@
+// React
+import { useState } from "react";
+
 // Icons
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, PenLine } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +10,10 @@ import { useQuery } from "@tanstack/react-query";
 // Components
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import WeekGrid from "./WeekGrid";
+import ContractEditor from "./ContractEditor";
+
+// Hooks
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
@@ -27,6 +34,10 @@ import { lessonHoursQueries } from "../queries/lessonHours.queries";
  * ⚠️ MA'LUMOT MODALNI OCHGANDA SO'RALADI (`enabled: Boolean(staffId)`).
  * Vedomost qatoriga to'liq tafsilotni oldindan qo'shib qo'yish har oy
  * yuzlab keraksiz so'rov bo'lardi.
+ *
+ * ⚠️ SHARTNOMA SHARTI SHU YERNING O'ZIDA TAHRIRLANADI (`payroll.assign`).
+ * Soatni ko'rib turgan odam oylikni to'g'rilash uchun "Xodimlar oyligi"
+ * bo'limiga o'tib, o'qituvchini qaytadan qidirmasligi kerak.
  */
 export const TeacherHoursModal = () => (
   <ResponsiveModal
@@ -39,6 +50,9 @@ export const TeacherHoursModal = () => (
 );
 
 const TeacherHoursBody = ({ staffId, month }) => {
+  const { can } = usePermissions();
+  const [isEditing, setIsEditing] = useState(false);
+
   const { data, isLoading, isError } = useQuery(
     lessonHoursQueries.teacher(staffId, { month }),
   );
@@ -67,12 +81,44 @@ const TeacherHoursBody = ({ staffId, month }) => {
 
   const maxClassHours = Math.max(1, ...(data.byClass ?? []).map((c) => c.hours));
 
+  // Tahrir paytida qolgan bloklar yashiriladi: forma o'zi uzun, natija
+  // blokida esa shu oyning soati allaqachon ko'rinadi.
+  if (isEditing) {
+    return (
+      <div className="max-h-[70vh] overflow-y-auto hidden-scrollbar">
+        <ContractEditor
+          staffId={staffId}
+          month={month}
+          onDone={() => setIsEditing(false)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-h-[70vh] space-y-4 overflow-y-auto hidden-scrollbar">
       {/* ── Shartnoma sharti ─────────────────────────────────── */}
       <div className={cn(SURFACE.tile, "flex flex-wrap items-center gap-x-5 gap-y-3")}>
         <div className="min-w-0 flex-1">
-          <p className={T.label}>Shartnoma sharti</p>
+          <div className="flex items-center gap-2">
+            <p className={T.label}>Shartnoma sharti</p>
+            {can("payroll.assign") && (
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className={cn(
+                  "-my-1 flex items-center gap-1 rounded-lg px-2 py-1 text-[11.5px] font-medium",
+                  "transition-colors duration-200 ease-out-quint",
+                  data.hasRule
+                    ? "text-indigo-600 hover:bg-indigo-50"
+                    : "bg-slate-900 text-white hover:bg-slate-800",
+                )}
+              >
+                <PenLine className="size-3" strokeWidth={2.2} />
+                {data.hasRule ? "O'zgartirish" : "Oylik belgilash"}
+              </button>
+            )}
+          </div>
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
             <span className={cn(CHIP, modeOf(data.salaryType).chip)}>
               {modeOf(data.salaryType).label}

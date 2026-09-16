@@ -70,6 +70,37 @@ export const PHASE_META = {
   cancelled: { label: "Bekor qilingan", chip: "bg-slate-100 text-slate-500", rail: "neutral" },
 };
 
+/* ─────────────────────── SHARTNOMA SHARTI ─────────────────────── */
+
+/**
+ * SOAT NARXI QAYERDAN — server `RATE_SOURCES` ning ko'zgusi
+ * (`staffContract.service.js`).
+ *
+ * ⚠️ Rejim (Fiksa / KPI / Aralash) bu yerda TANLANMAYDI: u kiritilgan
+ * qismlardan hosil bo'ladi. Alohida tanlov bo'lsa, "Fiksa" belgilanib
+ * soat narxi ham yozilgan holat paydo bo'lardi va qaysi biri haqiqat
+ * ekani noaniq qolardi.
+ */
+export const RATE_SOURCE_OPTIONS = [
+  { value: "none", label: "Yo'q" },
+  { value: "category", label: "Toifa bo'yicha" },
+  { value: "manual", label: "Qo'lda" },
+];
+
+/** Ustama turi — server `ALLOWANCE_TYPES` (`salaryRules.helpers.js`). */
+export const ALLOWANCE_KIND_OPTIONS = [
+  { value: "fixed", label: "so'm" },
+  { value: "percent", label: "%" },
+];
+
+export const CONTRACT_HINTS = {
+  category: "Toifa oy bo'yicha saqlanmaydi: u hali shakllantirilmagan barcha oylarga ta'sir qiladi.",
+  sealed:
+    "Bu oylar majburiyati allaqachon shakllantirilgan va summasi muhrlangan — o'zgarish ularga ta'sir qilmaydi.",
+  bonuses: "Zayavka orqali tasdiqlangan — \"Oylik zayavkalari\" bo'limida boshqariladi.",
+  percent: "Foizli ustama fiksa va soatdan chiqqan summa yig'indisidan olinadi.",
+};
+
 /* ─────────────────────── JADVAL USTUNLARI ─────────────────────── */
 
 export const LEDGER_COLUMNS = [

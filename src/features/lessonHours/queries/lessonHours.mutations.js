@@ -2,13 +2,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { substitutionAPI } from "../api/lessonHours.api";
+import { contractAPI, substitutionAPI } from "../api/lessonHours.api";
 import { lessonHoursKeys } from "./lessonHours.queries";
 
 // O'rinbosarlik SOATNI ko'chiradi, soat esa oylikka kiradi — shuning uchun
 // oylik registri ham eskiradi. Dars jadvali o'zgarmaydi (yozuv jadvalga
 // TEGMAYDI), shuning uchun `schedulesKeys` bu yerda YO'Q.
 import { payrollKeys } from "@/features/payroll/queries/payroll.queries";
+import { dashboardKeys } from "@/features/financeDashboard/queries/financeDashboard.queries";
 
 const useInvalidate = () => {
   const queryClient = useQueryClient();
@@ -54,5 +55,26 @@ export const useCancelSubstitution = () => {
     mutationFn: ({ id, reason }) =>
       substitutionAPI.cancel(id, reason).then((r) => r.data.data),
     onSuccess: invalidate,
+  });
+};
+
+/**
+ * Shartnoma shartini saqlash.
+ *
+ * ⚠️ Moliya dashboardi ham eskiradi: "Belgilangan oylik" kartasi qoidalardan
+ * JONLI hisoblanadi (`finance.md` §10). Kassaga tegmaydi, shuning uchun
+ * `financeKeys` bu yerda YO'Q.
+ */
+export const useSaveContract = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ staffId, ...data }) =>
+      contractAPI.save(staffId, data).then((r) => r.data.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: lessonHoursKeys.all });
+      queryClient.invalidateQueries({ queryKey: payrollKeys.all });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+    },
   });
 };

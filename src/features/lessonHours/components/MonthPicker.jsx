@@ -41,13 +41,18 @@ import { T } from "../data/ledger.tokens";
  * "hisoblanmoqda" degan raqam yo'q — u hali majburiyat emas
  * (`education.md` §1). Bosib bo'lmaydigan tugma shuni ko'rsatadi.
  *
+ * ⚠️ `allowFuture` — FAQAT qaror kelajakka qaratilgan joyda (shartnoma
+ * sharti "qaysi oydan" kuchga kiradi). Hisobot oylarida to'siq qoladi.
+ *
  * @param {object} props
  * @param {number} props.month - YYYYMM
  * @param {(month: number) => void} props.onChange
+ * @param {boolean} [props.allowFuture] - kelgusi oylarni ham tanlash
  */
-const MonthPicker = ({ month, onChange, className }) => {
+const MonthPicker = ({ month, onChange, className, allowFuture = false }) => {
   const [open, setOpen] = useState(false);
   const current = currentMonthKey();
+  const limit = allowFuture ? Infinity : current;
 
   // Panjarada ko'rinayotgan YIL — tanlangan oydan MUSTAQIL: odam 2025 ga
   // qarab, hech narsa tanlamay yopishi ham mumkin.
@@ -59,18 +64,18 @@ const MonthPicker = ({ month, onChange, className }) => {
   // kuzatib turishning ma'nosi yo'q.
   const [year, setYear] = useState(() => Math.trunc(month / 100));
 
-  const atCurrent = month >= current;
+  const atCurrent = month >= limit;
   const currentYear = Math.trunc(current / 100);
 
   const shift = (direction) => {
     const next = direction < 0 ? prevMonthKey(month) : nextMonthKey(month);
-    if (next > current) return;
+    if (next > limit) return;
     onChange(next);
   };
 
   const pick = (index) => {
     const key = year * 100 + index + 1;
-    if (key > current) return;
+    if (key > limit) return;
     onChange(key);
     setOpen(false);
   };
@@ -119,7 +124,7 @@ const MonthPicker = ({ month, onChange, className }) => {
             <Arrow
               direction="next"
               onClick={() => setYear((y) => y + 1)}
-              disabled={year >= currentYear}
+              disabled={!allowFuture && year >= currentYear}
               small
             />
           </div>
@@ -130,7 +135,7 @@ const MonthPicker = ({ month, onChange, className }) => {
           <div className="grid grid-cols-3 gap-1 p-2">
             {MONTHS_UZ_CAP.map((name, index) => {
               const key = year * 100 + index + 1;
-              const isFuture = key > current;
+              const isFuture = key > limit;
               const isSelected = key === month;
               const isNow = key === current;
 
@@ -163,7 +168,9 @@ const MonthPicker = ({ month, onChange, className }) => {
           <span className="block h-px bg-slate-100" />
 
           <div className="flex items-center justify-between px-3 py-2">
-            <span className={T.meta}>Kelgusi oylar hali majburiyat emas</span>
+            <span className={T.meta}>
+              {allowFuture ? "Kelgusi oyni ham tanlash mumkin" : "Kelgusi oylar hali majburiyat emas"}
+            </span>
             <button
               type="button"
               onClick={() => {

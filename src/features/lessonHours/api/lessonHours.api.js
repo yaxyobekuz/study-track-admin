@@ -32,6 +32,26 @@ export const lessonHoursAPI = {
 };
 
 /**
+ * SHARTNOMA SHARTI — vedomost oynasidan oylikni to'g'ridan-to'g'ri yozish.
+ *
+ * ⚠️ Manzil `/payroll/salaries` ostida: yoziladigan narsa oylik qoidasi va
+ * toifa, ruxsat ham `payroll.assign`. Bo'lim faqat uni CHAQIRADI.
+ */
+export const contractAPI = {
+  /** Forma qiymatlari: amaldagi qoida, toifa, lavozim, toifalar katalogi. */
+  get: (staffId, params) =>
+    http.get(`/payroll/salaries/staff/${staffId}/contract`, { params }),
+
+  /** Jonli hisob — hech narsa yozilmaydi. */
+  preview: (staffId, data) =>
+    http.post(`/payroll/salaries/staff/${staffId}/contract/preview`, data),
+
+  /** Qoida va toifa bitta tranzaksiyada. */
+  save: (staffId, data) =>
+    http.put(`/payroll/salaries/staff/${staffId}/contract`, data),
+};
+
+/**
  * DARS O'RINBOSARLIGI.
  *
  * ⚠️ ATAMA: "almashtirish" EMAS. Tizimda bu so'z FILIAL almashtirishni
