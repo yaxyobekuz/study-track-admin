@@ -224,8 +224,17 @@ const EntriesView = () => {
             );
           } else if (result.skipped.alreadyExists > 0) {
             toast.info("Bu oy allaqachon shakllantirilgan");
-          } else {
+          } else if (!result.skipped.monthOpen) {
             toast.warning("Oylik belgilangan xodim topilmadi");
+          }
+
+          // Dars soati bo'yicha oylik FAKTDAN (baho + davomat) hisoblanadi
+          // va oy yopilmaguncha muhrlanmaydi — jim qolsa "nega yozilmadi"
+          // degan savol tug'ilardi.
+          if (result.skipped.monthOpen > 0) {
+            toast.info(
+              `${result.skipped.monthOpen} ta xodimning dars soati bo'yicha oyligi oy yopilgach shakllantiriladi`,
+            );
           }
         },
         onError: (err) =>

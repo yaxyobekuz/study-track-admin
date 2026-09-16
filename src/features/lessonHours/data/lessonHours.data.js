@@ -101,6 +101,18 @@ export const CONTRACT_HINTS = {
   percent: "Foizli ustama fiksa va soatdan chiqqan summa yig'indisidan olinadi.",
 };
 
+/* ─────────────────────── O'TILMAGAN DARSLAR ─────────────────────── */
+
+/**
+ * Qoida matni — server `judgeLesson` (`helpers/lessonHours.js`) bilan AYNI.
+ * Sabab yorliqlari serverdan keladi (`reasonLabel`), bu yerda nusxasi yo'q.
+ */
+export const MISSED_LESSONS_HINT = {
+  rule:
+    "O'qituvchi kelmagan yoki sababli kelmagan kun va hech kimga baho qo'yilmagan dars o'tilmagan hisoblanadi — soati oylikka yozilmaydi.",
+  today: "Bugungi darslar ertaga tekshiriladi.",
+};
+
 /* ─────────────────────── JADVAL USTUNLARI ─────────────────────── */
 
 export const LEDGER_COLUMNS = [
