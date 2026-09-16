@@ -10,7 +10,7 @@ import Panel from "./Panel";
 
 // Data & tokens
 import { CHIP, MOTION, STAGE, SURFACE, T, modeOf, rowDelay } from "../data/ledger.tokens";
-import { formatHourNumber } from "../data/lessonHours.data";
+import { LEDGER_HOURS_HINT, formatHourNumber } from "../data/lessonHours.data";
 
 /**
  * VEDOMOST — barcha o'qituvchilar bitta ro'yxatda.
@@ -31,7 +31,7 @@ import { formatHourNumber } from "../data/lessonHours.data";
  */
 const GRID =
   "grid items-center gap-x-3 " +
-  "grid-cols-[minmax(140px,1.6fr)_92px_repeat(4,68px)_96px_repeat(2,minmax(96px,1fr))_28px]";
+  "grid-cols-[minmax(140px,1.6fr)_92px_repeat(5,68px)_96px_repeat(2,minmax(96px,1fr))_28px]";
 
 const LedgerTable = ({ data, isLoading, isError, onSelect, delay = 0 }) => {
   const rows = data?.items ?? [];
@@ -60,7 +60,7 @@ const LedgerTable = ({ data, isLoading, isError, onSelect, delay = 0 }) => {
       }
     >
       <div className="overflow-x-auto px-2 pb-2">
-        <div className="min-w-[930px]">
+        <div className="min-w-[1000px]">
           {/* ── Sarlavha ─────────────────────────────────────── */}
           <div className={cn(GRID, "px-3 pb-2.5")}>
             <span className={T.th}>O'qituvchi</span>
@@ -69,6 +69,7 @@ const LedgerTable = ({ data, isLoading, isError, onSelect, delay = 0 }) => {
             <span className={cn(T.th, "text-right")}>Oy</span>
             <span className={cn(T.th, "text-right")}>O'tildi</span>
             <span className={cn(T.th, "text-right")}>O'tilmadi</span>
+            <span className={cn(T.th, "text-right")}>Qoldi</span>
             <span className={cn(T.th, "text-center")}>O'rinbosarlik</span>
             <span className={cn(T.th, "text-right")}>Hisoblandi</span>
             <span className={cn(T.th, "text-right")}>Oy oxirida</span>
@@ -112,22 +113,26 @@ const LedgerTable = ({ data, isLoading, isError, onSelect, delay = 0 }) => {
                     {formatHourNumber(row.weeklyHours)}
                   </span>
 
+                  {/* ⚠️ "OY" — OYLIK REJA va u keyingi uch katakning YIG'INDISI:
+                      Oy = O'tildi + O'tilmadi + Qoldi. Ilgari bu yerda pul
+                      yoziladigan soat turardi va qo'shib tekshirganda raqam
+                      chiqmasdi — "Qoldi" ko'rinmasdi. Pul ustunlari esa
+                      avvalgidek o'tilgan + qolgan soatdan hisoblanadi. */}
                   <span className={cn(T.tdNum, "text-right")}>
-                    {formatHourNumber(row.hours)}
+                    {formatHourNumber(row.plannedHours)}
                   </span>
 
                   <span
                     className={cn(
                       "text-right text-[12.5px] font-semibold tabular-nums",
-                      row.hours > 0 ? "text-indigo-600" : "text-slate-300",
+                      row.plannedHours > 0 ? "text-indigo-600" : "text-slate-300",
                     )}
                   >
                     {formatHourNumber(row.taughtHours)}
                   </span>
 
-                  {/* ⚠️ O'TILMAGAN DARS — kelmagan yoki baho qo'yilmagan. Uning
-                      soati "Oy" ga ham, pulga ham ALLAQACHON kirmagan; bu
-                      katak faqat "nega kam" degan savolga javob. */}
+                  {/* ⚠️ O'TILMAGAN DARS — kelmagan yoki baho qo'yilmagan. U
+                      rejaning bir qismi, lekin pulga KIRMAYDI. */}
                   <span
                     className={cn(
                       "text-right text-[12.5px] font-semibold tabular-nums",
@@ -135,6 +140,11 @@ const LedgerTable = ({ data, isLoading, isError, onSelect, delay = 0 }) => {
                     )}
                   >
                     {row.missedHours > 0 ? formatHourNumber(row.missedHours) : "—"}
+                  </span>
+
+                  {/* Qoldi — bugundan keyingi, hali o'tmagan darslar (reja) */}
+                  <span className={cn(T.td, "text-right tabular-nums")}>
+                    {formatHourNumber(row.remainingHours)}
                   </span>
 
                   {/* Ikki yo'nalish bitta katakda, lekin QO'SHILMAYDI */}
@@ -191,14 +201,15 @@ const LedgerTable = ({ data, isLoading, isError, onSelect, delay = 0 }) => {
       {rows.length > 0 && (
         <div className={cn(SURFACE.tile, "mx-4 mb-4 mt-1 flex flex-wrap items-center gap-x-6 gap-y-2")}>
           <Summary label="Xodim" value={String(data.totals.staffCount)} />
-          <Summary label="Jami soat" value={formatHourNumber(data.totals.totalHours)} />
-          {data.totals.missedHours > 0 && (
-            <Summary
-              label="O'tilmadi"
-              value={formatHourNumber(data.totals.missedHours)}
-              tone="warn"
-            />
-          )}
+          {/* Qatorlardagi tartib bilan AYNI: Oy = O'tildi + O'tilmadi + Qoldi */}
+          <Summary label="Oy" value={formatHourNumber(data.totals.plannedHours)} />
+          <Summary label="O'tildi" value={formatHourNumber(data.totals.taughtHours)} />
+          <Summary
+            label="O'tilmadi"
+            value={formatHourNumber(data.totals.missedHours)}
+            tone={data.totals.missedHours > 0 ? "warn" : undefined}
+          />
+          <Summary label="Qoldi" value={formatHourNumber(data.totals.remainingHours)} />
           {/* Dars beradigan-u oyligi biriktirilmaganlar — jim qolmasligi
               kerak bo'lgan yagona ogohlantirish. Nol bo'lsa ko'rinmaydi. */}
           {data.totals.unassignedCount > 0 && (
@@ -214,6 +225,8 @@ const LedgerTable = ({ data, isLoading, isError, onSelect, delay = 0 }) => {
             value={formatMoney(data.totals.projectedAmount)}
             emphasis
           />
+
+          <p className={cn(T.meta, "basis-full")}>{LEDGER_HOURS_HINT}</p>
         </div>
       )}
     </Panel>

@@ -101,6 +101,15 @@ export const CONTRACT_HINTS = {
   percent: "Foizli ustama fiksa va soatdan chiqqan summa yig'indisidan olinadi.",
 };
 
+/* ─────────────────────── VEDOMOST SOATLARI ─────────────────────── */
+
+/**
+ * Vedomost jamlanmasi ostidagi izoh. Server `buildRow` dagi o'zgarmas bilan
+ * AYNI: `plannedHours = taughtHours + missedHours + remainingHours`.
+ */
+export const LEDGER_HOURS_HINT =
+  "Oy = O'tildi + O'tilmadi + Qoldi. Oylik o'tilgan va qolgan darslardan hisoblanadi, o'tilmagan darslar pulga kirmaydi.";
+
 /* ─────────────────────── O'TILMAGAN DARSLAR ─────────────────────── */
 
 /**

@@ -110,7 +110,7 @@ const LessonHoursLedgerPage = () => {
       {filterSlot &&
         createPortal(
           <>
-            <ModeFilter value={type} onChange={setType} />
+            <ModeFilter value={type} onChange={setType} counts={data?.typeCounts} />
 
             <label
               className={cn(
@@ -175,8 +175,15 @@ const LessonHoursLedgerPage = () => {
  * ⚠️ `<select>` EMAS. Variantlar uchta va ular ekranning asosiy kesimi;
  * ochiladigan ro'yxat har safar ikki bosish talab qilardi va joriy
  * tanlovni ham yashirardi.
+ *
+ * ⚠️ XODIMI YO'Q REJIM YASHIRILADI, O'CHIRILMAYDI. Bosilgach bo'sh ro'yxat
+ * chiqaradigan tugma ("Aralash" — fiksa + soat narxi) "filtr ishlamayapti"
+ * deb o'qilardi. Rejimning o'zi esa tizimda bor: kimgadir shunday oylik
+ * yozilsa, tugma o'zi qaytadi. Sanoq serverdan (`typeCounts`), qidiruvni
+ * hisobga oladi. Tanlangan tugma 0 bo'lsa ham qoladi — aks holda filtr
+ * ko'rinmay yoqilib turardi.
  */
-const ModeFilter = ({ value, onChange }) => {
+const ModeFilter = ({ value, onChange, counts }) => {
   const options = [
     { key: "", label: "Barchasi" },
     { key: "kpi", label: MODE.kpi.short },
@@ -185,7 +192,10 @@ const ModeFilter = ({ value, onChange }) => {
     // "Oyligi yo'q" — dars beradigan-u qoidasi biriktirilmaganlar.
     // Rejim emas, lekin aynan shu kesim bo'yicha ish qilinadi.
     { key: "none", label: MODE.none.short },
-  ];
+  ].filter(
+    (option) =>
+      !counts || option.key === "" || option.key === value || counts[option.key] > 0,
+  );
 
   return (
     <div
@@ -207,6 +217,11 @@ const ModeFilter = ({ value, onChange }) => {
           )}
         >
           {option.label}
+          {counts && (
+            <span className="ml-1 tabular-nums opacity-60">
+              {counts[option.key || "all"]}
+            </span>
+          )}
         </button>
       ))}
     </div>

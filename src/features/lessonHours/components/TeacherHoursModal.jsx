@@ -131,8 +131,9 @@ const TeacherHoursBody = ({ staffId, month }) => {
 
         <div className="text-right">
           <p className={T.label}>{data.monthLabel}</p>
+          {/* Vedomostdagi "Oy" bilan AYNI raqam — oylik reja */}
           <p className={cn(T.value, T.sizeXl, "mt-1.5")}>
-            {formatHourNumber(data.hours)}
+            {formatHourNumber(data.plannedHours)}
           </p>
         </div>
       </div>
@@ -150,11 +151,8 @@ const TeacherHoursBody = ({ staffId, month }) => {
         <Metric
           label="O'tildi"
           value={formatHourNumber(data.taughtHours)}
-          hint={
-            data.missedHours > 0
-              ? `${data.taughtDays}/${data.teachingDays} kun · ${data.missedHours} o'tilmadi`
-              : `${data.taughtDays}/${data.teachingDays} kun`
-          }
+          // Oy = o'tildi + o'tilmadi + qoldi — vedomost qatori bilan bir xil
+          hint={`${data.missedHours} o'tilmadi · ${data.remainingHours} qoldi`}
         />
         <Metric
           label="Hisoblandi"
