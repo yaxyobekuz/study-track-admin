@@ -30,12 +30,25 @@ const DrawerOverlay = React.forwardRef(({ className, ...props }, ref) => (
 ));
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
+/**
+ * Fayl preview himoyasi — dialog.jsx dagi previewGuard bilan bir xil:
+ * FilePreviewOverlay ochiq paytda tashqi bosish/Escape drawer'ni yopmaydi.
+ */
+const previewGuard = (event) => {
+  if (document.querySelector("[data-file-preview-overlay]")) {
+    event.preventDefault();
+  }
+};
+
 const DrawerContent = React.forwardRef(
   ({ className, children, ...props }, ref) => (
     <DrawerPortal>
       <DrawerOverlay />
       <DrawerPrimitive.Content
         ref={ref}
+        onEscapeKeyDown={previewGuard}
+        onPointerDownOutside={previewGuard}
+        onInteractOutside={previewGuard}
         className={cn(
           "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-white",
           className

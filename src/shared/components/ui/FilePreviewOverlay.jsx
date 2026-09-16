@@ -90,6 +90,9 @@ const FilePreviewOverlay = ({ file, onClose }) => {
   const overlay = (
     <div
       ref={containerRef}
+      // Bu belgi shadcn Dialog/Drawer'dagi previewGuard uchun: overlay ochiq
+      // paytda ostidagi modal tashqi bosish/Escape bilan yopilmaydi
+      data-file-preview-overlay=""
       className="fixed inset-0 z-[999] flex flex-col bg-black/90"
       onClick={(e) => {
         // Fon bosilganda yopiladi (kontent bosilganda emas)
