@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 // Router
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
@@ -27,6 +27,8 @@ import {
   buildCompareMonthOptions,
   getPercentColor,
   RANK_COLORS,
+  fillMonthDays,
+  buildClassReportPath,
 } from "../data/attendanceReports.data";
 
 /** Tanlagichlar — kartalar ichida turadi, shuning uchun ixcham. */
@@ -35,6 +37,7 @@ const CONTROL_CLASS =
 
 const StudentReportsPage = () => {
   const { month, year } = useOutletContext();
+  const navigate = useNavigate();
 
   // ⚠️ Kunlik karta o'z sanasi bilan yashaydi va yuqoridagi OY filtriga
   // bog'lanmagan: "6-sentabrni 8-sentabrga solishtiray" degan ish oy
@@ -150,36 +153,20 @@ const StudentReportsPage = () => {
     };
   });
 
-  // Grafik uchun oyning BARCHA kunlarini to'ldiramiz -
-  // yozuvi yo'q kunlar ham o'z o'rnida (bo'sh) ko'rinadi
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const byDayMap = Object.fromEntries(
-    (data.byDay || []).map((d) => [parseInt(d.date.slice(8, 10), 10), d]),
-  );
-  const byDay = Array.from({ length: daysInMonth }, (_, i) => {
-    // ⚠️ `dayNumber`, `day` EMAS: yuqorida kunlik kartaning tanlangan
-    // sanasi ham `day` deb ataladi va soya bo'lib tushib qolardi
-    const dayNumber = i + 1;
-    const d = byDayMap[dayNumber];
-    return d
-      ? { ...d, day: dayNumber }
-      : {
-          day: dayNumber,
-          date: `${year}-${String(month).padStart(2, "0")}-${String(dayNumber).padStart(2, "0")}`,
-          // Ma'lumotsiz kunlar 0 chizig'ida turadi
-          present: 0,
-          late: 0,
-          absent: 0,
-          excused: 0,
-          unmarked: 0,
-          came: 0,
-          expected: 0,
-          total: 0,
-          percent: null,
-        };
-  });
+  // Grafik uchun oyning BARCHA kunlari - yozuvi yo'q kunlar ham o'z o'rnida
+  const byDay = fillMonthDays(data.byDay, month, year);
 
+  // ⚠️ Sinf jadvali KUNLIK kartadagi kun bo'yicha (server `byClass`):
+  // oy yig'indisi "Kutilgan 152, kelgan 151" kabi o'quvchi-kunlarni
+  // ko'rsatardi. Oy va yil kesimi — sinf hisobotida (qatorga bosiladi).
   const byClass = data.byClass || [];
+  // "Eng yuqori/past" — faqat foizlar farq qilsa va teng foizlilarning
+  // HAMMASIGA: kunlik jadvalda ko'p sinf 100% bo'ladi va bittasini
+  // tanlab belgilash tasodifiy bo'lardi
+  const classPercents = byClass.map((c) => c.percent).filter((p) => p != null);
+  const topPercent = classPercents.length ? Math.max(...classPercents) : null;
+  const lowPercent = classPercents.length ? Math.min(...classPercents) : null;
+  const hasSpread = topPercent !== lowPercent;
   const riskGroup = data.riskGroup || [];
   const topStudents = data.topStudents || [];
   const reasons = data.reasons || {};
@@ -200,10 +187,29 @@ const StudentReportsPage = () => {
         <DailyAttendanceChart byDay={byDay} />
       </Card>
 
-      {/* 3. Sinf kesimida */}
-      <Card title="Sinf kesimida davomat" className="space-y-3">
+      {/* 3. Sinf kesimida — tanlangan KUN */}
+      <Card className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="font-semibold text-gray-900">Sinf kesimida davomat</h2>
+            <p className="text-xs text-gray-500">
+              {overall.daily?.dateLabel || "Kunlik"} holati · batafsil hisobot
+              (kunlik, oylik, yillik) uchun sinf ustiga bosing
+            </p>
+          </div>
+          <input
+            type="date"
+            value={day}
+            max={todayInputValue()}
+            onChange={(e) => setDay(e.target.value || todayInputValue())}
+            className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none"
+          />
+        </div>
+
         {byClass.length === 0 ? (
-          <p className="text-sm text-gray-400 py-4">Ma&apos;lumot topilmadi</p>
+          <p className="text-sm text-gray-400 py-4">
+            Bu kuni kutilgan o&apos;quvchi yo&apos;q
+          </p>
         ) : (
           <div className="overflow-x-auto rounded-lg">
             <table className="min-w-full text-sm">
@@ -220,16 +226,20 @@ const StudentReportsPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {byClass.map((cls, idx) => (
-                  <tr key={cls.classId} className="border-t border-gray-100">
+                {byClass.map((cls) => (
+                  <tr
+                    key={cls.classId}
+                    onClick={() => navigate(buildClassReportPath(cls.classId, day))}
+                    className="cursor-pointer border-t border-gray-100 hover:bg-gray-50"
+                  >
                     <td className="px-4 py-3 font-medium text-gray-900">
                       {cls.className}
-                      {byClass.length > 1 && idx === 0 && (
+                      {hasSpread && cls.percent === topPercent && (
                         <span className="ml-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">
                           Eng yuqori
                         </span>
                       )}
-                      {byClass.length > 1 && idx === byClass.length - 1 && (
+                      {hasSpread && cls.percent === lowPercent && (
                         <span className="ml-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">
                           Eng past
                         </span>

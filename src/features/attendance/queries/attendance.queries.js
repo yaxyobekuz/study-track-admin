@@ -143,4 +143,18 @@ export const attendanceReportsQueries = {
           .getStudentReport(month, year, compare)
           .then((r) => r.data),
     }),
+
+  /**
+   * Bitta sinf hisoboti (kunlik / oylik / yillik) →
+   * `{ classInfo, summary, concentration, students, byDay?, byMonth? }`.
+   * Davr almashganda eski jadval ekranda qoladi — sahifa "sakramaydi".
+   */
+  studentClass: (classId, params) =>
+    queryOptions({
+      queryKey: [...attendanceReportsKeys.all, "student-class", classId, params],
+      queryFn: () =>
+        attendanceReportAPI.getClassReport(classId, params).then((r) => r.data),
+      enabled: Boolean(classId),
+      placeholderData: keepPreviousData,
+    }),
 };

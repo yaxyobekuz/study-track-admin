@@ -13,6 +13,14 @@ export const attendanceReportAPI = {
     http.get("/attendance-reports/students", {
       params: { month, year, ...compare },
     }),
+  /**
+   * Bitta sinf hisoboti.
+   * @param {string} classId
+   * @param {{period: "day"|"month"|"year", date?: string, month?: number,
+   *          year?: number}} params - `date` ISO ("2026-09-06"), mashina qiymati
+   */
+  getClassReport: (classId, params) =>
+    http.get(`/attendance-reports/students/classes/${classId}`, { params }),
   getStaffReport: (month, year) =>
     http.get("/attendance-reports/staff", { params: { month, year } }),
 };

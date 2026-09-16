@@ -133,6 +133,7 @@ import MarkStaffPage from "@/features/attendance/pages/MarkStaffPage";
 import ExcuseRequestsPage from "@/features/attendance/pages/ExcuseRequestsPage";
 import AbsenceReasonsPage from "@/features/attendance/pages/AbsenceReasonsPage";
 import StudentReportsPage from "@/features/attendance/pages/StudentReportsPage";
+import ClassAttendanceReportPage from "@/features/attendance/pages/ClassAttendanceReportPage";
 import StaffReportsPage from "@/features/attendance/pages/StaffReportsPage";
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 
@@ -462,6 +463,13 @@ const Routes = () => {
               <Route path="students" element={<StudentReportsPage />} />
               <Route path="staff" element={<StaffReportsPage />} />
             </Route>
+
+            {/* Bitta sinf hisoboti — ReportsLayout'dan TASHQARIDA: uning oy/yil
+                filtri bu sahifaga tegishli emas (davr sahifaning o'zida) */}
+            <Route
+              path="reports/students/classes/:classId"
+              element={<ClassAttendanceReportPage />}
+            />
 
             {/* Uzrli so'rovlar */}
             <Route path="excuses" element={<ExcuseRequestsPage />} />
