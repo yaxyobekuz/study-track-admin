@@ -35,6 +35,10 @@ import {
 } from "../components/ExpenseModals";
 
 // Hooks
+import {
+  LimitRequestModal,
+  LimitRequestsReviewModal,
+} from "../components/LimitRequestModals";
 import useModal from "@/shared/hooks/useModal";
 import usePermissions from "@/shared/hooks/usePermissions";
 
@@ -90,6 +94,8 @@ const ExpensesPage = () => {
       <ExpenseEntryModal />
       <VoidExpenseModal />
       <ExpenseCategoryModal />
+      <LimitRequestModal />
+      <LimitRequestsReviewModal />
     </div>
   );
 };
@@ -153,6 +159,18 @@ const ExpenseList = () => {
             ]}
           />
         </div>
+
+        <Can do="expenses.limitReview">
+          <Button variant="outline" onClick={() => openModal("limitRequestsReview", {})}>
+            Limit so'rovlari
+          </Button>
+        </Can>
+
+        <Can do="expenses.create">
+          <Button variant="outline" onClick={() => openModal("limitRequest", {})}>
+            Limit oshirish so'rovi
+          </Button>
+        </Can>
 
         <Can do="expenses.create">
           <Button onClick={() => openModal("expense", {})}>

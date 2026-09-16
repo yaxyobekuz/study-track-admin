@@ -17,7 +17,7 @@ import { AccrualChart, CashflowChart, TrendChart } from "../components/TrendChar
 import {
   DebtAgingCard,
   DebtCard,
-  ExpenseStructureCard,
+
   RevenueStructureCard,
   TopExpensesCard,
 } from "../components/StructureCards";
@@ -45,6 +45,7 @@ import { ExpenseBudgetModal } from "../components/ExpenseBudgetModal";
 import { IncomePlanModal } from "../components/IncomePlanModal";
 
 // Hooks
+import LimitsCard from "../components/LimitsCard";
 import useModal from "@/shared/hooks/useModal";
 import usePermissions from "@/shared/hooks/usePermissions";
 
@@ -187,7 +188,7 @@ const FinanceDashboardPage = () => {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <PnlCard {...state} />
         <TrendChart {...state} />
-        <ExpenseStructureCard {...state} />
+        <LimitsCard month={month} />
       </div>
 
       {/* ── 3-qator: daromad tuzilmasi, cash flow, qarzdorlik ────────── */}

@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { expenseCategoriesAPI, expensesAPI } from "../api/expenses.api";
+import { expenseCategoriesAPI, expensesAPI, expenseLimitRequestsAPI } from "../api/expenses.api";
 import { expenseKeys } from "./expenses.queries";
 
 // Xarajat KASSAGA tegadi, ya'ni to'lov turlari qoldig'i va moliya hisobotlari
@@ -67,6 +67,23 @@ export const useDeleteCategory = () => {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: (id) => expenseCategoriesAPI.remove(id).then((r) => r.data),
+    onSuccess: invalidate,
+  });
+};
+
+// ── Limit oshirish so'rovlari ────────────────
+export const useSubmitLimitRequest = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (data) => expenseLimitRequestsAPI.submit(data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+export const useReviewLimitRequest = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ id, data }) => expenseLimitRequestsAPI.review(id, data).then((r) => r.data.data),
     onSuccess: invalidate,
   });
 };

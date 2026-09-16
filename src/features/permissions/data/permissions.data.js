@@ -480,6 +480,7 @@ export const PERMISSION_SECTIONS = [
       A.create,
       { key: "void", label: "Bekor qilish" },
       { key: "categories", label: "Kategoriyalarni boshqarish" },
+      { key: "limitReview", label: "Limit so'rovini ko'rib chiqish" },
     ],
   },
   {

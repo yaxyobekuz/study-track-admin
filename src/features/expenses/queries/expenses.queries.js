@@ -5,12 +5,26 @@ import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 import { createQueryKeys } from "@/shared/lib/query";
 
 // API
-import { expenseCategoriesAPI, expensesAPI } from "../api/expenses.api";
+import { expenseCategoriesAPI, expensesAPI, expenseLimitRequestsAPI } from "../api/expenses.api";
 
 export const expenseKeys = createQueryKeys("expenses");
 
 const categoriesKey = [...expenseKeys.all, "categories"];
 const listKey = [...expenseKeys.all, "list"];
+
+export const limitRequestQueries = {
+  mine: () =>
+    queryOptions({
+      queryKey: ["expense-limit-requests", "mine"],
+      queryFn: () => expenseLimitRequestsAPI.getMine().then((r) => r.data.data),
+    }),
+  all: (params) =>
+    queryOptions({
+      queryKey: ["expense-limit-requests", "all", params],
+      queryFn: () => expenseLimitRequestsAPI.getAll(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+};
 
 export const expenseQueries = {
   /** Kategoriyalar → `{ items, totals }`. */

@@ -19,6 +19,7 @@ import Switch from "@/shared/components/ui/switch/Switch";
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 import usePermissions from "@/shared/hooks/usePermissions";
+import useModal from "@/shared/hooks/useModal";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
@@ -52,6 +53,7 @@ export const ExpenseEntryModal = () => (
 
 const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
   const { can } = usePermissions();
+  const { openModal } = useModal();
   const { data: categories = [] } = useQuery(expenseQueries.activeCategories());
   const { data: accounts = [] } = useQuery(financeQueries.activeAccounts());
   const { mutate: createExpense } = useCreateExpense();
@@ -97,8 +99,29 @@ const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
           close();
           toast.success("Xarajat qayd etildi");
         },
-        onError: (err) =>
-          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onError: (err) => {
+          const msg = err.response?.data?.message || "Xatolik yuz berdi";
+          // Limit oshib ketgan bo'lsa — foydalanuvchini limit oshirish
+          // so'roviga yo'naltiramiz (kategoriya nomi bilan)
+          if (msg.includes("limiti oshib ketadi")) {
+            const cat = categories.find((c) => c.id === targetCategoryId);
+            toast.error(msg, {
+              action: can("expenses.create")
+                ? {
+                    label: "Limit so'rovi",
+                    onClick: () =>
+                      openModal("limitRequest", {
+                        categoryId: targetCategoryId,
+                        categoryName: cat?.name,
+                      }),
+                  }
+                : undefined,
+              duration: 8000,
+            });
+          } else {
+            toast.error(msg);
+          }
+        },
         onSettled: () => setIsLoading(false),
       },
     );

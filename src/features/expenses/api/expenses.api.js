@@ -24,3 +24,14 @@ export const expensesAPI = {
   create: (data) => http.post("/expenses", data),
   void: (id, reason) => http.post(`/expenses/${id}/void`, { reason }),
 };
+
+/**
+ * Limit oshirish so'rovlari — xodim yuboradi, admin ko'rib chiqadi.
+ * Tasdiqlansa kategoriya limiti so'ralgan qiymatga oshadi.
+ */
+export const expenseLimitRequestsAPI = {
+  submit: (data) => http.post("/expense-limit-requests", data),
+  getMine: (params) => http.get("/expense-limit-requests/mine", { params }),
+  getAll: (params) => http.get("/expense-limit-requests", { params }),
+  review: (id, data) => http.post(`/expense-limit-requests/${id}/review`, data),
+};

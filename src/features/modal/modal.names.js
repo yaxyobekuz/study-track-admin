@@ -184,6 +184,8 @@ export const MODAL_NAMES = [
   // Payroll v2 — oylik zayavkalarini ko'rib chiqish (paneldan tasdiqlash)
   "reviewPayrollRequest",
   "expense",
+  "limitRequest",
+  "limitRequestsReview",
   "voidExpense",
   "expenseCategory",
 
