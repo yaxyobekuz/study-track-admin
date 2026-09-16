@@ -232,6 +232,12 @@ export const ENTRY_TYPE_OPTIONS = [
   })),
 ];
 
+/** Harakatlar daftari sana filtri rejimi — oy yoki kun oralig'i. */
+export const DATE_MODE_OPTIONS = [
+  { label: "Oy bo'yicha", value: "month" },
+  { label: "Sana bo'yicha", value: "range" },
+];
+
 export const ACCOUNT_ENTRY_TABLE_COLUMNS = [
   "Sana",
   "Turi",

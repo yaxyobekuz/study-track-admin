@@ -1,5 +1,5 @@
 // React
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 // Toast
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ import Card from "@/shared/components/ui/Card";
 import Can from "@/shared/components/guards/Can";
 import Table, { Td, Tr } from "@/shared/components/ui/Table";
 import Button from "@/shared/components/ui/button/Button";
+import Input from "@/shared/components/ui/input/Input";
 import Select from "@/shared/components/ui/select/Select";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import Pagination from "@/shared/components/ui/Pagination";
@@ -43,6 +44,7 @@ import { formatDateUZ } from "@/shared/utils/date.utils";
 // Data & queries
 import {
   ACCOUNT_ENTRY_TABLE_COLUMNS,
+  DATE_MODE_OPTIONS,
   ENTRY_TYPE_META,
   ENTRY_TYPE_OPTIONS,
   TRANSFER_TABLE_COLUMNS,
@@ -71,6 +73,36 @@ const AccountsPage = () => {
   const [entryType, setEntryType] = useState("all");
   const [page, setPage] = useState(1);
 
+  // Sana filtri — "month" (oy) yoki "range" (kun oralig'i). Server `from`/`to`
+  // (ISO kun) ni qabul qiladi (`parseDayRangeFilter`).
+  const [dateMode, setDateMode] = useState("month");
+  const [monthValue, setMonthValue] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  // Filtr qiymatlaridan server params — oy tanlansa oy chegaralariga aylanadi
+  const dateParams = useMemo(() => {
+    if (dateMode === "month") {
+      if (!monthValue) return {};
+      const [y, m] = monthValue.split("-").map(Number);
+      const lastDay = new Date(y, m, 0).getDate(); // oyning oxirgi kuni
+      return {
+        from: `${monthValue}-01`,
+        to: `${monthValue}-${String(lastDay).padStart(2, "0")}`,
+      };
+    }
+    return {
+      ...(fromDate ? { from: fromDate } : {}),
+      ...(toDate ? { to: toDate } : {}),
+    };
+  }, [dateMode, monthValue, fromDate, toDate]);
+
+  // Filtr o'zgarsa birinchi sahifaga qaytamiz
+  const resetPageOnFilter = (fn) => (v) => {
+    fn(v);
+    setPage(1);
+  };
+
   const { data, isLoading } = useQuery(financeQueries.accountList({}));
   const accounts = data?.items ?? [];
 
@@ -88,6 +120,7 @@ const AccountsPage = () => {
       page,
       limit: 24,
       ...(entryType !== "all" ? { type: entryType } : {}),
+      ...dateParams,
     }),
     enabled: Boolean(activeId) && view === "entries",
   });
@@ -249,15 +282,56 @@ const AccountsPage = () => {
             />
 
             {view === "entries" && (
-              <Select searchable
-                value={entryType}
-                triggerClassName="min-w-44"
-                options={ENTRY_TYPE_OPTIONS}
-                onChange={(v) => {
-                  setEntryType(v);
-                  setPage(1);
-                }}
-              />
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Sana filtri: Oy yoki Kun oralig'i */}
+                <Select
+                  value={dateMode}
+                  triggerClassName="w-32"
+                  options={DATE_MODE_OPTIONS}
+                  onChange={resetPageOnFilter((v) => {
+                    setDateMode(v);
+                    setMonthValue("");
+                    setFromDate("");
+                    setToDate("");
+                  })}
+                />
+
+                {dateMode === "month" ? (
+                  <Input
+                    type="month"
+                    value={monthValue}
+                    className="w-40"
+                    onChange={(e) =>
+                      resetPageOnFilter(setMonthValue)(e.target.value)
+                    }
+                  />
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      type="date"
+                      value={fromDate}
+                      className="w-36"
+                      onChange={(e) =>
+                        resetPageOnFilter(setFromDate)(e.target.value)
+                      }
+                    />
+                    <span className="text-xs text-gray-400">—</span>
+                    <Input
+                      type="date"
+                      value={toDate}
+                      className="w-36"
+                      onChange={(e) => resetPageOnFilter(setToDate)(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                <Select searchable
+                  value={entryType}
+                  triggerClassName="min-w-40"
+                  options={ENTRY_TYPE_OPTIONS}
+                  onChange={resetPageOnFilter(setEntryType)}
+                />
+              </div>
             )}
           </div>
 
