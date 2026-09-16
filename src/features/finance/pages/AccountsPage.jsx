@@ -237,6 +237,33 @@ const AccountsPage = () => {
         </div>
       </div>
 
+      {/* Umumiy balans — barcha to'lov turlari yig'indisi. Filtr faol bo'lsa
+          davr oxiridagi jami + o'sha davr kirim/chiqimi (filtrga qarab o'zgaradi). */}
+      {!isLoading && accounts.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+              {isPeriod ? "Davr oxiridagi umumiy balans" : "Umumiy balans"}
+            </p>
+            <p className="mt-1 text-2xl font-bold text-gray-900">
+              {formatMoney(data?.totals?.totalBalance)}{" "}
+              <span className="text-base font-medium text-gray-400">so'm</span>
+            </p>
+          </div>
+
+          {isPeriod && (
+            <div className="text-right text-xs">
+              <p className="font-medium text-green-600">
+                Kirim: +{formatMoney(data.totals.totalIncome)} so'm
+              </p>
+              <p className="mt-0.5 font-medium text-red-500">
+                Chiqim: −{formatMoney(data.totals.totalExpense)} so'm
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* To'lov turlari */}
       {isLoading ? (
         <Card className="py-10 text-center text-gray-500">Yuklanmoqda...</Card>
