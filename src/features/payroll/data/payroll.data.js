@@ -6,12 +6,12 @@
 /** Yo'nalish (payroll ko'rinishi). */
 export const DIRECTION_OPTIONS = [
   { value: "salary", label: "Oylik maosh" },
-  { value: "bonus", label: "Ustamalar" },
 ];
 
 /** Struktura tablari. */
 export const PAYROLL_MAIN_TABS = [
   { value: "structure", label: "Struktura" },
+  { value: "allowances", label: "Ustama" },
   { value: "obligations", label: "Majburiyatlar" },
 ];
 

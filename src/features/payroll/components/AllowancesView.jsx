@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 // Icons
-import { BadgePercent, Clock3, Wallet } from "lucide-react";
+import { BadgePercent, Clock3, Plus, Wallet } from "lucide-react";
 
 // Components
 import Can from "@/shared/components/guards/Can";
@@ -13,6 +13,7 @@ import Card from "@/shared/components/ui/Card";
 import Table, { Td, Tr } from "@/shared/components/ui/Table";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
+import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 import Pagination from "@/shared/components/ui/Pagination";
 import EmptyState from "@/shared/components/ui/EmptyState";
 
@@ -21,6 +22,11 @@ import useModal from "@/shared/hooks/useModal";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
+import {
+  currentMonthKey,
+  monthKeyToInputValue,
+  inputValueToMonthKey,
+} from "@/shared/helpers/month.helpers";
 
 // Data & queries
 import {
@@ -50,19 +56,27 @@ const chipTone = (item) => {
 };
 
 /**
- * USTAMALAR — "Yo'nalish → Ustamalar" tanlanganda. XODIMLAR RO'YXATI:
- * har qator bitta xodim, uning barcha ustamalari chiplarda (nomi, summasi,
- * manbasi), shu oydagi jami va holati. Kutilayotgan zayavka summasiz
- * ko'rinadi — tasdiqlanmaguncha oylikka qo'shilmaydi.
+ * USTAMA — mustaqil tab. XODIMLAR RO'YXATI: har qator bitta xodim, uning
+ * barcha ustamalari chiplarda (nomi, summasi, manbasi), shu oydagi jami va
+ * holati. Kutilayotgan zayavka summasiz ko'rinadi — tasdiqlanmaguncha
+ * oylikka qo'shilmaydi.
  *
- * Hamyon tugmasi bilan shu yerning o'zidan ustama qo'shiladi (oylik
- * qoidasi orqali) — xodimlar jadvalidagi bilan bir xil oyna.
+ * "+ Ustama qo'shish" — istalgan xodimni tanlab ustama beriladi (hali
+ * ustamasi yo'q xodim ham). Qatordagi hamyon — mavjud ustamani tahrirlash.
+ * Ikkalasi ham `staffSalary` modalini ochadi (PayrollPage'da render qilinadi).
+ *
+ * O'z oy va bo'lim filtri bor (mustaqil tab). `departments` — ixtiyoriy,
+ * bo'lim bo'yicha toraytirish uchun.
  */
-const AllowancesView = ({ month, departmentId }) => {
+const AllowancesView = ({ departments = [] }) => {
   const { openModal } = useModal();
+  const [monthInput, setMonthInput] = useState(monthKeyToInputValue(currentMonthKey()));
+  const [departmentId, setDepartmentId] = useState("");
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+
+  const month = inputValueToMonthKey(monthInput);
 
   const { data, isLoading } = useQuery(
     payrollQueries.allowancesView({
@@ -103,11 +117,30 @@ const AllowancesView = ({ month, departmentId }) => {
         />
       </div>
 
-      {/* Filtrlar */}
+      {/* Filtrlar + qo'shish */}
       <div className="flex flex-wrap items-center gap-2">
+        <input
+          type="month"
+          value={monthInput}
+          onChange={(e) => {
+            setMonthInput(e.target.value);
+            setPage(1);
+          }}
+          className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
+        />
+        <SelectSearch
+          value={departmentId}
+          triggerClassName="min-w-44"
+          placeholder="Barcha bo'limlar"
+          onChange={(v) => {
+            setDepartmentId(v);
+            setPage(1);
+          }}
+          options={departments.map((d) => ({ label: d.name, value: d.id }))}
+        />
         <Select
           value={status}
-          triggerClassName="min-w-40"
+          triggerClassName="min-w-36"
           options={ALLOWANCE_STATUS_OPTIONS}
           onChange={(v) => {
             setStatus(v);
@@ -121,8 +154,15 @@ const AllowancesView = ({ month, departmentId }) => {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="h-10 w-56 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
+          className="h-10 w-48 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
         />
+
+        {/* Istalgan xodimga (hali ustamasi yo'q bo'lsa ham) ustama qo'shish */}
+        <Can do="payroll.assign">
+          <Button className="ml-auto" onClick={() => openModal("staffSalary", {})}>
+            <Plus /> Ustama qo'shish
+          </Button>
+        </Can>
       </div>
 
       {isLoading ? (

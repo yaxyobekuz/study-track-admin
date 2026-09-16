@@ -55,7 +55,6 @@ import {
   ENTRY_TABLE_COLUMNS,
   PAYROLL_TABS,
   PAYROLL_MAIN_TABS,
-  DIRECTION_OPTIONS,
   RULE_TABLE_COLUMNS,
   SALARY_TYPE_META,
   CATEGORY_TABLE_COLUMNS,
@@ -83,7 +82,14 @@ const PayrollPage = () => {
 
   const tabs = PAYROLL_MAIN_TABS.map((item) => ({
     ...item,
-    content: item.value === "structure" ? <StructureView /> : <EntriesView />,
+    content:
+      item.value === "structure" ? (
+        <StructureView />
+      ) : item.value === "allowances" ? (
+        <AllowancesTab />
+      ) : (
+        <EntriesView />
+      ),
   }));
 
   return (
@@ -106,12 +112,20 @@ const PayrollPage = () => {
 };
 
 // ─────────────────────────────────────────────
-// STRUKTURA — Yo'nalish × Bo'lim → dinamik kontent
+// USTAMA — mustaqil tab (xodimlarga ustama qo'shish)
+// ─────────────────────────────────────────────
+
+const AllowancesTab = () => {
+  const { data: departments = [] } = useQuery(payrollQueries.departments());
+  return <AllowancesView departments={departments} />;
+};
+
+// ─────────────────────────────────────────────
+// STRUKTURA — Bo'lim → dinamik kontent
 // ─────────────────────────────────────────────
 
 const StructureView = () => {
   const { openModal } = useModal();
-  const [direction, setDirection] = useState("salary");
   const [departmentId, setDepartmentId] = useState("");
   const [month, setMonth] = useState(monthKeyToInputValue(currentMonthKey()));
   const monthKey = inputValueToMonthKey(month);
@@ -134,10 +148,6 @@ const StructureView = () => {
     <div className="space-y-4">
       {/* Filterlar */}
       <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-gray-500">Yo'nalish</p>
-          <Select triggerClassName="min-w-44" value={direction} options={DIRECTION_OPTIONS} onChange={setDirection} />
-        </div>
         <div className="space-y-1">
           <p className="text-xs font-medium text-gray-500">Bo'lim</p>
           <Select searchable triggerClassName="min-w-52" value={departmentId} placeholder="Bo'limni tanlang"
@@ -164,9 +174,7 @@ const StructureView = () => {
       </div>
 
       {/* Kontent */}
-      {direction === "bonus" ? (
-        <AllowancesView month={monthKey} departmentId={departmentId} />
-      ) : !department ? (
+      {!department ? (
         <Card className="py-12 text-center text-gray-500">Yuqoridan bo'lim tanlang</Card>
       ) : department.kind === "staff" ? (
         <StaffDepartmentView department={department} month={monthKey} />
