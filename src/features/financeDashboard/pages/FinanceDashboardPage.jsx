@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 
 // Icons
-import { CalendarDays, Lock, Target } from "lucide-react";
+import { CalendarDays, Lock, SlidersHorizontal, Target } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -13,7 +13,7 @@ import EmptyState from "@/shared/components/ui/EmptyState";
 import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import KpiCards from "../components/KpiCards";
-import { AccrualChart, CashflowChart, TrendChart } from "../components/TrendCharts";
+import { AccrualChart, CashflowChart } from "../components/TrendCharts";
 import {
   DebtAgingCard,
   DebtCard,
@@ -170,13 +170,22 @@ const FinanceDashboardPage = () => {
           </div>
 
           {canPlan && (
-            <Button
-              variant="outline"
-              onClick={() => openModal("financeTargets", { month: Number(month) })}
-            >
-              <Target className="size-4" />
-              Reja
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                onClick={() => openModal("expenseBudgets", { month: Number(month) })}
+              >
+                <SlidersHorizontal className="size-4" />
+                Limit
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => openModal("financeTargets", { month: Number(month) })}
+              >
+                <Target className="size-4" />
+                Reja
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -184,11 +193,13 @@ const FinanceDashboardPage = () => {
       {/* ── 1-qator: KPI kartalari (kassa + qarz va oylik) ────────────── */}
       <KpiCards data={overview.data} isLoading={overview.isLoading} />
 
-      {/* ── 2-qator: P&L, dinamika, xarajat tuzilmasi ────────────────── */}
+      {/* ── 2-qator: P&L + xarajat limitlari (keng) ──────────────────── */}
+      {/* "Tushum va foyda dinamikasi" grafigi o'rniga xarajat limitlari
+          jadvali keng (2 ustun) qo'yildi — rahbar "qaysi limit yonyapti" ni
+          bir qarashda ko'rishi kerak. Oy taqqoslashi KPI kartalarida bor. */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <PnlCard {...state} />
-        <TrendChart {...state} />
-        <LimitsCard month={month} />
+        <LimitsCard month={month} className="xl:col-span-2" />
       </div>
 
       {/* ── 3-qator: daromad tuzilmasi, cash flow, qarzdorlik ────────── */}

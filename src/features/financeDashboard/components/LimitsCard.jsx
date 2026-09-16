@@ -36,7 +36,7 @@ const barTone = (rate, status) => {
   return "bg-green-500";
 };
 
-const LimitsCard = ({ month }) => {
+const LimitsCard = ({ month, className }) => {
   const { openModal } = useModal();
 
   const { data, isLoading, isError } = useQuery(
@@ -49,7 +49,12 @@ const LimitsCard = ({ month }) => {
   return (
     <DashboardCard
       title="Xarajat limitlari"
-      hint="Har kategoriya bo'yicha limit / ishlatilgan / qolgan"
+      className={className}
+      hint={
+        data?.profit != null
+          ? `Har kategoriya bo'yicha limit / ishlatilgan / qolgan · Sof foyda: ${formatMoney(data.profit)} so'm`
+          : "Har kategoriya bo'yicha limit / ishlatilgan / qolgan"
+      }
       isLoading={isLoading}
       isError={isError}
       isEmpty={items.length === 0}
@@ -98,7 +103,20 @@ const LimitsCard = ({ month }) => {
                     )}
                   </td>
                   <td className="px-2 py-2 text-right tabular-nums text-gray-600">
-                    {hasLimit ? formatMoney(row.limit) : <span className="text-gray-300">—</span>}
+                    {hasLimit ? (
+                      <>
+                        {formatMoney(row.limit)}
+                        {/* Foiz rejimi — amaldagi summa foydadan hisoblangani
+                            ko'rinib tursin */}
+                        {row.limitKind === "percentProfit" && (
+                          <span className="ml-1 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600">
+                            foyda {row.limitPercent}%
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-gray-300">—</span>
+                    )}
                   </td>
                   <td className="px-2 py-2 text-right tabular-nums text-gray-700">
                     {formatMoney(row.spent)}
