@@ -115,7 +115,7 @@ const StaffDepartmentView = ({ department, month }) => {
       {/* Xodimlar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-sm font-semibold text-gray-700">Xodimlar</h3>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <select
             value={sort}
             onChange={(e) => { setSort(e.target.value); setPage(1); }}
@@ -130,6 +130,12 @@ const StaffDepartmentView = ({ department, month }) => {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="h-10 w-56 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
           />
+          {/* Ro'yxatdan xodim tanlab shu bo'lim lavozimiga biriktirish */}
+          <Can do="payroll.assign">
+            <Button onClick={() => openModal("assignStaff", { department })}>
+              <Plus /> Xodim qo'shish
+            </Button>
+          </Can>
         </div>
       </div>
 
