@@ -251,6 +251,11 @@ const ExpenseList = () => {
                       <span className="text-xs text-gray-400">
                         Bekor qilingan
                       </span>
+                    ) : expense.kind === "salary" ? (
+                      // Oylik to'lovi — "Xodimlar oyligi" sahifasidan bekor qilinadi
+                      <span className="rounded-md bg-indigo-50 px-1.5 py-0.5 text-xs font-medium text-indigo-600">
+                        Oylik
+                      </span>
                     ) : (
                       <Can do="expenses.void">
                         <button
