@@ -16,6 +16,7 @@ import Button from "@/shared/components/ui/button/Button";
 import useObjectState from "@/shared/hooks/useObjectState";
 
 // Utils
+import { cn } from "@/shared/utils/cn";
 import { formatMoney } from "@/shared/utils/formatMoney";
 import { currentMonthKey, formatMonthKey } from "@/shared/helpers/month.helpers";
 
@@ -204,6 +205,10 @@ export const AssignStaffModal = () => (
  *     tanlanadi (admin o'zi to'g'ridan-to'g'ri biriktiradi, zayavkasiz).
  *     `category` berilsa toifa oldindan tanlangan bo'ladi.
  * Zayavka (PayrollRequest) oqimi bunga TEGMAYDI — u alohida ishlayveradi.
+ *
+ * STAFF bo'limda oylik ikki xil: LAVOZIMDAN (lavozim maoshi) yoki QO'LDA —
+ * lavozim baribir tanlanadi (nomi va bo'limi), lekin xodim shaxsiy summani
+ * oladi (`User.customBaseSalary`). Summa serverda payroll dvigatelidan o'tadi.
  */
 const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, category }) => {
   const { mutate: assign } = useAssignStaff();
@@ -225,12 +230,15 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
     enabled: !staff && Boolean(department?.id),
   });
 
-  const { staffId, targetId, setField } = useObjectState({
+  const { staffId, targetId, salaryMode, customBase, setField } = useObjectState({
     staffId: staff?.id ?? "",
     targetId:
       category?.id ??
       ((isTeaching ? staff?.salaryCategoryId : staff?.positionId) ?? ""),
+    salaryMode: staff?.baseIsCustom ? "custom" : "position",
+    customBase: staff?.baseIsCustom ? toNum(staff.baseAmount) : "",
   });
+  const isCustom = !isTeaching && salaryMode === "custom";
 
   const options = isTeaching
     ? categories.map((c) => ({ label: `${c.name} — ${formatMoney(c.perHourRate)}/soat`, value: c.id }))
@@ -266,7 +274,9 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
   const submit = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    const data = isTeaching ? { salaryCategoryId: targetId } : { positionId: targetId };
+    const data = isTeaching
+      ? { salaryCategoryId: targetId }
+      : { positionId: targetId, customBaseSalary: isCustom ? customBase : null };
     assign(
       { staffId: staff?.id || staffId, data },
       {
@@ -349,17 +359,69 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
         </div>
       )}
 
-      {/* Lavozim tanlanganda — oylik shu yerning o'zida ko'rinadi */}
-      {!isTeaching && selectedPosition && (
-        <div className="rounded-xl bg-indigo-50 p-3 text-sm text-indigo-900">
-          Oylik (lavozimdan): <b>{formatMoney(selectedPosition.baseSalary)}</b>
-          <span className="block text-xs text-indigo-700">
-            Ustamalar (bo'lsa) ustiga qo'shiladi.
-          </span>
+      {/* Oylik: lavozim maoshi yoki shu xodimga qo'lda yozilgan summa */}
+      {!isTeaching && (
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium text-gray-700">Oylik</p>
+          <div className="flex gap-1 rounded-xl bg-gray-100 p-1">
+            {[
+              { value: "position", label: "Lavozimdan" },
+              { value: "custom", label: "Qo'lda" },
+            ].map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setField("salaryMode", option.value)}
+                className={cn(
+                  "flex-1 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors",
+                  salaryMode === option.value ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700",
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          {isCustom && (
+            <InputField
+              required
+              type="amount"
+              name="customBase"
+              value={customBase}
+              placeholder="2200000"
+              description={Number(customBase) > 0 ? `${formatMoney(customBase)} / oy` : "Shu xodimning oylik maoshi, so'mda"}
+              onChange={(e) => setField("customBase", e.target.value)}
+            />
+          )}
         </div>
       )}
 
-      <Button type="submit" className="w-full" loading={isLoading} disabled={!targetId || (!staff && !staffId)}>
+      {/* Lavozim tanlanganda — oylik shu yerning o'zida ko'rinadi */}
+      {!isTeaching && selectedPosition && (
+        <div className="rounded-xl bg-indigo-50 p-3 text-sm text-indigo-900">
+          {isCustom ? (
+            <>
+              Oylik (qo'lda): <b>{Number(customBase) > 0 ? formatMoney(customBase) : "—"}</b>
+              <span className="block text-xs text-indigo-700">
+                "{selectedPosition.name}" lavozim maoshi ({formatMoney(selectedPosition.baseSalary)}) o'rniga. Ustamalar (bo'lsa) ustiga qo'shiladi.
+              </span>
+            </>
+          ) : (
+            <>
+              Oylik (lavozimdan): <b>{formatMoney(selectedPosition.baseSalary)}</b>
+              <span className="block text-xs text-indigo-700">
+                Ustamalar (bo'lsa) ustiga qo'shiladi.
+              </span>
+            </>
+          )}
+        </div>
+      )}
+
+      <Button
+        type="submit"
+        className="w-full"
+        loading={isLoading}
+        disabled={!targetId || (!staff && !staffId) || (isCustom && !(Number(customBase) > 0))}
+      >
         Biriktirish
       </Button>
     </InputGroup>

@@ -159,13 +159,16 @@ const StaffDepartmentView = ({ department, month }) => {
               <Tr key={e.id}>
                 <Td className="font-medium text-gray-900">{e.fullName}<span className="block text-xs font-normal text-gray-400">{e.role}</span></Td>
                 <Td className="text-gray-600">{e.positionName || "—"}</Td>
-                <Td className="font-medium">{formatMoney(e.fixedAmount)}</Td>
+                <Td className="font-medium">
+                  {formatMoney(e.fixedAmount)}
+                  {e.baseIsCustom && <span className="block text-xs font-normal text-indigo-600">qo'lda belgilangan</span>}
+                </Td>
                 <Td className={Number(e.allowanceAmount) > 0 ? "text-amber-600" : "text-gray-400"}>{formatMoney(e.allowanceAmount)}</Td>
                 <Td className="font-semibold text-green-700">{formatMoney(e.amount)}</Td>
                 <Td>
                   <div className="flex items-center justify-end gap-1">
                     <Can do="payroll.assign">
-                      <button title="Lavozimga biriktirish" onClick={() => openModal("assignStaff", { staff: e, department })} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                      <button title="Lavozim va oylik" onClick={() => openModal("assignStaff", { staff: e, department })} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
                         <UserCog className="size-3.5" />
                       </button>
                       {/* Fiksa oylik va USTAMA (summa yoki foiz) — admin O'ZI

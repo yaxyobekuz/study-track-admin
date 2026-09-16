@@ -62,9 +62,9 @@ export const CreateDeductionModal = () => (
  * (`/payroll/deductions/preview`) va u payroll dvigatelidan o'tadi —
  * saqlangandan keyin aynan shu raqam yoziladi.
  *
- * ⚠️ "HAMMASI" HAM ANIQ RO'YXAT BO'LIB YUBORILADI: kimdan ushlanishi —
- * saqlash paytidagi qaror. Server keyin ishga kirganlarga uni jimgina
- * yoymaydi.
+ * "HAMMASI" — ro'yxat va `scope: "all"` birga yuboriladi: server ro'yxatga
+ * yozadi va guruhni keyin oyligi belgilangan xodimlarga ham yoyadi
+ * (`finance.md` §10). "Tanlab" / "Bitta xodim" — faqat saqlash paytidagi ro'yxat.
  */
 const CreateDeductionForm = ({ close, isLoading, setIsLoading, month: initialMonth }) => {
   const { mutate: createDeductions } = useCreateDeductions();
@@ -172,6 +172,7 @@ const CreateDeductionForm = ({ close, isLoading, setIsLoading, month: initialMon
     ? null
     : JSON.stringify({
         staffIds,
+        ...(scope === "all" ? { scope: "all" } : {}),
         type,
         value,
         reason: reason.trim(),
@@ -201,7 +202,11 @@ const CreateDeductionForm = ({ close, isLoading, setIsLoading, month: initialMon
     createDeductions(JSON.parse(draftKey), {
       onSuccess: (result) => {
         close();
-        toast.success(`${result.created} ta xodimdan ushlab qolish yozildi`);
+        toast.success(
+          result.extended > 0
+            ? `${result.created + result.extended} ta xodimdan ushlab qolish yozildi (${result.extended} tasining shu oyda oyligi hali 0)`
+            : `${result.created} ta xodimdan ushlab qolish yozildi`,
+        );
         if (result.skippedDuplicates.length > 0) {
           toast.info(
             `${result.skippedDuplicates.length} ta xodimda bu ushlab qolish allaqachon bor edi — qayta yozilmadi`,
@@ -245,6 +250,10 @@ const CreateDeductionForm = ({ close, isLoading, setIsLoading, month: initialMon
             value={scope}
             onChange={(next) => setField("scope", next)}
           />
+
+          {scope === "all" && (
+            <p className="rounded-xl bg-amber-50 p-2.5 text-xs text-amber-800">{DEDUCTION_HINTS.all}</p>
+          )}
 
           {scope === "one" ? (
             <Select

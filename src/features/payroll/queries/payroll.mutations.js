@@ -229,6 +229,14 @@ export const useCreateDeductions = () => {
   });
 };
 
+export const useApplyDeductionToAll = () => {
+  const invalidate = useInvalidateDeductions();
+  return useMutation({
+    mutationFn: (batchId) => deductionsAPI.applyToAll(batchId).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
 export const useCancelDeduction = () => {
   const invalidate = useInvalidateDeductions();
   return useMutation({

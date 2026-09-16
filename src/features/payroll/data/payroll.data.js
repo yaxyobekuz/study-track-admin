@@ -258,6 +258,9 @@ export const DEDUCTION_HINTS = {
   percent:
     "Foiz jami hisoblangan oylikdan (fiksa + dars soati + ustamalar) olinadi. " +
     "Ushlab qolish oylikdan oshmaydi — oylik 0 dan pastga tushmaydi.",
+  all:
+    "Keyin oyligi belgilangan xodimlardan ham avtomatik ushlanadi. Birortasini " +
+    "chiqarish kerak bo'lsa — registrda o'sha xodimning qatorini bekor qiling.",
   sealed:
     "Shu oy oyligi shakllantirilgan, lekin hali to'lanmagan bo'lsa, u ushlab " +
     "qolish bilan qayta hisoblanadi. Qisman yoki to'liq to'langan oylik o'zgarmaydi.",

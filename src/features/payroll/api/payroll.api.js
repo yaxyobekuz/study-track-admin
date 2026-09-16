@@ -81,6 +81,8 @@ export const deductionsAPI = {
   cancel: (id, reason) => http.post(`/payroll/deductions/${id}/cancel`, { reason }),
   cancelBatch: (batchId, reason) =>
     http.post(`/payroll/deductions/batch/${batchId}/cancel`, { reason }),
+  // Mavjud guruhni keyin oyligi belgilanganlarga ham yoyish
+  applyToAll: (batchId) => http.post(`/payroll/deductions/batch/${batchId}/apply-all`),
 };
 
 /**

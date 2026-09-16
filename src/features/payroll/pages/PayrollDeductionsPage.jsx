@@ -1,8 +1,11 @@
 // React
 import { useState } from "react";
 
+// Toast
+import { toast } from "sonner";
+
 // Icons
-import { MinusCircle, Search, XCircle } from "lucide-react";
+import { MinusCircle, Search, UsersRound, XCircle } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -39,6 +42,7 @@ import {
   formatDeductionValue,
 } from "../data/payroll.data";
 import { payrollQueries } from "../queries/payroll.queries";
+import { useApplyDeductionToAll } from "../queries/payroll.mutations";
 
 /**
  * OYLIKDAN USHLAB QOLISH — registr (Moliya → "Ushlab qolish").
@@ -52,6 +56,27 @@ import { payrollQueries } from "../queries/payroll.queries";
  */
 const PayrollDeductionsPage = () => {
   const { openModal } = useModal();
+  const { mutate: applyToAll, isPending: isApplying } = useApplyDeductionToAll();
+
+  // Eski guruhlar qanday tanlab yozilgani saqlanmagan — admin o'zi yoqadi
+  const handleApplyToAll = (row) => {
+    if (
+      !window.confirm(
+        `"${row.reason}" (${row.batchActiveCount} ta xodim) keyin oyligi belgilangan xodimlarga ham qo'llansinmi? Hozir oyligi bor, lekin ro'yxatda yo'qlarga darhol yoziladi.`,
+      )
+    ) {
+      return;
+    }
+    applyToAll(row.batchId, {
+      onSuccess: (result) =>
+        toast.success(
+          result.created > 0
+            ? `Endi yangi xodimlarga ham qo'llanadi — yana ${result.created} ta xodimga yozildi`
+            : "Endi yangi xodimlarga ham qo'llanadi",
+        ),
+      onError: (error) => toast.error(error.response?.data?.message || "Xatolik yuz berdi"),
+    });
+  };
 
   const [month, setMonth] = useState(monthKeyToInputValue(currentMonthKey()));
   const [status, setStatus] = useState("active");
@@ -169,6 +194,14 @@ const PayrollDeductionsPage = () => {
 
                   <Td nowrap={false} className="text-gray-700">
                     {row.reason}
+                    {row.appliesToAll && (
+                      <span
+                        className="ml-1.5 inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-xs font-medium text-indigo-700"
+                        title="Keyin oyligi belgilangan xodimlarga ham avtomatik qo'llanadi"
+                      >
+                        Hammaga
+                      </span>
+                    )}
                     {row.note && (
                       <span className="block text-xs text-gray-400">{row.note}</span>
                     )}
@@ -223,7 +256,17 @@ const PayrollDeductionsPage = () => {
                   <Td>
                     {!isCancelled && (
                       <Can do="payroll.deduct">
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-1">
+                          {!row.appliesToAll && (
+                            <button
+                              title="Yangi xodimlarga ham qo'llash"
+                              disabled={isApplying}
+                              onClick={() => handleApplyToAll(row)}
+                              className="rounded-lg p-1.5 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-50"
+                            >
+                              <UsersRound className="size-3.5" />
+                            </button>
+                          )}
                           <button
                             title="Bekor qilish"
                             onClick={() => openModal("cancelDeduction", { deduction: row })}
