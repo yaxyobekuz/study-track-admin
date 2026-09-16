@@ -106,13 +106,14 @@ const LimitsCard = ({ month, className }) => {
                     {hasLimit ? (
                       <>
                         {formatMoney(row.limit)}
-                        {/* Foiz rejimi — amaldagi summa kirimdan hisoblangani
-                            ko'rinib tursin */}
-                        {row.limitKind === "percentIncome" && (
-                          <span className="ml-1 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600">
-                            kirim {row.limitPercent}%
-                          </span>
-                        )}
+                        {/* Foiz rejimi — amaldagi summa kirimdan olingani va
+                            foizi qavs ichida ko'rinib tursin */}
+                        {row.limitKind === "percentIncome" &&
+                          row.limitPercent != null && (
+                            <span className="ml-1 text-[11px] text-indigo-500">
+                              (kirim {row.limitPercent}%)
+                            </span>
+                          )}
                       </>
                     ) : (
                       <span className="text-gray-300">—</span>
