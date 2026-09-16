@@ -6,7 +6,10 @@ import { createPortal } from "react-dom";
 import { useOutletContext } from "react-router-dom";
 
 // Icons
-import { Lock, Search } from "lucide-react";
+import { Loader2, Lock, Search, Sheet } from "lucide-react";
+
+// Notifications
+import { toast } from "sonner";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -24,8 +27,12 @@ import usePermissions from "@/shared/hooks/usePermissions";
 // Utils
 import { cn } from "@/shared/utils/cn";
 
+// Utils
+import { downloadBlob } from "@/shared/utils/download.utils";
+
 // Data & queries
 import { MODE, SURFACE, T } from "../data/ledger.tokens";
+import { lessonHoursAPI } from "../api/lessonHours.api";
 import { lessonHoursQueries } from "../queries/lessonHours.queries";
 
 /**
@@ -45,14 +52,43 @@ const LessonHoursLedgerPage = () => {
 
   const [type, setType] = useState("");
   const [search, setSearch] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
 
-  const { data, isLoading, isError } = useQuery(
-    lessonHoursQueries.ledger({
-      month,
-      ...(type ? { type } : {}),
-      ...(search ? { search } : {}),
-    }),
-  );
+  // ⚠️ FILTRLAR BITTA JOYDA — so'rov ham, Excel ham SHU obyektni oladi.
+  // Ikki joyda yig'ilsa, biri o'zgarib ikkinchisi eskirardi va fayl
+  // ekrandagidan boshqa ro'yxat qaytarardi.
+  const params = {
+    month,
+    ...(type ? { type } : {}),
+    ...(search ? { search } : {}),
+  };
+
+  const { data, isLoading, isError } = useQuery(lessonHoursQueries.ledger(params));
+
+  /**
+   * ⚠️ XATO XABARI BLOB'DAN O'QILADI. So'rov `responseType: "blob"` bilan
+   * ketgani uchun server qaytargan JSON xato ham Blob bo'lib keladi va
+   * `error.response.data.message` HAR DOIM `undefined` bo'lardi — ya'ni
+   * foydalanuvchi haqiqiy sababni hech qachon ko'rmasdi.
+   */
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const response = await lessonHoursAPI.exportLedger(params);
+      downloadBlob(response, `dars-soatlari_${month}.xlsx`);
+    } catch (error) {
+      let message = "Faylni yuklab bo'lmadi";
+      try {
+        const text = await error.response?.data?.text?.();
+        if (text) message = JSON.parse(text).message || message;
+      } catch {
+        // Javob JSON emas — umumiy xabar qoladi
+      }
+      toast.error(message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   if (!can("payroll.hours")) {
     return (
@@ -93,6 +129,30 @@ const LessonHoursLedgerPage = () => {
                 )}
               />
             </label>
+
+            {/* Excel — filtrlar YONIDA va bu ataylab: fayl ekrandagi
+                ro'yxatning nusxasi, ya'ni u filtr qarorining davomi.
+                Ro'yxat bo'sh bo'lsa tugma o'chiriladi. */}
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={isExporting || isLoading || !data?.items?.length}
+              title="Vedomostni Excel'ga yuklab olish"
+              className={cn(
+                "flex items-center gap-1.5 rounded-xl bg-white px-3 py-2",
+                "text-[11.5px] font-medium text-slate-600 transition-colors duration-200 ease-out-quint",
+                "shadow-[0_1px_2px_rgba(15,23,42,0.05),0_8px_20px_-14px_rgba(15,23,42,0.16)]",
+                "disabled:cursor-not-allowed disabled:opacity-50",
+                !isExporting && SURFACE.tileHover,
+              )}
+            >
+              {isExporting ? (
+                <Loader2 className="size-3.5 shrink-0 animate-spin" strokeWidth={2} />
+              ) : (
+                <Sheet className="size-3.5 shrink-0 text-emerald-600" strokeWidth={2} />
+              )}
+              {isExporting ? "Tayyorlanmoqda…" : "Excel"}
+            </button>
           </>,
           filterSlot,
         )}

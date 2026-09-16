@@ -14,6 +14,18 @@ export const lessonHoursAPI = {
   /** Vedomost: barcha o'qituvchilar bir ro'yxatda (sahifalanmaydi). */
   getLedger: (params) => http.get("/lesson-hours/ledger", { params }),
 
+  /**
+   * Vedomostni Excel'ga yuklab olish.
+   *
+   * ⚠️ `responseType: "blob"` MAJBURIY — usiz axios ikkilik faylni
+   * matn deb o'qib buzib yuboradi.
+   *
+   * ⚠️ Parametrlar EKRANDAGI filtrlar bilan AYNI yuboriladi: fayl
+   * ko'rinib turgan ro'yxatning nusxasi bo'lishi kerak.
+   */
+  exportLedger: (params) =>
+    http.get("/lesson-hours/ledger/export", { params, responseType: "blob" }),
+
   /** Bitta o'qituvchining oyi: soat, sinf kesimi, o'rinbosarlik, tarix. */
   getTeacher: (teacherId, params) =>
     http.get(`/lesson-hours/teacher/${teacherId}`, { params }),
