@@ -6,7 +6,7 @@
 /** Yo'nalish (payroll ko'rinishi). */
 export const DIRECTION_OPTIONS = [
   { value: "salary", label: "Oylik maosh" },
-  { value: "bonus", label: "Ustama haq" },
+  { value: "bonus", label: "Ustamalar" },
 ];
 
 /** Struktura tablari. */
@@ -25,11 +25,10 @@ export const POSITION_COLUMNS = ["Lavozim", "Bazaviy maosh", "Xodimlar", ""];
 export const ALLOWANCE_VIEW_COLUMNS = [
   "Xodim",
   "Bo'lim",
-  "Ustama",
-  { label: "Qiymati", align: "right" },
-  { label: "Shu oy summasi", align: "right" },
-  "Manba",
+  "Ustamalari",
+  { label: "Shu oy jami", align: "right" },
   "Holat",
+  "",
 ];
 
 export const ALLOWANCE_STATUS_OPTIONS = [

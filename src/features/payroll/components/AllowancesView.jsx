@@ -8,11 +8,16 @@ import { useQuery } from "@tanstack/react-query";
 import { BadgePercent, Clock3, Wallet } from "lucide-react";
 
 // Components
+import Can from "@/shared/components/guards/Can";
 import Card from "@/shared/components/ui/Card";
 import Table, { Td, Tr } from "@/shared/components/ui/Table";
 import Select from "@/shared/components/ui/select/Select";
+import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
 import EmptyState from "@/shared/components/ui/EmptyState";
+
+// Hooks
+import useModal from "@/shared/hooks/useModal";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
@@ -36,21 +41,25 @@ const SummaryTile = ({ icon: Icon, label, value, cls }) => (
   </Card>
 );
 
-const SOURCE_META = {
-  request: "bg-indigo-50 text-indigo-700",
-  rule: "bg-gray-100 text-gray-600",
-  admin: "bg-blue-50 text-blue-700",
+// Chip rangi manbaga qarab: zayavka / qoida / admin / kutilmoqda
+const chipTone = (item) => {
+  if (item.status === "pending") return "bg-amber-50 text-amber-700";
+  if (item.source === "request") return "bg-indigo-50 text-indigo-700";
+  if (item.source === "rule") return "bg-gray-100 text-gray-600";
+  return "bg-blue-50 text-blue-700";
 };
 
 /**
- * USTAMA HAQ ko'rinishi — "Yo'nalish → Ustama haq".
+ * USTAMALAR — "Yo'nalish → Ustamalar" tanlanganda. XODIMLAR RO'YXATI:
+ * har qator bitta xodim, uning barcha ustamalari chiplarda (nomi, summasi,
+ * manbasi), shu oydagi jami va holati. Kutilayotgan zayavka summasiz
+ * ko'rinadi — tasdiqlanmaguncha oylikka qo'shilmaydi.
  *
- * Har bir ustama komponenti alohida qator: kimga, nomi, turi, shu oydagi
- * summasi, MANBASI (tasdiqlangan zayavka / oylik qoidasi / admin) va HOLATI.
- * Kutilayotgan zayavkalar ko'rinadi, lekin summaga QO'SHILMAYDI —
- * tasdiqlanmagan ustama payrollga ta'sir qilmaydi.
+ * Hamyon tugmasi bilan shu yerning o'zidan ustama qo'shiladi (oylik
+ * qoidasi orqali) — xodimlar jadvalidagi bilan bir xil oyna.
  */
 const AllowancesView = ({ month, departmentId }) => {
+  const { openModal } = useModal();
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -123,14 +132,14 @@ const AllowancesView = ({ month, departmentId }) => {
           <EmptyState
             icon={Wallet}
             title="Ustama yo'q"
-            description="Ustama xodim qatoridagi 'Oylik/ustama belgilash' orqali yoki o'qituvchi zayavkasi tasdiqlanganda paydo bo'ladi."
+            description="Ustama xodim qatoridagi hamyon tugmasi orqali yoki o'qituvchi zayavkasi tasdiqlanganda paydo bo'ladi."
           />
         </Card>
       ) : (
         <>
           <Table columns={ALLOWANCE_VIEW_COLUMNS}>
             {rows.map((row) => (
-              <Tr key={row.key}>
+              <Tr key={row.id}>
                 <Td className="font-medium text-gray-900">
                   {row.fullName}
                   <span className="block text-xs font-normal text-gray-400">{row.role}</span>
@@ -138,42 +147,64 @@ const AllowancesView = ({ month, departmentId }) => {
 
                 <Td className="text-gray-500">{row.departmentName || "—"}</Td>
 
+                {/* Ustamalar chiplarda: nomi · summasi (kutilmoqda — summasiz) */}
                 <Td nowrap={false}>
-                  <p className="text-gray-900">{row.label}</p>
-                  <p className="text-xs text-gray-400">{row.periodLabel}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {row.items.map((item) => (
+                      <span
+                        key={item.key}
+                        title={`${item.sourceLabel} · ${item.periodLabel}`}
+                        className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium ${chipTone(item)}`}
+                      >
+                        {item.label}
+                        {item.amount != null ? (
+                          <> · {formatMoney(item.amount)}</>
+                        ) : (
+                          <> · kutilmoqda</>
+                        )}
+                        {item.type === "percent" && ` (${Number(item.value)}%)`}
+                      </span>
+                    ))}
+                  </div>
                 </Td>
 
-                <Td align="right" className="text-gray-600">
-                  {row.type === "percent" ? `${Number(row.value)}%` : formatMoney(row.value)}
-                </Td>
-
-                <Td align="right" className="font-semibold">
-                  {row.amount != null ? (
-                    <span className="text-green-700">{formatMoney(row.amount)}</span>
-                  ) : (
-                    // Tasdiqlanmagan — summaga kirmaydi
-                    <span className="text-gray-400">—</span>
-                  )}
+                <Td align="right" className="font-semibold text-green-700">
+                  {Number(row.activeTotal) > 0 ? formatMoney(row.activeTotal) : "—"}
                 </Td>
 
                 <Td>
-                  <span
-                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${SOURCE_META[row.source] ?? "bg-gray-100 text-gray-600"}`}
-                  >
-                    {row.sourceLabel}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-1">
+                    {row.activeItemCount > 0 && (
+                      <span className="inline-flex items-center rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                        {row.activeItemCount} faol
+                      </span>
+                    )}
+                    {row.pendingCount > 0 && (
+                      <span className="inline-flex items-center rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                        {row.pendingCount} kutilmoqda
+                      </span>
+                    )}
+                  </div>
                 </Td>
 
                 <Td>
-                  {row.status === "active" ? (
-                    <span className="inline-flex items-center rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                      Faol
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                      Kutilmoqda
-                    </span>
-                  )}
+                  <div className="flex items-center justify-end">
+                    {/* Shu yerning o'zidan ustama qo'shish/tahrirlash —
+                        xodimlar jadvalidagi hamyon tugmasi bilan bir xil */}
+                    <Can do="payroll.assign">
+                      <button
+                        title="Ustama qo'shish / tahrirlash"
+                        onClick={() =>
+                          openModal("staffSalary", {
+                            staff: { id: row.id, firstName: row.firstName, lastName: row.lastName },
+                          })
+                        }
+                        className="rounded-lg p-1.5 text-gray-400 hover:bg-green-50 hover:text-green-600"
+                      >
+                        <Wallet className="size-3.5" />
+                      </button>
+                    </Can>
+                  </div>
                 </Td>
               </Tr>
             ))}
@@ -190,6 +221,9 @@ const AllowancesView = ({ month, departmentId }) => {
           )}
         </>
       )}
+
+      {/* Hamyon tugmasi ishlashi uchun modal shu sahifada ham renderda
+          bo'lishi kerak emas — PayrollPage'da allaqachon render qilinadi */}
     </div>
   );
 };
