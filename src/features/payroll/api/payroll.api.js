@@ -23,6 +23,9 @@ export const payrollViewAPI = {
   teachers: (params) => http.get("/payroll/view/teachers", { params }),
   // Ustama haq registri (Yo'nalish -> Ustama haq)
   allowances: (params) => http.get("/payroll/view/allowances", { params }),
+  // Admin ustama qo'shish/o'chirish
+  createBonus: (data) => http.post("/payroll/bonuses", data),
+  deleteBonus: (id) => http.delete(`/payroll/bonuses/${id}`),
   assign: (staffId, data) => http.patch(`/payroll/staff/${staffId}/assign`, data),
 };
 

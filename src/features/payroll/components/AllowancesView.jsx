@@ -5,17 +5,28 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 // Icons
-import { BadgePercent, Clock3, Wallet } from "lucide-react";
+import { BadgePercent, Clock3, Plus, Wallet } from "lucide-react";
 
 // Components
+import Can from "@/shared/components/guards/Can";
 import Card from "@/shared/components/ui/Card";
 import Table, { Td, Tr } from "@/shared/components/ui/Table";
 import Select from "@/shared/components/ui/select/Select";
+import Button from "@/shared/components/ui/button/Button";
+import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 import Pagination from "@/shared/components/ui/Pagination";
 import EmptyState from "@/shared/components/ui/EmptyState";
 
+// Hooks
+import useModal from "@/shared/hooks/useModal";
+
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
+import {
+  currentMonthKey,
+  monthKeyToInputValue,
+  inputValueToMonthKey,
+} from "@/shared/helpers/month.helpers";
 
 // Data & queries
 import {
@@ -36,24 +47,36 @@ const SummaryTile = ({ icon: Icon, label, value, cls }) => (
   </Card>
 );
 
-const SOURCE_META = {
-  request: "bg-indigo-50 text-indigo-700",
-  rule: "bg-gray-100 text-gray-600",
-  admin: "bg-blue-50 text-blue-700",
+// Chip rangi manbaga qarab: zayavka / qoida / admin / kutilmoqda
+const chipTone = (item) => {
+  if (item.status === "pending") return "bg-amber-50 text-amber-700";
+  if (item.source === "request") return "bg-indigo-50 text-indigo-700";
+  if (item.source === "rule") return "bg-gray-100 text-gray-600";
+  return "bg-blue-50 text-blue-700";
 };
 
 /**
- * USTAMA HAQ ko'rinishi — "Yo'nalish → Ustama haq".
+ * USTAMA — mustaqil tab. XODIMLAR RO'YXATI: har qator bitta xodim, uning
+ * barcha ustamalari chiplarda (nomi, summasi, manbasi), shu oydagi jami va
+ * holati. Kutilayotgan zayavka summasiz ko'rinadi — tasdiqlanmaguncha
+ * oylikka qo'shilmaydi.
  *
- * Har bir ustama komponenti alohida qator: kimga, nomi, turi, shu oydagi
- * summasi, MANBASI (tasdiqlangan zayavka / oylik qoidasi / admin) va HOLATI.
- * Kutilayotgan zayavkalar ko'rinadi, lekin summaga QO'SHILMAYDI —
- * tasdiqlanmagan ustama payrollga ta'sir qilmaydi.
+ * "+ Ustama qo'shish" — istalgan xodimni tanlab ustama beriladi (hali
+ * ustamasi yo'q xodim ham). Qatordagi hamyon — mavjud ustamani tahrirlash.
+ * Ikkalasi ham `assignBonus` modalini ochadi (PayrollPage'da render qilinadi).
+ *
+ * O'z oy va bo'lim filtri bor (mustaqil tab). `departments` — ixtiyoriy,
+ * bo'lim bo'yicha toraytirish uchun.
  */
-const AllowancesView = ({ month, departmentId }) => {
+const AllowancesView = ({ departments = [] }) => {
+  const { openModal } = useModal();
+  const [monthInput, setMonthInput] = useState(monthKeyToInputValue(currentMonthKey()));
+  const [departmentId, setDepartmentId] = useState("");
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+
+  const month = inputValueToMonthKey(monthInput);
 
   const { data, isLoading } = useQuery(
     payrollQueries.allowancesView({
@@ -94,11 +117,30 @@ const AllowancesView = ({ month, departmentId }) => {
         />
       </div>
 
-      {/* Filtrlar */}
+      {/* Filtrlar + qo'shish */}
       <div className="flex flex-wrap items-center gap-2">
+        <input
+          type="month"
+          value={monthInput}
+          onChange={(e) => {
+            setMonthInput(e.target.value);
+            setPage(1);
+          }}
+          className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
+        />
+        <SelectSearch
+          value={departmentId}
+          triggerClassName="min-w-44"
+          placeholder="Barcha bo'limlar"
+          onChange={(v) => {
+            setDepartmentId(v);
+            setPage(1);
+          }}
+          options={departments.map((d) => ({ label: d.name, value: d.id }))}
+        />
         <Select
           value={status}
-          triggerClassName="min-w-40"
+          triggerClassName="min-w-36"
           options={ALLOWANCE_STATUS_OPTIONS}
           onChange={(v) => {
             setStatus(v);
@@ -112,8 +154,15 @@ const AllowancesView = ({ month, departmentId }) => {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="h-10 w-56 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
+          className="h-10 w-48 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
         />
+
+        {/* Istalgan xodimga (hali ustamasi yo'q bo'lsa ham) ustama qo'shish */}
+        <Can do="payroll.assign">
+          <Button className="ml-auto" onClick={() => openModal("assignBonus", {})}>
+            <Plus /> Ustama qo'shish
+          </Button>
+        </Can>
       </div>
 
       {isLoading ? (
@@ -123,14 +172,14 @@ const AllowancesView = ({ month, departmentId }) => {
           <EmptyState
             icon={Wallet}
             title="Ustama yo'q"
-            description="Ustama xodim qatoridagi 'Oylik/ustama belgilash' orqali yoki o'qituvchi zayavkasi tasdiqlanganda paydo bo'ladi."
+            description="Ustama tepadagi 'Ustama qo'shish' tugmasi orqali yoki o'qituvchi zayavkasi tasdiqlanganda paydo bo'ladi."
           />
         </Card>
       ) : (
         <>
           <Table columns={ALLOWANCE_VIEW_COLUMNS}>
             {rows.map((row) => (
-              <Tr key={row.key}>
+              <Tr key={row.id}>
                 <Td className="font-medium text-gray-900">
                   {row.fullName}
                   <span className="block text-xs font-normal text-gray-400">{row.role}</span>
@@ -138,42 +187,75 @@ const AllowancesView = ({ month, departmentId }) => {
 
                 <Td className="text-gray-500">{row.departmentName || "—"}</Td>
 
+                {/* Ustamalar chiplarda: nomi · summasi (kutilmoqda — summasiz) */}
                 <Td nowrap={false}>
-                  <p className="text-gray-900">{row.label}</p>
-                  <p className="text-xs text-gray-400">{row.periodLabel}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {row.items.map((item) => (
+                      <span
+                        key={item.key}
+                        title={`${item.sourceLabel} · ${item.periodLabel}`}
+                        className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium ${chipTone(item)}`}
+                      >
+                        {item.label}
+                        {item.amount != null ? (
+                          <> · {formatMoney(item.amount)}</>
+                        ) : (
+                          <> · kutilmoqda</>
+                        )}
+                        {item.type === "percent" && ` (${Number(item.value)}%)`}
+                      </span>
+                    ))}
+                  </div>
                 </Td>
 
-                <Td align="right" className="text-gray-600">
-                  {row.type === "percent" ? `${Number(row.value)}%` : formatMoney(row.value)}
+                {/* OYLIK — asosiy (lavozim/soatbay + fiksa) */}
+                <Td align="right" className="text-gray-700">
+                  {formatMoney(row.baseSalary)}
                 </Td>
 
-                <Td align="right" className="font-semibold">
-                  {row.amount != null ? (
-                    <span className="text-green-700">{formatMoney(row.amount)}</span>
-                  ) : (
-                    // Tasdiqlanmagan — summaga kirmaydi
-                    <span className="text-gray-400">—</span>
-                  )}
+                {/* USTAMA — faol ustamalar jami */}
+                <Td align="right" className={Number(row.activeTotal) > 0 ? "text-amber-600" : "text-gray-400"}>
+                  {Number(row.activeTotal) > 0 ? formatMoney(row.activeTotal) : "—"}
+                </Td>
+
+                {/* JAMI = oylik + ustama */}
+                <Td align="right" className="font-semibold text-green-700">
+                  {formatMoney(row.grandTotal)}
                 </Td>
 
                 <Td>
-                  <span
-                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${SOURCE_META[row.source] ?? "bg-gray-100 text-gray-600"}`}
-                  >
-                    {row.sourceLabel}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-1">
+                    {row.activeItemCount > 0 && (
+                      <span className="inline-flex items-center rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                        {row.activeItemCount} faol
+                      </span>
+                    )}
+                    {row.pendingCount > 0 && (
+                      <span className="inline-flex items-center rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                        {row.pendingCount} kutilmoqda
+                      </span>
+                    )}
+                  </div>
                 </Td>
 
                 <Td>
-                  {row.status === "active" ? (
-                    <span className="inline-flex items-center rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                      Faol
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                      Kutilmoqda
-                    </span>
-                  )}
+                  <div className="flex items-center justify-end">
+                    {/* Shu yerning o'zidan ustama qo'shish/tahrirlash —
+                        xodimlar jadvalidagi hamyon tugmasi bilan bir xil */}
+                    <Can do="payroll.assign">
+                      <button
+                        title="Yana ustama qo'shish"
+                        onClick={() =>
+                          openModal("assignBonus", {
+                            staff: { id: row.id, firstName: row.firstName, lastName: row.lastName },
+                          })
+                        }
+                        className="rounded-lg p-1.5 text-gray-400 hover:bg-green-50 hover:text-green-600"
+                      >
+                        <Wallet className="size-3.5" />
+                      </button>
+                    </Can>
+                  </div>
                 </Td>
               </Tr>
             ))}
@@ -190,6 +272,9 @@ const AllowancesView = ({ month, departmentId }) => {
           )}
         </>
       )}
+
+      {/* Hamyon tugmasi ishlashi uchun modal shu sahifada ham renderda
+          bo'lishi kerak emas — PayrollPage'da allaqachon render qilinadi */}
     </div>
   );
 };

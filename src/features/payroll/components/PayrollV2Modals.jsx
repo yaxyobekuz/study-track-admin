@@ -16,6 +16,7 @@ import useObjectState from "@/shared/hooks/useObjectState";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
+import { currentMonthKey, formatMonthKey } from "@/shared/helpers/month.helpers";
 
 // Queries
 import { payrollQueries } from "../queries/payroll.queries";
@@ -243,6 +244,21 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
       value: p.id,
     }));
 
+  // ── JONLI HISOB ─────────────────────────────
+  // O'qituvchi + toifa tanlangach: shu oydagi dars soati va taxminiy oylik
+  // AVTOMATIK ko'rinadi (soat jadvaldan, stavka tanlangan toifadan).
+  const previewStaffId = staff?.id || staffId;
+  const month = currentMonthKey();
+  const { data: lessonInfo, isFetching: hoursLoading } = useQuery({
+    ...payrollQueries.lessonHours(previewStaffId, month),
+    enabled: isTeaching && Boolean(previewStaffId),
+  });
+  const hours = lessonInfo?.hours ?? 0;
+  const selectedCategory = categories.find((c) => c.id === targetId) ?? null;
+  const rate = Number(selectedCategory?.perHourRate) || 0;
+  const kpiPreview = rate * hours;
+  const selectedPosition = positions.find((p) => p.id === targetId) ?? null;
+
   const submit = (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -282,6 +298,48 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
         <p className="text-sm font-medium text-gray-700">{isTeaching ? "Toifa" : "Lavozim"}</p>
         <Select searchable value={targetId} placeholder={isTeaching ? "Toifani tanlang" : "Lavozimni tanlang"} onChange={(v) => setField("targetId", v)} options={options} />
       </div>
+      {/* Jonli hisob: dars soati va taxminiy oylik */}
+      {isTeaching && previewStaffId && targetId && (
+        <div className="rounded-xl bg-indigo-50 p-3 text-sm text-indigo-900">
+          {hoursLoading ? (
+            "Dars soati hisoblanmoqda..."
+          ) : (
+            <div className="space-y-1">
+              <div>
+                {formatMonthKey(month)}: <b>{hours} dars soati</b>
+                {lessonInfo?.monthlyLessons ? ` (${lessonInfo.monthlyLessons} ta dars)` : ""}
+              </div>
+              {hours > 0 ? (
+                <div>
+                  Oylik: {formatMoney(rate)} × {hours} soat ={" "}
+                  <b>{formatMoney(kpiPreview)}</b>
+                </div>
+              ) : (
+                <div className="text-indigo-700">
+                  Jadvalda bu oy uchun dars topilmadi — oylik 0 bo'ladi.
+                  Avval dars jadvalini to'ldiring.
+                </div>
+              )}
+              <div className="text-xs text-indigo-700">
+                Ustamalar (bo'lsa) ustiga qo'shiladi: yakuniy oylik = soatbay
+                hisob + ustamalar. Ustama xodim qatoridagi hamyon tugmasi
+                yoki o'qituvchi zayavkasi orqali beriladi.
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Lavozim tanlanganda — oylik shu yerning o'zida ko'rinadi */}
+      {!isTeaching && selectedPosition && (
+        <div className="rounded-xl bg-indigo-50 p-3 text-sm text-indigo-900">
+          Oylik (lavozimdan): <b>{formatMoney(selectedPosition.baseSalary)}</b>
+          <span className="block text-xs text-indigo-700">
+            Ustamalar (bo'lsa) ustiga qo'shiladi.
+          </span>
+        </div>
+      )}
+
       <Button type="submit" className="w-full" loading={isLoading} disabled={!targetId || (!staff && !staffId)}>
         Biriktirish
       </Button>

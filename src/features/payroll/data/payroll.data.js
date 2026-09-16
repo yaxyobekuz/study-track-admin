@@ -6,12 +6,12 @@
 /** Yo'nalish (payroll ko'rinishi). */
 export const DIRECTION_OPTIONS = [
   { value: "salary", label: "Oylik maosh" },
-  { value: "bonus", label: "Ustama haq" },
 ];
 
 /** Struktura tablari. */
 export const PAYROLL_MAIN_TABS = [
   { value: "structure", label: "Struktura" },
+  { value: "allowances", label: "Ustama" },
   { value: "obligations", label: "Majburiyatlar" },
 ];
 
@@ -25,11 +25,12 @@ export const POSITION_COLUMNS = ["Lavozim", "Bazaviy maosh", "Xodimlar", ""];
 export const ALLOWANCE_VIEW_COLUMNS = [
   "Xodim",
   "Bo'lim",
-  "Ustama",
-  { label: "Qiymati", align: "right" },
-  { label: "Shu oy summasi", align: "right" },
-  "Manba",
+  "Ustamalari",
+  { label: "Oylik", align: "right" },
+  { label: "Ustama", align: "right" },
+  { label: "Jami", align: "right" },
   "Holat",
+  "",
 ];
 
 export const ALLOWANCE_STATUS_OPTIONS = [
@@ -81,9 +82,11 @@ export const CATEGORY_HINT =
 export const ENTRY_TABLE_COLUMNS = [
   "Xodim",
   "Oy",
-  "Hisoblangan",
-  "To'langan",
-  "Qoldiq",
+  { label: "Oylik", align: "right" },
+  { label: "Ustama", align: "right" },
+  { label: "Jami", align: "right" },
+  { label: "To'langan", align: "right" },
+  { label: "Qoldiq", align: "right" },
   "Holat",
   "",
 ];
