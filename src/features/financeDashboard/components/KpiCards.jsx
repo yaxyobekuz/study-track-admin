@@ -3,6 +3,8 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   CalendarClock,
+  HandCoins,
+  Hourglass,
   Minus,
   Percent,
   PiggyBank,
@@ -35,6 +37,9 @@ const ICONS = {
   debtors: Users,
   oldestDebt: CalendarClock,
   payroll: Users,
+  payrollDue: Users,
+  payrollPaid: HandCoins,
+  payrollLeft: Hourglass,
 };
 
 /** O'tgan oyga nisbatan o'zgarish — foizni ham, punktni ham server beradi. */
@@ -125,6 +130,14 @@ const KpiCards = ({ data, isLoading }) => {
                 taqqoslash bloki ustida turadi */}
             {row.sub && (
               <p className="relative mt-1 text-[11px] text-gray-500">{row.sub}</p>
+            )}
+
+            {/* Pul sub'i — server xom summa beradi, format shu yerda
+                (masalan "Shu oy hisobiga yig'ildi: 600 000 so'm") */}
+            {card.subMoneyKey && row[card.subMoneyKey] != null && (
+              <p className="relative mt-1 text-[11px] text-gray-500">
+                {card.subLabel}: {formatByUnit(row[card.subMoneyKey], "money")}
+              </p>
             )}
 
             <div className="relative mt-3 space-y-1.5 border-t border-gray-100 pt-2.5 text-[11px]">
