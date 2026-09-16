@@ -9,6 +9,7 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import InputField from "@/shared/components/ui/input/InputField";
 import Select from "@/shared/components/ui/select/Select";
+import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 import Button from "@/shared/components/ui/button/Button";
 
 // Hooks
@@ -20,7 +21,6 @@ import { currentMonthKey, formatMonthKey } from "@/shared/helpers/month.helpers"
 
 // Queries
 import { payrollQueries } from "../queries/payroll.queries";
-import { usersQueries } from "@/features/users/queries/users.queries";
 import {
   useCreateDepartment,
   useUpdateDepartment,
@@ -217,10 +217,11 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
     ...payrollQueries.categories({ departmentId: department?.id, status: "active" }),
     enabled: Boolean(department?.id) && isTeaching,
   });
-  // Xodim berilmagan — ro'yxatdan tanlanadi
-  const { data: people = [] } = useQuery({
-    ...usersQueries.allShort(),
-    enabled: !staff,
+  // Xodim berilmagan — ro'yxatdan tanlanadi. Server shu bo'limga allaqachon
+  // biriktirilganlarni chiqarib beradi (bir xodim ikki marta tanlanmasin).
+  const { data: people = [], isLoading: peopleLoading } = useQuery({
+    ...payrollQueries.assignCandidates(department?.id),
+    enabled: !staff && Boolean(department?.id),
   });
 
   const { staffId, targetId, setField } = useObjectState({
@@ -234,15 +235,11 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
     ? categories.map((c) => ({ label: `${c.name} — ${formatMoney(c.perHourRate)}/soat`, value: c.id }))
     : positions.map((p) => ({ label: `${p.name} — ${formatMoney(p.baseSalary)}`, value: p.id }));
 
-  // Teaching bo'limga faqat o'qituvchilar, staff bo'limga qolgan xodimlar
-  const peopleOptions = people
-    .filter((p) =>
-      isTeaching ? p.role === "teacher" : p.role !== "student" && p.role !== "teacher",
-    )
-    .map((p) => ({
-      label: p.fullName || `${p.firstName ?? ""} ${p.lastName ?? ""}`.trim(),
-      value: p.id,
-    }));
+  // Boshqa bo'limdagilar ham chiqadi — tanlansa KO'CHIRILADI (nusxa emas)
+  const peopleOptions = people.map((p) => ({
+    label: p.currentLabel ? `${p.fullName} (hozir: ${p.currentLabel})` : p.fullName,
+    value: p.id,
+  }));
 
   // ── JONLI HISOB ─────────────────────────────
   // O'qituvchi + toifa tanlangach: shu oydagi dars soati va taxminiy oylik
@@ -285,10 +282,14 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
           <p className="text-sm font-medium text-gray-700">
             {isTeaching ? "O'qituvchi" : "Xodim"}
           </p>
-          <Select
-            searchable
+          <SelectSearch
+            inline
+            idValues
             value={staffId}
+            isLoading={peopleLoading}
             placeholder={isTeaching ? "O'qituvchini tanlang" : "Xodimni tanlang"}
+            searchPlaceholder="Ism bo'yicha qidirish..."
+            emptyText="Biriktirilmagan xodim topilmadi"
             onChange={(v) => setField("staffId", v)}
             options={peopleOptions}
           />
@@ -296,7 +297,7 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
       )}
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">{isTeaching ? "Toifa" : "Lavozim"}</p>
-        <Select searchable value={targetId} placeholder={isTeaching ? "Toifani tanlang" : "Lavozimni tanlang"} onChange={(v) => setField("targetId", v)} options={options} />
+        <SelectSearch inline idValues value={targetId} placeholder={isTeaching ? "Toifani tanlang" : "Lavozimni tanlang"} onChange={(v) => setField("targetId", v)} options={options} />
       </div>
       {/* Jonli hisob: dars soati va taxminiy oylik */}
       {isTeaching && previewStaffId && targetId && (

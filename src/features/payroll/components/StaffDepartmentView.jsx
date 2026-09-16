@@ -41,7 +41,8 @@ const StaffDepartmentView = ({ department, month }) => {
   const { openModal } = useModal();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("name");
+  // Sukut — oxirgi biriktirilgan tepada: yangi qo'shilgan xodim ro'yxatda yo'qolmaydi
+  const [sort, setSort] = useState("recent");
 
   const { data: positions = [] } = useQuery(payrollQueries.positions(department.id));
   const { data, isLoading } = useQuery(
@@ -121,6 +122,7 @@ const StaffDepartmentView = ({ department, month }) => {
             onChange={(e) => { setSort(e.target.value); setPage(1); }}
             className="h-10 rounded-xl border border-gray-200 px-2 text-sm outline-none focus:border-primary"
           >
+            <option value="recent">Oxirgi qo'shilgan</option>
             <option value="name">Ism bo'yicha</option>
             <option value="amount">Oylik bo'yicha</option>
           </select>

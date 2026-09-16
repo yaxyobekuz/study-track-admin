@@ -54,6 +54,14 @@ export const payrollQueries = {
       placeholderData: keepPreviousData,
     }),
 
+  /** Biriktirish nomzodlari — shu bo'limda allaqachon borlar chiqarilgan. */
+  assignCandidates: (departmentId) =>
+    queryOptions({
+      queryKey: [...viewKey, "assign-candidates", departmentId],
+      queryFn: () => payrollViewAPI.assignCandidates(departmentId).then((r) => r.data.data),
+      enabled: Boolean(departmentId),
+    }),
+
   /** Toifa o'qituvchilari + hisoblangan oylik. */
   /** Ustama haq registri (manba/holat bilan). */
   allowancesView: (params) =>

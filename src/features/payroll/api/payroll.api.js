@@ -20,6 +20,9 @@ export const positionsAPI = {
 /** Hisoblangan oyliklar (admin ko'rinishlari) + biriktirish. */
 export const payrollViewAPI = {
   staff: (params) => http.get("/payroll/view/staff", { params }),
+  // "Xodim qo'shish" tanlagichi — shu bo'limga hali biriktirilmaganlar
+  assignCandidates: (departmentId) =>
+    http.get("/payroll/view/assign-candidates", { params: { departmentId } }),
   teachers: (params) => http.get("/payroll/view/teachers", { params }),
   // Ustama haq registri (Yo'nalish -> Ustama haq)
   allowances: (params) => http.get("/payroll/view/allowances", { params }),
