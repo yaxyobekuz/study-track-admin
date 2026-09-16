@@ -103,8 +103,9 @@ const AccountsPage = () => {
     setPage(1);
   };
 
-  const { data, isLoading } = useQuery(financeQueries.accountList({}));
+  const { data, isLoading } = useQuery(financeQueries.accountList(dateParams));
   const accounts = data?.items ?? [];
+  const isPeriod = data?.totals?.periodFiltered === true;
 
   // Birinchi hisob avtomatik tanlanadi — bo'sh ekran ma'nosiz
   const activeId = selectedId ?? accounts[0]?.id ?? null;
@@ -159,24 +160,81 @@ const AccountsPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-end gap-2 rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
-        <Can do="finance.transfer">
-          <Button
-            variant="outline"
-            onClick={() => openModal("accountTransfer", { fromAccount: activeAccount })}
-          >
-            <ArrowLeftRight />
-            O'tkazma
-          </Button>
-        </Can>
+      {/* Toolbar — chapda SANA FILTRI (butun sahifaga: kartalar ham, harakatlar
+          ham shunga qarab o'zgaradi), o'ngda amallar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-gray-600">Davr:</span>
+          <Select
+            value={dateMode}
+            triggerClassName="w-32"
+            options={DATE_MODE_OPTIONS}
+            onChange={resetPageOnFilter((v) => {
+              setDateMode(v);
+              setMonthValue("");
+              setFromDate("");
+              setToDate("");
+            })}
+          />
 
-        <Can do="finance.accounts">
-          <Button onClick={() => openModal("paymentAccount", {})}>
-            <Plus />
-            To'lov turi qo'shish
-          </Button>
-        </Can>
+          {dateMode === "month" ? (
+            <Input
+              type="month"
+              value={monthValue}
+              className="w-40"
+              onChange={(e) => resetPageOnFilter(setMonthValue)(e.target.value)}
+            />
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <Input
+                type="date"
+                value={fromDate}
+                className="w-36"
+                onChange={(e) => resetPageOnFilter(setFromDate)(e.target.value)}
+              />
+              <span className="text-xs text-gray-400">—</span>
+              <Input
+                type="date"
+                value={toDate}
+                className="w-36"
+                onChange={(e) => resetPageOnFilter(setToDate)(e.target.value)}
+              />
+            </div>
+          )}
+
+          {(monthValue || fromDate || toDate) && (
+            <button
+              type="button"
+              onClick={resetPageOnFilter(() => {
+                setMonthValue("");
+                setFromDate("");
+                setToDate("");
+              })}
+              className="text-xs font-medium text-gray-400 hover:text-gray-600 hover:underline"
+            >
+              Tozalash
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Can do="finance.transfer">
+            <Button
+              variant="outline"
+              onClick={() => openModal("accountTransfer", { fromAccount: activeAccount })}
+            >
+              <ArrowLeftRight />
+              O'tkazma
+            </Button>
+          </Can>
+
+          <Can do="finance.accounts">
+            <Button onClick={() => openModal("paymentAccount", {})}>
+              <Plus />
+              To'lov turi qo'shish
+            </Button>
+          </Can>
+        </div>
       </div>
 
       {/* To'lov turlari */}
@@ -261,6 +319,22 @@ const AccountsPage = () => {
                 {formatMoney(account.balance)}
               </p>
 
+              {/* Filtr faol bo'lsa — oy oxiridagi qoldiq + o'sha davr kirim/chiqimi */}
+              {isPeriod ? (
+                <p className="mt-1 text-[11px] text-gray-400">
+                  Davr oxiridagi qoldiq ·{" "}
+                  <span className="font-medium text-green-600">
+                    +{formatMoney(account.periodIncome)}
+                  </span>{" "}
+                  /{" "}
+                  <span className="font-medium text-red-500">
+                    −{formatMoney(account.periodExpense)}
+                  </span>
+                </p>
+              ) : (
+                <p className="mt-1 text-[11px] text-gray-400">Joriy qoldiq</p>
+              )}
+
               {!account.isActive && (
                 <p className="mt-1 text-xs text-amber-700">Nofaol</p>
               )}
@@ -282,56 +356,12 @@ const AccountsPage = () => {
             />
 
             {view === "entries" && (
-              <div className="flex flex-wrap items-center gap-2">
-                {/* Sana filtri: Oy yoki Kun oralig'i */}
-                <Select
-                  value={dateMode}
-                  triggerClassName="w-32"
-                  options={DATE_MODE_OPTIONS}
-                  onChange={resetPageOnFilter((v) => {
-                    setDateMode(v);
-                    setMonthValue("");
-                    setFromDate("");
-                    setToDate("");
-                  })}
-                />
-
-                {dateMode === "month" ? (
-                  <Input
-                    type="month"
-                    value={monthValue}
-                    className="w-40"
-                    onChange={(e) =>
-                      resetPageOnFilter(setMonthValue)(e.target.value)
-                    }
-                  />
-                ) : (
-                  <div className="flex items-center gap-1.5">
-                    <Input
-                      type="date"
-                      value={fromDate}
-                      className="w-36"
-                      onChange={(e) =>
-                        resetPageOnFilter(setFromDate)(e.target.value)
-                      }
-                    />
-                    <span className="text-xs text-gray-400">—</span>
-                    <Input
-                      type="date"
-                      value={toDate}
-                      className="w-36"
-                      onChange={(e) => resetPageOnFilter(setToDate)(e.target.value)}
-                    />
-                  </div>
-                )}
-
-                <Select searchable
-                  value={entryType}
-                  triggerClassName="min-w-40"
-                  options={ENTRY_TYPE_OPTIONS}
-                  onChange={resetPageOnFilter(setEntryType)}
-                />
-              </div>
+              <Select searchable
+                value={entryType}
+                triggerClassName="min-w-40"
+                options={ENTRY_TYPE_OPTIONS}
+                onChange={resetPageOnFilter(setEntryType)}
+              />
             )}
           </div>
 
