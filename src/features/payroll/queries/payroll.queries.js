@@ -53,6 +53,14 @@ export const payrollQueries = {
     }),
 
   /** Toifa o'qituvchilari + hisoblangan oylik. */
+  /** Ustama haq registri (manba/holat bilan). */
+  allowancesView: (params) =>
+    queryOptions({
+      queryKey: [...viewKey, "allowances", params],
+      queryFn: () => payrollViewAPI.allowances(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
   teacherPayroll: (params) =>
     queryOptions({
       queryKey: [...viewKey, "teachers", params],

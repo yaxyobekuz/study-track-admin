@@ -41,10 +41,11 @@ const StaffDepartmentView = ({ department, month }) => {
   const { openModal } = useModal();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("name");
 
   const { data: positions = [] } = useQuery(payrollQueries.positions(department.id));
   const { data, isLoading } = useQuery(
-    payrollQueries.staffPayroll({ departmentId: department.id, month, page, limit: 20, ...(search ? { search } : {}) }),
+    payrollQueries.staffPayroll({ departmentId: department.id, month, page, limit: 20, sort, ...(search ? { search } : {}) }),
   );
   const { mutate: deletePosition } = useDeletePosition();
 
@@ -112,14 +113,24 @@ const StaffDepartmentView = ({ department, month }) => {
       )}
 
       {/* Xodimlar */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-sm font-semibold text-gray-700">Xodimlar</h3>
-        <input
-          value={search}
-          placeholder="Qidirish..."
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="h-10 w-56 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
-        />
+        <div className="flex items-center gap-2">
+          <select
+            value={sort}
+            onChange={(e) => { setSort(e.target.value); setPage(1); }}
+            className="h-10 rounded-xl border border-gray-200 px-2 text-sm outline-none focus:border-primary"
+          >
+            <option value="name">Ism bo'yicha</option>
+            <option value="amount">Oylik bo'yicha</option>
+          </select>
+          <input
+            value={search}
+            placeholder="Qidirish..."
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="h-10 w-56 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
+          />
+        </div>
       </div>
 
       {isLoading ? (
