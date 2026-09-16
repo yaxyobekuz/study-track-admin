@@ -329,25 +329,40 @@ const EntriesView = () => {
                   </Td>
 
                   <Td className="text-gray-500">{entry.monthLabel}</Td>
-                  <Td className="font-medium">
-                    {formatMoney(entry.amount)}
-                    {(Number(entry.kpiAmount) > 0 || Number(entry.allowanceAmount) > 0) && (
+
+                  {/* OYLIK — asosiy qism: fiksa (xodim) yoki KPI (o'qituvchi) */}
+                  <Td align="right" className="font-medium">
+                    {formatMoney(
+                      Number(entry.fixedAmount) + Number(entry.kpiAmount),
+                    )}
+                    {Number(entry.kpiAmount) > 0 && (
                       <span className="block text-xs font-normal text-gray-400">
-                        {Number(entry.fixedAmount) > 0
-                          ? `Fiksa ${formatMoney(entry.fixedAmount)}`
-                          : ""}
-                        {Number(entry.allowanceAmount) > 0
-                          ? ` + ustama ${formatMoney(entry.allowanceAmount)}`
-                          : ""}
-                        {Number(entry.kpiAmount) > 0
-                          ? ` + KPI ${formatMoney(entry.kpiAmount)} (${entry.lessonHours} soat${entry.categoryName ? ", " + entry.categoryName : ""})`
-                          : ""}
+                        {entry.lessonHours} soat
+                        {entry.categoryName ? ` · ${entry.categoryName}` : ""}
                       </span>
                     )}
                   </Td>
-                  <Td className="text-green-600">{formatMoney(entry.paidAmount)}</Td>
 
-                  <Td>
+                  {/* USTAMA */}
+                  <Td
+                    align="right"
+                    className={Number(entry.allowanceAmount) > 0 ? "text-amber-600" : "text-gray-400"}
+                  >
+                    {Number(entry.allowanceAmount) > 0
+                      ? formatMoney(entry.allowanceAmount)
+                      : "—"}
+                  </Td>
+
+                  {/* JAMI = oylik + ustama */}
+                  <Td align="right" className="font-semibold text-gray-900">
+                    {formatMoney(entry.amount)}
+                  </Td>
+
+                  <Td align="right" className="text-green-600">
+                    {formatMoney(entry.paidAmount)}
+                  </Td>
+
+                  <Td align="right">
                     {isCancelled ? (
                       <span className="text-gray-400">—</span>
                     ) : (

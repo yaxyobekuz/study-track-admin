@@ -26,7 +26,9 @@ export const ALLOWANCE_VIEW_COLUMNS = [
   "Xodim",
   "Bo'lim",
   "Ustamalari",
-  { label: "Shu oy jami", align: "right" },
+  { label: "Oylik", align: "right" },
+  { label: "Ustama", align: "right" },
+  { label: "Jami", align: "right" },
   "Holat",
   "",
 ];
@@ -80,9 +82,11 @@ export const CATEGORY_HINT =
 export const ENTRY_TABLE_COLUMNS = [
   "Xodim",
   "Oy",
-  "Hisoblangan",
-  "To'langan",
-  "Qoldiq",
+  { label: "Oylik", align: "right" },
+  { label: "Ustama", align: "right" },
+  { label: "Jami", align: "right" },
+  { label: "To'langan", align: "right" },
+  { label: "Qoldiq", align: "right" },
   "Holat",
   "",
 ];

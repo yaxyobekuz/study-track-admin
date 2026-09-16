@@ -208,8 +208,19 @@ const AllowancesView = ({ departments = [] }) => {
                   </div>
                 </Td>
 
-                <Td align="right" className="font-semibold text-green-700">
+                {/* OYLIK — asosiy (lavozim/soatbay + fiksa) */}
+                <Td align="right" className="text-gray-700">
+                  {formatMoney(row.baseSalary)}
+                </Td>
+
+                {/* USTAMA — faol ustamalar jami */}
+                <Td align="right" className={Number(row.activeTotal) > 0 ? "text-amber-600" : "text-gray-400"}>
                   {Number(row.activeTotal) > 0 ? formatMoney(row.activeTotal) : "—"}
+                </Td>
+
+                {/* JAMI = oylik + ustama */}
+                <Td align="right" className="font-semibold text-green-700">
+                  {formatMoney(row.grandTotal)}
                 </Td>
 
                 <Td>
