@@ -62,6 +62,7 @@ import {
   CATEGORY_STATUS_OPTIONS,
   getRuleStatus,
 } from "../data/payroll.data";
+import AllowancesView from "../components/AllowancesView";
 import { payrollQueries } from "../queries/payroll.queries";
 import {
   useGeneratePayroll,
@@ -164,7 +165,7 @@ const StructureView = () => {
 
       {/* Kontent */}
       {direction === "bonus" ? (
-        <BonusInfo />
+        <AllowancesView month={monthKey} departmentId={departmentId} />
       ) : !department ? (
         <Card className="py-12 text-center text-gray-500">Yuqoridan bo'lim tanlang</Card>
       ) : department.kind === "staff" ? (
@@ -175,14 +176,6 @@ const StructureView = () => {
     </div>
   );
 };
-
-// Ustama haq yo'nalishi — to'liq ko'rinish Zayavka fazasida ulanadi
-const BonusInfo = () => (
-  <Card className="py-10 text-center text-gray-500">
-    Ustama haqlar — o'qituvchilardan kelgan tasdiqlangan zayavkalar asosida.
-    Ustama yo'nalishi "Zayavkalar" bo'limi bilan bog'liq.
-  </Card>
-);
 
 // ─────────────────────────────────────────────
 // Oyliklar — majburiyatlar va to'lovlar

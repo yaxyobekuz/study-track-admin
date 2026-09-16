@@ -30,12 +30,29 @@ const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => (
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+/**
+ * FAYL PREVIEW HIMOYASI. `FilePreviewOverlay` document.body ga portal
+ * qilinadi — Radix uchun u "tashqarida", shuning uchun undagi HAR QANDAY
+ * bosish (yopish/yuklash tugmalari ham) ostidagi dialogni yopib yuborardi.
+ * Overlay ochiq bo'lsa tashqi bosish/fokus/Escape dialogni YOPMAYDI —
+ * ularni overlay'ning o'zi boshqaradi.
+ */
+const previewGuard = (event) => {
+  if (document.querySelector("[data-file-preview-overlay]")) {
+    event.preventDefault();
+  }
+};
+
 const DialogContent = React.forwardRef(
   ({ className, children, ...props }, ref) => (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         ref={ref}
+        onEscapeKeyDown={previewGuard}
+        onPointerDownOutside={previewGuard}
+        onInteractOutside={previewGuard}
+        onFocusOutside={previewGuard}
         className={cn(
           "fixed left-[50%] top-[50%] z-50 grid w-full max-h-[calc(100%-12px)] mb-1.5 overflow-y-auto hidden-scrollbar max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 rounded-2xl shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
           className

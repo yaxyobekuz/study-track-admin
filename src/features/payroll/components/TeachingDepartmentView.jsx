@@ -57,13 +57,21 @@ const CategoryList = ({ department, month, onOpen }) => {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-gray-500">Toifani bosing — unga tegishli o'qituvchilar va hisoblangan oylik ko'rinadi.</p>
-        <Can do="payroll.assign">
-          <Button onClick={() => openModal("categoryV2", { departmentId: department.id, departmentName: department.name })}>
-            <Plus /> Toifa qo'shish
-          </Button>
-        </Can>
+        <div className="flex items-center gap-2">
+          {/* Ro'yxatdan o'qituvchi tanlab shu bo'lim toifasiga biriktirish */}
+          <Can do="payroll.assign">
+            <Button variant="outline" onClick={() => openModal("assignStaff", { department })}>
+              <UserPlus /> O'qituvchi biriktirish
+            </Button>
+          </Can>
+          <Can do="payroll.assign">
+            <Button onClick={() => openModal("categoryV2", { departmentId: department.id, departmentName: department.name })}>
+              <Plus /> Toifa qo'shish
+            </Button>
+          </Can>
+        </div>
       </div>
 
       {isLoading ? (

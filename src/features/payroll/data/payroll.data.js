@@ -21,6 +21,23 @@ export const STAFF_PAYROLL_COLUMNS = ["Xodim", "Lavozim", "Bazaviy maosh", "Usta
 /** Lavozimlar jadvali. */
 export const POSITION_COLUMNS = ["Lavozim", "Bazaviy maosh", "Xodimlar", ""];
 
+/** Ustama haq registri jadvali (Yo'nalish -> Ustama haq). */
+export const ALLOWANCE_VIEW_COLUMNS = [
+  "Xodim",
+  "Bo'lim",
+  "Ustama",
+  { label: "Qiymati", align: "right" },
+  { label: "Shu oy summasi", align: "right" },
+  "Manba",
+  "Holat",
+];
+
+export const ALLOWANCE_STATUS_OPTIONS = [
+  { label: "Barchasi", value: "" },
+  { label: "Faol", value: "active" },
+  { label: "Kutilmoqda", value: "pending" },
+];
+
 /** Teaching toifalar jadvali (reference). */
 export const CATEGORY_V2_COLUMNS = [
   "Toifa turi",

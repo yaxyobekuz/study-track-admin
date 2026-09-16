@@ -21,6 +21,8 @@ export const positionsAPI = {
 export const payrollViewAPI = {
   staff: (params) => http.get("/payroll/view/staff", { params }),
   teachers: (params) => http.get("/payroll/view/teachers", { params }),
+  // Ustama haq registri (Yo'nalish -> Ustama haq)
+  allowances: (params) => http.get("/payroll/view/allowances", { params }),
   assign: (staffId, data) => http.patch(`/payroll/staff/${staffId}/assign`, data),
 };
 

@@ -12,6 +12,7 @@ import Can from "@/shared/components/guards/Can";
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
+import FilePreviewOverlay from "@/shared/components/ui/FilePreviewOverlay";
 
 // Utils
 import { formatDateTimeUz } from "@/shared/utils/date.utils";
@@ -45,6 +46,8 @@ const Content = ({ close, isLoading, setIsLoading, request }) => {
   const { mutate: review } = useReviewPayrollRequest();
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
+  // Bosilgan hujjat — modalda ochiladi (full screen + yuklab olish bilan)
+  const [preview, setPreview] = useState(null);
 
   if (!request) return null;
 
@@ -101,25 +104,29 @@ const Content = ({ close, isLoading, setIsLoading, request }) => {
         {request.reason && <Row label="Izoh">{request.reason}</Row>}
       </div>
 
-      {/* Biriktirilgan hujjatlar */}
+      {/* Biriktirilgan hujjatlar — bosilganda modalda ochiladi
+          (full screen + yuklab olish) */}
       {request.attachments?.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-gray-500">Biriktirilgan hujjatlar</p>
           <div className="flex flex-wrap gap-2">
             {request.attachments.map((a, i) => (
-              <a
+              <button
                 key={i}
-                href={a.url}
-                target="_blank"
-                rel="noreferrer"
+                type="button"
+                onClick={() => setPreview(a)}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5 text-sm text-blue-600 hover:bg-gray-100"
               >
                 <Paperclip className="size-3.5" />
                 {a.originalName || `Hujjat ${i + 1}`}
-              </a>
+              </button>
             ))}
           </div>
         </div>
+      )}
+
+      {preview && (
+        <FilePreviewOverlay file={preview} onClose={() => setPreview(null)} />
       )}
 
       {/* Rad etish sababi (ixtiyoriy) */}

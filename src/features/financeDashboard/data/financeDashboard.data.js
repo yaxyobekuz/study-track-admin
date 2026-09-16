@@ -163,19 +163,20 @@ export const planBarTone = (rate, { inverse = false } = {}) => {
  * o'zi — ikkalasi bitta serverdagi `debt` blokidan chiqadi.
  */
 export const KPI_CARDS = [
-  { key: "income", label: "Jami tushum", accent: "bg-blue-500", tone: "text-gray-900" },
+  // "Qancha pul yig'ildi?" — kassaga kirgan pul; sub'da shu oy hisobiga
+  // yig'ilgani ham turadi (depozitdan yopilgani bilan)
+  { key: "income", label: "Yig'ilgan pul", accent: "bg-blue-500", tone: "text-gray-900", subLabel: "Shu oy hisobiga yig'ildi", subMoneyKey: "collected" },
   { key: "expense", label: "Jami xarajat", accent: "bg-rose-500", tone: "text-gray-900", inverse: true },
   { key: "profit", label: "Sof foyda", accent: "bg-green-500", tone: "text-green-700" },
   { key: "margin", label: "Rentabellik", accent: "bg-violet-500", tone: "text-violet-700" },
-  { key: "cashBalance", label: "Pul qoldig'i", accent: "bg-amber-500", tone: "text-gray-900" },
+  { key: "cashBalance", label: "Balansdagi pul", accent: "bg-amber-500", tone: "text-gray-900" },
   { key: "debt", label: "Jami qarz", accent: "bg-orange-500", tone: "text-orange-700", inverse: true },
   { key: "debtors", label: "Qarzdorlar", accent: "bg-yellow-500", tone: "text-gray-900", inverse: true },
   { key: "oldestDebt", label: "Eng eski qarz", accent: "bg-slate-500", tone: "text-gray-900" },
-  // ⚠️ "Xodimlar oyligi" EMAS: pastdagi jadval ham shu nom bilan turadi,
-  // lekin u SHAKLLANTIRILGANINI (hisoblangan/to'langan/qarzimiz)
-  // ko'rsatadi. Bu karta esa qoidadan chiqadigan BELGILANGAN summani
-  // beradi va u "Shakllantirish" bosilishiga bog'liq emas — ikkalasi
-  // bir xil nom bilan turib boshqa raqam ko'rsatsa, ekran buzuq
-  // ko'rinardi.
-  { key: "payroll", label: "Belgilangan oylik", accent: "bg-indigo-500", tone: "text-gray-900", inverse: true },
+  // OYLIK UCH SAVOLDA: qancha tarqatish kerak / tarqatildi / qoldi.
+  // "Kerak" — shakllantirilgan majburiyat (oy hali shakllanmagan bo'lsa
+  // qoidadan belgilangan summa, sub'da yozib qo'yiladi).
+  { key: "payrollDue", label: "Oylik: tarqatish kerak", accent: "bg-indigo-500", tone: "text-gray-900", inverse: true },
+  { key: "payrollPaid", label: "Oylik: tarqatildi", accent: "bg-teal-500", tone: "text-teal-700" },
+  { key: "payrollLeft", label: "Oylik: qoldi", accent: "bg-red-500", tone: "text-red-600", inverse: true },
 ];
