@@ -8,7 +8,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 // Icons
-import { Ban, Printer, Receipt } from "lucide-react";
+import { Ban, Pencil, Printer, Receipt } from "lucide-react";
 
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
@@ -23,6 +23,7 @@ import EmptyState from "@/shared/components/ui/EmptyState";
 import Pagination from "@/shared/components/ui/Pagination";
 import InputField from "@/shared/components/ui/input/InputField";
 import ReasonModal from "../components/ReasonModal";
+import EditPaymentModal from "../components/EditPaymentModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -269,6 +270,14 @@ const PaymentsPage = () => {
                   {!payment.isVoided && (
                     <Can do="finance.void">
                       <button
+                        title="Tahrirlash"
+                        onClick={() => openModal("editPayment", { payment })}
+                        className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+
+                      <button
                         title="Bekor qilish"
                         onClick={() => askVoid(payment)}
                         className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
@@ -295,6 +304,7 @@ const PaymentsPage = () => {
       )}
 
       <ReasonModal />
+      <EditPaymentModal />
     </div>
   );
 };
