@@ -49,22 +49,31 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
   const { data: tariffs = [] } = useQuery(financeQueries.assignableTariffs());
 
   const { tariffId, fromMonth, customAmount, note, setField } = useObjectState({
-    tariffId: "",
+    // Joriy tarif oldindan tanlangan: ko'p hollarda tarif qoladi, faqat
+    // individual narx o'zgaradi.
+    tariffId: assignment?.tariffId ?? "",
     // Odatda tarif joriy oydan almashtiriladi — narx bugun kelishiladi.
     // O'tgan oy yopiq (server ham shuni talab qiladi): u yerdagi
     // hisob-fakturalar muhrlangan fakt.
     fromMonth: monthKeyToInputValue(currentMonthKey()),
-    // Individual (maxsus) narx — bo'sh bo'lsa yangi tarif katalog narxi
-    customAmount: "",
+    // Individual (maxsus) narx — bo'sh bo'lsa tanlangan tarifning katalog narxi
+    customAmount: assignment?.customAmount ?? "",
     note: "",
   });
 
   const fromMonthKey = inputValueToMonthKey(fromMonth);
+  const sameTariff = tariffId === assignment?.tariffId;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!assignment) return;
-    if (!tariffId) return toast.error("Yangi tarifni tanlang");
+    if (!tariffId) return toast.error("Tarifni tanlang");
+    if (
+      sameTariff &&
+      Number(customAmount || -1) === Number(assignment.customAmount ?? -1)
+    ) {
+      return toast.error("Yangi tarif tanlang yoki individual narxni o'zgartiring");
+    }
 
     setIsLoading(true);
 
@@ -74,14 +83,14 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
         data: {
           tariffId,
           fromMonth: fromMonthKey,
-          customAmount: customAmount.trim(),
+          customAmount: String(customAmount).trim(),
           note,
         },
       },
       {
         onSuccess: (result) => {
           close();
-          toast.success("Tarif almashtirildi");
+          toast.success(sameTariff ? "Narx o'zgartirildi" : "Tarif almashtirildi");
           result?.warnings?.forEach((warning) => toast.warning(warning));
         },
         onError: (err) =>
@@ -107,15 +116,16 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
       )}
 
       <div className="space-y-1.5">
-        <p className="text-sm font-medium text-gray-700">Yangi tarif</p>
+        <p className="text-sm font-medium text-gray-700">Tarif</p>
         <SelectSearch
           inline
           value={tariffId}
           placeholder="Tarifni tanlang"
           onChange={(v) => setField("tariffId", v)}
-          options={tariffs
-            .filter((t) => t.id !== assignment?.tariffId)
-            .map((t) => ({ label: t.name, value: t.id }))}
+          options={tariffs.map((t) => ({
+            label: t.id === assignment?.tariffId ? `${t.name} (joriy)` : t.name,
+            value: t.id,
+          }))}
         />
       </div>
 
@@ -130,7 +140,8 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
       />
 
       {/* Individual narx — bu o'quvchi uchun katalog narxidan farqli doimiy
-          summa. Bo'sh qolsa yangi tarifning katalog narxi ishlaydi. */}
+          summa. Bo'sh qolsa tanlangan tarifning katalog narxi ishlaydi.
+          Tarif o'zgarmasa ham faqat narxni o'zgartirish mumkin. */}
       <InputField
         type="number"
         name="customAmount"
@@ -150,7 +161,9 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
 
       {fromMonthKey && (
         <p className="text-xs text-gray-500">
-          {fromMonthKey === assignment?.startMonth
+          {sameTariff
+            ? `Tarif o'zgarmaydi — yangi narx ${formatMonthKey(fromMonthKey)} oyidan amal qiladi, o'tgan oylar eski narxda qoladi.`
+            : fromMonthKey === assignment?.startMonth
             ? // Eskisiga birorta oy qolmaydi — u yopilmaydi, almashtiriladi.
               `Joriy tarif ${formatMonthKey(fromMonthKey)} oyidan boshlab butunlay yangisiga almashtiriladi.`
             : `Joriy tarif ${formatMonthKey(prevMonthKey(fromMonthKey))} oyida yopiladi, yangisi ${formatMonthKey(fromMonthKey)} oyidan boshlanadi.`}
