@@ -31,7 +31,7 @@ const AttendanceLayout = () => {
         )}
       </div>
 
-      {/* Asosiy tablar — 7 ta, tor ekranga sig'masa gorizontal scroll bo'ladi
+      {/* Asosiy tablar — 8 ta, tor ekranga sig'masa gorizontal scroll bo'ladi
           (TabsLinks standart ko'rinishida scroll yo'q, shuning uchun shu yerda) */}
       <TabsLinks
         items={ATTENDANCE_TABS}

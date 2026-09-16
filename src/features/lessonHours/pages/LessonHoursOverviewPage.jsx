@@ -20,6 +20,7 @@ import LoadRanking from "../components/LoadRanking";
 import ModeSplit from "../components/ModeSplit";
 import MonthPicker from "../components/MonthPicker";
 import TeacherHoursModal from "../components/TeacherHoursModal";
+import { CreateGradingUnlockModal } from "../components/GradingUnlockModals";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -136,6 +137,8 @@ const LessonHoursOverviewPage = () => {
       </div>
 
       <TeacherHoursModal />
+      {/* O'tilmagan darslardagi "Baho qo'yishni ochish" — shu oynani to'ldirib ochadi */}
+      <CreateGradingUnlockModal />
     </div>
   );
 };

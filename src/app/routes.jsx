@@ -136,6 +136,7 @@ import StudentReportsPage from "@/features/attendance/pages/StudentReportsPage";
 import ClassAttendanceReportPage from "@/features/attendance/pages/ClassAttendanceReportPage";
 import StaffReportsPage from "@/features/attendance/pages/StaffReportsPage";
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
+import LessonAbsenteesPage from "@/features/attendance/pages/LessonAbsenteesPage";
 
 // Moliya (Finance) - layout & route-level pages
 import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
@@ -161,6 +162,7 @@ import ServicesPage from "@/features/finance/pages/ServicesPage";
 import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
 import ExternalIncomePage from "@/features/externalIncome/pages/ExternalIncomePage";
 import PayrollPage from "@/features/payroll/pages/PayrollPage";
+import PayrollDeductionsPage from "@/features/payroll/pages/PayrollDeductionsPage";
 
 // Pages - Dars soatlari va o'rinbosarlik
 import LessonHoursLayout from "@/features/lessonHours/layouts/LessonHoursLayout";
@@ -169,6 +171,7 @@ import LessonHoursOverviewPage from "@/features/lessonHours/pages/LessonHoursOve
 import LessonHoursLedgerPage from "@/features/lessonHours/pages/LessonHoursLedgerPage";
 import SubstitutionsPage from "@/features/lessonHours/pages/SubstitutionsPage";
 import LessonLoadPage from "@/features/lessonHours/pages/LessonLoadPage";
+import GradingAccessPage from "@/features/lessonHours/pages/GradingAccessPage";
 
 // Pages - Oylik zayavkalari (o'qituvchi/xodim so'rovlari — paneldan tasdiqlash)
 import PayrollRequestsPage from "@/features/payroll/pages/PayrollRequestsPage";
@@ -479,6 +482,7 @@ const Routes = () => {
 
             {/* Sozlamalar */}
             <Route path="settings" element={<AttendanceSettingsPage />} />
+            <Route path="lessons" element={<LessonAbsenteesPage />} />
           </Route>
 
           {/* Eski yo'llardan yangi yo'llarga yo'naltirish (backward-compat) */}
@@ -503,6 +507,7 @@ const Routes = () => {
             <Route path="overview" element={<LessonHoursOverviewPage />} />
             <Route path="ledger" element={<LessonHoursLedgerPage />} />
             <Route path="substitutions" element={<SubstitutionsPage />} />
+            <Route path="grading-access" element={<GradingAccessPage />} />
           </Route>
 
           {/* Moliya bo'limi - bitta sahifa, ichida tablar */}
@@ -523,6 +528,7 @@ const Routes = () => {
             <Route path="accounts" element={<AccountsPage />} />
             <Route path="income" element={<ExternalIncomePage />} />
             <Route path="payroll" element={<PayrollPage />} />
+            <Route path="deductions" element={<PayrollDeductionsPage />} />
             <Route path="salary-requests" element={<PayrollRequestsPage />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="tariffs" element={<TariffsPage />} />

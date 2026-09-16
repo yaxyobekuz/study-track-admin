@@ -65,6 +65,22 @@ export const staffSalariesAPI = {
 };
 
 /**
+ * Oylikdan ushlab qolish.
+ *
+ * ⚠️ Summa serverda (payroll dvigateli) hisoblanadi — `preview` aynan
+ * saqlangandan keyin yoziladigan raqamni qaytaradi.
+ */
+export const deductionsAPI = {
+  getAll: (params) => http.get("/payroll/deductions", { params }),
+  candidates: (month) => http.get("/payroll/deductions/candidates", { params: { month } }),
+  preview: (data) => http.post("/payroll/deductions/preview", data),
+  create: (data) => http.post("/payroll/deductions", data),
+  cancel: (id, reason) => http.post(`/payroll/deductions/${id}/cancel`, { reason }),
+  cancelBatch: (batchId, reason) =>
+    http.post(`/payroll/deductions/batch/${batchId}/cancel`, { reason }),
+};
+
+/**
  * Oylik majburiyatlari va to'lovlar.
  *
  * ⚠️ Majburiyat summasini o'zgartiradigan endpoint YO'Q va bo'lmasligi kerak:

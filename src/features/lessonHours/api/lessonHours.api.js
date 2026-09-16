@@ -91,3 +91,26 @@ export const substitutionAPI = {
   cancel: (id, reason) =>
     http.post(`/lesson-hours/substitutions/${id}/cancel`, { reason }),
 };
+
+/**
+ * O'TGAN KUNLAR DARSIGA BAHO QO'YISH OYNASI.
+ *
+ * ⚠️ Manzil `/grades/unlocks` ostida (ruxsat `grades.unlock`): boshliq kunlar
+ * oralig'ini hammaga yoki tanlangan o'qituvchilarga ochadi. Ochilgan kunda
+ * baho qo'yilgan dars o'tilgan hisoblanib, soati oylikka yoziladi.
+ */
+export const gradingUnlockAPI = {
+  /** `?status=active|expired|revoked&page&limit` → `{ data, pagination, totals }` */
+  getList: (params) => http.get("/grades/unlocks", { params }),
+
+  /** Tanlov uchun o'qituvchilar (haftalik dars soni bilan). */
+  getTeachers: () => http.get("/grades/unlocks/teachers"),
+
+  /**
+   * `{ dateFrom, dateTo: "YYYY-MM-DD", scope: "all"|"selected", teacherIds,
+   *    preset: "3d"|"1w"|"monthEnd"|"custom", until, reason }`
+   */
+  create: (data) => http.post("/grades/unlocks", data),
+
+  revoke: (id) => http.post(`/grades/unlocks/${id}/revoke`),
+};

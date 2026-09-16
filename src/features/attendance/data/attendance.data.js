@@ -40,6 +40,23 @@ export const STAFF_SUMMARY_CARDS = [
   { key: "notMarked", label: "Belgilanmagan", color: "bg-gray-50 text-gray-400" },
 ];
 
+// Darsga kelmaganlar — yig'indi kartalari (server `lessonAbsence.service.js` → `summary`)
+export const LESSON_ABSENCE_SUMMARY_CARDS = [
+  { key: "absentTeachers", label: "Kelmagan o'qituvchi", color: "bg-red-100 text-red-700" },
+  { key: "lateTeachers", label: "Kech kelgan / ketgan", color: "bg-yellow-100 text-yellow-700" },
+  { key: "lessons", label: "Darssiz qolgan dars", color: "bg-gray-100 text-gray-700" },
+  { key: "ongoingLessons", label: "Hozir davom etmoqda", color: "bg-red-50 text-red-600" },
+];
+
+// Darsga kelmaganlar — o'qituvchi holati (server `STATE_LABELS` kalitlari)
+export const LESSON_ABSENCE_STATE_META = {
+  absent: { className: "bg-red-100 text-red-700" },
+  excused: { className: "bg-blue-100 text-blue-700" },
+  left: { className: "bg-orange-100 text-orange-700" },
+  cameAfter: { className: "bg-yellow-100 text-yellow-800" },
+  late: { className: "bg-yellow-100 text-yellow-800" },
+};
+
 // Xodimlar uchun rol filtri yordamchisi: rollardan select optionlari yasaydi
 export const buildRoleOptions = (roles = []) => [
   { label: "Barcha rollar", value: "all" },

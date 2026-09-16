@@ -5,7 +5,12 @@ import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 import { createQueryKeys } from "@/shared/lib/query";
 
 // API
-import { contractAPI, lessonHoursAPI, substitutionAPI } from "../api/lessonHours.api";
+import {
+  contractAPI,
+  gradingUnlockAPI,
+  lessonHoursAPI,
+  substitutionAPI,
+} from "../api/lessonHours.api";
 
 export const lessonHoursKeys = createQueryKeys("lessonHours");
 
@@ -14,6 +19,7 @@ const ledgerKey = [...lessonHoursKeys.all, "ledger"];
 const teacherKey = [...lessonHoursKeys.all, "teacher"];
 const substitutionsKey = [...lessonHoursKeys.all, "substitutions"];
 const contractKey = [...lessonHoursKeys.all, "contract"];
+const gradingUnlocksKey = [...lessonHoursKeys.all, "gradingUnlocks"];
 
 export const lessonHoursQueries = {
   /** Boshliq ko'rinishi → `{ totals, modes, series, topTeachers }`. */
@@ -106,5 +112,23 @@ export const substitutionQueries = {
       queryFn: () =>
         substitutionAPI.getAvailable(teacherId, params).then((r) => r.data.data),
       enabled: Boolean(teacherId && params?.fromDate && params?.toDate),
+    }),
+};
+
+export const gradingUnlockQueries = {
+  /** Baho qo'yish oynalari → `{ data, pagination, totals }`. */
+  list: (params) =>
+    queryOptions({
+      queryKey: [...gradingUnlocksKey, params],
+      queryFn: () => gradingUnlockAPI.getList(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Tanlov ro'yxati — kamdan-kam o'zgaradi, uzoq saqlanadi. */
+  teachers: () =>
+    queryOptions({
+      queryKey: [...gradingUnlocksKey, "teachers"],
+      queryFn: () => gradingUnlockAPI.getTeachers().then((r) => r.data.data),
+      staleTime: 5 * 60 * 1000,
     }),
 };

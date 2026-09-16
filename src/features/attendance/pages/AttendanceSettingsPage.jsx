@@ -68,6 +68,7 @@ const AttendanceSettingsPage = () => {
     penaltyPaused: false,
     pausedRoles: [],
     pausedUsers: [],
+    gradingRequiresPresence: true,
   });
 
   useEffect(() => {
@@ -84,6 +85,7 @@ const AttendanceSettingsPage = () => {
       penaltyPaused: settings.penaltyPaused || false,
       pausedRoles: settings.pausedRoles || [],
       pausedUsers: settings.pausedUsers || [],
+      gradingRequiresPresence: settings.gradingRequiresPresence ?? true,
     });
   }, [settings]);
 
@@ -184,6 +186,7 @@ const AttendanceSettingsPage = () => {
       penaltyPaused: state.penaltyPaused,
       pausedRoles: state.pausedRoles,
       pausedUsers: state.pausedUsers,
+      gradingRequiresPresence: state.gradingRequiresPresence,
     };
 
     saveSettings(data, {
@@ -335,6 +338,27 @@ const AttendanceSettingsPage = () => {
               onChange={(e) => setField("absentPenaltyPoints", e.target.value)}
               min={0}
             />
+          </Card>
+
+          {/* Baho qo'yish — maktabda bo'lish sharti */}
+          <Card title="Baho qo'yish" className="space-y-3">
+            <Field
+              className="flex-row"
+              htmlFor="gradingRequiresPresence"
+              label="Bugungi darsga baho faqat maktabda turib qo'yiladi"
+            >
+              <Switch
+                id="gradingRequiresPresence"
+                checked={state.gradingRequiresPresence}
+                onChange={(v) => setField("gradingRequiresPresence", v)}
+              />
+            </Field>
+            <p className="text-xs text-gray-500">
+              O'qituvchi bugun "Men keldim" ni bosgan (yoki davomatda "keldi" belgilangan) va hali
+              ketmagan bo'lishi kerak — aks holda "Siz maktabda emassiz" chiqadi. Boshliq ochib bergan
+              o'tgan kunlarga bu shart qo'yilmaydi. "Kelish" tugmasi ishlamay qolgan kuni vaqtincha
+              o'chirib turish mumkin.
+            </p>
           </Card>
 
           {/* Penalty Pause */}

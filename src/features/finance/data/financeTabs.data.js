@@ -68,6 +68,14 @@ export const MAIN_TABS = [
     exact: false,
   },
   {
+    // Oylikdan ushlab qolish — oylik bilan bir oila, shuning uchun yonida
+    to: "/finance/main/deductions",
+    label: "Ushlab qolish",
+    title: "Moliya",
+    can: "payroll.view",
+    exact: false,
+  },
+  {
     to: "/finance/main/salary-requests",
     label: "Oylik zayavkalari",
     title: "Moliya",

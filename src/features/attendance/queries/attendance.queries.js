@@ -62,6 +62,20 @@ export const attendanceQueries = {
       queryKey: [...attendanceKeys.all, "settings"],
       queryFn: () => attendanceAPI.getSettings().then((r) => r.data.data),
     }),
+
+  /**
+   * Darsga kelmaganlar → `{ teachers, summary, closed, message, ... }`.
+   * Bugun uchun JONLI: dars boshlanishi bilan ro'yxat o'zgaradi, shuning
+   * uchun daqiqada bir yangilanadi. O'tgan kun o'zgarmaydi.
+   */
+  lessonAbsentees: (date, isToday) =>
+    queryOptions({
+      queryKey: [...attendanceKeys.all, "lesson-absentees", date],
+      queryFn: () =>
+        attendanceAPI.getLessonAbsentees(date ? { date } : undefined).then((r) => r.data.data),
+      refetchInterval: isToday ? 60 * 1000 : false,
+      placeholderData: keepPreviousData,
+    }),
 };
 
 /**

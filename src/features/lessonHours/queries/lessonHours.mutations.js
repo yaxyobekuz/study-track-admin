@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { contractAPI, substitutionAPI } from "../api/lessonHours.api";
+import { contractAPI, gradingUnlockAPI, substitutionAPI } from "../api/lessonHours.api";
 import { lessonHoursKeys } from "./lessonHours.queries";
 
 // O'rinbosarlik SOATNI ko'chiradi, soat esa oylikka kiradi — shuning uchun
@@ -78,3 +78,37 @@ export const useSaveContract = () => {
     },
   });
 };
+
+/**
+ * Baho qo'yish oynasi — ochish va yopish.
+ *
+ * ⚠️ OCHISH SOATNI DARHOL O'ZGARTIRISHI MUMKIN: ochilgan kunda baho bor
+ * dars davomatdan qat'i nazar o'tilgan hisoblanadi (sababsiz "kelmadi"
+ * kuni ham). Shuning uchun soat, oylik va dashboard birga eskiradi.
+ */
+const useInvalidateGrading = () => {
+  const queryClient = useQueryClient();
+
+  return () => {
+    queryClient.invalidateQueries({ queryKey: lessonHoursKeys.all });
+    queryClient.invalidateQueries({ queryKey: payrollKeys.all });
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+  };
+};
+
+export const useCreateGradingUnlock = () => {
+  const invalidate = useInvalidateGrading();
+  return useMutation({
+    mutationFn: (data) => gradingUnlockAPI.create(data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+export const useRevokeGradingUnlock = () => {
+  const invalidate = useInvalidateGrading();
+  return useMutation({
+    mutationFn: (id) => gradingUnlockAPI.revoke(id).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+

@@ -181,6 +181,9 @@ export const MODAL_NAMES = [
   "voidSalaryPayment",
   "cancelPayrollEntry",
   "regeneratePayrollEntry",
+  // Oylikdan ushlab qolish
+  "createDeduction",
+  "cancelDeduction",
   // Payroll v2 — oylik zayavkalarini ko'rib chiqish (paneldan tasdiqlash)
   "reviewPayrollRequest",
   "expense",
@@ -204,6 +207,8 @@ export const MODAL_NAMES = [
   "editSubstitution",
   "deleteSubstitution",
   "cancelSubstitution",
+  "createGradingUnlock",
+  "revokeGradingUnlock",
 
   // Moliya - ta'til
   "markVacation",

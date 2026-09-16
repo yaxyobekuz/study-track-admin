@@ -10,6 +10,7 @@ import {
   positionsAPI,
   payrollViewAPI,
   payrollRequestsAPI,
+  deductionsAPI,
 } from "../api/payroll.api";
 import { payrollKeys } from "./payroll.queries";
 
@@ -17,6 +18,8 @@ import { payrollKeys } from "./payroll.queries";
 // hisobotlari ham eskiradi.
 import { financeKeys } from "@/features/finance/queries/finance.queries";
 import { dashboardKeys } from "@/features/financeDashboard/queries/financeDashboard.queries";
+// Ushlab qolish vedomostdagi "Oy oxirida" summasini ham o'zgartiradi
+import { lessonHoursKeys } from "@/features/lessonHours/queries/lessonHours.queries";
 
 const useInvalidate = () => {
   const queryClient = useQueryClient();
@@ -206,3 +209,33 @@ export const useReviewPayrollRequest = () => {
     onSuccess: invalidate,
   });
 };
+
+// ── Oylikdan ushlab qolish ───────────────────
+// Oylik summasi, qarz, dashboard va vedomost prognozi — hammasi eskiradi.
+const useInvalidateDeductions = () => {
+  const queryClient = useQueryClient();
+  const invalidate = useInvalidate();
+  return () => {
+    invalidate();
+    queryClient.invalidateQueries({ queryKey: lessonHoursKeys.all });
+  };
+};
+
+export const useCreateDeductions = () => {
+  const invalidate = useInvalidateDeductions();
+  return useMutation({
+    mutationFn: (data) => deductionsAPI.create(data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+export const useCancelDeduction = () => {
+  const invalidate = useInvalidateDeductions();
+  return useMutation({
+    mutationFn: ({ id, batchId, reason }) =>
+      (batchId ? deductionsAPI.cancelBatch(batchId, reason) : deductionsAPI.cancel(id, reason))
+        .then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+

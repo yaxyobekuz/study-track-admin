@@ -362,9 +362,17 @@ const EntriesView = () => {
                       : "—"}
                   </Td>
 
-                  {/* JAMI = oylik + ustama */}
+                  {/* JAMI = oylik + ustama − ushlab qolish */}
                   <Td align="right" className="font-semibold text-gray-900">
                     {formatMoney(entry.amount)}
+                    {Number(entry.deductionAmount) > 0 && (
+                      <span
+                        className="block text-xs font-normal text-red-500"
+                        title={entry.deductionBreakdown.map((d) => `${d.reason}: ${d.amount}`).join("\n")}
+                      >
+                        − {formatMoney(entry.deductionAmount)} ushlab qolindi
+                      </span>
+                    )}
                   </Td>
 
                   <Td align="right" className="text-green-600">

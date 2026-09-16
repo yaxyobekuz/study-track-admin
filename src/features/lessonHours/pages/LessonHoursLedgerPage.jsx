@@ -19,6 +19,7 @@ import Card from "@/shared/components/ui/Card";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import LedgerTable from "../components/LedgerTable";
 import TeacherHoursModal from "../components/TeacherHoursModal";
+import { CreateGradingUnlockModal } from "../components/GradingUnlockModals";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -165,6 +166,8 @@ const LessonHoursLedgerPage = () => {
       />
 
       <TeacherHoursModal />
+      {/* O'tilmagan darslardagi "Baho qo'yishni ochish" — shu oynani to'ldirib ochadi */}
+      <CreateGradingUnlockModal />
     </div>
   );
 };

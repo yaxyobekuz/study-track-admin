@@ -13,6 +13,7 @@ import {
   positionsAPI,
   payrollViewAPI,
   payrollRequestsAPI,
+  deductionsAPI,
 } from "../api/payroll.api";
 
 export const payrollKeys = createQueryKeys("payroll");
@@ -26,6 +27,7 @@ const posKey = [...payrollKeys.all, "positions"];
 const viewKey = [...payrollKeys.all, "view"];
 const requestsKey = [...payrollKeys.all, "requests"];
 const auditKey = [...payrollKeys.all, "audit"];
+const deductionsKey = [...payrollKeys.all, "deductions"];
 
 export const payrollQueries = {
   /** Bo'limlar (staff/teaching). */
@@ -141,6 +143,36 @@ export const payrollQueries = {
       queryKey: [...requestsKey, params],
       queryFn: () => payrollRequestsAPI.getAll(params).then((r) => r.data),
       placeholderData: keepPreviousData,
+    }),
+
+  /** Ushlab qolishlar registri → `{ data, pagination, totals }`. */
+  deductions: (params) =>
+    queryOptions({
+      queryKey: [...deductionsKey, "list", params],
+      queryFn: () => deductionsAPI.getAll(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Kimdan ushlab qolish mumkin — shu oyda oyligi borlar. */
+  deductionCandidates: (month) =>
+    queryOptions({
+      queryKey: [...deductionsKey, "candidates", month],
+      queryFn: () => deductionsAPI.candidates(month).then((r) => r.data.data),
+      enabled: Boolean(month),
+      placeholderData: keepPreviousData,
+    }),
+
+  /**
+   * Jonli hisob. `draft` — KECHIKTIRILGAN qoralama (har harfda so'rov
+   * ketmasligi uchun). `retry: false`: 400 — "hali to'liq emas" degani.
+   */
+  deductionPreview: (draft) =>
+    queryOptions({
+      queryKey: [...deductionsKey, "preview", draft],
+      queryFn: () => deductionsAPI.preview(draft).then((r) => r.data.data),
+      enabled: Boolean(draft),
+      placeholderData: keepPreviousData,
+      retry: false,
     }),
 
   /** Oylik strukturasi audit qaydlari → `{ data, pagination }`. */

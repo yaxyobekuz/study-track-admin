@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import WeekGrid from "./WeekGrid";
 import ContractEditor from "./ContractEditor";
+import MissedLessons from "./MissedLessons";
 
 // Hooks
 import usePermissions from "@/shared/hooks/usePermissions";
@@ -21,7 +22,7 @@ import { formatMoney } from "@/shared/utils/formatMoney";
 
 // Data & queries
 import { CHIP, SCALE, SURFACE, T, modeOf } from "../data/ledger.tokens";
-import { MISSED_LESSONS_HINT, formatHourNumber } from "../data/lessonHours.data";
+import { formatHourNumber } from "../data/lessonHours.data";
 import { lessonHoursQueries } from "../queries/lessonHours.queries";
 
 /**
@@ -170,7 +171,13 @@ const TeacherHoursBody = ({ staffId, month }) => {
       {/* ── O'tilmagan darslar ───────────────────────────────── */}
       {data.missedLessons?.length > 0 && (
         <Section title={`O'tilmagan darslar · ${data.missedLessons.length}`}>
-          <MissedLessons rows={data.missedLessons} isCurrentMonth={data.isCurrentMonth} />
+          <MissedLessons
+            rows={data.missedLessons}
+            unlocks={data.gradingUnlocks}
+            teacherId={data.staffId}
+            isCurrentMonth={data.isCurrentMonth}
+            sealed={Boolean(data.entryStatus && data.entryStatus !== "cancelled")}
+          />
         </Section>
       )}
 
@@ -345,50 +352,6 @@ const SubjectChip = ({ subject }) => {
     </li>
   );
 };
-
-/**
- * O'TILMAGAN DARSLAR — "nega 61 emas, 60 soat" degan savolning javobi.
- *
- * ⚠️ SABAB VA SANA MATNI SERVERDAN (`reasonLabel`, `dateLabel`): sana
- * `@db.Date` bo'lib, brauzerda `new Date` bilan o'qilsa bir kunga siljirdi.
- * "Avtomatik" belgisi alohida: davomat tizimi kun oxirida o'zi qo'ygan
- * "kelmadi" — admin davomatni to'g'rilasa soat qaytadi.
- */
-const MissedLessons = ({ rows, isCurrentMonth }) => (
-  <div className="space-y-2">
-    <ul className="max-h-[220px] space-y-1.5 overflow-y-auto pr-1 hidden-scrollbar">
-      {rows.map((row) => (
-        <li
-          key={`${row.dateLabel}-${row.classId}-${row.lessonOrder}`}
-          className={cn(SURFACE.tile, "flex items-center gap-3 py-2.5")}
-        >
-          <div className="min-w-0 flex-1">
-            <p className={cn(T.td, "truncate")}>
-              <span className="font-medium text-slate-900">{row.dateLabel}</span>
-              {` · ${row.className}, ${row.lessonOrder}-dars · ${row.subjectName}`}
-            </p>
-            {(row.autoMarked || row.substituted) && (
-              <p className={cn(T.meta, "mt-0.5 truncate")}>
-                {[row.substituted && "o'rinbosarlik", row.autoMarked && "davomat avtomatik belgilangan"]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-            )}
-          </div>
-
-          <span className={cn(CHIP, "shrink-0 bg-rose-50 text-rose-700")}>
-            {row.reasonLabel}
-          </span>
-        </li>
-      ))}
-    </ul>
-
-    <p className={T.hint}>
-      {MISSED_LESSONS_HINT.rule}
-      {isCurrentMonth ? ` ${MISSED_LESSONS_HINT.today}` : ""}
-    </p>
-  </div>
-);
 
 const Section = ({ title, children }) => (
   <section>

@@ -9,6 +9,14 @@ export const ATTENDANCE_TABS = [
     exact: false,
   },
   {
+    // Dars vaqti bo'lgan, lekin maktabda yo'q o'qituvchilar — jonli
+    to: "/attendance/lessons",
+    label: "Darsga kelmaganlar",
+    title: "Darsga kelmaganlar",
+    description: "Dars boshlangan, lekin o'qituvchi maktabda yo'q — qaysi sinf, nechanchi dars va soat nechada",
+    exact: false,
+  },
+  {
     to: "/attendance/monthly",
     label: "Oylik davomat",
     title: "Oylik davomat",

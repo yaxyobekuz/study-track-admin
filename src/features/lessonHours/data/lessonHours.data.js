@@ -39,6 +39,15 @@ export const HOURS_TABS = [
     monthScoped: false,
     exact: false,
   },
+  {
+    // O'tgan kunlarga baho qo'yishni ochish — soat shu yerdan o'zgaradi
+    to: "/lesson-hours/grading-access",
+    label: "Baho qo'yishni ochish",
+    title: "Dars soatlari",
+    can: "grades.unlock",
+    monthScoped: false,
+    exact: false,
+  },
 ];
 
 /* ─────────────────────── O'RINBOSARLIK ─────────────────────── */
@@ -118,9 +127,47 @@ export const LEDGER_HOURS_HINT =
  */
 export const MISSED_LESSONS_HINT = {
   rule:
-    "O'qituvchi kelmagan yoki sababli kelmagan kun va hech kimga baho qo'yilmagan dars o'tilmagan hisoblanadi — soati oylikka yozilmaydi.",
+    "Sababsiz kelmagan kun va hech kimga baho qo'yilmagan dars o'tilmagan hisoblanadi — soati oylikka yozilmaydi. Sababli kelmagan kun baho qo'yilsa o'tilgan hisoblanadi.",
   today: "Bugungi darslar ertaga tekshiriladi.",
+  unlock:
+    "Ochilgan kunlarga o'qituvchi istalgan joydan baho qo'ya oladi. Baho qo'yilgan dars davomatdan qat'i nazar o'tilgan hisoblanib, soati oylikka yoziladi.",
+  sealed:
+    "Yangi baholar soatda ko'rinadi, lekin muhrlangan oylik summasi o'zgarmaydi — kerak bo'lsa oylikni bekor qilib qayta shakllantiring.",
+  revoke:
+    "Yopilgandan keyin yangi baho qo'yib bo'lmaydi. Shu kunlarda qo'yilgan baholar va ularning soati o'z kuchida qoladi.",
 };
+
+/** Oyna kimga — server `GradingUnlockScope`. */
+export const UNLOCK_SCOPE_OPTIONS = [
+  { value: "all", label: "Hammaga joriy qilish" },
+  { value: "selected", label: "Tanlanganlarga" },
+];
+
+/** Oyna holati — server `statusOf`. */
+export const UNLOCK_STATUS_META = {
+  active: { label: "Ochiq", chip: "bg-emerald-50 text-emerald-700" },
+  expired: { label: "Muddati tugagan", chip: "bg-slate-100 text-slate-500" },
+  revoked: { label: "Yopilgan", chip: "bg-rose-50 text-rose-700" },
+};
+
+/** Oyna kimga: "Hamma o'qituvchi" / ism / "3 ta o'qituvchi". */
+export const unlockTargetText = (unlock) =>
+  unlock?.scope === "all"
+    ? "Hamma o'qituvchi"
+    : unlock?.teachers?.length === 1
+      ? unlock.teachers[0].name
+      : `${unlock?.teachers?.length ?? 0} ta o'qituvchi`;
+
+/** Bir oynada eng ko'p kun — server `MAX_RANGE_DAYS`. */
+export const UNLOCK_MAX_RANGE_DAYS = 92;
+
+/** Oyna muddati — server `parseExpiry` kalitlari. */
+export const UNLOCK_PRESET_OPTIONS = [
+  { value: "3d", label: "3 kun" },
+  { value: "1w", label: "1 hafta" },
+  { value: "monthEnd", label: "Oy oxirigacha" },
+  { value: "custom", label: "Sana" },
+];
 
 /* ─────────────────────── JADVAL USTUNLARI ─────────────────────── */
 

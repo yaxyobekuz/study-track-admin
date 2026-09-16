@@ -142,7 +142,15 @@ export const PERMISSION_SECTIONS = [
     key: SECTIONS.GRADES,
     label: "Baholar jurnali",
     group: "Ta'lim",
-    actions: [A.view, A.create, A.update, A.delete, A.export],
+    actions: [
+      A.view,
+      A.create,
+      A.update,
+      A.delete,
+      A.export,
+      // Oylikka ta'sir qiladi — server `permissions.js` bilan AYNI
+      { key: "unlock", label: "O'tgan kunlarga baho qo'yishni ochish" },
+    ],
   },
   {
     // TA'LIM DASHBOARDI — bitta ekranda butun maktabning o'quv manzarasi.
@@ -524,6 +532,8 @@ export const PERMISSION_SECTIONS = [
       { key: "pay", label: "To'lash" },
       { key: "void", label: "To'lovni bekor qilish" },
       { key: "cancel", label: "Majburiyatni bekor qilish" },
+      // USHLAB QOLISH — `assign` dan alohida (server `permissions.js` bilan AYNI)
+      { key: "deduct", label: "Oylikdan ushlab qolish" },
     ],
   },
   {
@@ -897,6 +907,7 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/finance/main/dashboard", key: "reports.view" },
   { prefix: "/finance/main/income", key: "income.view" },
   { prefix: "/finance/main/payroll", key: "payroll.view" },
+  { prefix: "/finance/main/deductions", key: "payroll.view" },
   { prefix: "/finance/main/salary-requests", key: "payrollRequests.view" },
   { prefix: "/finance/main/expenses", key: "expenses.view" },
   { prefix: "/finance", key: "finance.view" },
@@ -906,6 +917,7 @@ const ROUTE_PERMISSIONS = [
   // eng UZUN prefiks yutadigan qoidaga tayanamiz: bo'limga kirish
   // `payroll.hours` bilan, o'rinbosarlik tabiga esa o'z kaliti bilan.
   { prefix: "/lesson-hours/substitutions", key: "substitutions.view" },
+  { prefix: "/lesson-hours/grading-access", key: "grades.unlock" },
   { prefix: "/lesson-hours", key: "payroll.hours" },
   // Bosh sahifadagi "Dars soatlari" tabi — `/lesson-hours/overview` bilan
   // AYNI sahifa, shuning uchun kalit ham bir xil (moliya `/reports` bilan

@@ -1,3 +1,6 @@
+// Utils
+import { formatMoney } from "@/shared/utils/formatMoney";
+
 // Xodimlar oyligi bo'limining statik ma'lumotlari.
 //
 // Oylik — CHIQIM tomonining o'quvchi registriga o'xshashi: qoida belgilanadi,
@@ -178,3 +181,88 @@ export const REQUESTS_TABS = [
   { value: "requests", label: "Zayavkalar" },
   { value: "audit", label: "O'zgarishlar tarixi" },
 ];
+
+// ── Oylikdan ushlab qolish ──
+
+/** Ushlab qolishlar registri jadvali. */
+export const DEDUCTION_COLUMNS = [
+  "Xodim",
+  "Sabab",
+  { label: "Qiymati", align: "right" },
+  "Davr",
+  { label: "Shu oy", align: "right" },
+  "Holat",
+  "",
+];
+
+export const DEDUCTION_STATUS_META = {
+  active: { label: "Faol", className: "bg-green-100 text-green-700" },
+  cancelled: { label: "Bekor qilingan", className: "bg-gray-100 text-gray-600" },
+};
+
+export const DEDUCTION_STATUS_OPTIONS = [
+  { label: "Faol", value: "active" },
+  { label: "Bekor qilingan", value: "cancelled" },
+  { label: "Barchasi", value: "" },
+];
+
+/** Kimdan: hammasi / tanlab / bitta xodim. */
+export const DEDUCTION_SCOPE_OPTIONS = [
+  { value: "all", label: "Hammasi" },
+  { value: "pick", label: "Tanlab" },
+  { value: "one", label: "Bitta xodim" },
+];
+
+/** Server `TYPES` (`payrollDeduction.service.js`) ning ko'zgusi. */
+export const DEDUCTION_TYPE_OPTIONS = [
+  { value: "fixed", label: "So'mda" },
+  { value: "percent", label: "Foizda" },
+  { value: "hours", label: "Dars soatida" },
+];
+
+/** Server `MAX_HOURS` bilan AYNI. */
+export const DEDUCTION_MAX_HOURS = 500;
+
+/** Qiymat matni: "10%", "3 soat", "500 000 so'm". */
+export const formatDeductionValue = (type, value) =>
+  type === "percent"
+    ? `${Number(value)}%`
+    : type === "hours"
+      ? `${Number(value)} soat`
+      : formatMoney(value);
+
+/**
+ * Davr. Server `endMonth` ni shunday o'qiydi: son → oraliq, `null` →
+ * muddatsiz, berilmasa → faqat boshlanish oyi.
+ */
+export const DEDUCTION_PERIOD_OPTIONS = [
+  { value: "once", label: "Faqat shu oy" },
+  { value: "range", label: "Oraliq" },
+  { value: "open", label: "Muddatsiz" },
+];
+
+/**
+ * Muhrlangan oylik holati — server `sealStateOf` bilan AYNI kalitlar.
+ * `locked` — to'lov tushgan, muhr o'zgarmaydi.
+ */
+export const SEAL_STATE_META = {
+  none: { label: "Shakllanmagan", className: "bg-slate-100 text-slate-600" },
+  resync: { label: "Qayta hisoblanadi", className: "bg-amber-100 text-amber-700" },
+  locked: { label: "To'langan — o'zgarmaydi", className: "bg-gray-100 text-gray-500" },
+};
+
+export const DEDUCTION_HINTS = {
+  hours:
+    "Summa = dars soati × xodimning soat narxi (oylik shartidagi toifa yoki qo'lda " +
+    "yozilgan narx). Soat narxi yo'q (faqat fiksa oylik oladigan) xodimdan ushlanmaydi.",
+  percent:
+    "Foiz jami hisoblangan oylikdan (fiksa + dars soati + ustamalar) olinadi. " +
+    "Ushlab qolish oylikdan oshmaydi — oylik 0 dan pastga tushmaydi.",
+  sealed:
+    "Shu oy oyligi shakllantirilgan, lekin hali to'lanmagan bo'lsa, u ushlab " +
+    "qolish bilan qayta hisoblanadi. Qisman yoki to'liq to'langan oylik o'zgarmaydi.",
+  cancel:
+    "Yozuv o'chirilmaydi — bekor qilingan deb belgilanadi. To'lanmagan " +
+    "muhrlangan oylik ushlab qolishsiz qayta hisoblanadi.",
+};
+

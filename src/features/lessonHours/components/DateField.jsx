@@ -42,6 +42,7 @@ import { T } from "../data/ledger.tokens";
  * @param {string} props.value - "YYYY-MM-DD"
  * @param {(value: string) => void} props.onChange
  * @param {string} [props.min] - "YYYY-MM-DD" (shu kundan oldingilari yopiq)
+ * @param {string} [props.max] - "YYYY-MM-DD" (shu kundan keyingilari yopiq)
  * @param {string} [props.hint]
  */
 
@@ -67,7 +68,7 @@ const todayParts = () => {
   return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
 };
 
-const DateField = ({ label, value, onChange, min, hint, disabled }) => {
+const DateField = ({ label, value, onChange, min, max, hint, disabled }) => {
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
 
@@ -120,6 +121,10 @@ const DateField = ({ label, value, onChange, min, hint, disabled }) => {
     const minStamp = minParsed
       ? Date.UTC(minParsed.year, minParsed.month - 1, minParsed.day)
       : null;
+    const maxParsed = parseValue(max);
+    const maxStamp = maxParsed
+      ? Date.UTC(maxParsed.year, maxParsed.month - 1, maxParsed.day)
+      : null;
 
     return [
       // Oy boshigacha bo'sh kataklar — kalitlari barqaror bo'lishi uchun
@@ -132,7 +137,9 @@ const DateField = ({ label, value, onChange, min, hint, disabled }) => {
         return {
           day,
           dayNumber: date.getUTCDay(),
-          disabled: minStamp != null && date.getTime() < minStamp,
+          disabled:
+            (minStamp != null && date.getTime() < minStamp) ||
+            (maxStamp != null && date.getTime() > maxStamp),
           isSelected:
             parsed?.year === view.year &&
             parsed?.month === view.month &&
@@ -144,7 +151,7 @@ const DateField = ({ label, value, onChange, min, hint, disabled }) => {
         };
       }),
     ];
-  }, [view, min, parsed, today.year, today.month, today.day]);
+  }, [view, min, max, parsed, today.year, today.month, today.day]);
 
   const shiftMonth = (direction) =>
     setView((prev) => {
