@@ -63,7 +63,7 @@ const chipTone = (item) => {
  *
  * "+ Ustama qo'shish" — istalgan xodimni tanlab ustama beriladi (hali
  * ustamasi yo'q xodim ham). Qatordagi hamyon — mavjud ustamani tahrirlash.
- * Ikkalasi ham `staffSalary` modalini ochadi (PayrollPage'da render qilinadi).
+ * Ikkalasi ham `assignBonus` modalini ochadi (PayrollPage'da render qilinadi).
  *
  * O'z oy va bo'lim filtri bor (mustaqil tab). `departments` — ixtiyoriy,
  * bo'lim bo'yicha toraytirish uchun.
@@ -159,7 +159,7 @@ const AllowancesView = ({ departments = [] }) => {
 
         {/* Istalgan xodimga (hali ustamasi yo'q bo'lsa ham) ustama qo'shish */}
         <Can do="payroll.assign">
-          <Button className="ml-auto" onClick={() => openModal("staffSalary", {})}>
+          <Button className="ml-auto" onClick={() => openModal("assignBonus", {})}>
             <Plus /> Ustama qo'shish
           </Button>
         </Can>
@@ -172,7 +172,7 @@ const AllowancesView = ({ departments = [] }) => {
           <EmptyState
             icon={Wallet}
             title="Ustama yo'q"
-            description="Ustama xodim qatoridagi hamyon tugmasi orqali yoki o'qituvchi zayavkasi tasdiqlanganda paydo bo'ladi."
+            description="Ustama tepadagi 'Ustama qo'shish' tugmasi orqali yoki o'qituvchi zayavkasi tasdiqlanganda paydo bo'ladi."
           />
         </Card>
       ) : (
@@ -233,9 +233,9 @@ const AllowancesView = ({ departments = [] }) => {
                         xodimlar jadvalidagi hamyon tugmasi bilan bir xil */}
                     <Can do="payroll.assign">
                       <button
-                        title="Ustama qo'shish / tahrirlash"
+                        title="Yana ustama qo'shish"
                         onClick={() =>
-                          openModal("staffSalary", {
+                          openModal("assignBonus", {
                             staff: { id: row.id, firstName: row.firstName, lastName: row.lastName },
                           })
                         }

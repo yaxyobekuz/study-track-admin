@@ -176,6 +176,7 @@ export const MODAL_NAMES = [
   "position",
   "categoryV2",
   "assignStaff",
+  "assignBonus",
   "salaryPayment",
   "voidSalaryPayment",
   "cancelPayrollEntry",

@@ -62,6 +62,17 @@ export const useAssignStaff = () => {
   return useMutation({ mutationFn: ({ staffId, data }) => payrollViewAPI.assign(staffId, data).then((r) => r.data.data), onSuccess: invalidate });
 };
 
+// ── Admin ustama (PayrollBonus) ──────────────
+export const useCreateBonus = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (data) => payrollViewAPI.createBonus(data).then((r) => r.data.data), onSuccess: invalidate });
+};
+
+export const useDeleteBonus = () => {
+  const invalidate = useInvalidate();
+  return useMutation({ mutationFn: (id) => payrollViewAPI.deleteBonus(id).then((r) => r.data), onSuccess: invalidate });
+};
+
 // ── Malaka toifalari (KPI stavka katalogi) ───
 
 export const useCreateCategory = () => {

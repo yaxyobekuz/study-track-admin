@@ -62,6 +62,7 @@ import {
   getRuleStatus,
 } from "../data/payroll.data";
 import AllowancesView from "../components/AllowancesView";
+import AssignBonusModal from "../components/AssignBonusModal";
 import { payrollQueries } from "../queries/payroll.queries";
 import {
   useGeneratePayroll,
@@ -101,6 +102,7 @@ const PayrollPage = () => {
       <PositionModal />
       <CategoryV2Modal />
       <AssignStaffModal />
+      <AssignBonusModal />
       {/* Majburiyat/to'lov modallari */}
       <SalaryRuleModal />
       <SalaryCategoryModal />
