@@ -91,9 +91,11 @@ const FilePreviewOverlay = ({ file, onClose }) => {
     <div
       ref={containerRef}
       // Bu belgi shadcn Dialog/Drawer'dagi previewGuard uchun: overlay ochiq
-      // paytda ostidagi modal tashqi bosish/Escape bilan yopilmaydi
+      // paytda ostidagi modal tashqi bosish/Escape bilan yopilmaydi.
+      // `pointer-events-auto` SHART: Radix modal ochiq payt butun body'ga
+      // pointer-events:none qo'yadi — usiz overlay tugmalari bosilmasdi.
       data-file-preview-overlay=""
-      className="fixed inset-0 z-[999] flex flex-col bg-black/90"
+      className="pointer-events-auto fixed inset-0 z-[999] flex flex-col bg-black/90"
       onClick={(e) => {
         // Fon bosilganda yopiladi (kontent bosilganda emas)
         if (e.target === e.currentTarget) onClose();
