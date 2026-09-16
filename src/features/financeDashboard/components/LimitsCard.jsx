@@ -51,8 +51,8 @@ const LimitsCard = ({ month, className }) => {
       title="Xarajat limitlari"
       className={className}
       hint={
-        data?.profit != null
-          ? `Har kategoriya bo'yicha limit / ishlatilgan / qolgan · Sof foyda: ${formatMoney(data.profit)} so'm`
+        data?.income != null
+          ? `Har kategoriya bo'yicha limit / ishlatilgan / qolgan · Umumiy kirim: ${formatMoney(data.income)} so'm`
           : "Har kategoriya bo'yicha limit / ishlatilgan / qolgan"
       }
       isLoading={isLoading}
@@ -106,11 +106,11 @@ const LimitsCard = ({ month, className }) => {
                     {hasLimit ? (
                       <>
                         {formatMoney(row.limit)}
-                        {/* Foiz rejimi — amaldagi summa foydadan hisoblangani
+                        {/* Foiz rejimi — amaldagi summa kirimdan hisoblangani
                             ko'rinib tursin */}
-                        {row.limitKind === "percentProfit" && (
+                        {row.limitKind === "percentIncome" && (
                           <span className="ml-1 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600">
-                            foyda {row.limitPercent}%
+                            kirim {row.limitPercent}%
                           </span>
                         )}
                       </>

@@ -64,17 +64,17 @@ const BudgetForm = ({ close, isLoading, setIsLoading, month }) => {
 
   const { mutate: saveBudgets } = useSaveExpenseBudgets();
 
-  // Har kategoriya: { kind: "money" | "percentProfit", value: "<so'm yoki foiz>" }
+  // Har kategoriya: { kind: "money" | "percentIncome", value: "<so'm yoki foiz>" }
   const [values, setValues] = useState({});
 
   useEffect(() => {
     if (!data?.items) return;
     const next = {};
     for (const item of data.items) {
-      const kind = item.limitKind === "percentProfit" ? "percentProfit" : "money";
+      const kind = item.limitKind === "percentIncome" ? "percentIncome" : "money";
       // money → amaldagi so'm (item.limit), percent → foiz (item.limitPercent)
       const value =
-        kind === "percentProfit"
+        kind === "percentIncome"
           ? item.limitPercent == null
             ? ""
             : String(Number(item.limitPercent))
@@ -86,16 +86,16 @@ const BudgetForm = ({ close, isLoading, setIsLoading, month }) => {
     setValues(next);
   }, [data]);
 
-  // Sof foyda — "% foyda" rejimida amaldagi limitni jonli ko'rsatish uchun
-  const profit = Number(data?.profit ?? 0);
+  // Umumiy kirim — "% kirim" rejimida amaldagi limitni jonli ko'rsatish uchun
+  const income = Number(data?.income ?? 0);
 
   /** O'tgan oyning limitlari — kategoriya bo'yicha xarita ({kind, value}). */
   const previousByCategory = useMemo(() => {
     const map = new Map();
     for (const item of previous?.items ?? []) {
-      if (item.limitKind === "percentProfit" && item.limitPercent != null) {
+      if (item.limitKind === "percentIncome" && item.limitPercent != null) {
         map.set(item.categoryId, {
-          kind: "percentProfit",
+          kind: "percentIncome",
           value: String(Number(item.limitPercent)),
         });
       } else if (item.limit != null) {
@@ -117,7 +117,7 @@ const BudgetForm = ({ close, isLoading, setIsLoading, month }) => {
     toast.success(`${previousByCategory.size} ta limit ko'chirildi`);
   };
 
-  // Kiritilayotgan AMALDAGI limitlar yig'indisi — foiz rejimi foydadan
+  // Kiritilayotgan AMALDAGI limitlar yig'indisi — foiz rejimi kirimdan
   // hisoblanadi. Rahbar saqlashdan OLDIN "jami qancha" ni ko'rishi kerak.
   const totalLimit = useMemo(
     () =>
@@ -126,10 +126,10 @@ const BudgetForm = ({ close, isLoading, setIsLoading, month }) => {
         const n = Number(entry.value);
         if (!Number.isFinite(n)) return acc;
         const eff =
-          entry.kind === "percentProfit" ? (Math.max(0, profit) * n) / 100 : n;
+          entry.kind === "percentIncome" ? (Math.max(0, income) * n) / 100 : n;
         return acc + eff;
       }, 0),
-    [values, profit],
+    [values, income],
   );
 
   const handleSubmit = (e) => {
@@ -152,7 +152,7 @@ const BudgetForm = ({ close, isLoading, setIsLoading, month }) => {
               categoryId: item.categoryId,
               limitKind: entry.kind,
               limitAmount: entry.kind === "money" ? value : null,
-              limitPercent: entry.kind === "percentProfit" ? value : null,
+              limitPercent: entry.kind === "percentIncome" ? value : null,
             };
           }),
       },
@@ -201,14 +201,14 @@ const BudgetForm = ({ close, isLoading, setIsLoading, month }) => {
       <div className="max-h-[52vh] space-y-2 overflow-y-auto pr-1">
         {editable.map((item) => {
           const entry = values[item.categoryId] ?? { kind: "money", value: "" };
-          const isPct = entry.kind === "percentProfit";
+          const isPct = entry.kind === "percentIncome";
           const n = Number(entry.value);
           const hasValue = entry.value !== "" && Number.isFinite(n);
-          // Amaldagi limit — foiz rejimida foydadan hisoblanadi
+          // Amaldagi limit — foiz rejimida umumiy kirimdan hisoblanadi
           const effective = !hasValue
             ? 0
             : isPct
-              ? (Math.max(0, profit) * n) / 100
+              ? (Math.max(0, income) * n) / 100
               : n;
           const spent = Number(item.spent);
           // Limit allaqachon sarflanganidan kam bo'lsa — darhol ko'rsatiladi
@@ -239,7 +239,7 @@ const BudgetForm = ({ close, isLoading, setIsLoading, month }) => {
                   </p>
                 </div>
 
-                {/* Rejim: qat'iy summa yoki foyda foizi */}
+                {/* Rejim: qat'iy summa yoki kirim foizi */}
                 <div className="flex shrink-0 overflow-hidden rounded-lg border border-gray-200 text-xs">
                   <button
                     type="button"
@@ -253,13 +253,13 @@ const BudgetForm = ({ close, isLoading, setIsLoading, month }) => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setEntry({ kind: "percentProfit" })}
+                    onClick={() => setEntry({ kind: "percentIncome" })}
                     className={cn(
                       "px-2.5 py-1.5 font-medium transition-colors",
                       isPct ? "bg-primary text-white" : "text-gray-500 hover:bg-gray-50",
                     )}
                   >
-                    % foyda
+                    % kirim
                   </button>
                 </div>
 
@@ -283,14 +283,14 @@ const BudgetForm = ({ close, isLoading, setIsLoading, month }) => {
                 </div>
               </div>
 
-              {/* Foiz rejimida amaldagi so'm — foyda o'zgarsa o'zgaradi */}
+              {/* Foiz rejimida amaldagi so'm — kirim o'zgarsa o'zgaradi */}
               {isPct && hasValue && (
                 <p className="mt-1.5 text-right text-[11px] text-gray-500">
                   Amaldagi limit:{" "}
                   <b className="tabular-nums text-gray-700">
                     {formatMoney(String(Math.round(effective)))}
                   </b>{" "}
-                  so'm <span className="text-gray-400">(foydaning {n}% i)</span>
+                  so'm <span className="text-gray-400">(kirimning {n}% i)</span>
                 </p>
               )}
             </div>
