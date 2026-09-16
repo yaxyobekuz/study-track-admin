@@ -175,6 +175,27 @@ const LimitsCard = ({ month, className }) => {
           )}
         </table>
       </div>
+
+      {/* KUTILAYOTGAN FOYDA — jami hisoblangan majburiyatdan limitlar olib
+          tashlanadi: "hamma yig'ilib, hamma limit ishlatilsa qancha qoladi". */}
+      {totals?.expectedProfit != null && (
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-emerald-50 px-3 py-2.5">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-emerald-800">Kutilayotgan foyda</p>
+            <p className="truncate text-[11px] text-emerald-600">
+              Hisoblangan {formatMoney(data.accrued)} − limit {formatMoney(totals.limit)}
+            </p>
+          </div>
+          <p
+            className={cn(
+              "shrink-0 text-lg font-bold tabular-nums",
+              Number(totals.expectedProfit) < 0 ? "text-red-600" : "text-emerald-700",
+            )}
+          >
+            {formatMoney(totals.expectedProfit)}
+          </p>
+        </div>
+      )}
     </DashboardCard>
   );
 };

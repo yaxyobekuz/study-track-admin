@@ -163,16 +163,16 @@ export const planBarTone = (rate, { inverse = false } = {}) => {
  * o'zi — ikkalasi bitta serverdagi `debt` blokidan chiqadi.
  */
 export const KPI_CARDS = [
-  // "Qancha pul yig'ildi?" — kassaga kirgan pul; sub'da shu oy hisobiga
-  // yig'ilgani ham turadi (depozitdan yopilgani bilan)
-  { key: "income", label: "Yig'ilgan pul", accent: "bg-blue-500", tone: "text-gray-900", subLabel: "Shu oy hisobiga yig'ildi", subMoneyKey: "collected" },
+  // "Yig'ilishi kutilgan" — oyning JAMI HISOBLANGAN majburiyati (tarif +
+  // xizmatlar). Sub'da "Yig'ildi: X" (shu oy hisobiga tushgan pul).
+  { key: "income", label: "Yig'ilishi kutilgan", accent: "bg-blue-500", tone: "text-gray-900", subLabel: "Yig'ildi", subMoneyKey: "collected" },
   { key: "expense", label: "Jami xarajat", accent: "bg-rose-500", tone: "text-gray-900", inverse: true },
   { key: "profit", label: "Sof foyda", accent: "bg-green-500", tone: "text-green-700" },
+  // Kutilayotgan foyda — hisoblangan majburiyat − xarajat limitlari
+  { key: "expectedProfit", label: "Kutilayotgan foyda", accent: "bg-emerald-500", tone: "text-emerald-700" },
   { key: "margin", label: "Rentabellik", accent: "bg-violet-500", tone: "text-violet-700" },
   { key: "cashBalance", label: "Balansdagi pul", accent: "bg-amber-500", tone: "text-gray-900" },
   { key: "debt", label: "Jami qarz", accent: "bg-orange-500", tone: "text-orange-700", inverse: true },
-  { key: "debtors", label: "Qarzdorlar", accent: "bg-yellow-500", tone: "text-gray-900", inverse: true },
-  { key: "oldestDebt", label: "Eng eski qarz", accent: "bg-slate-500", tone: "text-gray-900" },
   // OYLIK — UCH SAVOL BITTA KARTADA: qancha tarqatish kerak / tarqatildi /
   // qoldi. Ilgari uchta alohida karta edi; rahbar uchalasini bir joyda
   // ko'rishni so'radi. Ma'lumot server'dan avvalgidek uch kalitda keladi
