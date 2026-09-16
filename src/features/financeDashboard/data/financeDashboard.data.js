@@ -173,10 +173,10 @@ export const KPI_CARDS = [
   { key: "debt", label: "Jami qarz", accent: "bg-orange-500", tone: "text-orange-700", inverse: true },
   { key: "debtors", label: "Qarzdorlar", accent: "bg-yellow-500", tone: "text-gray-900", inverse: true },
   { key: "oldestDebt", label: "Eng eski qarz", accent: "bg-slate-500", tone: "text-gray-900" },
-  // OYLIK UCH SAVOLDA: qancha tarqatish kerak / tarqatildi / qoldi.
-  // "Kerak" — shakllantirilgan majburiyat (oy hali shakllanmagan bo'lsa
-  // qoidadan belgilangan summa, sub'da yozib qo'yiladi).
-  { key: "payrollDue", label: "Oylik: tarqatish kerak", accent: "bg-indigo-500", tone: "text-gray-900", inverse: true },
-  { key: "payrollPaid", label: "Oylik: tarqatildi", accent: "bg-teal-500", tone: "text-teal-700" },
-  { key: "payrollLeft", label: "Oylik: qoldi", accent: "bg-red-500", tone: "text-red-600", inverse: true },
+  // OYLIK — UCH SAVOL BITTA KARTADA: qancha tarqatish kerak / tarqatildi /
+  // qoldi. Ilgari uchta alohida karta edi; rahbar uchalasini bir joyda
+  // ko'rishni so'radi. Ma'lumot server'dan avvalgidek uch kalitda keladi
+  // (`payrollDue`/`payrollPaid`/`payrollLeft`) — birlashtirish faqat
+  // ko'rinishda (`KpiCards` dagi `PayrollKpiCard`). Karta 2 ustun keng.
+  { key: "payroll", label: "Oylik", accent: "bg-indigo-500", tone: "text-gray-900", inverse: true },
 ];

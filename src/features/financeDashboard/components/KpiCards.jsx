@@ -84,6 +84,11 @@ const KpiCards = ({ data, isLoading }) => {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       {KPI_CARDS.map((card) => {
+        // Oylik — uch qiymat (kerak/tarqatildi/qoldi) bitta keng kartada
+        if (card.key === "payroll") {
+          return <PayrollKpiCard key="payroll" card={card} kpi={data.kpi} />;
+        }
+
         const row = data.kpi[card.key];
         if (!row) return null;
 
@@ -181,6 +186,89 @@ const KpiCards = ({ data, isLoading }) => {
           </div>
         );
       })}
+    </div>
+  );
+};
+
+/**
+ * OYLIK KARTASI — uch savol bitta joyda: qancha tarqatish kerak, qancha
+ * tarqatildi, qancha qoldi. Ilgari uchta alohida KPI karta edi; rahbar
+ * uchalasini bir qarashda ko'rishni so'radi. Ma'lumot avvalgidek uch
+ * kalitda keladi (`payrollDue`/`payrollPaid`/`payrollLeft`) — bu yerda
+ * faqat ko'rinish birlashtiriladi. Karta 2 ustun keng.
+ */
+const PayrollKpiCard = ({ card, kpi }) => {
+  const due = kpi.payrollDue;
+  const paid = kpi.payrollPaid;
+  const left = kpi.payrollLeft;
+  if (!due) return null;
+
+  const dueN = Number(due.value) || 0;
+  const paidN = Number(paid?.value) || 0;
+  // Tarqatilgan ulushi — progress bar uchun
+  const rate = dueN > 0 ? Math.min(100, Math.round((paidN / dueN) * 100)) : 0;
+
+  const blocks = [
+    { label: "Tarqatish kerak", value: due.value, sub: due.sub, tone: "text-gray-900" },
+    { label: "Tarqatildi", value: paid?.value, sub: paid?.sub, tone: "text-teal-700" },
+    { label: "Qoldi", value: left?.value, sub: left?.sub, tone: "text-red-600" },
+  ];
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5 sm:col-span-2">
+      <div
+        className={cn(
+          "absolute -right-7 -top-7 size-24 rounded-full opacity-10",
+          card.accent,
+        )}
+      />
+
+      <div className="relative flex items-start justify-between gap-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+          {card.label}
+        </p>
+        <span
+          className={cn(
+            "flex size-9 shrink-0 items-center justify-center rounded-xl text-white shadow-sm",
+            card.accent,
+          )}
+        >
+          <Users className="size-[18px]" />
+        </span>
+      </div>
+
+      {/* Uch qiymat yonma-yon */}
+      <div className="relative mt-3 grid grid-cols-3 gap-3">
+        {blocks.map((b) => (
+          <div key={b.label} className="min-w-0">
+            <p className="text-[11px] text-gray-400">{b.label}</p>
+            <p
+              className={cn(
+                "mt-0.5 truncate text-base font-bold leading-tight xl:text-lg",
+                b.tone,
+              )}
+            >
+              {formatByUnit(b.value, "money")}
+            </p>
+            {b.sub && <p className="mt-0.5 truncate text-[11px] text-gray-400">{b.sub}</p>}
+          </div>
+        ))}
+      </div>
+
+      {/* Tarqatilgan ulushi */}
+      <div className="relative mt-3 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+        <div className="h-full rounded-full bg-teal-500" style={{ width: `${rate}%` }} />
+      </div>
+
+      {/* O'tgan oy bilan taqqoslash — "tarqatish kerak" bo'yicha */}
+      {due.previous != null && (
+        <div className="relative mt-2.5 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5 text-[11px]">
+          <span className="text-gray-400">
+            O'tgan oy: {formatByUnit(due.previous, "money")}
+          </span>
+          <Delta change={due.change} changeUnit={due.changeUnit} inverse={card.inverse} />
+        </div>
+      )}
     </div>
   );
 };
