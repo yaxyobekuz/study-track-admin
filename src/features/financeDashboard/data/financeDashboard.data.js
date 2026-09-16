@@ -163,20 +163,19 @@ export const planBarTone = (rate, { inverse = false } = {}) => {
  * o'zi — ikkalasi bitta serverdagi `debt` blokidan chiqadi.
  */
 export const KPI_CARDS = [
-  // "Yig'ilishi kutilgan" — oyning JAMI HISOBLANGAN majburiyati (tarif +
-  // xizmatlar). Sub'da "Yig'ildi: X" (shu oy hisobiga tushgan pul).
-  { key: "income", label: "Yig'ilishi kutilgan", accent: "bg-blue-500", tone: "text-gray-900", subLabel: "Yig'ildi", subMoneyKey: "collected" },
+  // 1. Kutilayotgan tushum — oyning JAMI HISOBLANGAN majburiyati. Sub'da
+  //    "Yig'ildi: X", progress bar — hisoblangandan necha foizi yig'ildi.
+  { key: "income", label: "Kutilayotgan tushum", accent: "bg-blue-500", tone: "text-gray-900", subLabel: "Yig'ildi", subMoneyKey: "collected", progress: true, progressTone: "bg-blue-500", progressLabel: "yig'ildi" },
+  // 2. Jami xarajat
   { key: "expense", label: "Jami xarajat", accent: "bg-rose-500", tone: "text-gray-900", inverse: true },
-  { key: "profit", label: "Sof foyda", accent: "bg-green-500", tone: "text-green-700" },
-  // Kutilayotgan foyda — hisoblangan majburiyat − xarajat limitlari
-  { key: "expectedProfit", label: "Kutilayotgan foyda", accent: "bg-emerald-500", tone: "text-emerald-700" },
-  { key: "margin", label: "Rentabellik", accent: "bg-violet-500", tone: "text-violet-700" },
-  { key: "cashBalance", label: "Balansdagi pul", accent: "bg-amber-500", tone: "text-gray-900" },
-  { key: "debt", label: "Jami qarz", accent: "bg-orange-500", tone: "text-orange-700", inverse: true },
-  // OYLIK — UCH SAVOL BITTA KARTADA: qancha tarqatish kerak / tarqatildi /
-  // qoldi. Ilgari uchta alohida karta edi; rahbar uchalasini bir joyda
-  // ko'rishni so'radi. Ma'lumot server'dan avvalgidek uch kalitda keladi
-  // (`payrollDue`/`payrollPaid`/`payrollLeft`) — birlashtirish faqat
-  // ko'rinishda (`KpiCards` dagi `PayrollKpiCard`). Karta 2 ustun keng.
+  // 3. Kassadagi pul
+  { key: "cashBalance", label: "Kassadagi pul", accent: "bg-amber-500", tone: "text-gray-900" },
+  // 4. Foyda foizi — kutilgan tushum − limitlar; progress bar foyda ulushi,
+  //    sub'da "Foyda X% · Limitlar Y%"
+  { key: "expectedProfit", label: "Foyda foizi", accent: "bg-emerald-500", tone: "text-emerald-700", progress: true, progressTone: "bg-emerald-500" },
+  // 5. Qoldiq — qancha qarz + nechta o'quvchi qarzdor (server sub)
+  { key: "debt", label: "Qoldiq", accent: "bg-orange-500", tone: "text-orange-700", inverse: true },
+  // 6. OYLIK — uch qiymat (kerak/tarqatildi/qoldi) bitta keng kartada
+  //    (`KpiCards` dagi `PayrollKpiCard`). Karta 2 ustun keng.
   { key: "payroll", label: "Oylik", accent: "bg-indigo-500", tone: "text-gray-900", inverse: true },
 ];

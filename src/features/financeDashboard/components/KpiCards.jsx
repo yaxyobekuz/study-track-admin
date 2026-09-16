@@ -140,11 +140,27 @@ const KpiCards = ({ data, isLoading }) => {
             )}
 
             {/* Pul sub'i — server xom summa beradi, format shu yerda
-                (masalan "Shu oy hisobiga yig'ildi: 600 000 so'm") */}
+                (masalan "Yig'ildi: 600 000 so'm") */}
             {card.subMoneyKey && row[card.subMoneyKey] != null && (
               <p className="relative mt-1 text-[11px] text-gray-500">
                 {card.subLabel}: {formatByUnit(row[card.subMoneyKey], "money")}
               </p>
+            )}
+
+            {/* Progress bar — ulush foizi (yig'ilgan / foyda ulushi). Manfiy
+                yoki 100 dan katta qiymat 0–100 ga qisiladi. */}
+            {card.progress && row.progressRate != null && (
+              <div className="relative mt-2">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                  <div
+                    className={cn("h-full rounded-full", card.progressTone ?? "bg-green-500")}
+                    style={{ width: `${Math.min(Math.max(row.progressRate, 0), 100)}%` }}
+                  />
+                </div>
+                <p className="mt-1 text-[11px] text-gray-400">
+                  {row.progressRate}%{card.progressLabel ? ` ${card.progressLabel}` : ""}
+                </p>
+              </div>
             )}
 
             <div className="relative mt-3 space-y-1.5 border-t border-gray-100 pt-2.5 text-[11px]">
