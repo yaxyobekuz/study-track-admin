@@ -58,6 +58,8 @@ export const paymentsAPI = {
   updateNote: (id, note) => http.patch(`/payments/${id}`, { note }),
   // Soft void — yozuv bazadan chiqmaydi
   void: (id, reason) => http.post(`/payments/${id}/void`, { reason }),
+  // Tahrirlash — eski bekor qilinib, tahrirlangan yangi to'lov yaratiladi
+  replace: (id, data) => http.post(`/payments/${id}/replace`, data),
 };
 
 /** To'lov turlari va ular orasidagi o'tkazmalar. */

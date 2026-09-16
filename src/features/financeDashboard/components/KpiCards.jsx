@@ -245,7 +245,14 @@ const PayrollKpiCard = ({ card, kpi, navigate }) => {
     { label: "Tarqatish kerak", value: due.value, sub: due.sub, tone: "text-gray-900" },
     { label: "Tarqatildi", value: paid?.value, sub: paid?.sub, tone: "text-teal-700" },
     { label: "Qoldi", value: left?.value, sub: left?.sub, tone: "text-red-600" },
-    { label: "O'tgan oy", value: due.previous, delta: true, tone: "text-gray-700" },
+    // "O'tgan oy" o'rniga — o'rtacha oylik (avgustda oylik tarqatilmagani
+    // uchun o'tgan oy taqqoslashi ma'nosiz edi)
+    {
+      label: "O'rtacha oylik",
+      value: due.average,
+      sub: due.staffCount ? `${due.staffCount} ta xodim` : null,
+      tone: "text-indigo-700",
+    },
   ];
 
   return (
@@ -292,13 +299,7 @@ const PayrollKpiCard = ({ card, kpi, navigate }) => {
             <p className={cn("mt-0.5 truncate text-lg font-bold leading-tight", b.tone)}>
               {formatByUnit(b.value, "money")}
             </p>
-            {b.delta ? (
-              <div className="mt-0.5">
-                <Delta change={due.change} changeUnit={due.changeUnit} inverse={card.inverse} />
-              </div>
-            ) : (
-              b.sub && <p className="mt-0.5 truncate text-[11px] text-gray-400">{b.sub}</p>
-            )}
+            {b.sub && <p className="mt-0.5 truncate text-[11px] text-gray-400">{b.sub}</p>}
           </div>
         ))}
       </div>

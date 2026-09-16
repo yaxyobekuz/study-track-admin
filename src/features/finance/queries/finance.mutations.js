@@ -297,6 +297,15 @@ export const useVoidPayment = () => {
   });
 };
 
+/** To'lovni tahrirlash — eski bekor qilinib, tahrirlangan yangi yaratiladi. */
+export const useEditPayment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => paymentsAPI.replace(id, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
 export const useUpdatePaymentNote = () => {
   const qc = useQueryClient();
   return useMutation({
