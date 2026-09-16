@@ -16,6 +16,9 @@ import {
   WalletCards,
 } from "lucide-react";
 
+// Router
+import { useNavigate } from "react-router-dom";
+
 // Utils
 import { cn } from "@/shared/utils/cn";
 
@@ -71,6 +74,8 @@ const Delta = ({ change, changeUnit, inverse }) => {
  * "o'sdikmi?" savollaridan birini javobsiz qoldirardi.
  */
 const KpiCards = ({ data, isLoading }) => {
+  const navigate = useNavigate();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -88,7 +93,9 @@ const KpiCards = ({ data, isLoading }) => {
       {KPI_CARDS.map((card) => {
         // Oylik — uch qiymat (kerak/tarqatildi/qoldi) bitta keng kartada
         if (card.key === "payroll") {
-          return <PayrollKpiCard key="payroll" card={card} kpi={data.kpi} />;
+          return (
+            <PayrollKpiCard key="payroll" card={card} kpi={data.kpi} navigate={navigate} />
+          );
         }
 
         const row = data.kpi[card.key];
@@ -99,7 +106,13 @@ const KpiCards = ({ data, isLoading }) => {
         return (
           <div
             key={card.key}
-            className="relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5"
+            onClick={() => card.to && navigate(card.to)}
+            className={cn(
+              "relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5",
+              // Bosilsa tegishli sahifaga o'tadi — kursor va hover urg'usi
+              card.to &&
+                "cursor-pointer transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/30",
+            )}
           >
             {/* Yumshoq rangli dog' — kartalarni ajratadi, raqamni bosmaydi */}
             <div
@@ -143,7 +156,10 @@ const KpiCards = ({ data, isLoading }) => {
                 (masalan "Yig'ildi: 600 000 so'm") */}
             {card.subMoneyKey && row[card.subMoneyKey] != null && (
               <p className="relative mt-1 text-[11px] text-gray-500">
-                {card.subLabel}: {formatByUnit(row[card.subMoneyKey], "money")}
+                {card.subLabel}:{" "}
+                <b className="font-bold text-gray-800">
+                  {formatByUnit(row[card.subMoneyKey], "money")}
+                </b>
               </p>
             )}
 
@@ -214,7 +230,7 @@ const KpiCards = ({ data, isLoading }) => {
  * oy bilan taqqoslash va tarqatilgan ulushi. Ma'lumot avvalgidek uch
  * kalitda keladi (`payrollDue`/`payrollPaid`/`payrollLeft`).
  */
-const PayrollKpiCard = ({ card, kpi }) => {
+const PayrollKpiCard = ({ card, kpi, navigate }) => {
   const due = kpi.payrollDue;
   const paid = kpi.payrollPaid;
   const left = kpi.payrollLeft;
@@ -233,7 +249,14 @@ const PayrollKpiCard = ({ card, kpi }) => {
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5 sm:col-span-2 lg:col-span-3 xl:col-span-5">
+    <div
+      onClick={() => card.to && navigate?.(card.to)}
+      className={cn(
+        "relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5 sm:col-span-2 lg:col-span-3 xl:col-span-5",
+        card.to &&
+          "cursor-pointer transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/30",
+      )}
+    >
       <div
         className={cn(
           "absolute -right-7 -top-7 size-24 rounded-full opacity-10",

@@ -162,20 +162,21 @@ export const planBarTone = (rate, { inverse = false } = {}) => {
  * keladi. Qarz kartalari "Qarzdorlar" sahifasidagi kartalarning AYNI
  * o'zi — ikkalasi bitta serverdagi `debt` blokidan chiqadi.
  */
+// ⚠️ `to` — karta bosilganda o'tiladigan sahifa (moliya bo'limi tab'lari).
 export const KPI_CARDS = [
   // 1. Kutilayotgan tushum — oyning JAMI HISOBLANGAN majburiyati. Sub'da
   //    "Yig'ildi: X", progress bar — hisoblangandan necha foizi yig'ildi.
-  { key: "income", label: "Kutilayotgan tushum", accent: "bg-blue-500", tone: "text-gray-900", subLabel: "Yig'ildi", subMoneyKey: "collected", progress: true, progressTone: "bg-blue-500", progressLabel: "yig'ildi" },
+  { key: "income", label: "Kutilayotgan tushum", accent: "bg-blue-500", tone: "text-gray-900", subLabel: "Yig'ildi", subMoneyKey: "collected", progress: true, progressTone: "bg-blue-500", progressLabel: "yig'ildi", to: "/finance/main/overview" },
   // 2. Jami xarajat
-  { key: "expense", label: "Jami xarajat", accent: "bg-rose-500", tone: "text-gray-900", inverse: true },
+  { key: "expense", label: "Jami xarajat", accent: "bg-rose-500", tone: "text-gray-900", inverse: true, to: "/finance/main/expenses" },
   // 3. Kassadagi pul
-  { key: "cashBalance", label: "Kassadagi pul", accent: "bg-amber-500", tone: "text-gray-900" },
+  { key: "cashBalance", label: "Kassadagi pul", accent: "bg-amber-500", tone: "text-gray-900", to: "/finance/main/accounts" },
   // 4. Foyda foizi — kutilgan tushum − limitlar; progress bar foyda ulushi,
   //    sub'da "Foyda X% · Limitlar Y%"
-  { key: "expectedProfit", label: "Foyda foizi", accent: "bg-emerald-500", tone: "text-emerald-700", progress: true, progressTone: "bg-emerald-500" },
+  { key: "expectedProfit", label: "Foyda foizi", accent: "bg-emerald-500", tone: "text-emerald-700", progress: true, progressTone: "bg-emerald-500", to: "/finance/main/overview" },
   // 5. Qoldiq — qancha qarz + nechta o'quvchi qarzdor (server sub)
-  { key: "debt", label: "Qoldiq", accent: "bg-orange-500", tone: "text-orange-700", inverse: true },
+  { key: "debt", label: "Qoldiq", accent: "bg-orange-500", tone: "text-orange-700", inverse: true, to: "/finance/main/debtors" },
   // 6. OYLIK — uch qiymat (kerak/tarqatildi/qoldi) bitta keng kartada
   //    (`KpiCards` dagi `PayrollKpiCard`). Karta 2 ustun keng.
-  { key: "payroll", label: "Oylik", accent: "bg-indigo-500", tone: "text-gray-900", inverse: true },
+  { key: "payroll", label: "Oylik", accent: "bg-indigo-500", tone: "text-gray-900", inverse: true, to: "/finance/main/payroll" },
 ];
