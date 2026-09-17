@@ -15,6 +15,11 @@ import { formatHourNumber, normRatio } from "../data/lessonHours.data";
 /**
  * YUKLAMA REYTINGI — kimda eng ko'p soat.
  *
+ * ⚠️ O'LCHOV — REJA (`plannedHours`), pul soati (`hours`) EMAS. `hours` dan
+ * o'tilmagan darslar ayirilgan: u bilan haftasiga 30 soatli, lekin bahosi
+ * qo'yilmagan o'qituvchi 27 soatlidan pastda turardi. Tartib serverda
+ * (`buildLedger`), vedomostning "Oy" ustuni bilan bir xil raqam.
+ *
  * ⚠️ REYTING JADVAL EMAS. Bu yerda savol "kim eng ko'p ishlaydi", ya'ni
  * javob NISBAT bo'lishi kerak — shuning uchun har qatorda uzunligi eng
  * yuqori qiymatga nisbatan o'lchanadigan chiziq bor. To'liq ro'yxat va
@@ -30,7 +35,7 @@ import { formatHourNumber, normRatio } from "../data/lessonHours.data";
  */
 const LoadRanking = ({ data, isLoading, isError, delay = 0, onSelect }) => {
   const rows = data?.topTeachers ?? [];
-  const max = Math.max(1, ...rows.map((r) => r.hours));
+  const max = Math.max(1, ...rows.map((r) => r.plannedHours));
 
   return (
     <Panel
@@ -84,7 +89,7 @@ const LoadRanking = ({ data, isLoading, isError, delay = 0, onSelect }) => {
                     <span
                       className={cn("block h-full rounded-full", MOTION.bar)}
                       style={{
-                        width: `${(row.hours / max) * 100}%`,
+                        width: `${(row.plannedHours / max) * 100}%`,
                         background: modeOf(row.salaryType).hex,
                         animationDelay: `${delay + 200 + index * 34}ms`,
                       }}
@@ -96,6 +101,8 @@ const LoadRanking = ({ data, isLoading, isError, delay = 0, onSelect }) => {
                       `−${row.substitutedOutHours} berildi · `}
                     {row.substitutedInHours > 0 &&
                       `+${row.substitutedInHours} olindi · `}
+                    {row.missedHours > 0 &&
+                      `${formatHourNumber(row.missedHours)} o'tilmadi · `}
                     haftasiga {formatHourNumber(row.weeklyHours)}
                   </p>
                 </div>
@@ -104,7 +111,7 @@ const LoadRanking = ({ data, isLoading, isError, delay = 0, onSelect }) => {
                 {ratio != null && <NormRing ratio={ratio} over={overNorm} />}
 
                 <div className="shrink-0 text-right">
-                  <p className={cn(T.tdNum)}>{formatHourNumber(row.hours)}</p>
+                  <p className={cn(T.tdNum)}>{formatHourNumber(row.plannedHours)}</p>
                   <p className={cn(T.meta, "mt-0.5")}>
                     {formatMoney(row.projectedAmount)}
                   </p>
