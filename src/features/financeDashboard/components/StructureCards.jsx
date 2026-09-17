@@ -153,13 +153,14 @@ export const RevenueStructureCard = ({ data, isLoading, isError }) => {
  */
 export const TopExpensesCard = ({ data, isLoading, isError, className }) => {
   const structure = data?.expenseStructure;
-  const items = structure?.top ?? [];
+  // Hammasi — reyting bo'yicha (server `items` ni summa kamayish tartibida
+  // qaytaradi). Ilgari faqat beshtasi (`top`) ko'rsatilardi.
+  const items = structure?.items ?? [];
   const max = items.reduce((acc, row) => Math.max(acc, Number(row.amount)), 0);
-  const shown = items.reduce((acc, row) => acc + Number(row.amount), 0);
 
   return (
     <DashboardCard
-      title="Top 5 xarajat kategoriyasi"
+      title="Xarajat kategoriyalari"
       hint="Pul eng ko'p qayerga ketdi · summalar so'mda"
       isLoading={isLoading}
       isError={isError}
@@ -169,18 +170,9 @@ export const TopExpensesCard = ({ data, isLoading, isError, className }) => {
       footer={
         structure && (
           <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-xs">
-            <span className="text-gray-400">
-              Beshtasi jami xarajatning{" "}
-              <span className="font-semibold text-gray-700">
-                {Number(structure.total) > 0
-                  ? Math.round((shown / Number(structure.total)) * 100)
-                  : 0}
-                %
-              </span>{" "}
-              i
-            </span>
+            <span className="text-gray-400">Jami xarajat</span>
             <span className="font-bold tabular-nums text-gray-900">
-              {formatMoney(String(shown), { withLabel: false })}
+              {formatMoney(structure.total, { withLabel: false })}
             </span>
           </div>
         )

@@ -1,6 +1,9 @@
 // React
 import { useState } from "react";
 
+// Router
+import { useSearchParams } from "react-router-dom";
+
 // Toast
 import { toast } from "sonner";
 
@@ -79,9 +82,23 @@ const ServicesPage = () => {
   const [view, setView] = useState("students");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [classId, setClassId] = useState("");
-  const [serviceFilterId, setServiceFilterId] = useState("");
   const debouncedSearch = useDebounce(search, 400);
+
+  // ⚠️ Xizmat va sinf filtri URL'da — o'quvchining moliya sahifasidan
+  // "?serviceId=..." havolasi bilan ochilganda filtr avtomatik tanlanadi
+  // (o'sha xizmatdan nechta o'quvchi foydalanishini ko'rish uchun).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const serviceFilterId = searchParams.get("serviceId") || "";
+  const classId = searchParams.get("classId") || "";
+
+  const setFilterParam = (key, value) => {
+    setSearchParams((prev) => {
+      if (!value) prev.delete(key);
+      else prev.set(key, value);
+      return prev;
+    });
+    setPage(1);
+  };
 
   const { data: services = [], isLoading: isCatalogLoading } = useQuery(
     financeQueries.serviceList({ includeArchived: "true" }),
@@ -107,6 +124,13 @@ const ServicesPage = () => {
   const students = studentsData?.data ?? [];
   const pagination = studentsData?.pagination;
   const month = studentsData?.month ?? currentMonthKey();
+
+  // Xizmat bo'yicha filtr faol bo'lsa — o'sha xizmatdan nechta o'quvchi
+  // foydalanishini banner'da ko'rsatamiz
+  const filteredService = serviceFilterId
+    ? services.find((s) => s.id === serviceFilterId)
+    : null;
+  const filteredCount = pagination?.total ?? students.length;
 
   const handleError = (err) =>
     toast.error(err.response?.data?.message || "Xatolik yuz berdi");
@@ -214,10 +238,7 @@ const ServicesPage = () => {
                 value={serviceFilterId}
                 triggerClassName="min-w-40"
                 placeholder="Barcha xizmatlar"
-                onChange={(v) => {
-                  setServiceFilterId(v);
-                  setPage(1);
-                }}
+                onChange={(v) => setFilterParam("serviceId", v)}
                 options={services.map((s) => ({ label: s.name, value: s.id }))}
               />
 
@@ -225,10 +246,7 @@ const ServicesPage = () => {
                 value={classId}
                 triggerClassName="min-w-40"
                 placeholder="Barcha sinflar"
-                onChange={(v) => {
-                  setClassId(v);
-                  setPage(1);
-                }}
+                onChange={(v) => setFilterParam("classId", v)}
                 options={classes.map((c) => ({ label: c.name, value: c.id }))}
               />
 
@@ -260,6 +278,24 @@ const ServicesPage = () => {
           </Can>
         </div>
       </div>
+
+      {view === "students" && filteredService && (
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-blue-50 px-4 py-3 ring-1 ring-blue-100">
+          <BedDouble className="size-5 shrink-0 text-blue-600" />
+          <p className="text-sm text-blue-900">
+            <span className="font-semibold">{filteredService.name}</span>{" "}
+            xizmatidan <span className="font-semibold">{filteredCount}</span>{" "}
+            o'quvchi foydalanadi
+          </p>
+          <button
+            type="button"
+            onClick={() => setFilterParam("serviceId", "")}
+            className="ml-auto text-xs font-medium text-blue-700 hover:underline"
+          >
+            Filtrni olib tashlash
+          </button>
+        </div>
+      )}
 
       {view === "students" ? (
         <>

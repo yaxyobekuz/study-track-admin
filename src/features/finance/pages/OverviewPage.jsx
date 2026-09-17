@@ -102,7 +102,8 @@ const OverviewPage = () => {
             label="Grant (bepul)"
             value={String(counts.grantStudents)}
             valueClassName="text-purple-700"
-            hint="Homiylik/grant chegirmasi bilan"
+            hint="Grand 100% tarifidagilar — ro'yxat uchun bosing"
+            onClick={() => navigate(`/finance/main/grants?month=${month}`)}
           />
           <SummaryCard
             icon={Wallet}
@@ -214,9 +215,21 @@ const OverviewPage = () => {
                       <td className="px-4 py-2.5 text-center text-gray-600">
                         {row.studentCount}
                         {row.grantCount > 0 && (
-                          <span className="ml-1.5 rounded bg-purple-50 px-1.5 py-0.5 text-xs text-purple-700">
+                          <button
+                            type="button"
+                            title="Grant o'quvchilar ro'yxati"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(
+                                row.classId
+                                  ? `/finance/main/grants?month=${month}&classId=${row.classId}`
+                                  : `/finance/main/grants?month=${month}`,
+                              );
+                            }}
+                            className="ml-1.5 rounded bg-purple-50 px-1.5 py-0.5 text-xs text-purple-700 hover:bg-purple-100"
+                          >
                             {row.grantCount} grant
-                          </span>
+                          </button>
                         )}
                       </td>
                       <td className="px-4 py-2.5 text-right text-green-700">
@@ -321,8 +334,27 @@ const SummaryCard = ({
   hint,
   valueClassName,
   compare,
+  onClick,
 }) => (
-  <div className="relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5">
+  <div
+    onClick={onClick}
+    role={onClick ? "button" : undefined}
+    tabIndex={onClick ? 0 : undefined}
+    onKeyDown={
+      onClick
+        ? (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onClick();
+            }
+          }
+        : undefined
+    }
+    className={cn(
+      "relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5",
+      onClick && "cursor-pointer transition-shadow hover:shadow-sm hover:ring-purple-200",
+    )}
+  >
     <div className={cn("absolute -right-7 -top-7 size-24 rounded-full opacity-10", accent)} />
 
     <div className="relative flex items-start justify-between gap-2">

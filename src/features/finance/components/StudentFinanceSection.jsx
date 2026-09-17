@@ -1,11 +1,17 @@
+// React
+import { useState } from "react";
 
 // Toast
 import { toast } from "sonner";
+
+// Router
+import { useNavigate } from "react-router-dom";
 
 // Icons
 import {
   BadgePercent,
   Ban,
+  Check,
   Pencil,
   PiggyBank,
   Repeat,
@@ -15,6 +21,7 @@ import {
   Undo2,
   UserCog,
   Wallet,
+  X,
 } from "lucide-react";
 
 // Tanstack Query
@@ -47,6 +54,7 @@ import { formatMoney } from "@/shared/utils/formatMoney";
 import { formatDateUz } from "@/shared/utils/date.utils";
 import {
   currentMonthKey,
+  prevMonthKey,
   formatMonthRange,
 } from "@/shared/helpers/month.helpers";
 
@@ -65,6 +73,10 @@ import {
   useDeleteFinanceStatus,
   useReleaseAllocation,
   useVoidPayment,
+  useUpdateAssignment,
+  useUpdateServiceAssignment,
+  useDeleteServiceAssignment,
+  useCloseServiceAssignment,
 } from "../queries/finance.mutations";
 
 /**
@@ -80,6 +92,7 @@ import {
  */
 const StudentFinanceSection = ({ studentId }) => {
   const { openModal } = useModal();
+  const navigate = useNavigate();
   const now = currentMonthKey();
 
 
@@ -120,6 +133,12 @@ const StudentFinanceSection = ({ studentId }) => {
   // Eski javoblarda `dueMonths` bo'lmasligi mumkin, shuning uchun zaxira.
   const dueMonths =
     invoiceData?.totals?.dueMonths ?? invoiceData?.totals?.enrolledMonths ?? 0;
+
+  // Shu oy majburiyati — o'quvchining joriy oy hisob-fakturasi (kartada)
+  const currentEntry = (invoiceData?.timeline ?? []).find(
+    (row) => row.month === invoiceData?.currentMonth,
+  );
+  const currentInvoice = currentEntry?.invoice ?? null;
 
   const student = {
     id: studentId,
@@ -273,30 +292,19 @@ const StudentFinanceSection = ({ studentId }) => {
 
       {/* Qisqacha */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Holat + tarif + chegirma — bitta kartada (tarif narxi endi
+            pastdagi "Xizmatlar" jadvalida ko'rinadi va o'sha yerda tahrirlanadi) */}
         <div className="rounded-xl border border-gray-100 p-3">
-          <p className="text-xs text-gray-500">Moliyaviy holat</p>
+          <p className="text-xs text-gray-500">Holat va tarif</p>
           <span
             className={`mt-1 inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${statusBadge.className}`}
           >
             {statusBadge.label}
           </span>
-          {statusData?.currentStatus?.startMonth != null && (
-            <p className="mt-1 text-xs text-gray-500">
-              {formatMonthRange(
-                statusData.currentStatus.startMonth,
-                statusData.currentStatus.endMonth,
-              )}
-            </p>
-          )}
-        </div>
-
-        <div className="rounded-xl border border-gray-100 p-3">
-          <p className="text-xs text-gray-500">Joriy tarif</p>
-          <p className="mt-1 font-medium text-gray-900">
-            {currentAssignment?.tariff?.name ?? "Biriktirilmagan"}
+          <p className="mt-1.5 font-medium text-gray-900">
+            {currentAssignment?.tariff?.name ?? "Tarif biriktirilmagan"}
           </p>
-
-          {discounts.length > 0 ? (
+          {discounts.length > 0 && (
             <div className="mt-1 flex flex-wrap gap-1">
               {discounts.map((item) => (
                 <span
@@ -308,12 +316,30 @@ const StudentFinanceSection = ({ studentId }) => {
                 </span>
               ))}
             </div>
-          ) : (
-            currentAssignment?.resolvedAmount && (
-              <p className="mt-0.5 text-xs text-gray-500">
-                {formatMoney(currentAssignment.resolvedAmount)} / oy
+          )}
+        </div>
+
+        {/* Shu oy majburiyati — joriy oy hisob-fakturasi va to'langani */}
+        <div className="rounded-xl border border-gray-100 p-3">
+          <p className="text-xs text-gray-500">Shu oy majburiyati</p>
+          {currentEntry?.isVacation ? (
+            <p className="mt-1 text-xl font-semibold text-amber-600">Ta'til</p>
+          ) : currentInvoice ? (
+            <>
+              <p className="mt-1 text-xl font-semibold text-gray-900">
+                {formatMoney(currentInvoice.amount)}
               </p>
-            )
+              <p className="mt-0.5 text-xs text-gray-500">
+                To'landi: {formatMoney(currentInvoice.paidAmount)}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mt-1 text-xl font-semibold text-gray-400">—</p>
+              <p className="mt-0.5 text-xs text-gray-500">
+                Hisob-faktura shakllanmagan
+              </p>
+            </>
           )}
         </div>
 
@@ -422,6 +448,17 @@ const StudentFinanceSection = ({ studentId }) => {
           )}
         </div>
       </div>
+
+      {/* Xizmatlar — tarif + qo'shimcha xizmatlar bitta jadvalda. Narxni
+          shu yerda o'quvchiga INDIVIDUAL tahrirlash (faqat shu o'quvchiga
+          ta'sir qiladi) va xizmatni o'chirish mumkin. */}
+      <StudentChargesTable
+        tariffAssignment={currentAssignment}
+        tariffDebt={invoiceData?.totals?.debtTariff}
+        services={invoiceData?.services ?? []}
+        onError={handleError}
+        navigate={navigate}
+      />
 
       {/* Holat tarixi — faqat istisnolar yoziladi, shuning uchun odatda bo'sh */}
       {statusData?.items?.length > 0 && (
@@ -733,6 +770,242 @@ const StudentFinanceSection = ({ studentId }) => {
       <EditPaymentModal />
       <EditAllocationModal />
       <ReasonModal />
+    </div>
+  );
+};
+
+/**
+ * XIZMATLAR jadvali — tarif + qo'shimcha xizmatlar bitta joyda.
+ *
+ * Narxni SHU YERDA (jadvalning o'zida) o'quvchiga INDIVIDUAL tahrirlash
+ * mumkin (`customAmount`): faqat shu o'quvchiga ta'sir qiladi, katalog narxi
+ * o'zgarmaydi. Qo'shimcha xizmatni o'chirsa ham bo'ladi (o'tgan oyni qamragan
+ * biriktirma yopiladi, aks holda o'chiriladi). Server to'lanmagan fakturani
+ * avtomatik qayta hisoblaydi.
+ */
+const StudentChargesTable = ({
+  tariffAssignment,
+  tariffDebt,
+  services,
+  onError,
+  navigate,
+}) => {
+  const now = currentMonthKey();
+  const [editKey, setEditKey] = useState(null);
+  const [editValue, setEditValue] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const { mutate: updateTariff } = useUpdateAssignment();
+  const { mutate: updateService } = useUpdateServiceAssignment();
+  const { mutate: deleteService } = useDeleteServiceAssignment();
+  const { mutate: closeService } = useCloseServiceAssignment();
+
+  const rows = [];
+  if (tariffAssignment) {
+    rows.push({
+      key: "tariff",
+      kind: "tariff",
+      name: tariffAssignment.tariff?.name ?? "Tarif",
+      amount: tariffAssignment.resolvedAmount ?? null,
+      debt: tariffDebt,
+      assignmentId: tariffAssignment.id,
+      isCustom: tariffAssignment.customAmount != null,
+      editable: true,
+      deletable: false,
+    });
+  }
+  for (const s of services) {
+    rows.push({
+      key: `svc-${s.serviceId}`,
+      kind: "service",
+      serviceId: s.serviceId,
+      name: s.name,
+      amount: s.amount,
+      debt: s.debt,
+      assignmentId: s.assignmentId,
+      startMonth: s.startMonth,
+      isActive: s.isActive,
+      isCustom: s.isCustom,
+      editable: Boolean(s.isActive && s.assignmentId),
+      deletable: Boolean(s.isActive && s.assignmentId),
+    });
+  }
+
+  if (rows.length === 0) return null;
+
+  const startEdit = (row) => {
+    setEditKey(row.key);
+    setEditValue(row.amount != null ? String(Math.round(Number(row.amount))) : "");
+  };
+  const cancel = () => {
+    setEditKey(null);
+    setEditValue("");
+  };
+  const save = (row) => {
+    setSaving(true);
+    // Bo'sh → katalog narxiga qaytadi (customAmount olib tashlanadi)
+    const data = { customAmount: editValue.trim() === "" ? null : editValue.trim() };
+    const done = {
+      onSuccess: () => {
+        toast.success("Narx yangilandi");
+        cancel();
+      },
+      onError,
+      onSettled: () => setSaving(false),
+    };
+    if (row.kind === "tariff") updateTariff({ id: row.assignmentId, data }, done);
+    else updateService({ id: row.assignmentId, data }, done);
+  };
+  const remove = (row) => {
+    const done = {
+      onSuccess: () => toast.success("Xizmat o'chirildi"),
+      onError,
+    };
+    // O'tgan oyni qamragan biriktirma o'chirilmaydi — o'tgan oyda YOPILADI
+    if (row.startMonth >= now) deleteService(row.assignmentId, done);
+    else closeService({ id: row.assignmentId, endMonth: prevMonthKey(now) }, done);
+  };
+
+  return (
+    <div className="space-y-2">
+      <h3 className="text-sm font-medium text-gray-700">Xizmatlar</h3>
+      <div className="overflow-x-auto rounded-xl border border-gray-100">
+        <table className="min-w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-100 text-left text-xs text-gray-500">
+              <th className="px-3 py-2 font-medium">Xizmat</th>
+              <th className="px-3 py-2 text-right font-medium">Oylik</th>
+              <th className="px-3 py-2 text-right font-medium">Qarz</th>
+              <th className="px-3 py-2 text-right font-medium">Amallar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const isEditing = editKey === row.key;
+              return (
+                <tr key={row.key} className="border-b border-gray-50 last:border-0">
+                  <td className="px-3 py-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {row.kind === "tariff" ? (
+                        <>
+                          <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-xs text-indigo-700">
+                            Tarif
+                          </span>
+                          <span className="font-medium text-gray-900">{row.name}</span>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          title="Bu xizmatdan foydalanuvchilarni ko'rish"
+                          onClick={() =>
+                            navigate(`/finance/main/services?serviceId=${row.serviceId}`)
+                          }
+                          className="font-medium text-gray-900 hover:text-primary hover:underline"
+                        >
+                          {row.name}
+                        </button>
+                      )}
+                      {row.kind === "service" && !row.isActive && (
+                        <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500">
+                          biriktirilmagan
+                        </span>
+                      )}
+                      {row.isCustom && (
+                        <span
+                          title="Bu o'quvchiga individual narx"
+                          className="rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-700"
+                        >
+                          individual
+                        </span>
+                      )}
+                    </div>
+                  </td>
+
+                  <td className="px-3 py-2 text-right text-gray-600">
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        min={0}
+                        autoFocus
+                        value={editValue}
+                        placeholder="Katalog narxi"
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="w-28 rounded-md border border-gray-200 px-2 py-1 text-right text-sm focus:border-primary focus:outline-none"
+                      />
+                    ) : row.amount != null ? (
+                      formatMoney(row.amount)
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
+
+                  <td
+                    className={cn(
+                      "px-3 py-2 text-right font-medium",
+                      Number(row.debt) > 0 ? "text-red-600" : "text-gray-400",
+                    )}
+                  >
+                    {formatMoney(row.debt)}
+                  </td>
+
+                  <td className="px-3 py-2">
+                    <div className="flex items-center justify-end gap-1">
+                      {isEditing ? (
+                        <>
+                          <button
+                            type="button"
+                            title="Saqlash"
+                            disabled={saving}
+                            onClick={() => save(row)}
+                            className="rounded-lg p-1 text-green-600 hover:bg-green-50 disabled:opacity-50"
+                          >
+                            <Check className="size-4" />
+                          </button>
+                          <button
+                            type="button"
+                            title="Bekor"
+                            onClick={cancel}
+                            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100"
+                          >
+                            <X className="size-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {row.editable && (
+                            <Can do={row.kind === "tariff" ? "tariffs.assign" : "services.assign"}>
+                              <button
+                                type="button"
+                                title="Narxni individual tahrirlash"
+                                onClick={() => startEdit(row)}
+                                className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                              >
+                                <Pencil className="size-3.5" />
+                              </button>
+                            </Can>
+                          )}
+                          {row.deletable && (
+                            <Can do="services.assign">
+                              <button
+                                type="button"
+                                title="Xizmatni o'chirish"
+                                onClick={() => remove(row)}
+                                className="rounded-lg p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </Can>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

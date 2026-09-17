@@ -25,8 +25,10 @@ import {
   BudgetCard,
   DirectionsCard,
   PayrollCard,
-  PnlCard,
 } from "../components/TableCards";
+import ClassBreakdownCard, {
+  SchoolCapacityCard,
+} from "../components/ClassBreakdownCard";
 import {
   BudgetEditButton,
   ExpenseBudgetCard,
@@ -54,6 +56,7 @@ import { buildMonthOptions, currentMonthKey, prevMonthKey } from "@/shared/helpe
 
 // Queries
 import { dashboardQueries } from "../queries/financeDashboard.queries";
+import { financeQueries } from "@/features/finance/queries/finance.queries";
 
 /**
  * MOLIYA DASHBOARDI — moliya bo'limining bosh ekrani.
@@ -108,6 +111,12 @@ const FinanceDashboardPage = () => {
   const overview = useQuery({ ...dashboardQueries.overview(params), enabled: allowed });
   const scorecard = useQuery({
     ...dashboardQueries.scorecard({ month }),
+    enabled: allowed,
+  });
+  // Sinflar bo'yicha sig'im/qarz jadvali (P&L o'rnini bosdi) — "Umumiy"
+  // bo'limi bilan bir manba, shuning uchun raqamlar aynan mos keladi.
+  const classBreakdown = useQuery({
+    ...financeQueries.overviewDashboard(Number(month)),
     enabled: allowed,
   });
 
@@ -193,13 +202,25 @@ const FinanceDashboardPage = () => {
       {/* ── 1-qator: KPI kartalari (kassa + qarz va oylik) ────────────── */}
       <KpiCards data={overview.data} isLoading={overview.isLoading} />
 
-      {/* ── 2-qator: P&L + xarajat limitlari (keng) ──────────────────── */}
-      {/* "Tushum va foyda dinamikasi" grafigi o'rniga xarajat limitlari
-          jadvali keng (2 ustun) qo'yildi — rahbar "qaysi limit yonyapti" ni
-          bir qarashda ko'rishi kerak. Oy taqqoslashi KPI kartalarida bor. */}
+      {/* ── 2-qator: sinflar jadvali (2/3) + xarajat kategoriyalari reytingi (1/3) ── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <PnlCard {...state} />
+        <ClassBreakdownCard
+          data={classBreakdown.data}
+          isLoading={classBreakdown.isLoading}
+          isError={classBreakdown.isError}
+          className="xl:col-span-2"
+        />
+        <TopExpensesCard {...state} />
+      </div>
+
+      {/* ── 3-qator: xarajat limitlari (2/3) + maktab sig'imi kartasi (1/3) ── */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <LimitsCard month={month} className="xl:col-span-2" />
+        <SchoolCapacityCard
+          data={classBreakdown.data}
+          isLoading={classBreakdown.isLoading}
+          isError={classBreakdown.isError}
+        />
       </div>
 
       {/* ── 3-qator: daromad tuzilmasi, cash flow, qarzdorlik ────────── */}
@@ -222,11 +243,8 @@ const FinanceDashboardPage = () => {
           (yetti ustun), shuning uchun qator o'ziga to'liq kenglikni oladi */}
       <PayrollCard {...state} />
 
-      {/* ── 6-qator: narx intizomi (keng) + top 5 xarajat ───────────── */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <PricingCard {...state} className="xl:col-span-2" />
-        <TopExpensesCard {...state} />
-      </div>
+      {/* ── narx intizomi (to'liq kenglik; top 5 xarajat yuqoriga ko'chdi) ── */}
+      <PricingCard {...state} />
 
       {/* ── 7-qator: yo'nalishlar natijasi (keng) + bank hisoblari ───── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
