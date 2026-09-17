@@ -227,17 +227,31 @@ const EntriesView = () => {
       { month: monthKey },
       {
         onSuccess: (result) => {
-          if (result.created > 0 || result.restored > 0) {
+          const written = result.created > 0 || result.restored > 0;
+          if (written) {
             // Bekor qilingan majburiyat qayta hisoblanib tiklanadi — alohida
             // aytiladi, aks holda "yangi qator qayerdan chiqdi" degan savol qolardi
             const restoredText = result.restored > 0 ? `, ${result.restored} tasi bekordan tiklandi` : "";
             toast.success(
               `${result.monthLabel}: ${result.created} ta oylik shakllantirildi${restoredText}`,
             );
-          } else if (result.skipped.alreadyExists > 0) {
-            toast.info("Bu oy allaqachon shakllantirilgan");
-          } else if (!result.skipped.monthOpen) {
-            toast.warning("Oylik belgilangan xodim topilmadi");
+          }
+
+          // Mavjud majburiyat tyutor guruhlari / ushlab qolish bo'yicha yangilandi
+          if (result.resynced > 0) {
+            toast.success(
+              `${result.monthLabel}: ${result.resynced} ta majburiyat tyutor guruhlari va ushlab qolish bo'yicha yangilandi`,
+            );
+          }
+          if (result.resyncLocked > 0) {
+            toast.warning(
+              `${result.resyncLocked} ta majburiyatga to'langan pul yangi summadan ko'p — ular yangilanmadi`,
+            );
+          }
+
+          if (!written && !(result.resynced > 0)) {
+            if (result.skipped.alreadyExists > 0) toast.info("Bu oy allaqachon shakllantirilgan");
+            else if (!result.skipped.monthOpen) toast.warning("Oylik belgilangan xodim topilmadi");
           }
 
           // Dars soati bo'yicha oylik FAKTDAN (baho + davomat) hisoblanadi

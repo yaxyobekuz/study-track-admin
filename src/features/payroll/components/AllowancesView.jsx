@@ -47,11 +47,12 @@ const SummaryTile = ({ icon: Icon, label, value, cls }) => (
   </Card>
 );
 
-// Chip rangi manbaga qarab: zayavka / qoida / admin / kutilmoqda
+// Chip rangi manbaga qarab: zayavka / qoida / tyutor guruhi / admin / kutilmoqda
 const chipTone = (item) => {
   if (item.status === "pending") return "bg-amber-50 text-amber-700";
   if (item.source === "request") return "bg-indigo-50 text-indigo-700";
   if (item.source === "rule") return "bg-gray-100 text-gray-600";
+  if (item.source === "tutor") return "bg-emerald-50 text-emerald-700";
   return "bg-blue-50 text-blue-700";
 };
 
