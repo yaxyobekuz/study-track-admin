@@ -7,6 +7,9 @@ import Lottie from "lottie-react";
 // Utils
 import { cn } from "@/shared/utils/cn";
 
+// React
+import { useEffect } from "react";
+
 // Router
 import { useNavigate } from "react-router-dom";
 
@@ -19,6 +22,9 @@ import { logoIcon } from "@/shared/assets/icons";
 
 // API
 import { authAPI } from "@/features/auth/api/auth.api";
+
+// Utils
+import { takeLogoutReason } from "@/shared/utils/logoutReason.utils";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
@@ -37,6 +43,17 @@ const LoginPage = () => {
     showLoginForm: false,
     currentPlatform: platforms.find((platform) => platform.isCurrent),
   });
+
+  // Ish o'rtasida chiqarib yuborilgan bo'lsa — nega ekanini aytamiz
+  useEffect(() => {
+    const reason = takeLogoutReason();
+    if (!reason) return;
+
+    toast.error("Tizimdan chiqarildingiz", {
+      duration: 15000,
+      description: [reason.message, reason.request].filter(Boolean).join(" · "),
+    });
+  }, []);
 
   return (
     <div className="flex w-full h-svh">

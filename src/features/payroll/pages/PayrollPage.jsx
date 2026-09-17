@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Icons
-import { Ban, Pencil, Plus, RefreshCw, Users, Wallet, XCircle, Award, Archive, Trash2 } from "lucide-react";
+import { Ban, Pencil, Plus, Receipt, RefreshCw, Users, Wallet, XCircle, Award, Archive, Trash2 } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -24,6 +24,8 @@ import {
   SalaryCategoryModal,
   SalaryPaymentModal,
   VoidSalaryPaymentModal,
+  EditSalaryPaymentModal,
+  SalaryEntryPaymentsModal,
   CancelPayrollEntryModal,
 } from "../components/PayrollModals";
 import {
@@ -108,6 +110,8 @@ const PayrollPage = () => {
       <SalaryCategoryModal />
       <SalaryPaymentModal />
       <VoidSalaryPaymentModal />
+      <EditSalaryPaymentModal />
+      <SalaryEntryPaymentsModal />
       <CancelPayrollEntryModal />
     </div>
   );
@@ -399,6 +403,17 @@ const EntriesView = () => {
 
                   <Td>
                     <div className="flex items-center justify-end gap-1">
+                      {/* To'lovlar — adashib kiritilgan summani shu yerdan tahrirlash */}
+                      {Number(entry.paidAmount) > 0 && (
+                        <button
+                          title="To'lovlar"
+                          onClick={() => openModal("salaryEntryPayments", { entry })}
+                          className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                        >
+                          <Receipt className="size-3.5" />
+                        </button>
+                      )}
+
                       {!isCancelled && entry.status !== "paid" && (
                         <>
                           <Can do="payroll.pay">

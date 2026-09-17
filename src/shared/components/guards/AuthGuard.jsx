@@ -13,6 +13,9 @@ import Button from "@/shared/components/ui/button/Button";
 // API
 import { authAPI } from "@/features/auth/api/auth.api";
 
+// Utils
+import { saveLogoutReason } from "@/shared/utils/logoutReason.utils";
+
 const AuthGuard = () => {
   const token = localStorage.getItem("authToken");
 
@@ -50,6 +53,7 @@ const AuthGuard = () => {
   // Ma'lumot keshda bo'lsa, fon yangilanishi yiqilgani sahifani to'xtatmaydi.
   if (isError && !data) {
     if (error?.response?.status === 401) {
+      saveLogoutReason(error);
       localStorage.removeItem("authToken");
       return <Navigate to="/login" replace />;
     }

@@ -16,10 +16,13 @@ import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 
 // Hooks
+import useModal from "@/shared/hooks/useModal";
 import useObjectState from "@/shared/hooks/useObjectState";
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
+import { formatDateUz, toDateInputValue } from "@/shared/utils/date.utils";
 import {
   currentMonthKey,
   monthKeyToInputValue,
@@ -37,12 +40,14 @@ import {
   useCreateSalaryPayment,
   usePreviewSalaryPayment,
   useVoidSalaryPayment,
+  useReplaceSalaryPayment,
   useCancelEntry,
   useCreateCategory,
   useUpdateCategory,
 } from "../queries/payroll.mutations";
 import {
   NO_ADVANCE_HINT,
+  EDIT_SALARY_PAYMENT_HINT,
   PAYROLL_SEAL_HINT,
   KPI_HINT,
   CATEGORY_HINT,
@@ -50,7 +55,7 @@ import {
 } from "../data/payroll.data";
 
 // Icons
-import { Plus, Trash2 } from "lucide-react";
+import { Ban, Pencil, Plus, Trash2 } from "lucide-react";
 
 const todayInputValue = () => {
   const now = new Date();
@@ -706,5 +711,261 @@ const ReasonForm = ({ close, isLoading, setIsLoading, kind, payment, entry }) =>
         Bekor qilish
       </Button>
     </InputGroup>
+  );
+};
+
+// ─────────────────────────────────────────────
+// Oylik to'lovini tahrirlash
+// ─────────────────────────────────────────────
+
+/**
+ * "1 000 000 o'rniga adashib 2 000 000 kiritilgan" holati.
+ *
+ * ⚠️ Daftar APPEND-ONLY: server eski to'lovni bekor qilib, to'g'ri qiymat
+ * bilan yangisini BITTA tranzaksiyada yozadi. Yangi summa qarzdan oshsa
+ * hech narsa o'zgarmaydi.
+ *
+ * `openModal("editSalaryPayment", { payment })` — `payment` da id, staffId,
+ * staffName, accountId, amount, paidAt (Chiqimlar qatorida `occurredAt`), note.
+ */
+export const EditSalaryPaymentModal = () => (
+  <ResponsiveModal name="editSalaryPayment" title="Oylik to'lovini tahrirlash">
+    <EditSalaryPaymentForm />
+  </ResponsiveModal>
+);
+
+const EditSalaryPaymentForm = ({ close, isLoading, setIsLoading, payment }) => {
+  const { data: accounts = [] } = useQuery(financeQueries.activeAccounts());
+  const { data: staffData } = useQuery(payrollQueries.staffEntries(payment?.staffId));
+  const { mutate: replacePayment } = useReplaceSalaryPayment();
+
+  const originalPaidAt = payment?.paidAt ?? payment?.occurredAt;
+  const initialDate = toDateInputValue(originalPaidAt);
+
+  const { amount, accountId, paidAt, note, reason, setField } = useObjectState({
+    amount: payment?.amount != null ? String(Number(payment.amount)) : "",
+    accountId: payment?.accountId ?? "",
+    paidAt: initialDate,
+    note: payment?.note ?? "",
+    reason: "",
+  });
+
+  // Bu to'lov bekor qilinsa qarz aynan shu summaga ko'payadi — yangi summa
+  // undan oshsa server rad etadi (avans yo'q)
+  const maxAmount = staffData
+    ? Number(staffData.totals.debt) + Number(payment?.amount ?? 0)
+    : null;
+  const exceeds = maxAmount != null && Number(amount) > maxAmount;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    replacePayment(
+      {
+        id: payment.id,
+        data: {
+          amount: String(amount),
+          accountId,
+          note,
+          reason,
+          // Kun o'zgarmasa yuborilmaydi — eski to'lovning vaqti saqlanadi
+          ...(paidAt !== initialDate ? { paidAt } : {}),
+        },
+      },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("To'lov tahrirlandi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
+  };
+
+  return (
+    <InputGroup onSubmit={handleSubmit} as="form">
+      <div className="rounded-xl bg-gray-50 p-3 text-sm">
+        <p className="font-medium text-gray-900">{payment?.staffName}</p>
+        <p className="text-gray-500">
+          Kiritilgan: {formatMoney(payment?.amount)} · {formatDateUz(originalPaidAt)}
+        </p>
+      </div>
+
+      <p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800">
+        {EDIT_SALARY_PAYMENT_HINT}
+      </p>
+
+      <div className="space-y-1">
+        <InputField
+          required
+          min="1"
+          type="amount"
+          name="amount"
+          label="To'g'ri summa"
+          value={amount}
+          description={amount ? formatMoney(amount) : "So'mda"}
+          onChange={(e) => setField("amount", e.target.value)}
+        />
+        {exceeds && (
+          <p className="text-xs text-red-600">
+            Eng ko'pi {formatMoney(maxAmount)} — avans qo'llab-quvvatlanmaydi.
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Pul qayerdan chiqdi</p>
+        <Select searchable
+          value={accountId}
+          placeholder="To'lov turini tanlang"
+          onChange={(v) => setField("accountId", v)}
+          options={accounts.map((a) => ({ label: a.name, value: a.id }))}
+        />
+      </div>
+
+      <InputField
+        required
+        type="date"
+        name="paidAt"
+        label="Sana"
+        value={paidAt}
+        max={todayInputValue()}
+        onChange={(e) => setField("paidAt", e.target.value)}
+      />
+
+      <InputField
+        name="note"
+        label="Izoh (ixtiyoriy)"
+        value={note}
+        onChange={(e) => setField("note", e.target.value)}
+      />
+
+      <InputField
+        required
+        name="reason"
+        label="Tahrirlash sababi"
+        value={reason}
+        placeholder="Adashib boshqa summa kiritilgan"
+        onChange={(e) => setField("reason", e.target.value)}
+      />
+
+      <Button
+        type="submit"
+        className="w-full"
+        loading={isLoading}
+        disabled={!(Number(amount) > 0) || !accountId || !paidAt || !reason.trim() || exceeds}
+      >
+        Saqlash
+      </Button>
+    </InputGroup>
+  );
+};
+
+// ─────────────────────────────────────────────
+// Bitta oylikka tushgan to'lovlar
+// ─────────────────────────────────────────────
+
+/**
+ * "Majburiyatlar" qatoridan ochiladi: shu oylikni yopgan to'lovlar va ularni
+ * tahrirlash / bekor qilish tugmalari.
+ *
+ * `openModal("salaryEntryPayments", { entry })`
+ */
+export const SalaryEntryPaymentsModal = () => (
+  <ResponsiveModal name="salaryEntryPayments" title="Oylik to'lovlari">
+    <SalaryEntryPaymentsList />
+  </ResponsiveModal>
+);
+
+const SalaryEntryPaymentsList = ({ close, entry }) => {
+  const { openModal } = useModal();
+  const { can } = usePermissions();
+
+  const { data, isLoading } = useQuery({
+    ...payrollQueries.payments({ payrollEntryId: entry?.id, limit: 50 }),
+    enabled: Boolean(entry?.id),
+  });
+
+  const items = data?.data ?? [];
+  // Tahrirlash = bekor qilish + qayta to'lash: server ikkala ruxsatni ham so'raydi
+  const canEdit = can("payroll.void") && can("payroll.pay");
+
+  // Oynalar ustma-ust ochilmasin — ro'yxat yopilib, amal oynasi ochiladi
+  const openAction = (name, payment) => {
+    close();
+    openModal(name, { payment });
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-xl bg-gray-50 p-3 text-sm">
+        <p className="font-medium text-gray-900">{entry?.staffName}</p>
+        <p className="text-gray-500">
+          {entry?.monthLabel} · to'langan {formatMoney(entry?.paidAmount)}
+        </p>
+      </div>
+
+      {isLoading ? (
+        <p className="py-6 text-center text-sm text-gray-500">Yuklanmoqda...</p>
+      ) : items.length === 0 ? (
+        <p className="py-6 text-center text-sm text-gray-500">To'lov topilmadi</p>
+      ) : (
+        <div className="divide-y divide-gray-100 rounded-xl ring-1 ring-gray-100">
+          {items.map((payment) => {
+            const own = payment.allocations?.find((a) => a.payrollEntryId === entry?.id);
+            const spansMonths = (payment.allocations?.length ?? 0) > 1;
+
+            return (
+              <div key={payment.id} className="flex items-center justify-between gap-3 p-3">
+                <div className="min-w-0 text-sm">
+                  <p className="font-semibold text-gray-900">
+                    {formatMoney(payment.amount)}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatDateUz(payment.paidAt)}
+                    {payment.accountName ? ` · ${payment.accountName}` : ""}
+                  </p>
+                  {spansMonths && own && (
+                    <p className="text-xs text-gray-400">
+                      Shu oyga {formatMoney(own.amount)}, qolgani boshqa oylarga
+                    </p>
+                  )}
+                  {payment.note && (
+                    <p className="truncate text-xs text-gray-400">{payment.note}</p>
+                  )}
+                </div>
+
+                <div className="flex shrink-0 items-center gap-1">
+                  {canEdit && (
+                    <button
+                      type="button"
+                      title="Tahrirlash"
+                      onClick={() => openAction("editSalaryPayment", payment)}
+                      className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    >
+                      <Pencil className="size-3.5" />
+                    </button>
+                  )}
+
+                  {can("payroll.void") && (
+                    <button
+                      type="button"
+                      title="Bekor qilish"
+                      onClick={() => openAction("voidSalaryPayment", payment)}
+                      className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                    >
+                      <Ban className="size-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 };

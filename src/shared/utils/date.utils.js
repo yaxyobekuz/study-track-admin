@@ -269,6 +269,20 @@ export const todayInputValue = () => {
   return local.toISOString().slice(0, 10);
 };
 
+/**
+ * Istalgan sana/instant `<input type="date">` QIYMATI sifatida: "2026-09-08".
+ *
+ * ⚠️ `todayInputValue` bilan bir xil qoida: FORMAT emas, ekranga chiqmaydi.
+ * `String(iso).slice(0, 10)` UTC kunini olardi — Toshkentda ertalabki
+ * to'lov formada KECHAGI kun bo'lib ochilardi.
+ */
+export const toDateInputValue = (value) => {
+  const date = toDate(value);
+  if (!date) return "";
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+};
+
 /* ------------------------------------------------------------------ *
  * Eski nomlar (deprecated)
  *

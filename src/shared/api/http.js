@@ -1,6 +1,9 @@
 // Axios
 import axios from "axios";
 
+// Utils
+import { saveLogoutReason } from "@/shared/utils/logoutReason.utils";
+
 // API URL
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4040";
 
@@ -47,6 +50,8 @@ http.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Sabab login sahifasida ko'rsatiladi — qayta yuklashda yo'qolmasin
+      saveLogoutReason(error);
       localStorage.removeItem("authToken");
       window.location.href = "/login";
     }

@@ -33,6 +33,10 @@ import {
   VoidExpenseModal,
   ExpenseCategoryModal,
 } from "../components/ExpenseModals";
+import {
+  EditSalaryPaymentModal,
+  VoidSalaryPaymentModal,
+} from "@/features/payroll/components/PayrollModals";
 
 // Hooks
 import {
@@ -94,6 +98,8 @@ const ExpensesPage = () => {
       <ExpenseEntryModal />
       <VoidExpenseModal />
       <ExpenseCategoryModal />
+      <EditSalaryPaymentModal />
+      <VoidSalaryPaymentModal />
       <LimitRequestModal />
       <LimitRequestsReviewModal />
     </div>
@@ -252,10 +258,33 @@ const ExpenseList = () => {
                         Bekor qilingan
                       </span>
                     ) : expense.kind === "salary" ? (
-                      // Oylik to'lovi — "Xodimlar oyligi" sahifasidan bekor qilinadi
-                      <span className="rounded-md bg-indigo-50 px-1.5 py-0.5 text-xs font-medium text-indigo-600">
-                        Oylik
-                      </span>
+                      // Oylik to'lovi — xarajat emas, payroll ruxsatlari bilan
+                      // tahrirlanadi/bekor qilinadi (tahrirlash ikkalasini so'raydi)
+                      <div className="flex items-center gap-1">
+                        <span className="rounded-md bg-indigo-50 px-1.5 py-0.5 text-xs font-medium text-indigo-600">
+                          Oylik
+                        </span>
+
+                        <Can do="payroll.void">
+                          <Can do="payroll.pay">
+                            <button
+                              title="Tahrirlash"
+                              onClick={() => openModal("editSalaryPayment", { payment: expense })}
+                              className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                            >
+                              <Pencil className="size-3.5" />
+                            </button>
+                          </Can>
+
+                          <button
+                            title="Bekor qilish"
+                            onClick={() => openModal("voidSalaryPayment", { payment: expense })}
+                            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                          >
+                            <Ban className="size-3.5" />
+                          </button>
+                        </Can>
+                      </div>
                     ) : (
                       <Can do="expenses.void">
                         <button

@@ -18,6 +18,8 @@ import { payrollKeys } from "./payroll.queries";
 // hisobotlari ham eskiradi.
 import { financeKeys } from "@/features/finance/queries/finance.queries";
 import { dashboardKeys } from "@/features/financeDashboard/queries/financeDashboard.queries";
+// Oylik to'lovi "Chiqimlar" ro'yxatida ham ko'rinadi
+import { expenseKeys } from "@/features/expenses/queries/expenses.queries";
 // Ushlab qolish vedomostdagi "Oy oxirida" summasini ham o'zgartiradi
 import { lessonHoursKeys } from "@/features/lessonHours/queries/lessonHours.queries";
 
@@ -28,6 +30,7 @@ const useInvalidate = () => {
     queryClient.invalidateQueries({ queryKey: payrollKeys.all });
     queryClient.invalidateQueries({ queryKey: financeKeys.all });
     queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+    queryClient.invalidateQueries({ queryKey: expenseKeys.all });
   };
 };
 
@@ -194,6 +197,15 @@ export const useVoidSalaryPayment = () => {
   return useMutation({
     mutationFn: ({ id, reason }) =>
       payrollAPI.voidPayment(id, reason).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+export const useReplaceSalaryPayment = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      payrollAPI.replacePayment(id, data).then((r) => r.data.data),
     onSuccess: invalidate,
   });
 };

@@ -151,6 +151,11 @@ export const NO_ADVANCE_HINT =
   "Avans qo'llab-quvvatlanmaydi: to'lov qarzdan ko'p bo'lishi mumkin emas. " +
   "Lekin bitta oylikni bir necha marta bo'lib to'lash mumkin.";
 
+export const EDIT_SALARY_PAYMENT_HINT =
+  "Yozuv o'chirilmaydi: eski to'lov bekor qilinadi va to'g'ri summa bilan " +
+  "yangisi yoziladi, ikkalasi ham tarixda qoladi. Kassa qoldig'i va oylik " +
+  "qarzi avtomatik to'g'rilanadi.";
+
 // ── Oylik zayavkalari (admin ko'rib chiqadi) ──
 export const REQUEST_KIND_LABELS = {
   category: "Toifa o'zgartirish",

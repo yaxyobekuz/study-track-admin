@@ -106,4 +106,6 @@ export const payrollAPI = {
   previewPayment: (data) => http.post("/payroll/payments/preview", data),
   createPayment: (data) => http.post("/payroll/payments", data),
   voidPayment: (id, reason) => http.post(`/payroll/payments/${id}/void`, { reason }),
+  // Tahrirlash — eski bekor qilinadi, to'g'ri summa bilan yangisi yoziladi
+  replacePayment: (id, data) => http.post(`/payroll/payments/${id}/replace`, data),
 };

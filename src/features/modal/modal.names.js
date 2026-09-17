@@ -179,6 +179,8 @@ export const MODAL_NAMES = [
   "assignBonus",
   "salaryPayment",
   "voidSalaryPayment",
+  "editSalaryPayment",
+  "salaryEntryPayments",
   "cancelPayrollEntry",
   "regeneratePayrollEntry",
   // Oylikdan ushlab qolish
