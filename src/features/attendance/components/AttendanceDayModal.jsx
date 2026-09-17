@@ -1,7 +1,21 @@
+// React
+import { useState } from "react";
+
+// Toast
+import { toast } from "sonner";
+
+// Icons
+import { Pencil } from "lucide-react";
+
 // Components
 import AttendanceStatusPill from "./AttendanceStatusPill";
 import Button from "@/shared/components/ui/button/Button";
+import Input from "@/shared/components/ui/input/Input";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
+
+// Hooks
+import usePermissions from "@/shared/hooks/usePermissions";
+import { useUpdateAttendanceTimes } from "../queries/attendance.mutations";
 
 // Helpers & utils
 import { getWorkedMinutes } from "@/shared/helpers/attendance.helpers";
@@ -10,6 +24,15 @@ import {
   formatDurationShortUZ,
   formatTimeUZ,
 } from "@/shared/utils/date.utils";
+
+/** UTC instant → Toshkent "HH:mm" (input qiymati; ekranga emas). */
+const toTimeInput = (iso) => {
+  if (!iso) return "";
+  const tash = new Date(new Date(iso).getTime() + 5 * 3600000);
+  return `${String(tash.getUTCHours()).padStart(2, "0")}:${String(
+    tash.getUTCMinutes(),
+  ).padStart(2, "0")}`;
+};
 
 // Data
 import {
@@ -83,10 +106,42 @@ const AttendanceDayModal = () => (
 );
 
 const Content = ({ close, record, variant = "staff", user }) => {
+  const isStaff = variant === "staff";
+  const { can } = usePermissions();
+  const canEdit = isStaff && Boolean(user?.id) && can("attendance.mark");
+
+  const [editing, setEditing] = useState(false);
+  const [checkInVal, setCheckInVal] = useState(() => toTimeInput(record?.checkIn));
+  const [checkOutVal, setCheckOutVal] = useState(() => toTimeInput(record?.checkOut));
+  const [saving, setSaving] = useState(false);
+  const { mutate: updateTimes } = useUpdateAttendanceTimes();
+
   if (!record) return null;
 
-  const isStaff = variant === "staff";
   const workedMinutes = getWorkedMinutes(record);
+
+  const saveTimes = () => {
+    setSaving(true);
+    updateTimes(
+      {
+        userId: user.id,
+        data: {
+          date: record.date,
+          checkIn: checkInVal || null,
+          checkOut: checkOutVal || null,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Davomat yangilandi");
+          close();
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setSaving(false),
+      },
+    );
+  };
 
   const rows = [
     {
@@ -196,14 +251,82 @@ const Content = ({ close, record, variant = "staff", user }) => {
         ))}
       </dl>
 
-      <Button
-        type="button"
-        onClick={close}
-        variant="secondary"
-        className="w-full xs:ml-auto xs:w-32"
-      >
-        Yopish
-      </Button>
+      {/* Vaqtlarni tahrirlash — xodim uchun. Ketishni o'chirsa xodim yana
+          "maktabda" hisoblanadi va bugungi darsga baho qo'yish ochiladi. */}
+      {editing ? (
+        <div className="space-y-3 rounded-xl border border-gray-100 p-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-gray-600">Kelish</p>
+              <Input
+                type="time"
+                value={checkInVal}
+                onChange={(e) => setCheckInVal(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-gray-600">Ketish</p>
+              <Input
+                type="time"
+                value={checkOutVal}
+                onChange={(e) => setCheckOutVal(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {checkOutVal && (
+            <button
+              type="button"
+              onClick={() => setCheckOutVal("")}
+              className="text-xs font-medium text-red-500 hover:underline"
+            >
+              Ketish vaqtini o'chirish (baho qo'yish ochiladi)
+            </button>
+          )}
+
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={() => setEditing(false)}
+              variant="secondary"
+              className="flex-1"
+            >
+              Bekor
+            </Button>
+            <Button
+              type="button"
+              onClick={saveTimes}
+              loading={saving}
+              disabled={saving}
+              className="flex-1"
+            >
+              Saqlash
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          {canEdit && (
+            <Button
+              type="button"
+              onClick={() => setEditing(true)}
+              variant="outline"
+              className="flex-1"
+            >
+              <Pencil className="size-4" />
+              Vaqtlarni tahrirlash
+            </Button>
+          )}
+          <Button
+            type="button"
+            onClick={close}
+            variant="secondary"
+            className={canEdit ? "flex-1" : "w-full xs:ml-auto xs:w-32"}
+          >
+            Yopish
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
