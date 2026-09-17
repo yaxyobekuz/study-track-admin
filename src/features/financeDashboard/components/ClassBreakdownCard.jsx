@@ -63,13 +63,37 @@ const ClassBreakdownCard = ({ data, isLoading, isError, className }) => {
             clickable &&
             navigate(`/finance/main/classes/${row.classId}?month=${data.month}`);
 
+          // Sinfning to'lish foizi (o'quvchi / sig'im) — nom tagida progress bar.
+          const fillPct =
+            row.capacity > 0
+              ? Math.round((row.studentCount / row.capacity) * 100)
+              : null;
+
           return (
             <MiniTr
               key={row.classId ?? "__none__"}
               onClick={open}
               className={cn(clickable && "cursor-pointer hover:bg-gray-50")}
             >
-              <MiniTd className="font-medium text-gray-900">{row.className}</MiniTd>
+              <MiniTd className="font-medium text-gray-900">
+                <div>{row.className}</div>
+                {fillPct != null && (
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <div className="h-1 w-16 overflow-hidden rounded-full bg-gray-100">
+                      <div
+                        className={cn(
+                          "h-full rounded-full",
+                          fillPct > 100 ? "bg-red-500" : "bg-blue-500",
+                        )}
+                        style={{ width: `${Math.min(100, fillPct)}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-normal text-gray-400">
+                      {fillPct}%
+                    </span>
+                  </div>
+                )}
+              </MiniTd>
 
               <MiniTd align="right" className="text-gray-600">
                 {row.capacity != null ? row.capacity : "—"}

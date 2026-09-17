@@ -202,7 +202,7 @@ const FinanceDashboardPage = () => {
       {/* ── 1-qator: KPI kartalari (kassa + qarz va oylik) ────────────── */}
       <KpiCards data={overview.data} isLoading={overview.isLoading} />
 
-      {/* ── 2-qator: sinflar jadvali (2/3) + maktab sig'imi kartasi (1/3) ── */}
+      {/* ── 2-qator: sinflar jadvali (2/3) + xarajat kategoriyalari reytingi (1/3) ── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <ClassBreakdownCard
           data={classBreakdown.data}
@@ -210,17 +210,17 @@ const FinanceDashboardPage = () => {
           isError={classBreakdown.isError}
           className="xl:col-span-2"
         />
+        <TopExpensesCard {...state} />
+      </div>
+
+      {/* ── 3-qator: xarajat limitlari (2/3) + maktab sig'imi kartasi (1/3) ── */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <LimitsCard month={month} className="xl:col-span-2" />
         <SchoolCapacityCard
           data={classBreakdown.data}
           isLoading={classBreakdown.isLoading}
           isError={classBreakdown.isError}
         />
-      </div>
-
-      {/* ── 3-qator: xarajat limitlari (2/3) + top 5 xarajat (1/3) ─────── */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <LimitsCard month={month} className="xl:col-span-2" />
-        <TopExpensesCard {...state} />
       </div>
 
       {/* ── 3-qator: daromad tuzilmasi, cash flow, qarzdorlik ────────── */}
