@@ -12,6 +12,26 @@ import MiniTable, { MiniTd, MiniTr } from "@/shared/components/dashboard/MiniTab
 import { cn } from "@/shared/utils/cn";
 import { formatMoney } from "@/shared/utils/formatMoney";
 
+/** Sinf nomidan darajani (1–11) chiqaradi: "5-a sinf" → 5, "IT 4" → 4. */
+const levelOf = (name) => {
+  const match = String(name ?? "").match(/\d+/);
+  if (!match) return null;
+  const v = Number(match[0]);
+  return v > 0 && v <= 11 ? v : null;
+};
+
+/** Sinflarni daraja bo'yicha 1→11 saralaydi; raqami yo'q sinflar oxirida,
+ *  bir darajadagilar nom bo'yicha. */
+const byLevelAsc = (a, b) => {
+  const la = levelOf(a.className);
+  const lb = levelOf(b.className);
+  if (la == null && lb == null) return String(a.className).localeCompare(String(b.className));
+  if (la == null) return 1;
+  if (lb == null) return -1;
+  if (la !== lb) return la - lb;
+  return String(a.className).localeCompare(String(b.className));
+};
+
 /** Ortiqcha (bo'sh) joy rangi: manfiy — to'lgan/oshgan (qizil), 0 — kulrang. */
 const freeSpotClass = (n) =>
   n == null
@@ -33,7 +53,9 @@ const freeSpotClass = (n) =>
  */
 const ClassBreakdownCard = ({ data, isLoading, isError, className, limit, onMore }) => {
   const navigate = useNavigate();
-  const rows = data?.byClass ?? [];
+
+  // Sinf darajasi bo'yicha 1→11 saralanadi (1-sinf tepada, 11-sinf pastda)
+  const rows = [...(data?.byClass ?? [])].sort(byLevelAsc);
   const shown = limit ? rows.slice(0, limit) : rows;
   const hasMore = Boolean(limit && rows.length > limit);
 

@@ -26,8 +26,8 @@ import {
   VoidSalaryPaymentModal,
   EditSalaryPaymentModal,
   SalaryEntryPaymentsModal,
-  CancelPayrollEntryModal,
 } from "../components/PayrollModals";
+import { CancelPayrollEntryModal } from "../components/CancelEntryModal";
 import {
   DepartmentModal,
   PositionModal,
@@ -490,19 +490,20 @@ const EntriesView = () => {
                             </button>
                           </Can>
 
-                          {Number(entry.paidAmount) === 0 && (
-                            <Can do="payroll.cancel">
-                              <button
-                                title="Majburiyatni bekor qilish"
-                                onClick={() =>
-                                  openModal("cancelPayrollEntry", { entry })
-                                }
-                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
-                              >
-                                <XCircle className="size-3.5" />
-                              </button>
-                            </Can>
-                          )}
+                          {/* Oylikni (butunini yoki qismini) bekor qilish —
+                              oy va qism tanlanadi; summa xato bo'lsa qayta
+                              hisoblash ham shu oynada */}
+                          <Can do={["payroll.suspend", "payroll.cancel"]}>
+                            <button
+                              title="Oylikni bekor qilish"
+                              onClick={() =>
+                                openModal("cancelPayrollEntry", { entry })
+                              }
+                              className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                            >
+                              <XCircle className="size-3.5" />
+                            </button>
+                          </Can>
                         </>
                       )}
                     </div>

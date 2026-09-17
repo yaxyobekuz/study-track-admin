@@ -171,9 +171,9 @@ export const KPI_CARDS = [
   { key: "expense", label: "Jami xarajat", accent: "bg-rose-500", tone: "text-gray-900", inverse: true, to: "/finance/main/expenses" },
   // 3. Kassadagi pul
   { key: "cashBalance", label: "Kassadagi pul", accent: "bg-amber-500", tone: "text-gray-900", to: "/finance/main/accounts" },
-  // 4. Foyda foizi — kutilgan tushum − limitlar; progress bar foyda ulushi,
-  //    sub'da "Foyda X% · Limitlar Y%"
-  { key: "expectedProfit", label: "Foyda foizi", accent: "bg-emerald-500", tone: "text-emerald-700", progress: true, progressTone: "bg-emerald-500", to: "/finance/main/overview" },
+  // 4. (Foyda foizi kartasi olib tashlandi — foyda "Xarajat limitlari"
+  //    jadvalidagi "Foyda" qatorida. O'rniga "Debitor qarzdorlik" oddiy
+  //    karta — `KpiCards` dagi `DebtorKpiCard`.)
   // 5. Qoldiq — qancha qarz + nechta o'quvchi qarzdor (server sub)
   { key: "debt", label: "Qoldiq", accent: "bg-orange-500", tone: "text-orange-700", inverse: true, to: "/finance/main/debtors" },
   // 6. OYLIK — uch qiymat (kerak/tarqatildi/qoldi) bitta keng kartada

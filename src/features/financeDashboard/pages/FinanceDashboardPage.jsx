@@ -20,7 +20,6 @@ import StudentsKpiCard from "../components/StudentsKpiCard";
 import { AccrualChart, CashflowChart } from "../components/TrendCharts";
 import {
   DebtAgingCard,
-  DebtCard,
   TopExpensesCard,
 } from "../components/StructureCards";
 import {
@@ -134,6 +133,11 @@ const FinanceDashboardPage = () => {
     .sort((a, b) => (b.assignedCount ?? 0) - (a.assignedCount ?? 0))
     .slice(0, 3);
 
+  // Eng ko'p qarzi bor sinf — debitor qarzdorlik kartasi uchun (sinflar kesimidan)
+  const debtorTopClass = [...(classBreakdown.data?.byClass ?? [])]
+    .filter((c) => c.classId && Number(c.debt) > 0)
+    .sort((a, b) => Number(b.debt) - Number(a.debt))[0]?.className ?? null;
+
   if (!allowed) {
     return (
       <Card className="p-0 xs:p-0">
@@ -214,7 +218,11 @@ const FinanceDashboardPage = () => {
       </div>
 
       {/* ── 1-qator: KPI kartalari (5 ta) ─────────────────────────────── */}
-      <KpiCards data={overview.data} isLoading={overview.isLoading} />
+      <KpiCards
+        data={overview.data}
+        isLoading={overview.isLoading}
+        debtorTopClass={debtorTopClass}
+      />
 
       {/* ── 2-qator: OYLIK (2/3) + o'quvchilar kartasi (1/3) ──────────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
@@ -241,11 +249,9 @@ const FinanceDashboardPage = () => {
       {/* ── Xarajat limitlari — to'liq kenglik ─────────────────────────── */}
       <LimitsCard month={month} />
 
-      {/* ── 3-qator: cash flow (keng) + qarzdorlik ────────────────────── */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <CashflowChart className="xl:col-span-2" height={360} />
-        <DebtCard {...state} />
-      </div>
+      {/* ── 3-qator: cash flow (to'liq kenglik; debitor qarzdorlik endi KPI
+          qatorida oddiy karta) ──────────────────────────────────────────── */}
+      <CashflowChart height={360} />
 
       {/* ── 4-qator: hisoblangan/yig'ilgan (keng) + qarz yoshi ───────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

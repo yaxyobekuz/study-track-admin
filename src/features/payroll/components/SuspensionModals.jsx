@@ -38,6 +38,7 @@ import {
   SUSPENSION_COMPONENT_OPTIONS,
   SUSPENSION_HINTS,
   SUSPENSION_MAX_MONTHS,
+  SUSPENSION_PERIOD_OPTIONS,
   SUSPENSION_SCOPE_OPTIONS,
 } from "../data/payroll.data";
 import { payrollQueries } from "../queries/payroll.queries";
@@ -79,11 +80,13 @@ const CreateSuspensionForm = ({ close, isLoading, setIsLoading, month: initialMo
     itemKey,
     reason,
     note,
+    period,
     startMonth,
     endMonth,
     confirmAll,
     setField,
   } = useObjectState({
+    period: "once",
     scope: "staff",
     component: "all",
     itemKey: "",
@@ -95,7 +98,8 @@ const CreateSuspensionForm = ({ close, isLoading, setIsLoading, month: initialMo
   });
 
   const startKey = inputValueToMonthKey(startMonth);
-  const endKey = inputValueToMonthKey(endMonth);
+  // "Faqat bitta oy" — tugash oyi boshlanish oyining o'zi
+  const endKey = period === "once" ? startKey : inputValueToMonthKey(endMonth);
 
   const { data: candidateData, isLoading: candidatesLoading } = useQuery(
     payrollQueries.suspensionCandidates(startKey),
@@ -399,27 +403,37 @@ const CreateSuspensionForm = ({ close, isLoading, setIsLoading, month: initialMo
             <p className="text-xs text-gray-500">{SUSPENSION_HINTS.independent}</p>
           )}
 
-          <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
-            <InputField
-              required
-              type="month"
-              name="startMonth"
-              label="Qaysi oydan"
-              value={startMonth}
-              onChange={(event) => {
-                setField("startMonth", event.target.value);
-                if (!endMonth || event.target.value > endMonth) setField("endMonth", event.target.value);
-              }}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-700">Qaysi oy uchun</p>
+            <Segmented
+              options={SUSPENSION_PERIOD_OPTIONS}
+              value={period}
+              onChange={(next) => setField("period", next)}
             />
-            <InputField
-              required
-              type="month"
-              name="endMonth"
-              label="Qaysi oygacha"
-              value={endMonth}
-              min={startMonth}
-              onChange={(event) => setField("endMonth", event.target.value)}
-            />
+            <div className="grid grid-cols-1 gap-3 xs:grid-cols-2">
+              <InputField
+                required
+                type="month"
+                name="startMonth"
+                label={period === "once" ? "Oy" : "Qaysi oydan"}
+                value={startMonth}
+                onChange={(event) => {
+                  setField("startMonth", event.target.value);
+                  if (!endMonth || event.target.value > endMonth) setField("endMonth", event.target.value);
+                }}
+              />
+              {period === "range" && (
+                <InputField
+                  required
+                  type="month"
+                  name="endMonth"
+                  label="Qaysi oygacha"
+                  value={endMonth}
+                  min={startMonth}
+                  onChange={(event) => setField("endMonth", event.target.value)}
+                />
+              )}
+            </div>
           </div>
 
           <InputField

@@ -73,7 +73,7 @@ const Delta = ({ change, changeUnit, inverse }) => {
  * alohida edi — bittasini tashlab qoldirish "reja bajarildimi?" yoki
  * "o'sdikmi?" savollaridan birini javobsiz qoldirardi.
  */
-const KpiCards = ({ data, isLoading }) => {
+const KpiCards = ({ data, isLoading, debtorTopClass }) => {
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -215,6 +215,64 @@ const KpiCards = ({ data, isLoading }) => {
           </div>
         );
       })}
+
+      {/* Debitor qarzdorlik — "Foyda foizi" o'rniga, oddiy karta uslubida */}
+      <DebtorKpiCard debt={data.debt} topClass={debtorTopClass} />
+    </div>
+  );
+};
+
+/**
+ * DEBITOR QARZDORLIK — KPI qatoridagi oddiy karta (donut EMAS, PUL summasisiz).
+ * Faqat sanoqlar: nechta qarzdor o'quvchi, nechtasi qisman to'lagan, nechtasi
+ * umuman to'lanmagan va eng ko'p qarzli sinf. Manba `overviewDashboard.debt`
+ * (sanoqlar) + `topClass` (sinflar kesimidan). Bosilsa qarzdorlar sahifasiga.
+ */
+export const DebtorKpiCard = ({ debt, topClass, className }) => {
+  const navigate = useNavigate();
+  if (!debt) return null;
+
+  return (
+    <div
+      onClick={() => navigate("/finance/main/debtors")}
+      className={cn(
+        "relative cursor-pointer overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/30 xs:p-5",
+        className,
+      )}
+    >
+      <div className="absolute -right-7 -top-7 size-24 rounded-full bg-rose-500 opacity-10" />
+
+      <div className="relative flex items-start justify-between gap-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+          Debitor qarzdorlik
+        </p>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-rose-500 text-white shadow-sm">
+          <Users className="size-[18px]" />
+        </span>
+      </div>
+
+      {/* Asosiy raqam — qarzdor o'quvchilar soni (pul emas) */}
+      <p className="relative mt-3 text-[22px] font-bold leading-tight tracking-tight text-orange-600 xl:text-2xl">
+        {debt.debtorCount} ta
+      </p>
+      <p className="relative mt-1 text-[11px] text-gray-500">
+        qarzdor o'quvchi{debt.debtorShare != null ? ` · ${debt.debtorShare}%` : ""}
+      </p>
+
+      <div className="relative mt-3 space-y-1 border-t border-gray-100 pt-2.5 text-[11px]">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-gray-400">Qisman to'lagan</span>
+          <span className="font-semibold text-amber-600">{debt.partialCount ?? 0} ta</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-gray-400">Umuman to'lanmagan</span>
+          <span className="font-semibold text-red-600">{debt.unpaidCount ?? 0} ta</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-gray-400">Eng ko'p qarzli sinf</span>
+          <span className="font-medium text-gray-700">{topClass ?? "—"}</span>
+        </div>
+      </div>
     </div>
   );
 };
