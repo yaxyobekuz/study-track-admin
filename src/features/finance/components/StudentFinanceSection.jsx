@@ -154,6 +154,12 @@ const StudentFinanceSection = ({ studentId }) => {
 
   const hasDebt = Number(invoiceData?.totals?.debt ?? 0) > 0;
 
+  // Umumiy to'langan — o'quvchining barcha (bekor qilinmagan) to'lovlari yig'indisi
+  const totalPaid = (paymentsData ?? []).reduce(
+    (sum, p) => sum + Number(p.amount ?? 0),
+    0,
+  );
+
   const student = {
     id: studentId,
     fullName: statusData?.student
@@ -365,6 +371,14 @@ const StudentFinanceSection = ({ studentId }) => {
               <p className="mt-1 text-xs text-gray-500">Qarz mavjud emas</p>
             </>
           )}
+
+          {/* Umumiy to'langan — o'quvchi bo'yicha barcha to'lovlar yig'indisi */}
+          <div className="mt-2 flex items-center justify-between gap-2 border-t border-gray-200/60 pt-2 text-xs">
+            <span className="text-gray-500">Jami to'langan</span>
+            <span className="font-semibold text-green-700">
+              {formatMoney(String(totalPaid))}
+            </span>
+          </div>
         </div>
 
         {/* ── 2. SHU OY — majburiyat, to'langani, qoldig'i va progress ── */}
