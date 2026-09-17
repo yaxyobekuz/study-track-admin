@@ -17,10 +17,6 @@ export const financeDashboardAPI = {
   /** Maktab KPI ko'rsatkichlari (sifat, davomat, qabul). Params: { month } */
   getScorecard: (params) => http.get("/finance-reports/kpi", { params }),
 
-  /** Cash flow seriyasi. Params: { granularity: day|month|year, from, to } */
-  getCashflowTrend: (params) =>
-    http.get("/finance-reports/cashflow-trend", { params }),
-
   /** Hisoblangan/yig'ilgan seriyasi. Params: { granularity: day|month|year, from, to } */
   getAccrualTrend: (params) =>
     http.get("/finance-reports/accrual-trend", { params }),

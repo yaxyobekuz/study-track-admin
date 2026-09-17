@@ -17,7 +17,7 @@ import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import KpiCards, { PayrollKpiCard } from "../components/KpiCards";
 import StudentsKpiCard from "../components/StudentsKpiCard";
-import { AccrualChart, CashflowChart } from "../components/TrendCharts";
+import { AccrualChart } from "../components/TrendCharts";
 import {
   DebtAgingCard,
   TopExpensesCard,
@@ -249,11 +249,7 @@ const FinanceDashboardPage = () => {
       {/* ── Xarajat limitlari — to'liq kenglik ─────────────────────────── */}
       <LimitsCard month={month} />
 
-      {/* ── 3-qator: cash flow (to'liq kenglik; debitor qarzdorlik endi KPI
-          qatorida oddiy karta) ──────────────────────────────────────────── */}
-      <CashflowChart height={360} />
-
-      {/* ── 4-qator: hisoblangan/yig'ilgan (keng) + qarz yoshi ───────── */}
+      {/* ── hisoblangan/yig'ilgan (keng) + qarz yoshi ───────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <AccrualChart className="xl:col-span-2" />
         <DebtAgingCard {...state} />
