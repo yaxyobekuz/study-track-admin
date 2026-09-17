@@ -710,7 +710,7 @@ const StudentFinanceSection = ({ studentId }) => {
                       {payment.receiptLabel}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-gray-500">
-                      {formatDateUZ(payment.paidAt)}
+                      {formatDateUz(payment.paidAt)}
                     </td>
                     <td className="px-3 py-2 text-right font-medium text-gray-900">
                       {formatMoney(payment.amount)}
