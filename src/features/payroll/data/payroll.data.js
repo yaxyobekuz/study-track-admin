@@ -155,6 +155,67 @@ export const allowanceLineLabel = (item) => {
   return item.label;
 };
 
+/**
+ * Majburiyat summasining TARKIBI — qator-qator (`PayrollEntryBreakdown`).
+ *
+ * Tartib summa qanday yig'ilgani bilan bir xil: asosiy maosh → dars soati →
+ * ustamalar (+) → ushlab qolish (−). Nol qatorlar ko'rsatilmaydi.
+ *
+ * @param {object} entry - `serializeEntry` natijasi
+ * @returns {Array<{key: string, label: string, amount: string, tone: "base"|"plus"|"minus"}>}
+ */
+export const buildEntryBreakdownLines = (entry) => {
+  if (!entry) return [];
+  const lines = [];
+
+  if (Number(entry.fixedAmount) > 0) {
+    lines.push({
+      key: "fixed",
+      label: entry.positionName ? `Lavozim maoshi (${entry.positionName})` : "Asosiy maosh",
+      amount: entry.fixedAmount,
+      tone: "base",
+    });
+  }
+
+  if (Number(entry.kpiAmount) > 0) {
+    lines.push({
+      key: "kpi",
+      label:
+        `Dars soati: ${entry.lessonHours} soat × ${formatMoney(entry.perHourRate)}` +
+        (entry.categoryName ? ` (${entry.categoryName})` : ""),
+      amount: entry.kpiAmount,
+      tone: "base",
+    });
+  }
+
+  (entry.allowanceBreakdown ?? []).forEach((item, index) => {
+    if (!(Number(item.amount) > 0)) return;
+    lines.push({
+      key: `allowance-${index}`,
+      label:
+        item.type === "percent"
+          ? `${item.label} · ${item.value}% asosiy oylikdan`
+          : allowanceLineLabel(item),
+      amount: item.amount,
+      tone: "plus",
+    });
+  });
+
+  (entry.deductionBreakdown ?? []).forEach((item, index) => {
+    if (!(Number(item.amount) > 0)) return;
+    const suffix =
+      item.type === "percent" ? ` · ${item.value}%` : item.type === "hours" ? ` · ${item.value} soat` : "";
+    lines.push({
+      key: `deduction-${item.id ?? index}`,
+      label: `Ushlab qolindi: ${item.reason || "sababsiz"}${suffix}`,
+      amount: item.amount,
+      tone: "minus",
+    });
+  });
+
+  return lines;
+};
+
 /** Ustama tafsiloti — jadval katagining `title` matni (qator-qator). */
 export const allowanceTooltip = (breakdown = []) =>
   breakdown.map((item) => `${allowanceLineLabel(item)}: ${formatMoney(item.amount)}`).join("\n");

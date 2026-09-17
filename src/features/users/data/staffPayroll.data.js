@@ -30,6 +30,13 @@ export const PAYROLL_ENTRY_COLUMNS = [
 ];
 
 /**
+ * Joriy oy majburiyati — qoida bo'lsa ham shakllantirilmagan bo'lishi
+ * mumkin: majburiyat oyda bir marta alohida hosil qilinadi.
+ */
+export const findCurrentEntry = ({ salary, entries }) =>
+  entries?.items?.find((item) => item.month === salary?.currentMonth) ?? null;
+
+/**
  * Oylik ko'rsatkichlari.
  *
  * ⚠️ Summalar ustida arifmetika QILINMAYDI — jami hisoblangan, to'langan va
@@ -43,11 +50,7 @@ export const PAYROLL_ENTRY_COLUMNS = [
  */
 export const buildPayrollTiles = ({ salary, entries }) => {
   const totals = entries?.totals ?? null;
-
-  // Joriy oy majburiyati — qoida bo'lsa ham shakllantirilmagan bo'lishi
-  // mumkin: majburiyat oyda bir marta alohida hosil qilinadi.
-  const currentEntry =
-    entries?.items?.find((item) => item.month === salary?.currentMonth) ?? null;
+  const currentEntry = findCurrentEntry({ salary, entries });
 
   return [
     {

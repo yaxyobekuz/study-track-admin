@@ -18,6 +18,7 @@ import { cn } from "@/shared/utils/cn";
  * @param {string} [props.hint]
  * @param {React.ComponentType} [props.icon] - lucide komponenti
  * @param {string} [props.valueClassName]
+ * @param {React.ReactNode} [props.children] - izohdan keyingi qo'shimcha tafsilot
  */
 const StatTile = ({
   label,
@@ -25,6 +26,7 @@ const StatTile = ({
   hint = "",
   icon: Icon = null,
   valueClassName = "text-gray-900",
+  children = null,
 }) => (
   <div className="rounded-2xl bg-white p-4">
     <div className="flex items-center gap-2.5">
@@ -44,6 +46,8 @@ const StatTile = ({
     </p>
 
     {hint && <p className="mt-1 text-xs leading-snug text-gray-400">{hint}</p>}
+
+    {children}
   </div>
 );
 
