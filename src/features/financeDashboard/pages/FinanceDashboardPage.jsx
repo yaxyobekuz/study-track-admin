@@ -200,18 +200,18 @@ const FinanceDashboardPage = () => {
       {/* ── 1-qator: KPI kartalari (kassa + qarz va oylik) ────────────── */}
       <KpiCards data={overview.data} isLoading={overview.isLoading} />
 
-      {/* ── 2-qator: sinflar bo'yicha sig'im/qarz (P&L o'rnini bosdi) ──── */}
-      {/* Rahbar bir qarashda: qaysi sinfda nechta joy bor, nechta o'quvchi,
-          nechta ortiqcha joy, nechta grant va qancha qarz. Sinfni bosib
-          o'sha sinfning to'liq moliyaviy sahifasiga o'tadi. */}
-      <ClassBreakdownCard
-        data={classBreakdown.data}
-        isLoading={classBreakdown.isLoading}
-        isError={classBreakdown.isError}
-      />
-
-      {/* ── xarajat limitlari (to'liq kenglik) ────────────────────────── */}
-      <LimitsCard month={month} />
+      {/* ── 2-qator: sinflar jadvali (chap yarim) + xarajat limitlari (o'ng yarim) ── */}
+      {/* Yonma-yon, teng ikkiga bo'lingan: chapda sinflar bo'yicha sig'im/qarz,
+          o'ngda xarajat limitlari. Sinfni bosib o'sha sinfning to'liq moliyaviy
+          sahifasiga o'tadi. */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <ClassBreakdownCard
+          data={classBreakdown.data}
+          isLoading={classBreakdown.isLoading}
+          isError={classBreakdown.isError}
+        />
+        <LimitsCard month={month} />
+      </div>
 
       {/* ── 3-qator: daromad tuzilmasi, cash flow, qarzdorlik ────────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
