@@ -60,6 +60,14 @@ export const paymentsAPI = {
   void: (id, reason) => http.post(`/payments/${id}/void`, { reason }),
   // Tahrirlash — eski bekor qilinib, tahrirlangan yangi to'lov yaratiladi
   replace: (id, data) => http.post(`/payments/${id}/replace`, data),
+
+  // Yechim (chekning bitta oyga tushgan ulushi): summani kamaytirish yoki
+  // boshqa ochiq oyga ko'chirish — { amount, invoiceId?, reason }
+  editAllocation: (allocationId, data) =>
+    http.post(`/payments/allocations/${allocationId}/edit`, data),
+  // Yechimni olib tashlash — pul depozitga, oyga avtomat yechish to'xtaydi
+  releaseAllocation: (allocationId, reason) =>
+    http.post(`/payments/allocations/${allocationId}/release`, { reason }),
 };
 
 /** To'lov turlari va ular orasidagi o'tkazmalar. */

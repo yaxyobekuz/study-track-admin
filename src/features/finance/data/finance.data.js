@@ -101,6 +101,21 @@ export const INVOICE_STATUS_META = {
   cancelled: { label: "Bekor qilingan", className: "bg-gray-100 text-gray-600" },
 };
 
+/** Qarzi bor (depozit yechilishi / yechim ko'chirilishi mumkin) holatlar. */
+export const OPEN_INVOICE_STATUSES = ["unpaid", "partial"];
+
+/**
+ * "Avtomat yechish to'xtatilgan" belgisi — admin shu oydan depozit yechimini
+ * qo'lda olib qo'ygan (`MonthlyInvoice.depositHold`).
+ */
+export const DEPOSIT_HOLD_META = {
+  label: "Depozitdan yechilmaydi",
+  title:
+    "Bu oydan depozit yechimi qo'lda olib qo'yilgan — depozitdan avtomat " +
+    "yechilmaydi. Depozitdagi \"Qarzlarga qo'llash\" tugmasi qayta yoqadi.",
+  className: "bg-orange-50 text-orange-700",
+};
+
 export const INVOICE_STATUS_OPTIONS = [
   { label: "Barchasi", value: "all" },
   { label: "To'lanmagan", value: "unpaid" },

@@ -1,5 +1,5 @@
 // React
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 
 // Icons
 import { Loader2, Plus, TriangleAlert, X } from "lucide-react";
@@ -32,7 +32,7 @@ import {
   RATE_SOURCE_OPTIONS,
 } from "../data/lessonHours.data";
 import { contractQueries } from "../queries/lessonHours.queries";
-import { allowanceLineLabel } from "@/features/payroll/data/payroll.data";
+import { allowanceLineLabel, deductionLineLabel } from "@/features/payroll/data/payroll.data";
 import { useSaveContract } from "../queries/lessonHours.mutations";
 
 /**
@@ -454,6 +454,10 @@ const ContractForm = ({ contract, onDone }) => {
  *
  * ⚠️ Qatorlar QO'SHILMAYDI: jami summa serverdan (`preview.amount`).
  * Lavozim va fiksa satrlari faqat tushuntirish.
+ *
+ * ⚠️ `preview.amount` — USHLAB QOLISHDAN KEYIN. Ushlab qolish qatorlari
+ * ko'rsatilmasa satrlar yig'indisi jamidan katta chiqadi va oyna "jamini
+ * noto'g'ri hisoblayapti" bo'lib ko'rinadi.
  */
 const ResultPanel = ({ contract, draft, preview, draftError, previewError, isBusy }) => {
   if (draftError) {
@@ -480,6 +484,9 @@ const ResultPanel = ({ contract, draft, preview, draftError, previewError, isBus
   const mode = modeOf(preview.salaryType);
   const keepsPosition = contract.position && !preview.positionRemoved;
   const hasRate = Number(preview.perHourRate) > 0;
+  // Nol summali qator (soat narxi yo'q xodimdan soatda ushlab qolish)
+  // jamiga ta'sir qilmaydi — ro'yxatni to'ldirmaydi.
+  const deductions = (preview.deductionBreakdown ?? []).filter((d) => Number(d.amount) > 0);
 
   return (
     <div className={cn(SURFACE.tile, "transition-opacity duration-200", isBusy && "opacity-60")}>
@@ -493,8 +500,8 @@ const ResultPanel = ({ contract, draft, preview, draftError, previewError, isBus
           <ul className="mt-2.5 space-y-1.5">
             {keepsPosition && (
               <Line
-                label={`Lavozim · ${contract.position.name}`}
-                value={formatMoney(contract.position.baseSalary)}
+                label={`Lavozim · ${contract.position.name}${preview.baseIsCustom ? " · shaxsiy maosh" : ""}`}
+                value={formatMoney(preview.baseAmount)}
               />
             )}
             {Number(draft?.fixedAmount) > 0 && (
@@ -513,6 +520,31 @@ const ResultPanel = ({ contract, draft, preview, draftError, previewError, isBus
                 value={formatMoney(item.amount)}
               />
             ))}
+            {deductions.length > 0 && (
+              <>
+                <Line
+                  label="Ushlab qolishsiz jami"
+                  value={formatMoney(preview.grossAmount)}
+                  className="mt-1 border-t border-slate-200/70 pt-2"
+                  labelClassName="font-medium text-slate-900"
+                />
+                {deductions.map((item, index) => (
+                  <Fragment key={item.id ?? `${item.reason}-${index}`}>
+                    <Line
+                      label={deductionLineLabel(item)}
+                      value={`− ${formatMoney(item.amount)}`}
+                      valueClassName="text-rose-600"
+                    />
+                    <Line
+                      label="Qoldi"
+                      value={formatMoney(item.remainingAfter)}
+                      className="pl-3"
+                      labelClassName="text-slate-400"
+                    />
+                  </Fragment>
+                ))}
+              </>
+            )}
           </ul>
 
           <div className="mt-3 flex items-end justify-between gap-3">
@@ -533,10 +565,10 @@ const ResultPanel = ({ contract, draft, preview, draftError, previewError, isBus
   );
 };
 
-const Line = ({ label, value }) => (
-  <li className="flex items-center justify-between gap-3">
-    <span className={cn(T.td, "min-w-0 truncate")}>{label}</span>
-    <span className={cn(T.tdNum, "shrink-0")}>{value}</span>
+const Line = ({ label, value, className, labelClassName, valueClassName }) => (
+  <li className={cn("flex items-center justify-between gap-3", className)}>
+    <span className={cn(T.td, "min-w-0 truncate", labelClassName)}>{label}</span>
+    <span className={cn(T.tdNum, "shrink-0", valueClassName)}>{value}</span>
   </li>
 );
 

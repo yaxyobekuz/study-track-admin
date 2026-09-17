@@ -5,6 +5,8 @@ import { toast } from "sonner";
 // Icons
 import {
   BadgePercent,
+  Ban,
+  Pencil,
   PiggyBank,
   Repeat,
   Scale,
@@ -28,6 +30,9 @@ import StudentFinanceStatusModal from "./StudentFinanceStatusModal";
 import AssignTariffModal from "./AssignTariffModal";
 import AssignDiscountModal from "./AssignDiscountModal";
 import MonthOverrideModal from "./MonthOverrideModal";
+import EditPaymentModal from "./EditPaymentModal";
+import EditAllocationModal from "./EditAllocationModal";
+import ReasonModal from "./ReasonModal";
 import {
   AdjustStudentBalanceModal,
   RefundDepositModal,
@@ -39,7 +44,7 @@ import useModal from "@/shared/hooks/useModal";
 // Utils & helpers
 import { cn } from "@/shared/utils/cn";
 import { formatMoney } from "@/shared/utils/formatMoney";
-import { formatDateUZ } from "@/shared/utils/date.utils";
+import { formatDateUz } from "@/shared/utils/date.utils";
 import {
   currentMonthKey,
   formatMonthRange,
@@ -47,15 +52,19 @@ import {
 
 // Data & queries
 import {
+  DEPOSIT_HOLD_META,
   FINANCE_STATUS_META,
   INVOICE_STATUS_META,
   MOVEMENT_TYPE_META,
+  OPEN_INVOICE_STATUSES,
   TIMELINE_SKIP_LABELS,
 } from "../data/finance.data";
 import { financeQueries } from "../queries/finance.queries";
 import {
   useApplyDeposit,
   useDeleteFinanceStatus,
+  useReleaseAllocation,
+  useVoidPayment,
 } from "../queries/finance.mutations";
 
 /**
@@ -92,6 +101,8 @@ const StudentFinanceSection = ({ studentId }) => {
 
   const { mutate: deleteStatus } = useDeleteFinanceStatus();
   const { mutate: applyDeposit } = useApplyDeposit();
+  const { mutate: voidPayment } = useVoidPayment();
+  const { mutate: releaseAllocation } = useReleaseAllocation();
 
   const statusBadge =
     FINANCE_STATUS_META[statusData?.currentStatus?.status ?? "active"];
@@ -126,6 +137,74 @@ const StudentFinanceSection = ({ studentId }) => {
       onError: handleError,
     });
   };
+
+  // "To'lov qabul qilindi" → chekni bekor qilish (to'lovlar registridagi
+  // AYNI amal: chekning barcha yechimlari qaytadi)
+  const askVoidPayment = (item) =>
+    openModal("financeReason", {
+      description: `Chek ${item.receiptLabel} — ${formatMoney(item.amount)}`,
+      consequences: [
+        "Shu chekdan yechilgan barcha oylar qayta ochiladi",
+        "Depozitda boshqa pul bo'lsa, qayta ochilgan oylar undan avtomat yopiladi",
+        "Pul to'lov turidan chiqim sifatida qaytariladi",
+      ],
+      warning:
+        "Qisman bekor qilish yo'q. Summa xato bo'lsa, \"Tahrirlash\" dan foydalaning.",
+      confirmLabel: "Bekor qilish",
+      onConfirm: (reason, { close, setIsLoading }) => {
+        setIsLoading(true);
+        voidPayment(
+          { id: item.paymentId, reason },
+          {
+            onSuccess: (result) => {
+              close();
+              toast.success(
+                Number(result.depositApplied) > 0
+                  ? `To'lov bekor qilindi — ${formatMoney(result.depositApplied)} depozitdan yechildi`
+                  : "To'lov bekor qilindi",
+              );
+            },
+            onError: handleError,
+            onSettled: () => setIsLoading(false),
+          },
+        );
+      },
+    });
+
+  // "Hisob-fakturaga yechildi" → yechimni olib tashlash
+  const askReleaseAllocation = (item) =>
+    openModal("financeReason", {
+      description: `${item.description} — ${formatMoney(item.amount)}${
+        item.receiptLabel ? ` (chek ${item.receiptLabel})` : ""
+      }`,
+      consequences: [
+        `${item.description} oyidan shu summa olib tashlanadi — oy yana qarz bo'ladi`,
+        "Pul depozitga qaytadi: avval boshqa ochiq qarzlarga yechiladi, qolgani depozitda turadi",
+        `${item.description} oyiga depozitdan avtomat yechish to'xtatiladi`,
+      ],
+      warning:
+        "Qayta yoqish uchun depozitdagi \"Qarzlarga qo'llash\" tugmasini bosing.",
+      confirmLabel: "O'chirish",
+      onConfirm: (reason, { close, setIsLoading }) => {
+        setIsLoading(true);
+        releaseAllocation(
+          { allocationId: item.allocationId, reason },
+          {
+            onSuccess: (result) => {
+              close();
+              toast.success(
+                Number(result.appliedToOthers) > 0
+                  ? `Yechim o'chirildi — ${formatMoney(result.releasedToDeposit)} depozitga qaytdi, ` +
+                      `${formatMoney(result.appliedToOthers)} boshqa oylarga yechildi`
+                  : `Yechim o'chirildi — ${formatMoney(result.releasedToDeposit)} depozitga qaytdi`,
+              );
+            },
+            onError: handleError,
+            onSettled: () => setIsLoading(false),
+          },
+        );
+      },
+    });
 
   return (
     <div className="space-y-5">
@@ -246,7 +325,7 @@ const StudentFinanceSection = ({ studentId }) => {
               {hasBalance && (
                 <Can do="finance.pay">
                   <button
-                    title="Qarzlarga qo'llash"
+                    title="Qarzlarga qo'llash (avtomat yechish to'xtatilgan oylar ham)"
                     onClick={() =>
                       applyDeposit(studentId, {
                         onSuccess: (result) =>
@@ -467,11 +546,25 @@ const StudentFinanceSection = ({ studentId }) => {
 
                       <td className="px-3 py-2 whitespace-nowrap">
                         {badge ? (
-                          <span
-                            className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${badge.className}`}
-                          >
-                            {badge.label}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-1">
+                            <span
+                              className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${badge.className}`}
+                            >
+                              {badge.label}
+                            </span>
+
+                            {/* Admin shu oydan yechimni olib qo'ygan — depozit
+                                bor-u oy qarz bo'lib turgani shu sababdan */}
+                            {invoice.depositHold &&
+                              OPEN_INVOICE_STATUSES.includes(invoice.status) && (
+                                <span
+                                  title={DEPOSIT_HOLD_META.title}
+                                  className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${DEPOSIT_HOLD_META.className}`}
+                                >
+                                  {DEPOSIT_HOLD_META.label}
+                                </span>
+                              )}
+                          </div>
                         ) : row.skipReason ? (
                           // "O'qimagan" va "ta'til" ni "shakllantirilmagan" dan
                           // ajratish shart: birinchisi qoida, ikkinchisi kamchilik
@@ -489,11 +582,15 @@ const StudentFinanceSection = ({ studentId }) => {
 
                       <td className="px-3 py-2 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
-                          {/* Chek raqamlari — ota-ona telefon qilganda kerak */}
+                          {/* Chek raqamlari — ota-ona telefon qilganda kerak.
+                              Bitta chek oyga ikki marta tushishi mumkin
+                              (to'lovdan + keyin depozitdan) — takrorlanmasin */}
                           <span className="text-xs text-gray-400">
-                            {invoice?.payments
-                              ?.map((p) => p.receiptLabel)
-                              .join(", ")}
+                            {[
+                              ...new Set(
+                                (invoice?.payments ?? []).map((p) => p.receiptLabel),
+                              ),
+                            ].join(", ")}
                           </span>
 
                           {/* Oy summasini sabab bilan o'zgartirish — faqat
@@ -540,12 +637,21 @@ const StudentFinanceSection = ({ studentId }) => {
                   return (
                     <tr key={item.id} className="border-b border-gray-50 last:border-0">
                       <td className="px-3 py-2 whitespace-nowrap text-gray-500">
-                        {formatDateUZ(item.occurredAt)}
+                        {formatDateUz(item.occurredAt)}
                       </td>
                       <td className={cn("px-3 py-2 whitespace-nowrap", meta?.className)}>
                         {meta?.label ?? item.label}
                       </td>
-                      <td className="px-3 py-2 text-gray-500">{item.description}</td>
+                      <td className="px-3 py-2 text-gray-500">
+                        {item.description}
+                        {/* Yechim qaysi chekdan va qanday tushgani — tahrirlashdan
+                            oldin "bu qaysi pul" degan savolga javob */}
+                        {item.type === "allocation" && item.receiptLabel && (
+                          <span className="ml-1.5 text-xs text-gray-400">
+                            Chek {item.receiptLabel} · {item.sourceLabel}
+                          </span>
+                        )}
+                      </td>
                       <td
                         className={cn(
                           "px-3 py-2 text-right font-medium whitespace-nowrap",
@@ -554,6 +660,57 @@ const StudentFinanceSection = ({ studentId }) => {
                       >
                         {item.direction === "in" ? "+" : "−"}
                         {formatMoney(item.amount)}
+                      </td>
+
+                      <td className="w-px px-2 py-2 text-right whitespace-nowrap">
+                        {/* To'lov — to'lovlar registridagi AYNI ruxsat va oynalar */}
+                        {item.type === "payment" && item.payment && (
+                          <Can do="finance.void">
+                            <div className="flex items-center justify-end gap-0.5">
+                              <button
+                                title="To'lovni tahrirlash"
+                                onClick={() =>
+                                  openModal("editPayment", { payment: item.payment })
+                                }
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                              >
+                                <Pencil className="size-3.5" />
+                              </button>
+                              <button
+                                title="To'lovni bekor qilish"
+                                onClick={() => askVoidPayment(item)}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                              >
+                                <Ban className="size-3.5" />
+                              </button>
+                            </div>
+                          </Can>
+                        )}
+
+                        {/* Yechim — kassaga tegmaydi, lekin oy qarzini
+                            o'zgartiradi: `finance.adjust` */}
+                        {item.type === "allocation" && item.allocationId && (
+                          <Can do="finance.adjust">
+                            <div className="flex items-center justify-end gap-0.5">
+                              <button
+                                title="Yechimni tahrirlash"
+                                onClick={() =>
+                                  openModal("editAllocation", { item, studentId })
+                                }
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                              >
+                                <Pencil className="size-3.5" />
+                              </button>
+                              <button
+                                title="Yechimni o'chirish"
+                                onClick={() => askReleaseAllocation(item)}
+                                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </div>
+                          </Can>
+                        )}
                       </td>
                     </tr>
                   );
@@ -573,6 +730,9 @@ const StudentFinanceSection = ({ studentId }) => {
       <AssignDiscountModal />
       <RefundDepositModal />
       <AdjustStudentBalanceModal />
+      <EditPaymentModal />
+      <EditAllocationModal />
+      <ReasonModal />
     </div>
   );
 };

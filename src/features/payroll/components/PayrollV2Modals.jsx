@@ -222,9 +222,9 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
     ...payrollQueries.categories({ departmentId: department?.id, status: "active" }),
     enabled: Boolean(department?.id) && isTeaching,
   });
-  // Xodim berilmagan — ro'yxatdan tanlanadi. Server shu bo'limga allaqachon
-  // biriktirilganlarni chiqarib beradi (bir xodim ikki marta tanlanmasin),
-  // oyligi belgilanmaganlar esa tepada keladi.
+  // Xodim berilmagan — ro'yxatdan tanlanadi. Server FAQAT oyligi
+  // belgilanmaganlarni beradi: oyligi bor xodimni boshqa lavozimga o'tkazish
+  // uning qatoridagi tugma orqali.
   const { data: people = [], isLoading: peopleLoading } = useQuery({
     ...payrollQueries.assignCandidates(department?.id),
     enabled: !staff && Boolean(department?.id),
@@ -244,17 +244,8 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
     ? categories.map((c) => ({ label: `${c.name} — ${formatMoney(c.perHourRate)}/soat`, value: c.id }))
     : positions.map((p) => ({ label: `${p.name} — ${formatMoney(p.baseSalary)}`, value: p.id }));
 
-  // Boshqa bo'limdagilar ham chiqadi — tanlansa KO'CHIRILADI (nusxa emas).
   // Rol yorliqda: "cleaner" deb qidirib farroshlarni topish mumkin.
-  const peopleOptions = people.map((p) => {
-    const status = p.currentLabel
-      ? ` — hozir: ${p.currentLabel}`
-      : p.hasSalary
-        ? ""
-        : " — oylik belgilanmagan";
-    return { label: `${p.fullName} · ${p.role}${status}`, value: p.id };
-  });
-  const unassignedCount = people.filter((p) => !p.hasSalary).length;
+  const peopleOptions = people.map((p) => ({ label: `${p.fullName} · ${p.role}`, value: p.id }));
 
   // ── JONLI HISOB ─────────────────────────────
   // O'qituvchi + toifa tanlangach: shu oydagi dars soati va taxminiy oylik
@@ -310,17 +301,15 @@ const AssignStaffForm = ({ close, isLoading, setIsLoading, staff, department, ca
               people.length > 0
                 ? "Qidiruvga mos xodim topilmadi"
                 : isTeaching
-                  ? "Hamma o'qituvchi shu bo'limga biriktirilgan"
-                  : "Hamma xodim shu bo'limga biriktirilgan. O'qituvchilar bu yerda emas — toifa orqali biriktiriladi"
+                  ? "Oyligi belgilanmagan o'qituvchi yo'q"
+                  : "Oyligi belgilanmagan xodim yo'q. O'qituvchilar bu yerda emas — toifa orqali biriktiriladi"
             }
             onChange={(v) => setField("staffId", v)}
             options={peopleOptions}
           />
-          {!peopleLoading && unassignedCount > 0 && (
-            <p className="text-xs text-amber-600">
-              Oyligi belgilanmagan: {unassignedCount} ta — ro'yxat tepasida
-            </p>
-          )}
+          <p className="text-xs text-gray-500">
+            Faqat oyligi belgilanmaganlar. Oyligi borini boshqa lavozimga o'tkazish — uning qatoridagi tugma orqali.
+          </p>
         </div>
       )}
       <div className="space-y-1.5">

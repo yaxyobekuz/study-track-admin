@@ -18,19 +18,27 @@ export const tutorGroupsQueries = {
       enabled: Boolean(staffId),
     }),
 
-  /** Biriktirish oynasi: sinflar, o'quvchilar soni va kimga biriktirilgani. */
+  /**
+   * Biriktirish oynasi: sinflar, o'quvchilar soni va tanlangan davrda
+   * (`month` … `endMonth`) kimga biriktirilgani. Davr almashganda ro'yxat
+   * miltillamasin — eski natija `isPlaceholderData` bilan turadi.
+   */
   classOptions: (params) =>
     queryOptions({
       queryKey: [...tutorGroupsKeys.all, "classOptions", params],
       queryFn: () => tutorGroupsAPI.getClassOptions(params).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
     }),
 
-  /** Jonli hisob — oynadagi "jami" serverdan (summa frontendda hisoblanmaydi). */
+  /**
+   * Jonli hisob — oynadagi "jami" serverdan (summa frontendda hisoblanmaydi).
+   * `classIds` — bir yoki bir nechta sinf; har sinf alohida va jami.
+   */
   preview: (data) =>
     queryOptions({
       queryKey: [...tutorGroupsKeys.all, "preview", data],
       queryFn: () => tutorGroupsAPI.preview(data).then((r) => r.data.data),
-      enabled: Boolean(data?.classId),
+      enabled: Array.isArray(data?.classIds) && data.classIds.length > 0,
       placeholderData: keepPreviousData,
     }),
 

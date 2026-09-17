@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Icons
-import { Ban, Pencil, Plus, Receipt, RefreshCw, Users, Wallet, XCircle, Award, Archive, Trash2 } from "lucide-react";
+import { Ban, Pencil, Plus, Receipt, RefreshCw, Search, Users, Wallet, XCircle, Award, Archive, Trash2 } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -39,6 +39,7 @@ import TeachingDepartmentView from "../components/TeachingDepartmentView";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import useDebounce from "@/shared/hooks/useDebounce";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
@@ -201,9 +202,11 @@ const EntriesView = () => {
 
   const [month, setMonth] = useState(monthKeyToInputValue(currentMonthKey()));
   const [status, setStatus] = useState("");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
   const monthKey = inputValueToMonthKey(month);
+  const debouncedSearch = useDebounce(search.trim(), 400);
 
   const { data, isLoading } = useQuery(
     payrollQueries.entries({
@@ -211,6 +214,7 @@ const EntriesView = () => {
       limit: 20,
       ...(monthKey ? { month: monthKey } : {}),
       ...(status ? { status } : {}),
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
     }),
   );
 
@@ -223,9 +227,12 @@ const EntriesView = () => {
       { month: monthKey },
       {
         onSuccess: (result) => {
-          if (result.created > 0) {
+          if (result.created > 0 || result.restored > 0) {
+            // Bekor qilingan majburiyat qayta hisoblanib tiklanadi — alohida
+            // aytiladi, aks holda "yangi qator qayerdan chiqdi" degan savol qolardi
+            const restoredText = result.restored > 0 ? `, ${result.restored} tasi bekordan tiklandi` : "";
             toast.success(
-              `${result.monthLabel}: ${result.created} ta oylik shakllantirildi`,
+              `${result.monthLabel}: ${result.created} ta oylik shakllantirildi${restoredText}`,
             );
           } else if (result.skipped.alreadyExists > 0) {
             toast.info("Bu oy allaqachon shakllantirilgan");
@@ -271,6 +278,20 @@ const EntriesView = () => {
               setPage(1);
             }}
           />
+
+          <label className="flex h-10 items-center gap-2 rounded-xl border border-gray-200 px-3 focus-within:border-primary">
+            <Search className="size-4 text-gray-400" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Xodimni qidirish"
+              className="w-44 bg-transparent text-sm outline-none"
+            />
+          </label>
         </div>
 
         <Can do="payroll.generate">
@@ -308,19 +329,23 @@ const EntriesView = () => {
         <Card className="p-0 xs:p-0">
           <EmptyState
             icon={Wallet}
-            title="Oylik majburiyati yo'q"
+            title={debouncedSearch ? "Xodim topilmadi" : "Oylik majburiyati yo'q"}
             description={
-              monthKey
-                ? `${formatMonthKey(monthKey)} uchun hali shakllantirilmagan. "Qoidalar" tabida xodimlarga oylik belgilang, so'ng "Shakllantirish" tugmasini bosing.`
-                : "Oy tanlang."
+              debouncedSearch
+                ? `"${debouncedSearch}" bo'yicha majburiyat topilmadi.`
+                : monthKey
+                  ? `${formatMonthKey(monthKey)} uchun hali shakllantirilmagan. "Qoidalar" tabida xodimlarga oylik belgilang, so'ng "Shakllantirish" tugmasini bosing.`
+                  : "Oy tanlang."
             }
             action={
-              <Can do="payroll.generate">
-                <Button onClick={handleGenerate} loading={isGenerating}>
-                  <RefreshCw />
-                  Shakllantirish
-                </Button>
-              </Can>
+              !debouncedSearch && (
+                <Can do="payroll.generate">
+                  <Button onClick={handleGenerate} loading={isGenerating}>
+                    <RefreshCw />
+                    Shakllantirish
+                  </Button>
+                </Can>
+              )
             }
           />
         </Card>

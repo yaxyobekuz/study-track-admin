@@ -258,6 +258,15 @@ export const formatDeductionValue = (type, value) =>
       : formatMoney(value);
 
 /**
+ * Ushlab qolish qatori yorlig'i (dvigatelning `deductionBreakdown` elementi).
+ * So'mdagisida qiymat summaning o'zi — takrorlanmaydi.
+ */
+export const deductionLineLabel = (item) =>
+  item.type === "fixed"
+    ? `Ushlab qolish: ${item.reason}`
+    : `Ushlab qolish: ${item.reason} · ${formatDeductionValue(item.type, item.value)}`;
+
+/**
  * Davr. Server `endMonth` ni shunday o'qiydi: son → oraliq, `null` →
  * muddatsiz, berilmasa → faqat boshlanish oyi.
  */

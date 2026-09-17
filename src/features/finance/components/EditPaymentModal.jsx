@@ -18,27 +18,23 @@ import InputField from "@/shared/components/ui/input/InputField";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
+// Utils
+import { todayInputValue, toDateInputValue } from "@/shared/utils/date.utils";
+
 // API & queries
 import { financeQueries } from "../queries/finance.queries";
 import { usersAPI } from "@/features/users/api/users.api";
 
-/** Bugungi sana — `input[type=date]` max qiymati. */
-const todayInputValue = () => {
-  const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 10);
-};
-
-/** ISO sana → `YYYY-MM-DD` (input qiymati). */
-const toDateInput = (iso) => (iso ? String(iso).slice(0, 10) : "");
-
 /**
  * To'lovni tahrirlash.
  *
- * ⚠️ Daftar APPEND-ONLY — "joyida o'zgartirish" yo'q. Tahrirlash = eski
- * to'lovni BEKOR QILISH + tahrirlangan yangi to'lov yaratish (server
- * `editPayment`). Ikkalasi ham auditda qoladi. O'quvchi, summa, to'lov turi,
- * sana va izoh — hammasi o'zgartirilishi mumkin.
+ * ⚠️ Daftar APPEND-ONLY. Pulga tegadigan tahrir (o'quvchi, summa, to'lov
+ * turi) = eski to'lovni BEKOR QILISH + tahrirlangan yangi to'lov, serverda
+ * BITTA tranzaksiyada (`editPayment`); ikkalasi ham auditda qoladi. Faqat
+ * sana / izoh o'zgarsa — chek JOYIDA yangilanadi, raqami o'zgarmaydi.
+ *
+ * ⚠️ Sana faqat O'ZGARGANDA yuboriladi: input kunni beradi, vaqtni emas —
+ * har saqlashda yuborilsa to'lov vaqti jimgina kun boshiga surilardi.
  *
  * `openModal("editPayment", { payment })` — `payment` da xom maydonlar
  * (studentId, accountId, amount, paidAt, note) bo'lishi kerak.
@@ -65,9 +61,15 @@ const Content = ({ close, isLoading, setIsLoading, payment }) => {
     studentId: payment?.studentId ?? "",
     amount: payment?.amount != null ? String(Number(payment.amount)) : "",
     accountId: payment?.accountId ?? "",
-    paidAt: toDateInput(payment?.paidAt),
+    paidAt: toDateInputValue(payment?.paidAt),
     note: payment?.note ?? "",
   });
+
+  // Pulga tegadigan maydon o'zgardimi — ogohlantirish matni shunga qarab
+  const moneyChanged =
+    studentId !== payment?.studentId ||
+    accountId !== payment?.accountId ||
+    Number(amount) !== Number(payment?.amount);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -76,16 +78,28 @@ const Content = ({ close, isLoading, setIsLoading, payment }) => {
     if (!(Number(amount) > 0)) return toast.error("Summani kiriting");
     if (!accountId) return toast.error("To'lov turini tanlang");
 
+    const dayChanged = paidAt !== toDateInputValue(payment.paidAt);
+
     setIsLoading(true);
     editPayment(
       {
         id: payment.id,
-        data: { studentId, accountId, amount: String(amount), paidAt, note },
+        data: {
+          studentId,
+          accountId,
+          amount: String(amount),
+          note,
+          ...(dayChanged ? { paidAt } : {}),
+        },
       },
       {
         onSuccess: (result) => {
           close();
-          toast.success(`Tahrirlandi — yangi chek ${result.receiptLabel}`);
+          toast.success(
+            result.id === payment.id
+              ? "To'lov yangilandi"
+              : `Tahrirlandi — yangi chek ${result.receiptLabel}`,
+          );
         },
         onError: (err) =>
           toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
@@ -96,13 +110,21 @@ const Content = ({ close, isLoading, setIsLoading, payment }) => {
 
   return (
     <InputGroup onSubmit={handleSubmit} as="form">
-      <div className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
-        <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-        <p>
-          Eski to'lov <b>bekor qilinadi</b> va tahrirlangan yangi to'lov (yangi
-          chek raqami bilan) yaratiladi. Taqsimot va depozit qayta hisoblanadi.
+      {moneyChanged ? (
+        <div className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
+          <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+          <p>
+            Eski to'lov <b>bekor qilinadi</b> va tahrirlangan yangi to'lov (yangi
+            chek raqami bilan) yaratiladi. Oylarga taqsimot va depozit qayta
+            hisoblanadi.
+          </p>
+        </div>
+      ) : (
+        <p className="rounded-xl bg-gray-50 p-3 text-sm text-gray-600">
+          Faqat sana yoki izoh o'zgarsa, chek raqami o'zgarmaydi — oylarga yechilgan
+          summalar ham joyida qoladi.
         </p>
-      </div>
+      )}
 
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">O'quvchi</p>

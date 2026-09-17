@@ -306,6 +306,26 @@ export const useEditPayment = () => {
   });
 };
 
+/** Yechimni tahrirlash — summani kamaytirish / boshqa oyga ko'chirish. */
+export const useEditAllocation = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ allocationId, data }) =>
+      paymentsAPI.editAllocation(allocationId, data).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
+/** Yechimni olib tashlash — pul depozitga qaytadi. */
+export const useReleaseAllocation = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ allocationId, reason }) =>
+      paymentsAPI.releaseAllocation(allocationId, reason).then((r) => r.data.data),
+    onSuccess: () => invalidateFinance(qc),
+  });
+};
+
 export const useUpdatePaymentNote = () => {
   const qc = useQueryClient();
   return useMutation({

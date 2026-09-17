@@ -100,6 +100,7 @@ const PaymentsPage = () => {
           ? `${payment.allocations.length} ta oy qayta ochiladi`
           : "Bu chek hech qaysi oyga taqsimlanmagan",
         "Pul to'lov turidan chiqim sifatida qaytariladi (depozitga qo'shilmaydi)",
+        "O'quvchi depozitida boshqa pul bo'lsa, qayta ochilgan oylar undan avtomat yopiladi",
         "To'lov ro'yxatdan va umumiy summadan butunlay chiqariladi",
       ],
       warning:
@@ -113,9 +114,15 @@ const PaymentsPage = () => {
             onSuccess: (result) => {
               close();
               toast.success(
-                result.reopened?.length
-                  ? `Bekor qilindi — ${result.reopened.length} ta oy qayta ochildi`
-                  : "To'lov bekor qilindi",
+                [
+                  result.reopened?.length
+                    ? `Bekor qilindi — ${result.reopened.length} ta oy qayta ochildi`
+                    : "To'lov bekor qilindi",
+                  Number(result.depositApplied) > 0 &&
+                    `${formatMoney(result.depositApplied)} depozitdan yechildi`,
+                ]
+                  .filter(Boolean)
+                  .join(", "),
               );
             },
             onError: (err) =>
