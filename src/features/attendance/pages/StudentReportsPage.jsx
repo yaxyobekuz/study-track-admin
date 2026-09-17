@@ -126,6 +126,11 @@ const StudentReportsPage = () => {
     ),
   };
 
+  // O'quvchi qatoriga bosilganda profil darhol "Davomat" tabida ochiladi:
+  // bu hisobotdan kelgan odam aynan qoldirilgan kunlarni ko'rmoqchi
+  const buildStudentProfilePath = (studentId) =>
+    `/users/${studentId}?tab=attendance`;
+
   // Umumiy foiz kartalari: KUNLIK (tanlangan kun) va OYLIK (tanlangan oy).
   // Foiz = kelganlar / KUTILGAN (jadval bo'yicha), belgilanganlarga nisbatan emas
   const overallItems = OVERALL_PERCENT_CARDS.map(({ key, label }) => {
@@ -297,7 +302,11 @@ const StudentReportsPage = () => {
               </thead>
               <tbody>
                 {riskGroup.map((s) => (
-                  <tr key={s.studentId} className="border-t border-gray-100">
+                  <tr
+                    key={s.studentId}
+                    onClick={() => navigate(buildStudentProfilePath(s.studentId))}
+                    className="cursor-pointer border-t border-gray-100 hover:bg-gray-50"
+                  >
                     <td className="px-4 py-3 font-medium text-gray-900">
                       {s.name}
                     </td>
@@ -386,7 +395,11 @@ const StudentReportsPage = () => {
               </thead>
               <tbody>
                 {topStudents.map((s, idx) => (
-                  <tr key={s.studentId} className="border-t border-gray-100">
+                  <tr
+                    key={s.studentId}
+                    onClick={() => navigate(buildStudentProfilePath(s.studentId))}
+                    className="cursor-pointer border-t border-gray-100 hover:bg-gray-50"
+                  >
                     <td className="px-4 py-3">
                       <span
                         className={cn(
