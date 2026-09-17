@@ -14,7 +14,7 @@ import { cn } from "@/shared/utils/cn";
  * `overviewDashboard.counts`). Grant qismini bosib grant o'quvchilar
  * ro'yxatiga o'tiladi.
  */
-const StudentsKpiCard = ({ data, className }) => {
+const StudentsKpiCard = ({ data, topServices = [], className }) => {
   const navigate = useNavigate();
   const counts = data?.counts;
   const month = data?.month;
@@ -67,9 +67,36 @@ const StudentsKpiCard = ({ data, className }) => {
         </div>
       </div>
 
-      <p className="relative mt-3 border-t border-gray-100 pt-2.5 text-[11px] text-gray-400">
-        Grant — "Grand 100%" tarifidagilar. Bosib ro'yxatni ko'ring.
-      </p>
+      {/* Eng ko'p ishlatiladigan qo'shimcha xizmatlar (doim top 3) */}
+      <div className="relative mt-3 border-t border-gray-100 pt-2.5">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400">
+          Ko'p ishlatiladigan xizmatlar
+        </p>
+        {topServices.length === 0 ? (
+          <p className="mt-1 text-[11px] text-gray-400">
+            Xizmatlardan foydalanuvchilar yo'q
+          </p>
+        ) : (
+          <div className="mt-1.5 space-y-1">
+            {topServices.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                title="Bu xizmatdan foydalanuvchilarni ko'rish"
+                onClick={() => navigate(`/finance/main/services?serviceId=${s.id}`)}
+                className="flex w-full items-center justify-between gap-2 text-xs hover:text-primary"
+              >
+                <span className="min-w-0 flex-1 truncate text-left text-gray-700">
+                  {s.name}
+                </span>
+                <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-[11px] font-medium text-blue-700">
+                  {s.assignedCount} ta
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

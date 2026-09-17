@@ -38,6 +38,14 @@ export const dashboardQueries = {
       staleTime: STALE,
     }),
 
+  cashflow: (params) =>
+    queryOptions({
+      queryKey: [...dashboardKeys.all, "cashflow-trend", params],
+      queryFn: () =>
+        financeDashboardAPI.getCashflowTrend(params).then((r) => r.data.data),
+      staleTime: STALE,
+    }),
+
   expenseBudgets: (params) =>
     queryOptions({
       queryKey: [...dashboardKeys.all, "expense-budgets", params],

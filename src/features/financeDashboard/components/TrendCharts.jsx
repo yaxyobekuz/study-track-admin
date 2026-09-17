@@ -1,3 +1,9 @@
+// React
+import { useState } from "react";
+
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
+
 // Recharts
 import {
   Bar,
@@ -17,10 +23,19 @@ import DashboardCard from "@/shared/components/dashboard/DashboardCard";
 import MoneyTooltip from "./MoneyTooltip";
 
 // Utils
+import { cn } from "@/shared/utils/cn";
 import { formatMoney } from "@/shared/utils/formatMoney";
 
-// Data
+// Data & queries
 import { AXIS, COLORS, compactMoney } from "../data/financeDashboard.data";
+import { dashboardQueries } from "../queries/financeDashboard.queries";
+
+/** Cash flow granulyatsiyasi. */
+const CASHFLOW_GRAN = [
+  { value: "day", label: "Kunlik" },
+  { value: "month", label: "Oylik" },
+  { value: "year", label: "Yillik" },
+];
 
 // ⚠️ CHAP MARJA MANFIY BO'LMAYDI va `YAxis` kengligi yorliqqa yetarli
 // bo'lishi kerak. Ilgari `left: -12` va `width: 58` turgani uchun "500 mln"
@@ -96,23 +111,89 @@ export const TrendChart = ({ data, isLoading, isError }) => {
  * to'g'rilash ham qoldiqni o'zgartiradi, lekin na tushum, na xarajat
  * hisoblanadi. Server uni kassa daftarining o'zidan hisoblaydi.
  */
-export const CashflowChart = ({ data, isLoading, isError }) => {
-  const series = toNumbers(data?.trend);
+export const CashflowChart = ({ className }) => {
+  const [granularity, setGranularity] = useState("month");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
+  // Ikkala sana to'ldirilsagina oraliq serverga uzatiladi (aks holda
+  // granulyatsiyaga mos standart oraliq: 30 kun / 12 oy / 5 yil)
+  const range = from && to ? { from, to } : {};
+  const { data, isLoading, isError } = useQuery(
+    dashboardQueries.cashflow({ granularity, ...range }),
+  );
+
+  const series = toNumbers(data?.series);
   const hasData = series.some((row) => row.incomeNum > 0 || row.expenseNum > 0);
 
   return (
     <DashboardCard
-      title="Cash flow (oylik)"
-      hint="Ustun — kirim va chiqim, chiziq — oy oxiridagi kassa qoldig'i"
+      title="Cash flow"
+      className={className}
+      hint="Ustun — kirim va chiqim, chiziq — kassa qoldig'i"
       isLoading={isLoading}
       isError={isError}
       isEmpty={!hasData}
       height={280}
+      action={
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Granulyatsiya — kunlik / oylik / yillik */}
+          <div className="flex items-center gap-0.5 rounded-lg bg-gray-100 p-0.5">
+            {CASHFLOW_GRAN.map((g) => (
+              <button
+                key={g.value}
+                type="button"
+                onClick={() => setGranularity(g.value)}
+                className={cn(
+                  "rounded-md px-2 py-0.5 text-xs font-medium transition",
+                  granularity === g.value
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700",
+                )}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Sanadan — sanagacha (ixtiyoriy oraliq) */}
+          <div className="flex items-center gap-1">
+            <input
+              type="date"
+              value={from}
+              max={to || undefined}
+              onChange={(e) => setFrom(e.target.value)}
+              className="rounded-md border border-gray-200 px-1.5 py-0.5 text-xs text-gray-600 focus:border-primary focus:outline-none"
+            />
+            <span className="text-gray-300">—</span>
+            <input
+              type="date"
+              value={to}
+              min={from || undefined}
+              onChange={(e) => setTo(e.target.value)}
+              className="rounded-md border border-gray-200 px-1.5 py-0.5 text-xs text-gray-600 focus:border-primary focus:outline-none"
+            />
+            {(from || to) && (
+              <button
+                type="button"
+                title="Oraliqni tozalash"
+                onClick={() => {
+                  setFrom("");
+                  setTo("");
+                }}
+                className="rounded-md px-1 text-xs text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+      }
     >
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={series} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke="#f3f4f6" />
-          <XAxis dataKey="monthShort" {...AXIS} interval="preserveStartEnd" />
+          <XAxis dataKey="label" {...AXIS} interval="preserveStartEnd" />
           <YAxis {...AXIS} tickFormatter={compactMoney} width={72} tickMargin={6} />
           <Tooltip content={<MoneyTooltip />} cursor={{ fill: "#f9fafb" }} />
           <Legend iconType="circle" wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />

@@ -125,6 +125,17 @@ const FinanceDashboardPage = () => {
     enabled: allowed,
   });
 
+  // Qo'shimcha xizmatlar — eng ko'p foydalanuvchisi bor 3 tasi (o'quvchilar
+  // kartasi ostida). Manba xizmatlar katalogining `assignedCount` i.
+  const servicesData = useQuery({
+    ...financeQueries.serviceList({}),
+    enabled: allowed,
+  });
+  const topServices = [...(servicesData.data ?? [])]
+    .filter((s) => (s.assignedCount ?? 0) > 0)
+    .sort((a, b) => (b.assignedCount ?? 0) - (a.assignedCount ?? 0))
+    .slice(0, 3);
+
   if (!allowed) {
     return (
       <Card className="p-0 xs:p-0">
@@ -210,7 +221,7 @@ const FinanceDashboardPage = () => {
       {/* ── 2-qator: OYLIK (2/3) + o'quvchilar kartasi (1/3) ──────────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <PayrollKpiCard kpi={overview.data?.kpi} className="xl:col-span-2" />
-        <StudentsKpiCard data={classBreakdown.data} />
+        <StudentsKpiCard data={classBreakdown.data} topServices={topServices} />
       </div>
 
       {/* ── Maktab sig'imi — bitta qatorda, sinflar jadvali tepasida ──── */}
@@ -235,7 +246,7 @@ const FinanceDashboardPage = () => {
       {/* ── 3-qator: daromad tuzilmasi, cash flow, qarzdorlik ────────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <RevenueStructureCard {...state} />
-        <CashflowChart {...state} />
+        <CashflowChart />
         <DebtCard {...state} />
       </div>
 
