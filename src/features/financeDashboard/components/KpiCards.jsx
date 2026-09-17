@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
+import { formatMoney } from "@/shared/utils/formatMoney";
 
 // Data
 import {
@@ -215,6 +216,74 @@ const KpiCards = ({ data, isLoading }) => {
           </div>
         );
       })}
+
+      {/* Debitor qarzdorlik — "Foyda foizi" o'rniga, oddiy karta uslubida */}
+      <DebtorKpiCard debt={data.debt} />
+    </div>
+  );
+};
+
+/**
+ * DEBITOR QARZDORLIK — KPI qatoridagi oddiy karta (donut EMAS). Jami qarz +
+ * qarzdor o'quvchi, o'rtacha, 30+ kunlik va eng eski qarz. Manba
+ * `overviewDashboard.debt`. Bosilsa qarzdorlar sahifasiga o'tadi.
+ */
+export const DebtorKpiCard = ({ debt, className }) => {
+  const navigate = useNavigate();
+  if (!debt) return null;
+
+  return (
+    <div
+      onClick={() => navigate("/finance/main/debtors")}
+      className={cn(
+        "relative cursor-pointer overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/30 xs:p-5",
+        className,
+      )}
+    >
+      <div className="absolute -right-7 -top-7 size-24 rounded-full bg-rose-500 opacity-10" />
+
+      <div className="relative flex items-start justify-between gap-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+          Debitor qarzdorlik
+        </p>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-rose-500 text-white shadow-sm">
+          <WalletCards className="size-[18px]" />
+        </span>
+      </div>
+
+      <p className="relative mt-3 text-[22px] font-bold leading-tight tracking-tight text-red-600 xl:text-2xl">
+        {formatMoney(debt.debt, { withLabel: false })}
+      </p>
+      {debt.asOfMonthLabel && (
+        <p className="relative mt-1 text-[11px] text-gray-500">
+          {debt.asOfMonthLabel} holatiga
+        </p>
+      )}
+
+      <div className="relative mt-3 space-y-1 border-t border-gray-100 pt-2.5 text-[11px]">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-gray-400">Qarzdor o'quvchi</span>
+          <span className="font-semibold text-orange-600">
+            {debt.debtorCount} ta · {debt.debtorShare}%
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-gray-400">O'rtacha qarz</span>
+          <span className="font-medium text-gray-700">
+            {formatMoney(debt.average, { withLabel: false })}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-gray-400">30 kundan ortiq</span>
+          <span className="font-medium text-red-600">
+            {formatMoney(debt.overdue, { withLabel: false })}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-gray-400">Eng eski qarz</span>
+          <span className="font-medium text-gray-700">{debt.oldestMonthLabel ?? "—"}</span>
+        </div>
+      </div>
     </div>
   );
 };
