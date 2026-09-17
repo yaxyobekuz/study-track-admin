@@ -487,6 +487,8 @@ const ResultPanel = ({ contract, draft, preview, draftError, previewError, isBus
   // Nol summali qator (soat narxi yo'q xodimdan soatda ushlab qolish)
   // jamiga ta'sir qilmaydi — ro'yxatni to'ldirmaydi.
   const deductions = (preview.deductionBreakdown ?? []).filter((d) => Number(d.amount) > 0);
+  // To'xtatilgan qismlar — shu oy hisoblanmaydi (Moliya → "Oylikni to'xtatish")
+  const suspensions = (preview.suspensionBreakdown ?? []).filter((s) => Number(s.amount) > 0);
 
   return (
     <div className={cn(SURFACE.tile, "transition-opacity duration-200", isBusy && "opacity-60")}>
@@ -520,11 +522,19 @@ const ResultPanel = ({ contract, draft, preview, draftError, previewError, isBus
                 value={formatMoney(item.amount)}
               />
             ))}
+            {suspensions.map((item, index) => (
+              <Line
+                key={item.id ?? `${item.label}-${index}`}
+                label={`To'xtatildi: ${item.label}${item.reason ? ` — ${item.reason}` : ""}`}
+                value={`− ${formatMoney(item.amount)}`}
+                valueClassName="text-rose-600"
+              />
+            ))}
             {deductions.length > 0 && (
               <>
                 <Line
                   label="Ushlab qolishsiz jami"
-                  value={formatMoney(preview.grossAmount)}
+                  value={formatMoney(preview.payableGrossAmount ?? preview.grossAmount)}
                   className="mt-1 border-t border-slate-200/70 pt-2"
                   labelClassName="font-medium text-slate-900"
                 />

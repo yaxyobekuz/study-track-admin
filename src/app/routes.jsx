@@ -166,6 +166,7 @@ import FinanceSettingsPage from "@/features/finance/pages/FinanceSettingsPage";
 import ExternalIncomePage from "@/features/externalIncome/pages/ExternalIncomePage";
 import PayrollPage from "@/features/payroll/pages/PayrollPage";
 import PayrollDeductionsPage from "@/features/payroll/pages/PayrollDeductionsPage";
+import PayrollSuspensionsPage from "@/features/payroll/pages/PayrollSuspensionsPage";
 
 // Pages - Dars soatlari va o'rinbosarlik
 import LessonHoursLayout from "@/features/lessonHours/layouts/LessonHoursLayout";
@@ -538,6 +539,7 @@ const Routes = () => {
             <Route path="income" element={<ExternalIncomePage />} />
             <Route path="payroll" element={<PayrollPage />} />
             <Route path="deductions" element={<PayrollDeductionsPage />} />
+            <Route path="suspensions" element={<PayrollSuspensionsPage />} />
             <Route path="salary-requests" element={<PayrollRequestsPage />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="tariffs" element={<TariffsPage />} />

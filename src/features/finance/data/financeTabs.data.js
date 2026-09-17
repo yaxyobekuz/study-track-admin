@@ -76,6 +76,14 @@ export const MAIN_TABS = [
     exact: false,
   },
   {
+    // Oylikni to'xtatish — ushlab qolish bilan bir oila
+    to: "/finance/main/suspensions",
+    label: "Oylikni to'xtatish",
+    title: "Moliya",
+    can: "payroll.view",
+    exact: false,
+  },
+  {
     to: "/finance/main/salary-requests",
     label: "Oylik zayavkalari",
     title: "Moliya",

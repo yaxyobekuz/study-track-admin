@@ -552,6 +552,10 @@ export const PERMISSION_SECTIONS = [
       { key: "cancel", label: "Majburiyatni bekor qilish" },
       // USHLAB QOLISH — `assign` dan alohida (server `permissions.js` bilan AYNI)
       { key: "deduct", label: "Oylikdan ushlab qolish" },
+      // OYLIKNI TO'XTATISH — `deduct` DAN ALOHIDA: oylikning butunini yoki
+      // qismini hisobdan chiqaradi, "barcha xodimlar" uchun ham
+      // (`payrollSuspension.service.js`).
+      { key: "suspend", label: "Oylikni to'xtatish" },
     ],
   },
   {
@@ -926,6 +930,7 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/finance/main/income", key: "income.view" },
   { prefix: "/finance/main/payroll", key: "payroll.view" },
   { prefix: "/finance/main/deductions", key: "payroll.view" },
+  { prefix: "/finance/main/suspensions", key: "payroll.view" },
   { prefix: "/finance/main/salary-requests", key: "payrollRequests.view" },
   { prefix: "/finance/main/expenses", key: "expenses.view" },
   { prefix: "/finance", key: "finance.view" },

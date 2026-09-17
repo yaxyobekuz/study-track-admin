@@ -64,6 +64,7 @@ import {
   CATEGORY_STATUS_OPTIONS,
   getRuleStatus,
   allowanceTooltip,
+  entryStatusMetaOf,
 } from "../data/payroll.data";
 import AllowancesView from "../components/AllowancesView";
 import AssignBonusModal from "../components/AssignBonusModal";
@@ -367,7 +368,7 @@ const EntriesView = () => {
         <>
           <Table columns={ENTRY_TABLE_COLUMNS}>
             {items.map((entry) => {
-              const badge = ENTRY_STATUS_META[entry.status];
+              const badge = entryStatusMetaOf(entry);
               const isCancelled = entry.status === "cancelled";
 
               return (
@@ -413,6 +414,17 @@ const EntriesView = () => {
                   {/* JAMI = oylik + ustama − ushlab qolish */}
                   <Td align="right" className="font-semibold text-gray-900">
                     {formatMoney(entry.amount)}
+                    {Number(entry.suspendedAmount) > 0 && (
+                      <span
+                        className="block text-xs font-normal text-slate-500"
+                        title={entry.suspensionBreakdown
+                          .filter((line) => Number(line.amount) > 0)
+                          .map((line) => `${line.label}: ${line.reason}`)
+                          .join("\n")}
+                      >
+                        − {formatMoney(entry.suspendedAmount)} to'xtatildi
+                      </span>
+                    )}
                     {Number(entry.deductionAmount) > 0 && (
                       <span
                         className="block text-xs font-normal text-red-500"

@@ -649,7 +649,7 @@ const CancelDeductionForm = ({ close, isLoading, setIsLoading, deduction }) => {
 // Yordamchilar
 // ─────────────────────────────────────────────
 
-const SectionTitle = ({ title, aside }) => (
+export const SectionTitle = ({ title, aside }) => (
   <div className="flex items-baseline justify-between gap-2">
     <p className="text-sm font-semibold text-gray-900">{title}</p>
     {aside && <p className="text-xs text-gray-500">{aside}</p>}
@@ -657,7 +657,7 @@ const SectionTitle = ({ title, aside }) => (
 );
 
 /** Segmentli tanlov — variantlar kam va joriy tanlov doim ko'rinib turadi. */
-const Segmented = ({ options, value, onChange }) => (
+export const Segmented = ({ options, value, onChange }) => (
   <div className="flex gap-1 rounded-xl bg-gray-100 p-1">
     {options.map((option) => (
       <button
@@ -675,7 +675,7 @@ const Segmented = ({ options, value, onChange }) => (
   </div>
 );
 
-const Notice = ({ children }) => (
+export const Notice = ({ children }) => (
   <p className="flex items-start gap-2 text-xs text-gray-600">
     <TriangleAlert className="mt-0.5 size-3.5 shrink-0 text-amber-600" />
     <span>{children}</span>

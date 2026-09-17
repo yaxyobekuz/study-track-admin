@@ -188,6 +188,8 @@ export const MODAL_NAMES = [
   // Oylikdan ushlab qolish
   "createDeduction",
   "cancelDeduction",
+  "createSuspension",
+  "cancelSuspension",
   // Payroll v2 — oylik zayavkalarini ko'rib chiqish (paneldan tasdiqlash)
   "reviewPayrollRequest",
   "expense",

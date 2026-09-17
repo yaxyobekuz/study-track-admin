@@ -11,6 +11,7 @@ import {
   payrollViewAPI,
   payrollRequestsAPI,
   deductionsAPI,
+  suspensionsAPI,
 } from "../api/payroll.api";
 import { payrollKeys } from "./payroll.queries";
 
@@ -245,6 +246,25 @@ export const useApplyDeductionToAll = () => {
   const invalidate = useInvalidateDeductions();
   return useMutation({
     mutationFn: (batchId) => deductionsAPI.applyToAll(batchId).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+// Oylikni to'xtatish ham vedomostdagi "Oy oxirida" summasini o'zgartiradi
+export const useCreateSuspension = () => {
+  const invalidate = useInvalidateDeductions();
+  return useMutation({
+    mutationFn: (data) => suspensionsAPI.create(data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+export const useCancelSuspension = () => {
+  const invalidate = useInvalidateDeductions();
+  return useMutation({
+    mutationFn: ({ id, batchId, reason }) =>
+      (batchId ? suspensionsAPI.cancelBatch(batchId, reason) : suspensionsAPI.cancel(id, reason))
+        .then((r) => r.data.data),
     onSuccess: invalidate,
   });
 };

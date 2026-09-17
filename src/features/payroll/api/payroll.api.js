@@ -86,6 +86,21 @@ export const deductionsAPI = {
 };
 
 /**
+ * Oylikni to'xtatish — tanlangan oy(lar)da oylikning butuni yoki qismi
+ * hisoblanmaydi. Summa serverda (payroll dvigateli).
+ */
+export const suspensionsAPI = {
+  getAll: (params) => http.get("/payroll/suspensions", { params }),
+  candidates: (month) => http.get("/payroll/suspensions/candidates", { params: { month } }),
+  units: (staffId, month) => http.get("/payroll/suspensions/units", { params: { staffId, month } }),
+  preview: (data) => http.post("/payroll/suspensions/preview", data),
+  create: (data) => http.post("/payroll/suspensions", data),
+  cancel: (id, reason) => http.post(`/payroll/suspensions/${id}/cancel`, { reason }),
+  cancelBatch: (batchId, reason) =>
+    http.post(`/payroll/suspensions/batch/${batchId}/cancel`, { reason }),
+};
+
+/**
  * Oylik majburiyatlari va to'lovlar.
  *
  * ⚠️ Majburiyat summasini o'zgartiradigan endpoint YO'Q va bo'lmasligi kerak:

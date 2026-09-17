@@ -12,6 +12,7 @@ import { HandCoins, TrendingDown, Wallet } from "lucide-react";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
+import { entryStatusMetaOf } from "@/features/payroll/data/payroll.data";
 
 /** Oylik qoidalari jadvalining ustunlari. */
 export const PAYROLL_RULE_COLUMNS = [
@@ -59,7 +60,7 @@ export const buildPayrollTiles = ({ salary, entries }) => {
       value: formatMoney(currentEntry?.amount),
       icon: Wallet,
       hint: currentEntry
-        ? `${currentEntry.monthLabel}: ${currentEntry.statusLabel}`
+        ? `${currentEntry.monthLabel}: ${entryStatusMetaOf(currentEntry).label}`
         : `${salary?.currentMonthLabel ?? "Joriy oy"} uchun shakllantirilmagan`,
     },
     {

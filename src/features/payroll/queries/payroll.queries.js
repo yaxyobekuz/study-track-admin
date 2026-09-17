@@ -14,6 +14,7 @@ import {
   payrollViewAPI,
   payrollRequestsAPI,
   deductionsAPI,
+  suspensionsAPI,
 } from "../api/payroll.api";
 
 export const payrollKeys = createQueryKeys("payroll");
@@ -28,6 +29,7 @@ const viewKey = [...payrollKeys.all, "view"];
 const requestsKey = [...payrollKeys.all, "requests"];
 const auditKey = [...payrollKeys.all, "audit"];
 const deductionsKey = [...payrollKeys.all, "deductions"];
+const suspensionsKey = [...payrollKeys.all, "suspensions"];
 
 export const payrollQueries = {
   /** Bo'limlar (staff/teaching). */
@@ -178,6 +180,41 @@ export const payrollQueries = {
     queryOptions({
       queryKey: [...deductionsKey, "preview", draft],
       queryFn: () => deductionsAPI.preview(draft).then((r) => r.data.data),
+      enabled: Boolean(draft),
+      placeholderData: keepPreviousData,
+      retry: false,
+    }),
+
+  /** Oylikni to'xtatish registri → `{ data, pagination, totals }`. */
+  suspensions: (params) =>
+    queryOptions({
+      queryKey: [...suspensionsKey, "list", params],
+      queryFn: () => suspensionsAPI.getAll(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Kimning oyligini to'xtatish mumkin — shu oyda oyligi borlar. */
+  suspensionCandidates: (month) =>
+    queryOptions({
+      queryKey: [...suspensionsKey, "candidates", month],
+      queryFn: () => suspensionsAPI.candidates(month).then((r) => r.data.data),
+      enabled: Boolean(month),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Bitta xodimning oylik qismlari — "aniq qo'shimcha" tanlovi. */
+  suspensionUnits: (staffId, month) =>
+    queryOptions({
+      queryKey: [...suspensionsKey, "units", staffId, month],
+      queryFn: () => suspensionsAPI.units(staffId, month).then((r) => r.data.data),
+      enabled: Boolean(staffId) && Boolean(month),
+    }),
+
+  /** Jonli hisob (kechiktirilgan qoralama). `retry: false` — 400 "hali to'liq emas". */
+  suspensionPreview: (draft) =>
+    queryOptions({
+      queryKey: [...suspensionsKey, "preview", draft],
+      queryFn: () => suspensionsAPI.preview(draft).then((r) => r.data.data),
       enabled: Boolean(draft),
       placeholderData: keepPreviousData,
       retry: false,

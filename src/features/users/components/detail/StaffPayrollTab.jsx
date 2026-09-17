@@ -22,7 +22,7 @@ import {
   buildPayrollTiles,
   findCurrentEntry,
 } from "../../data/staffPayroll.data";
-import { ENTRY_STATUS_META, getRuleStatus } from "@/features/payroll/data/payroll.data";
+import { entryStatusMetaOf, getRuleStatus } from "@/features/payroll/data/payroll.data";
 import { payrollQueries } from "@/features/payroll/queries/payroll.queries";
 
 /**
@@ -138,7 +138,7 @@ const StaffPayrollTab = ({ user }) => {
 
           <Table columns={PAYROLL_ENTRY_COLUMNS}>
             {items.map((entry) => {
-              const badge = ENTRY_STATUS_META[entry.status];
+              const badge = entryStatusMetaOf(entry);
 
               return (
                 <Tr key={entry.id}>

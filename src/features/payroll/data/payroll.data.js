@@ -201,6 +201,17 @@ export const buildEntryBreakdownLines = (entry) => {
     });
   });
 
+  // To'xtatilgan qismlar — shu oy hisoblanmaydi (Moliya → "Oylikni to'xtatish")
+  (entry.suspensionBreakdown ?? []).forEach((item, index) => {
+    if (!(Number(item.amount) > 0)) return;
+    lines.push({
+      key: `suspension-${item.id ?? index}`,
+      label: `To'xtatildi: ${item.label}${item.reason ? ` — ${item.reason}` : ""}`,
+      amount: item.amount,
+      tone: "minus",
+    });
+  });
+
   (entry.deductionBreakdown ?? []).forEach((item, index) => {
     if (!(Number(item.amount) > 0)) return;
     const suffix =
@@ -272,6 +283,67 @@ export const REQUESTS_TABS = [
 // ── Oylikdan ushlab qolish ──
 
 /** Ushlab qolishlar registri jadvali. */
+/**
+ * Majburiyat holati yorlig'i. Oylik TO'LIQ to'xtatilgan (summa 0) qator
+ * serverda "paid" holatida turadi (to'lanadigan narsa yo'q) — lekin ekranda
+ * "To'langan" deb ko'rsatish yolg'on bo'lardi.
+ */
+export const entryStatusMetaOf = (entry) => {
+  if (
+    entry?.status !== "cancelled" &&
+    Number(entry?.amount) === 0 &&
+    Number(entry?.paidAmount) === 0 &&
+    Number(entry?.suspendedAmount) > 0
+  ) {
+    return SUSPENDED_ENTRY_META;
+  }
+  return ENTRY_STATUS_META[entry?.status] ?? { label: entry?.statusLabel ?? "—", className: "bg-gray-100 text-gray-600" };
+};
+
+const SUSPENDED_ENTRY_META = { label: "To'xtatilgan", className: "bg-slate-200 text-slate-700" };
+
+// ─────────────────────────────────────────────
+// Oylikni to'xtatish
+// ─────────────────────────────────────────────
+
+export const SUSPENSION_COLUMNS = [
+  "Kimga",
+  "Nima to'xtatildi",
+  "Davr",
+  { label: "Shu oy", align: "right" },
+  "Holat",
+  "",
+];
+
+/** Server `SUSPENSION_COMPONENTS` ning ko'zgusi. `item` — faqat bitta xodimda. */
+export const SUSPENSION_COMPONENT_OPTIONS = [
+  { value: "all", label: "Butun oylik", hint: "Shu oy(lar) uchun oylik umuman hisoblanmaydi" },
+  { value: "base", label: "Asosiy oylik", hint: "Lavozim maoshi va dars soati puli" },
+  { value: "tutor", label: "Tyutorlik", hint: "Barcha tyutor sinflari puli" },
+  { value: "allowances", label: "Barcha qo'shimchalar", hint: "Tyutordan boshqa ustamalar (sertifikat, bonus...)" },
+  { value: "item", label: "Aniq qo'shimcha", hint: "Tanlangan bitta qo'shimcha" },
+];
+
+export const SUSPENSION_SCOPE_OPTIONS = [
+  { value: "staff", label: "Tanlangan xodim(lar)" },
+  { value: "all", label: "Barcha xodimlar" },
+];
+
+/** Server `MAX_MONTHS` bilan AYNI. */
+export const SUSPENSION_MAX_MONTHS = 12;
+
+export const SUSPENSION_HINTS = {
+  all:
+    "BARCHA xodimlar — keyin oyligi belgilanganlar ham. Tanlangan oy(lar)da " +
+    "tanlangan qism hech kimga hisoblanmaydi.",
+  independent:
+    "Qismlar mustaqil: masalan asosiy oylik to'xtatilsa, undan foiz bilan " +
+    "hisoblanadigan qo'shimcha o'zi to'xtamaydi — kerak bo'lsa uni ham tanlang.",
+  cancel:
+    "Bekor qilinsa to'xtatilgan summa oylikka qaytadi (shakllangan oylik ham " +
+    "qayta hisoblanadi). Yozuv o'chirilmaydi — tarixda qoladi.",
+};
+
 export const DEDUCTION_COLUMNS = [
   "Xodim",
   "Sabab",
