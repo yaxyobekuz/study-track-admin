@@ -283,6 +283,21 @@ export const toDateInputValue = (value) => {
   return local.toISOString().slice(0, 10);
 };
 
+/**
+ * Istalgan instant `<input type="datetime-local">` QIYMATI sifatida:
+ * "2026-09-08T14:30".
+ *
+ * ⚠️ `toDateInputValue` bilan bir xil qoida: FORMAT emas, ekranga chiqmaydi.
+ * `toISOString().slice(0, 16)` UTC soatini berardi — Toshkentda input
+ * 5 soat orqada ochilardi.
+ */
+export const toDateTimeInputValue = (value) => {
+  const date = toDate(value);
+  if (!date) return "";
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+};
+
 /* ------------------------------------------------------------------ *
  * Eski nomlar (deprecated)
  *
