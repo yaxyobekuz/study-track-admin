@@ -19,8 +19,9 @@ const CreateClassModal = () => (
 const Content = ({ close, isLoading, setIsLoading }) => {
   const { mutate: createClass } = useCreateClass();
 
-  const { name, setField } = useObjectState({
+  const { name, capacity, setField } = useObjectState({
     name: "",
+    capacity: "",
   });
 
   const handleCreateClass = (e) => {
@@ -28,7 +29,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     setIsLoading(true);
 
     createClass(
-      { name },
+      { name, capacity },
       {
         onSuccess: () => {
           close();
@@ -52,6 +53,16 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         label="Sinf nomi"
         placeholder="1-A, 3-C, ..."
         onChange={(e) => setField("name", e.target.value)}
+      />
+
+      <InputField
+        type="number"
+        min={0}
+        name="capacity"
+        value={capacity}
+        label="Sig'im (ixtiyoriy)"
+        placeholder="Masalan: 30"
+        onChange={(e) => setField("capacity", e.target.value)}
       />
 
       <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">

@@ -25,8 +25,8 @@ import {
   BudgetCard,
   DirectionsCard,
   PayrollCard,
-  PnlCard,
 } from "../components/TableCards";
+import ClassBreakdownCard from "../components/ClassBreakdownCard";
 import {
   BudgetEditButton,
   ExpenseBudgetCard,
@@ -54,6 +54,7 @@ import { buildMonthOptions, currentMonthKey, prevMonthKey } from "@/shared/helpe
 
 // Queries
 import { dashboardQueries } from "../queries/financeDashboard.queries";
+import { financeQueries } from "@/features/finance/queries/finance.queries";
 
 /**
  * MOLIYA DASHBOARDI — moliya bo'limining bosh ekrani.
@@ -108,6 +109,12 @@ const FinanceDashboardPage = () => {
   const overview = useQuery({ ...dashboardQueries.overview(params), enabled: allowed });
   const scorecard = useQuery({
     ...dashboardQueries.scorecard({ month }),
+    enabled: allowed,
+  });
+  // Sinflar bo'yicha sig'im/qarz jadvali (P&L o'rnini bosdi) — "Umumiy"
+  // bo'limi bilan bir manba, shuning uchun raqamlar aynan mos keladi.
+  const classBreakdown = useQuery({
+    ...financeQueries.overviewDashboard(Number(month)),
     enabled: allowed,
   });
 
@@ -193,14 +200,18 @@ const FinanceDashboardPage = () => {
       {/* ── 1-qator: KPI kartalari (kassa + qarz va oylik) ────────────── */}
       <KpiCards data={overview.data} isLoading={overview.isLoading} />
 
-      {/* ── 2-qator: P&L + xarajat limitlari (keng) ──────────────────── */}
-      {/* "Tushum va foyda dinamikasi" grafigi o'rniga xarajat limitlari
-          jadvali keng (2 ustun) qo'yildi — rahbar "qaysi limit yonyapti" ni
-          bir qarashda ko'rishi kerak. Oy taqqoslashi KPI kartalarida bor. */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <PnlCard {...state} />
-        <LimitsCard month={month} className="xl:col-span-2" />
-      </div>
+      {/* ── 2-qator: sinflar bo'yicha sig'im/qarz (P&L o'rnini bosdi) ──── */}
+      {/* Rahbar bir qarashda: qaysi sinfda nechta joy bor, nechta o'quvchi,
+          nechta ortiqcha joy, nechta grant va qancha qarz. Sinfni bosib
+          o'sha sinfning to'liq moliyaviy sahifasiga o'tadi. */}
+      <ClassBreakdownCard
+        data={classBreakdown.data}
+        isLoading={classBreakdown.isLoading}
+        isError={classBreakdown.isError}
+      />
+
+      {/* ── xarajat limitlari (to'liq kenglik) ────────────────────────── */}
+      <LimitsCard month={month} />
 
       {/* ── 3-qator: daromad tuzilmasi, cash flow, qarzdorlik ────────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

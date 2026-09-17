@@ -19,8 +19,9 @@ const EditClassModal = () => (
 const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
   const { mutate: updateClass } = useUpdateClass();
 
-  const { name, setField } = useObjectState({
+  const { name, capacity, setField } = useObjectState({
     name: classData.name || "",
+    capacity: classData.capacity != null ? String(classData.capacity) : "",
   });
 
   const handleEditClass = (e) => {
@@ -28,7 +29,7 @@ const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
     setIsLoading(true);
 
     updateClass(
-      { id: classData.id, data: { name } },
+      { id: classData.id, data: { name, capacity } },
       {
         onSuccess: () => {
           close();
@@ -52,6 +53,16 @@ const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
         label="Sinf nomi"
         placeholder="1-A, 3-C, ..."
         onChange={(e) => setField("name", e.target.value)}
+      />
+
+      <InputField
+        type="number"
+        min={0}
+        name="capacity"
+        value={capacity}
+        label="Sig'im (ixtiyoriy)"
+        placeholder="Masalan: 30"
+        onChange={(e) => setField("capacity", e.target.value)}
       />
 
       <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
