@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Router
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // Icons
 import {
@@ -13,6 +13,9 @@ import {
   Check,
   Pencil,
   PiggyBank,
+  Plus,
+  Printer,
+  Receipt,
   Repeat,
   Scale,
   SlidersHorizontal,
@@ -34,6 +37,7 @@ import ChangeStudentTariffModal from "./ChangeStudentTariffModal";
 import RecordPaymentModal from "./RecordPaymentModal";
 import StudentFinanceStatusModal from "./StudentFinanceStatusModal";
 import AssignTariffModal from "./AssignTariffModal";
+import AssignServiceModal from "./AssignServiceModal";
 import AssignDiscountModal from "./AssignDiscountModal";
 import MonthOverrideModal from "./MonthOverrideModal";
 import {
@@ -102,6 +106,9 @@ const StudentFinanceSection = ({ studentId }) => {
   );
   const { data: movementData } = useQuery(
     financeQueries.studentMovements(studentId),
+  );
+  const { data: paymentsData } = useQuery(
+    financeQueries.studentPayments(studentId),
   );
 
   const { mutate: deleteStatus } = useDeleteFinanceStatus();
@@ -182,6 +189,16 @@ const StudentFinanceSection = ({ studentId }) => {
             >
               <BadgePercent />
               Chegirma
+            </Button>
+          </Can>
+
+          <Can do="services.assign">
+            <Button
+              variant="secondary"
+              onClick={() => openModal("assignService", { student })}
+            >
+              <Plus />
+              Xizmat
             </Button>
           </Can>
 
@@ -566,6 +583,79 @@ const StudentFinanceSection = ({ studentId }) => {
         )}
       </div>
 
+      {/* To'lovlar tarixi — o'quvchining barcha (bekor qilinmagan) to'lovlari,
+          har biri chek raqami, sanasi, summasi, to'lov turi va qaysi oylarga
+          taqsimlangani bilan. Chek yangi oynada chop etiladi. */}
+      {paymentsData?.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+            <Receipt className="size-4 text-gray-400" />
+            To'lovlar tarixi
+            <span className="text-xs font-normal text-gray-400">
+              ({paymentsData.length} ta)
+            </span>
+          </h3>
+          <div className="overflow-x-auto rounded-xl border border-gray-100">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 text-left text-xs text-gray-500">
+                  <th className="px-3 py-2 font-medium">Chek</th>
+                  <th className="px-3 py-2 font-medium">Sana</th>
+                  <th className="px-3 py-2 text-right font-medium">Summa</th>
+                  <th className="px-3 py-2 font-medium">To'lov turi</th>
+                  <th className="px-3 py-2 font-medium">Taqsimlandi</th>
+                  <th className="w-8" />
+                </tr>
+              </thead>
+              <tbody>
+                {paymentsData.map((payment) => (
+                  <tr key={payment.id} className="border-b border-gray-50 last:border-0">
+                    <td className="px-3 py-2 font-mono text-xs text-gray-500">
+                      {payment.receiptLabel}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-gray-500">
+                      {formatDateUZ(payment.paidAt)}
+                    </td>
+                    <td className="px-3 py-2 text-right font-medium text-gray-900">
+                      {formatMoney(payment.amount)}
+                    </td>
+                    <td className="px-3 py-2 text-gray-500">
+                      {payment.account?.name ?? "—"}
+                    </td>
+                    <td className="px-3 py-2">
+                      {payment.allocations?.length ? (
+                        <div className="flex flex-wrap gap-1">
+                          {payment.allocations.map((a) => (
+                            <span
+                              key={a.id}
+                              className="rounded bg-green-50 px-1.5 py-0.5 text-xs text-green-700"
+                            >
+                              {a.monthLabel} · {formatMoney(a.amount)}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-blue-600">Depozitga</span>
+                      )}
+                    </td>
+                    <td className="px-2">
+                      <Link
+                        target="_blank"
+                        to={`/finance/receipt/${payment.id}`}
+                        title="Chekni chop etish"
+                        className="inline-flex rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                      >
+                        <Printer className="size-3.5" />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Depozit harakatlari */}
       {movementData?.items?.length > 0 && (
         <div className="space-y-2">
@@ -604,6 +694,7 @@ const StudentFinanceSection = ({ studentId }) => {
 
       {/* Modallar shu bo'lim ichida — users feature'i moliyadan bexabar qoladi */}
       <AssignTariffModal />
+      <AssignServiceModal />
       <ChangeStudentTariffModal />
       <MonthOverrideModal />
       <RecordPaymentModal />
