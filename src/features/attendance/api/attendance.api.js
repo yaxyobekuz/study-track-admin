@@ -7,6 +7,9 @@ export const attendanceAPI = {
   /** Darsga kelmaganlar — `?date=YYYY-MM-DD` (bo'lmasa bugun, faqat boshlangan darslar). */
   getLessonAbsentees: (params) => http.get("/attendance/lesson-absentees", { params }),
   markStaff: (data) => http.post("/attendance/mark", data),
+  // Kelish/ketish vaqtini qo'lda tahrirlash (ketishni o'chirsa baho ochiladi)
+  updateTimes: (userId, data) =>
+    http.patch(`/attendance/user/${userId}/times`, data),
   getAllRecords: (params) => http.get("/attendance", { params }),
   getUserMonthRecords: (userId, month, year) =>
     http.get(`/attendance/user/${userId}`, { params: { month, year } }),

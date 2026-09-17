@@ -66,3 +66,20 @@ export const useMarkStudentAttendance = () => {
     },
   });
 };
+
+/**
+ * Xodim davomatining kelish/ketish vaqtini qo'lda tahrirlash (ketishni
+ * o'chirsa bugungi darsga baho qo'yish qayta ochiladi). Kunlik ro'yxat,
+ * xodim oylik paneli va hisobot foizlari — hammasi shu yozuvdan hisoblanadi.
+ */
+export const useUpdateAttendanceTimes = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, data }) =>
+      attendanceAPI.updateTimes(userId, data).then((r) => r.data.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: attendanceKeys.all });
+      qc.invalidateQueries({ queryKey: attendanceReportsKeys.all });
+    },
+  });
+};
