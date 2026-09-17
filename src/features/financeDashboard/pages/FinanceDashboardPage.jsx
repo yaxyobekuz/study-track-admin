@@ -21,8 +21,6 @@ import { AccrualChart, CashflowChart } from "../components/TrendCharts";
 import {
   DebtAgingCard,
   DebtCard,
-
-  RevenueStructureCard,
   TopExpensesCard,
 } from "../components/StructureCards";
 import {
@@ -243,10 +241,9 @@ const FinanceDashboardPage = () => {
       {/* ── Xarajat limitlari — to'liq kenglik ─────────────────────────── */}
       <LimitsCard month={month} />
 
-      {/* ── 3-qator: daromad tuzilmasi, cash flow, qarzdorlik ────────── */}
+      {/* ── 3-qator: cash flow (keng) + qarzdorlik ────────────────────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <RevenueStructureCard {...state} />
-        <CashflowChart />
+        <CashflowChart className="xl:col-span-2" height={360} />
         <DebtCard {...state} />
       </div>
 

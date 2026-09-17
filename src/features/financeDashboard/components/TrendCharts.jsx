@@ -111,7 +111,7 @@ export const TrendChart = ({ data, isLoading, isError }) => {
  * to'g'rilash ham qoldiqni o'zgartiradi, lekin na tushum, na xarajat
  * hisoblanadi. Server uni kassa daftarining o'zidan hisoblaydi.
  */
-export const CashflowChart = ({ className }) => {
+export const CashflowChart = ({ className, height = 280 }) => {
   const [granularity, setGranularity] = useState("month");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -134,7 +134,7 @@ export const CashflowChart = ({ className }) => {
       isLoading={isLoading}
       isError={isError}
       isEmpty={!hasData}
-      height={280}
+      height={height}
       action={
         <div className="flex flex-wrap items-center gap-2">
           {/* Granulyatsiya — kunlik / oylik / yillik */}
