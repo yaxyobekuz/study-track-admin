@@ -30,12 +30,69 @@ import { formatMoney } from "@/shared/utils/formatMoney";
 import { AXIS, COLORS, compactMoney } from "../data/financeDashboard.data";
 import { dashboardQueries } from "../queries/financeDashboard.queries";
 
-/** Cash flow granulyatsiyasi. */
-const CASHFLOW_GRAN = [
+/** Trend granulyatsiyasi — cash flow va hisoblangan/yig'ilgan grafiklari uchun. */
+const TREND_GRAN = [
   { value: "day", label: "Kunlik" },
   { value: "month", label: "Oylik" },
   { value: "year", label: "Yillik" },
 ];
+
+/**
+ * Trend grafigining davr filtri — granulyatsiya (kunlik/oylik/yillik) +
+ * sanadan-sanagacha ixtiyoriy oraliq. Ikkala grafik ham AYNAN bir xil
+ * boshqaruvni ishlatadi (`DashboardCard`ning `action` slotida turadi).
+ */
+const TrendFilter = ({ granularity, from, to, onGranularity, onFrom, onTo, onClear }) => (
+  <div className="flex flex-wrap items-center gap-2">
+    {/* Granulyatsiya — kunlik / oylik / yillik */}
+    <div className="flex items-center gap-0.5 rounded-lg bg-gray-100 p-0.5">
+      {TREND_GRAN.map((g) => (
+        <button
+          key={g.value}
+          type="button"
+          onClick={() => onGranularity(g.value)}
+          className={cn(
+            "rounded-md px-2 py-0.5 text-xs font-medium transition",
+            granularity === g.value
+              ? "bg-white text-gray-900 shadow-sm"
+              : "text-gray-500 hover:text-gray-700",
+          )}
+        >
+          {g.label}
+        </button>
+      ))}
+    </div>
+
+    {/* Sanadan — sanagacha (ixtiyoriy oraliq) */}
+    <div className="flex items-center gap-1">
+      <input
+        type="date"
+        value={from}
+        max={to || undefined}
+        onChange={(e) => onFrom(e.target.value)}
+        className="rounded-md border border-gray-200 px-1.5 py-0.5 text-xs text-gray-600 focus:border-primary focus:outline-none"
+      />
+      <span className="text-gray-300">—</span>
+      <input
+        type="date"
+        value={to}
+        min={from || undefined}
+        onChange={(e) => onTo(e.target.value)}
+        className="rounded-md border border-gray-200 px-1.5 py-0.5 text-xs text-gray-600 focus:border-primary focus:outline-none"
+      />
+      {(from || to) && (
+        <button
+          type="button"
+          title="Oraliqni tozalash"
+          onClick={onClear}
+          className="rounded-md px-1 text-xs text-gray-400 hover:text-gray-600"
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  </div>
+);
 
 // ⚠️ CHAP MARJA MANFIY BO'LMAYDI va `YAxis` kengligi yorliqqa yetarli
 // bo'lishi kerak. Ilgari `left: -12` va `width: 58` turgani uchun "500 mln"
@@ -136,58 +193,18 @@ export const CashflowChart = ({ className, height = 280 }) => {
       isEmpty={!hasData}
       height={height}
       action={
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Granulyatsiya — kunlik / oylik / yillik */}
-          <div className="flex items-center gap-0.5 rounded-lg bg-gray-100 p-0.5">
-            {CASHFLOW_GRAN.map((g) => (
-              <button
-                key={g.value}
-                type="button"
-                onClick={() => setGranularity(g.value)}
-                className={cn(
-                  "rounded-md px-2 py-0.5 text-xs font-medium transition",
-                  granularity === g.value
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700",
-                )}
-              >
-                {g.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Sanadan — sanagacha (ixtiyoriy oraliq) */}
-          <div className="flex items-center gap-1">
-            <input
-              type="date"
-              value={from}
-              max={to || undefined}
-              onChange={(e) => setFrom(e.target.value)}
-              className="rounded-md border border-gray-200 px-1.5 py-0.5 text-xs text-gray-600 focus:border-primary focus:outline-none"
-            />
-            <span className="text-gray-300">—</span>
-            <input
-              type="date"
-              value={to}
-              min={from || undefined}
-              onChange={(e) => setTo(e.target.value)}
-              className="rounded-md border border-gray-200 px-1.5 py-0.5 text-xs text-gray-600 focus:border-primary focus:outline-none"
-            />
-            {(from || to) && (
-              <button
-                type="button"
-                title="Oraliqni tozalash"
-                onClick={() => {
-                  setFrom("");
-                  setTo("");
-                }}
-                className="rounded-md px-1 text-xs text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        </div>
+        <TrendFilter
+          granularity={granularity}
+          from={from}
+          to={to}
+          onGranularity={setGranularity}
+          onFrom={setFrom}
+          onTo={setTo}
+          onClear={() => {
+            setFrom("");
+            setTo("");
+          }}
+        />
       }
     >
       <ResponsiveContainer width="100%" height="100%">
@@ -236,28 +253,55 @@ export const CashflowChart = ({ className, height = 280 }) => {
  *
  * Chiziq — undirish foizi, o'ng o'qda: u summa bilan bir shkalada tura
  * olmaydi (biri milliard, biri 0..100).
+ *
+ * ⚠️ Cash flow bilan bir xil davr filtri (kunlik/oylik/yillik + oraliq).
+ * Kunlik ma'noli bo'lishi uchun server HODISA sanasi bo'yicha yig'adi:
+ * hisoblangan — hisob-faktura chiqarilgan kun, yig'ilgan — pul taqsimlangan
+ * kun (batafsil `getAccrualSeries` izohida).
  */
-export const AccrualChart = ({ data, isLoading, isError, className }) => {
-  const accrual = data?.accrual;
-  const series = (accrual?.series ?? []).map((row) => ({
+export const AccrualChart = ({ className, height = 264 }) => {
+  const [granularity, setGranularity] = useState("month");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
+  const range = from && to ? { from, to } : {};
+  const { data, isLoading, isError } = useQuery(
+    dashboardQueries.accrual({ granularity, ...range }),
+  );
+
+  const series = (data?.series ?? []).map((row) => ({
     ...row,
     invoicedNum: Number(row.invoiced),
     collectedNum: Number(row.collected),
   }));
 
-  const hasData = series.some((row) => row.invoicedNum > 0);
-  const totals = accrual?.totals;
+  const hasData = series.some((row) => row.invoicedNum > 0 || row.collectedNum > 0);
+  const totals = data?.totals;
 
   return (
     <DashboardCard
       title="Hisoblangan va yig'ilgan"
-      hint="Ustun — oylik majburiyat, chiziq — o'sha oyning undirish foizi"
+      hint="Ustun — hisoblangan/yig'ilgan, chiziq — undirish foizi"
       isLoading={isLoading}
       isError={isError}
       isEmpty={!hasData}
       emptyText="Hisob-faktura shakllantirilmagan"
-      height={264}
+      height={height}
       className={className}
+      action={
+        <TrendFilter
+          granularity={granularity}
+          from={from}
+          to={to}
+          onGranularity={setGranularity}
+          onFrom={setFrom}
+          onTo={setTo}
+          onClear={() => {
+            setFrom("");
+            setTo("");
+          }}
+        />
+      }
       footer={
         totals && (
           <div className="mt-4 grid grid-cols-2 gap-3 border-t border-gray-100 pt-3 sm:grid-cols-4">
@@ -284,7 +328,7 @@ export const AccrualChart = ({ data, isLoading, isError, className }) => {
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={series} margin={{ top: 8, right: 4, left: 4, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke="#f3f4f6" />
-          <XAxis dataKey="monthShort" {...AXIS} interval="preserveStartEnd" />
+          <XAxis dataKey="label" {...AXIS} interval="preserveStartEnd" />
           <YAxis {...AXIS} tickFormatter={compactMoney} width={72} tickMargin={6} />
           <YAxis
             yAxisId="rate"

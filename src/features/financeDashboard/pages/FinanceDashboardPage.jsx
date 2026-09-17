@@ -255,7 +255,7 @@ const FinanceDashboardPage = () => {
 
       {/* ── 4-qator: hisoblangan/yig'ilgan (keng) + qarz yoshi ───────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <AccrualChart {...state} className="xl:col-span-2" />
+        <AccrualChart className="xl:col-span-2" />
         <DebtAgingCard {...state} />
       </div>
 

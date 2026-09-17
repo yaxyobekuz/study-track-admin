@@ -46,6 +46,14 @@ export const dashboardQueries = {
       staleTime: STALE,
     }),
 
+  accrual: (params) =>
+    queryOptions({
+      queryKey: [...dashboardKeys.all, "accrual-trend", params],
+      queryFn: () =>
+        financeDashboardAPI.getAccrualTrend(params).then((r) => r.data.data),
+      staleTime: STALE,
+    }),
+
   expenseBudgets: (params) =>
     queryOptions({
       queryKey: [...dashboardKeys.all, "expense-budgets", params],

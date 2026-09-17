@@ -21,6 +21,10 @@ export const financeDashboardAPI = {
   getCashflowTrend: (params) =>
     http.get("/finance-reports/cashflow-trend", { params }),
 
+  /** Hisoblangan/yig'ilgan seriyasi. Params: { granularity: day|month|year, from, to } */
+  getAccrualTrend: (params) =>
+    http.get("/finance-reports/accrual-trend", { params }),
+
   /** Oylik reja (byudjet) qatorlari. Params: { month } */
   getTargets: (params) => http.get("/finance-reports/targets", { params }),
 
