@@ -9,13 +9,11 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   ChevronRight,
-  Gift,
   Minus,
   PiggyBank,
   Receipt,
   School,
   TrendingDown,
-  Users,
   Wallet,
 } from "lucide-react";
 
@@ -63,7 +61,6 @@ const OverviewPage = () => {
   const { data: summary } = useQuery(financeQueries.invoiceSummary(month));
   const { data: report } = useQuery(financeQueries.accountReport({}));
 
-  const counts = dashboard?.counts;
   const byClass = dashboard?.byClass ?? [];
   const byDirection = dashboard?.byDirection ?? [];
 
@@ -86,35 +83,8 @@ const OverviewPage = () => {
         />
       </div>
 
-      {/* ── O'QUVCHILAR SANOG'I: jami / grant / to'lovchi ── */}
-      {counts && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <SummaryCard
-            icon={Users}
-            accent="bg-slate-600"
-            label="Jami o'quvchi"
-            value={String(counts.totalStudents)}
-            hint="Arxivlanmagan, faol o'quvchilar"
-          />
-          <SummaryCard
-            icon={Gift}
-            accent="bg-purple-500"
-            label="Grant (bepul)"
-            value={String(counts.grantStudents)}
-            valueClassName="text-purple-700"
-            hint="Grand 100% tarifidagilar — ro'yxat uchun bosing"
-            onClick={() => navigate(`/finance/main/grants?month=${month}`)}
-          />
-          <SummaryCard
-            icon={Wallet}
-            accent="bg-blue-500"
-            label="To'lovchi"
-            value={String(counts.payingStudents)}
-            valueClassName="text-blue-700"
-            hint="Oylik to'lov qiladigan o'quvchilar"
-          />
-        </div>
-      )}
+      {/* O'quvchilar sanog'i (jami / grant / to'lovchi) MOLIYA DASHBOARDIGA
+          ko'chdi — u yerda OYLIK kartasi bilan yonma-yon turadi. */}
 
       {/* ── PUL: hisoblangan / yig'ilgan / qarz / depozit ── */}
       {summary && (

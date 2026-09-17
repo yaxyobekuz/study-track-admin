@@ -1,6 +1,9 @@
 // React
 import { useMemo, useState } from "react";
 
+// Router
+import { useNavigate } from "react-router-dom";
+
 // Icons
 import { CalendarDays, Lock, SlidersHorizontal, Target } from "lucide-react";
 
@@ -12,7 +15,8 @@ import Card from "@/shared/components/ui/Card";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
-import KpiCards from "../components/KpiCards";
+import KpiCards, { PayrollKpiCard } from "../components/KpiCards";
+import StudentsKpiCard from "../components/StudentsKpiCard";
 import { AccrualChart, CashflowChart } from "../components/TrendCharts";
 import {
   DebtAgingCard,
@@ -27,7 +31,7 @@ import {
   PayrollCard,
 } from "../components/TableCards";
 import ClassBreakdownCard, {
-  SchoolCapacityCard,
+  SchoolCapacityBar,
 } from "../components/ClassBreakdownCard";
 import {
   BudgetEditButton,
@@ -80,6 +84,7 @@ import { financeQueries } from "@/features/finance/queries/finance.queries";
 const FinanceDashboardPage = () => {
   const { can } = usePermissions();
   const { openModal } = useModal();
+  const navigate = useNavigate();
 
   const allowed = can("reports.view");
   const canPlan = can("reports.plan");
@@ -199,29 +204,33 @@ const FinanceDashboardPage = () => {
         </div>
       </div>
 
-      {/* ── 1-qator: KPI kartalari (kassa + qarz va oylik) ────────────── */}
+      {/* ── 1-qator: KPI kartalari (5 ta) ─────────────────────────────── */}
       <KpiCards data={overview.data} isLoading={overview.isLoading} />
 
-      {/* ── 2-qator: sinflar jadvali (2/3) + xarajat kategoriyalari reytingi (1/3) ── */}
+      {/* ── 2-qator: OYLIK (2/3) + o'quvchilar kartasi (1/3) ──────────── */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <PayrollKpiCard kpi={overview.data?.kpi} className="xl:col-span-2" />
+        <StudentsKpiCard data={classBreakdown.data} />
+      </div>
+
+      {/* ── Maktab sig'imi — bitta qatorda, sinflar jadvali tepasida ──── */}
+      <SchoolCapacityBar data={classBreakdown.data} />
+
+      {/* ── Sinflar jadvali (7 ta + "Ko'proq") (2/3) + xarajat kategoriyalari (1/3) ── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <ClassBreakdownCard
           data={classBreakdown.data}
           isLoading={classBreakdown.isLoading}
           isError={classBreakdown.isError}
           className="xl:col-span-2"
+          limit={7}
+          onMore={() => navigate(`/finance/main/classes-capacity?month=${month}`)}
         />
         <TopExpensesCard {...state} />
       </div>
 
-      {/* ── 3-qator: xarajat limitlari (2/3) + maktab sig'imi kartasi (1/3) ── */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <LimitsCard month={month} className="xl:col-span-2" />
-        <SchoolCapacityCard
-          data={classBreakdown.data}
-          isLoading={classBreakdown.isLoading}
-          isError={classBreakdown.isError}
-        />
-      </div>
+      {/* ── Xarajat limitlari — to'liq kenglik ─────────────────────────── */}
+      <LimitsCard month={month} />
 
       {/* ── 3-qator: daromad tuzilmasi, cash flow, qarzdorlik ────────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

@@ -90,14 +90,9 @@ const KpiCards = ({ data, isLoading }) => {
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-      {KPI_CARDS.map((card) => {
-        // Oylik — uch qiymat (kerak/tarqatildi/qoldi) bitta keng kartada
-        if (card.key === "payroll") {
-          return (
-            <PayrollKpiCard key="payroll" card={card} kpi={data.kpi} navigate={navigate} />
-          );
-        }
-
+      {/* OYLIK (payroll) kartasi endi alohida qatorda (dashboardda
+          o'quvchilar kartasi bilan yonma-yon), shuning uchun bu yerda YO'Q. */}
+      {KPI_CARDS.filter((card) => card.key !== "payroll").map((card) => {
         const row = data.kpi[card.key];
         if (!row) return null;
 
@@ -230,10 +225,12 @@ const KpiCards = ({ data, isLoading }) => {
  * oy bilan taqqoslash va tarqatilgan ulushi. Ma'lumot avvalgidek uch
  * kalitda keladi (`payrollDue`/`payrollPaid`/`payrollLeft`).
  */
-const PayrollKpiCard = ({ card, kpi, navigate }) => {
-  const due = kpi.payrollDue;
-  const paid = kpi.payrollPaid;
-  const left = kpi.payrollLeft;
+export const PayrollKpiCard = ({ kpi, className }) => {
+  const navigate = useNavigate();
+  const card = KPI_CARDS.find((c) => c.key === "payroll");
+  const due = kpi?.payrollDue;
+  const paid = kpi?.payrollPaid;
+  const left = kpi?.payrollLeft;
   if (!due) return null;
 
   const dueN = Number(due.value) || 0;
@@ -257,11 +254,12 @@ const PayrollKpiCard = ({ card, kpi, navigate }) => {
 
   return (
     <div
-      onClick={() => card.to && navigate?.(card.to)}
+      onClick={() => card.to && navigate(card.to)}
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5 sm:col-span-2 lg:col-span-3 xl:col-span-5",
+        "relative overflow-hidden rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5",
         card.to &&
           "cursor-pointer transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/30",
+        className,
       )}
     >
       <div

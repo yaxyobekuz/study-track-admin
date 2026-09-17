@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 
 // Icons
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, School } from "lucide-react";
 
 // Components
 import DashboardCard from "@/shared/components/dashboard/DashboardCard";
@@ -25,16 +25,17 @@ const freeSpotClass = (n) =>
 /**
  * SINFLAR BO'YICHA — sig'im, o'quvchi, ortiqcha joy, grant va qarz.
  *
- * Moliya dashboardida P&L o'rnini bosdi. "Umumiy" bo'limidagi sinflar
- * jadvaliga o'xshaydi, lekin sig'im (admin belgilaydi) va bo'sh joy ustunlari
- * qo'shilgan. Qatorni bosganda o'sha sinfning moliyaviy sahifasiga o'tadi.
+ * `limit` berilsa faqat shuncha sinf ko'rsatiladi va pastda "Ko'proq" tugmasi
+ * chiqadi (`onMore` chaqiriladi — to'liq jadval alohida sahifada). Qatorni
+ * bosganda o'sha sinfning moliyaviy sahifasiga o'tadi.
  *
- * ⚠️ Manba — "Umumiy" bilan BIR XIL (`overviewDashboard`), shuning uchun
- * bu yerdagi o'quvchi/grant/qarz raqamlari u yerdagilar bilan aynan mos.
+ * ⚠️ Manba — "Umumiy" bilan BIR XIL (`overviewDashboard`).
  */
-const ClassBreakdownCard = ({ data, isLoading, isError, className }) => {
+const ClassBreakdownCard = ({ data, isLoading, isError, className, limit, onMore }) => {
   const navigate = useNavigate();
   const rows = data?.byClass ?? [];
+  const shown = limit ? rows.slice(0, limit) : rows;
+  const hasMore = Boolean(limit && rows.length > limit);
 
   return (
     <DashboardCard
@@ -45,6 +46,18 @@ const ClassBreakdownCard = ({ data, isLoading, isError, className }) => {
       isEmpty={rows.length === 0}
       bodyClassName="overflow-x-auto"
       className={className}
+      footer={
+        hasMore && (
+          <button
+            type="button"
+            onClick={onMore}
+            className="mt-3 flex w-full items-center justify-center gap-1 border-t border-gray-100 pt-3 text-xs font-medium text-primary hover:underline"
+          >
+            Ko'proq — barcha {rows.length} ta sinf
+            <ChevronRight className="size-3.5" />
+          </button>
+        )
+      }
     >
       <MiniTable
         columns={[
@@ -57,7 +70,7 @@ const ClassBreakdownCard = ({ data, isLoading, isError, className }) => {
           { label: "" },
         ]}
       >
-        {rows.map((row) => {
+        {shown.map((row) => {
           const clickable = Boolean(row.classId);
           const open = () =>
             clickable &&
@@ -137,65 +150,76 @@ const ClassBreakdownCard = ({ data, isLoading, isError, className }) => {
 
 export default ClassBreakdownCard;
 
-/** Bitta ko'rsatkich qatori — yorliq chapda, katta raqam o'ngda. */
-const CapacityStat = ({ label, value, accent }) => (
-  <div className="flex items-baseline justify-between gap-2">
-    <span className="text-xs text-gray-500">{label}</span>
-    <span className={cn("text-lg font-bold tabular-nums", accent)}>{value}</span>
+/** Yorliq ustida, katta raqam ostida — gorizontal chiziq uchun. */
+const InlineStat = ({ label, value, accent }) => (
+  <div className="min-w-0">
+    <p className="text-[11px] text-gray-400">{label}</p>
+    <p className={cn("text-lg font-bold leading-tight tabular-nums", accent)}>{value}</p>
   </div>
 );
 
 /**
- * MAKTAB SIG'IMI — butun maktab bo'yicha jami sig'im, band va bo'sh joy.
+ * MAKTAB SIG'IMI — bitta QATORDA: jami sig'im, band, bo'sh joy va bandlik
+ * foizi. Sinflar jadvalining tepasiga qo'yiladi.
  *
- * ⚠️ Manba `byClass` (sinflar jadvali bilan BIR XIL): sig'im belgilangan
- * sinflar bo'yicha jamlanadi. Sig'imi bor sinf yo'q bo'lsa — belgilanmagan
- * deb ko'rsatiladi.
+ * ⚠️ Manba `byClass` (sinflar jadvali bilan bir xil): sig'im belgilangan
+ * sinflar bo'yicha jamlanadi.
  */
-export const SchoolCapacityCard = ({ data, isLoading, isError, className }) => {
+export const SchoolCapacityBar = ({ data, className }) => {
   const rows = data?.byClass ?? [];
   const capRows = rows.filter((r) => r.capacity != null);
   const totalCapacity = capRows.reduce((sum, r) => sum + r.capacity, 0);
   const free = capRows.reduce((sum, r) => sum + (r.freeSpots ?? 0), 0);
   const occupied = totalCapacity - free;
   const hasCapacity = capRows.length > 0;
-  const pct = totalCapacity > 0 ? Math.min(100, Math.round((occupied / totalCapacity) * 100)) : 0;
+  const pct =
+    totalCapacity > 0 ? Math.min(100, Math.round((occupied / totalCapacity) * 100)) : 0;
+
+  if (!hasCapacity) {
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-2 rounded-2xl bg-white p-4 text-sm text-gray-400 ring-1 ring-gray-100",
+          className,
+        )}
+      >
+        <School className="size-4 shrink-0" />
+        Maktab sig'imi belgilanmagan — "Sinflar" bo'limida har sinfga sig'im qo'ying.
+      </div>
+    );
+  }
 
   return (
-    <DashboardCard
-      title="Maktab sig'imi"
-      hint={data ? data.monthLabel : ""}
-      isLoading={isLoading}
-      isError={isError}
-      className={className}
-    >
-      {!hasCapacity ? (
-        <p className="py-6 text-center text-sm text-gray-400">
-          Sig'im belgilanmagan. Sinf sozlamalarida ("Sinflar" bo'limi) har
-          sinfga sig'im qo'ying.
-        </p>
-      ) : (
-        <div className="space-y-3">
-          <CapacityStat label="Jami sig'im" value={totalCapacity} accent="text-gray-900" />
-          <CapacityStat label="Band (o'quvchilar)" value={occupied} accent="text-blue-700" />
-          <CapacityStat
-            label="Bo'sh joy"
-            value={free}
-            accent={free < 0 ? "text-red-600" : "text-green-700"}
-          />
-
-          {/* Bandlik chizig'i — necha foizi to'lgan */}
-          <div className="pt-1">
-            <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
-              <div
-                className={cn("h-full rounded-full", pct >= 100 ? "bg-red-500" : "bg-blue-500")}
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            <p className="mt-1 text-[11px] text-gray-400">{pct}% band</p>
-          </div>
-        </div>
+    <div
+      className={cn(
+        "flex flex-wrap items-center gap-x-8 gap-y-3 rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5",
+        className,
       )}
-    </DashboardCard>
+    >
+      <div className="flex items-center gap-2">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-600 text-white shadow-sm">
+          <School className="size-[18px]" />
+        </span>
+        <span className="text-sm font-semibold text-gray-700">Maktab sig'imi</span>
+      </div>
+
+      <InlineStat label="Jami sig'im" value={totalCapacity} accent="text-gray-900" />
+      <InlineStat label="Band (o'quvchilar)" value={occupied} accent="text-blue-700" />
+      <InlineStat
+        label="Bo'sh joy"
+        value={free}
+        accent={free < 0 ? "text-red-600" : "text-green-700"}
+      />
+
+      <div className="flex min-w-[160px] flex-1 items-center gap-2">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+          <div
+            className={cn("h-full rounded-full", pct >= 100 ? "bg-red-500" : "bg-blue-500")}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span className="shrink-0 text-xs font-medium text-gray-500">{pct}% band</span>
+      </div>
+    </div>
   );
 };

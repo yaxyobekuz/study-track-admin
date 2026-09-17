@@ -151,6 +151,7 @@ import ActivityDashboardPage from "@/features/activityDashboard/pages/ActivityDa
 import SecurityPage from "@/features/security/pages/SecurityPage";
 import OverviewPage from "@/features/finance/pages/OverviewPage";
 import ClassFinancePage from "@/features/finance/pages/ClassFinancePage";
+import ClassesCapacityPage from "@/features/financeDashboard/pages/ClassesCapacityPage";
 import GrantsPage from "@/features/finance/pages/GrantsPage";
 import DebtorsPage from "@/features/finance/pages/DebtorsPage";
 import ReportsPage from "@/features/finance/pages/ReportsPage";
@@ -528,6 +529,8 @@ const Routes = () => {
             <Route path="classes/:classId" element={<ClassFinancePage />} />
             {/* Grant o'quvchilar — overview'dagi "Grant" kartasi/belgisidan ochiladi */}
             <Route path="grants" element={<GrantsPage />} />
+            {/* Sinflar bo'yicha sig'im/qarz — dashboarddagi "Ko'proq" dan ochiladi */}
+            <Route path="classes-capacity" element={<ClassesCapacityPage />} />
             <Route path="debtors" element={<DebtorsPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="payments" element={<PaymentsPage />} />
