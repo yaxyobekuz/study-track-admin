@@ -107,7 +107,6 @@ const toNumbers = (series = []) =>
     incomeNum: Number(row.income),
     expenseNum: Number(row.expense),
     profitNum: Number(row.profit),
-    balanceNum: Number(row.balance),
   }));
 
 /**
@@ -162,11 +161,16 @@ export const TrendChart = ({ data, isLoading, isError }) => {
 };
 
 /**
- * CASH FLOW (OYLIK) — kirim/chiqim ustunlari va kassa qoldig'i chizig'i.
+ * CASH FLOW — kirim va chiqim ustunlari, foyda chizig'i.
  *
- * ⚠️ Qoldiq chizig'i ustunlar AYIRMASI emas: o'tkazma, qaytarish va qo'lda
- * to'g'rilash ham qoldiqni o'zgartiradi, lekin na tushum, na xarajat
- * hisoblanadi. Server uni kassa daftarining o'zidan hisoblaydi.
+ * Uch ko'rsatkich, davr filtri bilan (kunlik/oylik/yillik + oraliq):
+ *   • Kirim  — payments + tashqi kirim + yetkazilgan zarar to'lovi
+ *   • Chiqim — xodimlar oyligi + xarajatlar
+ *   • Foyda  — kirim − chiqim (o'sha davr ichida)
+ *
+ * ⚠️ Ilgari "kassa qoldig'i" chizig'i bor edi (server uni `account_entries`
+ * daftaridan running-balance hisoblardi) — u og'ir edi va bo'sh ko'rinardi.
+ * Endi soddaroq: kirim/chiqim/foyda — rahbarga aynan shu kerak.
  */
 export const CashflowChart = ({ className, height = 280 }) => {
   const [granularity, setGranularity] = useState("month");
@@ -181,13 +185,15 @@ export const CashflowChart = ({ className, height = 280 }) => {
   );
 
   const series = toNumbers(data?.series);
-  const hasData = series.some((row) => row.incomeNum > 0 || row.expenseNum > 0);
+  const hasData = series.some(
+    (row) => row.incomeNum !== 0 || row.expenseNum !== 0,
+  );
 
   return (
     <DashboardCard
       title="Cash flow"
       className={className}
-      hint="Ustun — kirim va chiqim, chiziq — kassa qoldig'i"
+      hint="Ustun — kirim va chiqim, chiziq — sof foyda"
       isLoading={isLoading}
       isError={isError}
       isEmpty={!hasData}
@@ -231,8 +237,8 @@ export const CashflowChart = ({ className, height = 280 }) => {
           />
           <Line
             type="monotone"
-            dataKey="balanceNum"
-            name="Qoldiq"
+            dataKey="profitNum"
+            name="Sof foyda"
             stroke={COLORS.balance}
             strokeWidth={2}
             dot={{ r: 2.5 }}
