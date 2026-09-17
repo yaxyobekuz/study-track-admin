@@ -2,9 +2,13 @@
 // Toast
 import { toast } from "sonner";
 
+// Router
+import { useNavigate } from "react-router-dom";
+
 // Icons
 import {
   BadgePercent,
+  ChevronRight,
   PiggyBank,
   Repeat,
   Scale,
@@ -71,6 +75,7 @@ import {
  */
 const StudentFinanceSection = ({ studentId }) => {
   const { openModal } = useModal();
+  const navigate = useNavigate();
   const now = currentMonthKey();
 
 
@@ -343,6 +348,62 @@ const StudentFinanceSection = ({ studentId }) => {
           )}
         </div>
       </div>
+
+      {/* Qo'shimcha xizmatlar — har xizmatga oylik summa va qarz. Qatorni
+          bosganda xizmatlar sahifasiga o'tib, o'sha xizmat bo'yicha filtrlanadi
+          (undan nechta o'quvchi foydalanayotganini ko'rish uchun). */}
+      {invoiceData?.services?.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-gray-700">Qo'shimcha xizmatlar</h3>
+          <div className="overflow-x-auto rounded-xl border border-gray-100">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 text-left text-xs text-gray-500">
+                  <th className="px-3 py-2 font-medium">Xizmat</th>
+                  <th className="px-3 py-2 text-right font-medium">Oylik</th>
+                  <th className="px-3 py-2 text-right font-medium">Qarz</th>
+                  <th className="w-8" />
+                </tr>
+              </thead>
+              <tbody>
+                {invoiceData.services.map((service) => (
+                  <tr
+                    key={service.serviceId}
+                    title="Bu xizmatdan foydalanuvchilarni ko'rish"
+                    onClick={() =>
+                      navigate(`/finance/main/services?serviceId=${service.serviceId}`)
+                    }
+                    className="cursor-pointer border-b border-gray-50 last:border-0 hover:bg-gray-50"
+                  >
+                    <td className="px-3 py-2">
+                      <span className="font-medium text-gray-900">{service.name}</span>
+                      {!service.isActive && (
+                        <span className="ml-1.5 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500">
+                          biriktirilmagan
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 text-right text-gray-600">
+                      {service.amount != null ? formatMoney(service.amount) : "—"}
+                    </td>
+                    <td
+                      className={cn(
+                        "px-3 py-2 text-right font-medium",
+                        Number(service.debt) > 0 ? "text-red-600" : "text-gray-400",
+                      )}
+                    >
+                      {formatMoney(service.debt)}
+                    </td>
+                    <td className="px-2 text-gray-300">
+                      <ChevronRight className="size-4" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Holat tarixi — faqat istisnolar yoziladi, shuning uchun odatda bo'sh */}
       {statusData?.items?.length > 0 && (
