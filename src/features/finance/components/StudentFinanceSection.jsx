@@ -146,6 +146,13 @@ const StudentFinanceSection = ({ studentId }) => {
     (row) => row.month === invoiceData?.currentMonth,
   );
   const currentInvoice = currentEntry?.invoice ?? null;
+  const currentAmount = currentInvoice ? Number(currentInvoice.amount) : 0;
+  const currentPaid = currentInvoice ? Number(currentInvoice.paidAmount) : 0;
+  const currentLeft = Math.max(0, currentAmount - currentPaid);
+  const currentPct =
+    currentAmount > 0 ? Math.min(100, Math.round((currentPaid / currentAmount) * 100)) : 0;
+
+  const hasDebt = Number(invoiceData?.totals?.debt ?? 0) > 0;
 
   const student = {
     id: studentId,
@@ -233,9 +240,14 @@ const StudentFinanceSection = ({ studentId }) => {
     });
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-semibold text-gray-900">Moliya</h2>
+    <div className="space-y-5 pb-20 sm:pb-0">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Moliya</h2>
+          <p className="mt-0.5 text-xs text-gray-500">
+            O'quvchining moliyaviy holati va to'lovlarini boshqarish
+          </p>
+        </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <Can do="finance.pay">
@@ -309,60 +321,107 @@ const StudentFinanceSection = ({ studentId }) => {
 
       {/* Qisqacha */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Holat + tarif + chegirma — bitta kartada (tarif narxi endi
-            pastdagi "Xizmatlar" jadvalida ko'rinadi va o'sha yerda tahrirlanadi) */}
-        <div className="rounded-xl border border-gray-100 p-3">
-          <p className="text-xs text-gray-500">Holat va tarif</p>
-          <span
-            className={`mt-1 inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${statusBadge.className}`}
-          >
-            {statusBadge.label}
-          </span>
-          <p className="mt-1.5 font-medium text-gray-900">
-            {currentAssignment?.tariff?.name ?? "Tarif biriktirilmagan"}
-          </p>
-          {discounts.length > 0 && (
-            <div className="mt-1 flex flex-wrap gap-1">
-              {discounts.map((item) => (
-                <span
-                  key={item.id}
-                  title={item.discount?.name}
-                  className="rounded-md bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700"
-                >
-                  {item.discount?.valueLabel}
-                </span>
-              ))}
-            </div>
+        {/* ── 1. JAMI QARZ — eng muhim raqam, urg'uli (qarz bo'lsa qizil
+            chegara, yo'q bo'lsa yashil holat) ── */}
+        <div
+          className={cn(
+            "rounded-xl border p-3.5",
+            hasDebt ? "border-red-100 bg-red-50/30" : "border-green-100 bg-green-50/30",
           )}
-        </div>
-
-        {/* Shu oy majburiyati — joriy oy hisob-fakturasi va to'langani */}
-        <div className="rounded-xl border border-gray-100 p-3">
-          <p className="text-xs text-gray-500">Shu oy majburiyati</p>
-          {currentEntry?.isVacation ? (
-            <p className="mt-1 text-xl font-semibold text-amber-600">Ta'til</p>
-          ) : currentInvoice ? (
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+            Jami qarz
+          </p>
+          {hasDebt ? (
             <>
-              <p className="mt-1 text-xl font-semibold text-gray-900">
-                {formatMoney(currentInvoice.amount)}
+              <p className="mt-1 text-2xl font-bold text-red-600">
+                {formatMoney(invoiceData?.totals?.debt)}
               </p>
-              <p className="mt-0.5 text-xs text-gray-500">
-                To'landi: {formatMoney(currentInvoice.paidAmount)}
-              </p>
+              {invoiceData?.totals?.hasServices && (
+                <div className="mt-1.5 space-y-0.5 border-t border-red-100/60 pt-1.5 text-xs">
+                  <div className="flex justify-between gap-2">
+                    <span className="text-gray-500">Tarifdan</span>
+                    <span className="font-medium text-gray-700">
+                      {formatMoney(invoiceData.totals.debtTariff)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-gray-500">Xizmatlardan</span>
+                    <span className="font-medium text-gray-700">
+                      {formatMoney(invoiceData.totals.debtServices)}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {invoiceData?.totals && dueMonths > 0 && (
+                <p className="mt-1.5 text-xs text-gray-500">
+                  {invoiceData.totals.paidMonths} / {dueMonths} oy to'langan
+                </p>
+              )}
             </>
           ) : (
             <>
-              <p className="mt-1 text-xl font-semibold text-gray-400">—</p>
-              <p className="mt-0.5 text-xs text-gray-500">
-                Hisob-faktura shakllanmagan
-              </p>
+              <p className="mt-1 text-2xl font-bold text-green-700">0 so'm</p>
+              <p className="mt-1 text-xs text-gray-500">Qarz mavjud emas</p>
             </>
           )}
         </div>
 
-        <div className="rounded-xl border border-gray-100 p-3">
+        {/* ── 2. SHU OY — majburiyat, to'langani, qoldig'i va progress ── */}
+        <div className="rounded-xl border border-gray-100 p-3.5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+            Shu oy
+          </p>
+          {currentEntry?.isVacation ? (
+            <p className="mt-1 text-2xl font-bold text-amber-600">Ta'til</p>
+          ) : currentInvoice ? (
+            <>
+              <p className="mt-1 text-2xl font-bold text-gray-900">
+                {formatMoney(currentInvoice.amount)}
+              </p>
+              <div className="mt-1.5 flex items-center justify-between gap-2 text-xs">
+                <span className="text-gray-500">
+                  To'landi{" "}
+                  <b className="font-semibold text-green-700">
+                    {formatMoney(currentInvoice.paidAmount)}
+                  </b>
+                </span>
+                {currentLeft > 0 && (
+                  <span className="text-gray-500">
+                    Qoldiq{" "}
+                    <b className="font-semibold text-red-600">
+                      {formatMoney(String(currentLeft))}
+                    </b>
+                  </span>
+                )}
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+                  <div
+                    className={cn(
+                      "h-full rounded-full",
+                      currentPct >= 100 ? "bg-green-500" : "bg-blue-500",
+                    )}
+                    style={{ width: `${currentPct}%` }}
+                  />
+                </div>
+                <span className="text-[11px] font-medium text-gray-400">{currentPct}%</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="mt-1 text-2xl font-bold text-gray-400">—</p>
+              <p className="mt-1 text-xs text-gray-500">Hisob-faktura shakllanmagan</p>
+            </>
+          )}
+        </div>
+
+        {/* ── 3. DEPOZIT ── */}
+        <div className="rounded-xl border border-gray-100 p-3.5">
           <div className="flex items-start justify-between gap-2">
-            <p className="text-xs text-gray-500">Depozit</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+              Depozit
+            </p>
 
             <div className="flex shrink-0 items-center gap-0.5">
               {hasBalance && (
@@ -424,58 +483,37 @@ const StudentFinanceSection = ({ studentId }) => {
           <p className="mt-0.5 text-xs text-gray-500">Oldindan to'langan</p>
         </div>
 
-        <div className="rounded-xl border border-gray-100 p-3">
-          <p className="text-xs text-gray-500">
-            Jami qarz
+        {/* ── 4. TARIF VA HOLAT ── */}
+        <div className="rounded-xl border border-gray-100 p-3.5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+            Tarif va holat
           </p>
-          <p className="mt-1 text-xl font-semibold text-red-600">
-            {formatMoney(invoiceData?.totals?.debt)}
+          <p className="mt-1 text-base font-semibold text-gray-900">
+            {currentAssignment?.tariff?.name ?? "Tarif biriktirilmagan"}
           </p>
-
-          {/* Qarz manba bo'yicha — tarifdan qancha, qo'shimcha xizmatlardan
-              (yotoqxona, ovqat) qancha. Faqat o'quvchida xizmat bo'lsa
-              ko'rinadi; yig'indisi aynan jami qarzga teng. */}
-          {invoiceData?.totals?.hasServices &&
-            Number(invoiceData.totals.debt) > 0 && (
-              <div className="mt-1.5 space-y-0.5 border-t border-gray-100 pt-1.5 text-xs">
-                <div className="flex justify-between gap-2">
-                  <span className="text-gray-500">Tarifdan</span>
-                  <span className="font-medium text-gray-700">
-                    {formatMoney(invoiceData.totals.debtTariff)}
-                  </span>
-                </div>
-                <div className="flex justify-between gap-2">
-                  <span className="text-gray-500">Xizmatlardan</span>
-                  <span className="font-medium text-gray-700">
-                    {formatMoney(invoiceData.totals.debtServices)}
-                  </span>
-                </div>
-              </div>
-            )}
-
-          {invoiceData?.totals && (
+          {currentAssignment?.resolvedAmount != null && (
             <p className="mt-0.5 text-xs text-gray-500">
-              {/* Maxraj — HOZIRGA QADAR KELGAN oylar. Kelgusi oylar sanalmaydi:
-                  sentabrda boshlanadigan yil avgustda "0 / 9 oy" bo'lib,
-                  o'quvchi 9 oy qarzdordek ko'rinardi. */}
-              {dueMonths > 0
-                ? `${invoiceData.totals.paidMonths} / ${dueMonths} oy to'langan`
-                : "O'quv yili hali boshlanmagan"}
+              {formatMoney(currentAssignment.resolvedAmount)} / oy
             </p>
           )}
+          <div className="mt-1.5 flex flex-wrap items-center gap-1">
+            <span
+              className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${statusBadge.className}`}
+            >
+              {statusBadge.label}
+            </span>
+            {discounts.map((item) => (
+              <span
+                key={item.id}
+                title={item.discount?.name}
+                className="rounded-md bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700"
+              >
+                {item.discount?.valueLabel}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* Xizmatlar — tarif + qo'shimcha xizmatlar bitta jadvalda. Narxni
-          shu yerda o'quvchiga INDIVIDUAL tahrirlash (faqat shu o'quvchiga
-          ta'sir qiladi) va xizmatni o'chirish mumkin. */}
-      <StudentChargesTable
-        tariffAssignment={currentAssignment}
-        tariffDebt={invoiceData?.totals?.debtTariff}
-        services={invoiceData?.services ?? []}
-        onError={handleError}
-        navigate={navigate}
-      />
 
       {/* Holat tarixi — faqat istisnolar yoziladi, shuning uchun odatda bo'sh */}
       {statusData?.items?.length > 0 && (
@@ -536,8 +574,36 @@ const StudentFinanceSection = ({ studentId }) => {
           )}
         </div>
 
+        {/* Inline yig'ma — hisoblangan / to'langan / qarz bir qarashda */}
+        {invoiceData?.totals && (invoiceData?.timeline ?? []).length > 0 && (
+          <div className="flex flex-wrap gap-x-6 gap-y-1 rounded-xl bg-gray-50 px-3 py-2 text-xs">
+            <span className="text-gray-500">
+              Jami hisoblangan{" "}
+              <b className="font-semibold text-gray-800">
+                {formatMoney(invoiceData.totals.invoiced)}
+              </b>
+            </span>
+            <span className="text-gray-500">
+              To'langan{" "}
+              <b className="font-semibold text-green-700">
+                {formatMoney(invoiceData.totals.paid)}
+              </b>
+            </span>
+            <span className="text-gray-500">
+              Qarz{" "}
+              <b className={cn("font-semibold", hasDebt ? "text-red-600" : "text-gray-700")}>
+                {formatMoney(invoiceData.totals.debt)}
+              </b>
+            </span>
+          </div>
+        )}
+
         {isLoading ? (
-          <p className="py-4 text-center text-sm text-gray-500">Yuklanmoqda...</p>
+          <div className="space-y-2 rounded-xl border border-gray-100 p-3">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-6 animate-pulse rounded bg-gray-100" />
+            ))}
+          </div>
         ) : (invoiceData?.timeline ?? []).length === 0 ? (
           <p className="py-4 text-center text-sm text-gray-500">
             {/* Davri yo'q o'quvchida majburiyat HECH QACHON yozilmaydi —
@@ -549,16 +615,28 @@ const StudentFinanceSection = ({ studentId }) => {
         ) : (
           <div className="overflow-x-auto rounded-xl border border-gray-100">
             <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 text-left text-xs text-gray-500">
+                  <th className="px-3 py-2 font-medium">Oy</th>
+                  <th className="px-3 py-2 font-medium">Hisoblangan</th>
+                  <th className="px-3 py-2 font-medium">To'langan</th>
+                  <th className="px-3 py-2 font-medium">Holat</th>
+                  <th className="w-8" />
+                </tr>
+              </thead>
               <tbody>
                 {invoiceData.timeline.map((row) => {
                   const invoice = row.invoice;
                   const badge = invoice ? INVOICE_STATUS_META[invoice.status] : null;
+                  const isCurrent = row.month === invoiceData?.currentMonth;
 
                   return (
                     <tr
                       key={row.month}
                       className={cn(
                         "border-b border-gray-50 last:border-0",
+                        // Joriy oy — yengil ko'k fon + chap ko'rsatkich
+                        isCurrent && "bg-blue-50/40",
                         row.isVacation && "bg-amber-50/50",
                         // O'quvchi o'qimagan oy — jadvalda ko'rinadi, lekin
                         // "yetishmayotgan hisob-faktura" kabi ko'rinmasligi kerak
@@ -567,6 +645,11 @@ const StudentFinanceSection = ({ studentId }) => {
                     >
                       <td className="px-3 py-2 font-medium whitespace-nowrap">
                         {row.monthLabel}
+                        {isCurrent && (
+                          <span className="ml-1.5 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
+                            Joriy oy
+                          </span>
+                        )}
                       </td>
 
                       <td className="px-3 py-2 whitespace-nowrap">
@@ -679,18 +762,46 @@ const StudentFinanceSection = ({ studentId }) => {
         )}
       </div>
 
+      {/* Xizmatlar — tarif + qo'shimcha xizmatlar bitta jadvalda. Narxni
+          shu yerda o'quvchiga INDIVIDUAL tahrirlash (faqat shu o'quvchiga
+          ta'sir qiladi) va xizmatni o'chirish mumkin. */}
+      <StudentChargesTable
+        tariffAssignment={currentAssignment}
+        tariffDebt={invoiceData?.totals?.debtTariff}
+        services={invoiceData?.services ?? []}
+        onError={handleError}
+        navigate={navigate}
+      />
+
       {/* To'lovlar tarixi — o'quvchining barcha (bekor qilinmagan) to'lovlari,
           har biri chek raqami, sanasi, summasi, to'lov turi va qaysi oylarga
           taqsimlangani bilan. Chek yangi oynada chop etiladi. */}
-      {paymentsData?.length > 0 && (
+      {paymentsData && (
         <div className="space-y-2">
           <h3 className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
             <Receipt className="size-4 text-gray-400" />
             To'lovlar tarixi
-            <span className="text-xs font-normal text-gray-400">
-              ({paymentsData.length} ta)
-            </span>
+            {paymentsData.length > 0 && (
+              <span className="text-xs font-normal text-gray-400">
+                ({paymentsData.length} ta)
+              </span>
+            )}
           </h3>
+          {paymentsData.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-gray-200 py-8 text-center">
+              <Receipt className="size-6 text-gray-300" />
+              <p className="text-sm text-gray-500">Hali to'lov qabul qilinmagan</p>
+              <Can do="finance.pay">
+                <Button
+                  variant="outline"
+                  onClick={() => openModal("recordPayment", { student })}
+                >
+                  <Wallet className="size-4" />
+                  Birinchi to'lovni qabul qilish
+                </Button>
+              </Can>
+            </div>
+          ) : (
           <div className="overflow-x-auto rounded-xl border border-gray-100">
             <table className="min-w-full text-sm">
               <thead>
@@ -749,6 +860,7 @@ const StudentFinanceSection = ({ studentId }) => {
               </tbody>
             </table>
           </div>
+          )}
         </div>
       )}
 
@@ -848,6 +960,20 @@ const StudentFinanceSection = ({ studentId }) => {
         </div>
       )}
 
+      {/* Mobil: pastda doim ko'rinadigan "To'lov qabul qilish" tugmasi —
+          scroll qilganda ham asosiy amal qo'l ostida turadi (§24). */}
+      <Can do="finance.pay">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white/95 p-3 backdrop-blur sm:hidden">
+          <Button
+            className="w-full"
+            onClick={() => openModal("recordPayment", { student })}
+          >
+            <Wallet />
+            To'lov qabul qilish
+          </Button>
+        </div>
+      </Can>
+
       {/* Modallar shu bo'lim ichida — users feature'i moliyadan bexabar qoladi */}
       <AssignTariffModal />
       <AssignServiceModal />
@@ -885,6 +1011,7 @@ const StudentChargesTable = ({
   const [editKey, setEditKey] = useState(null);
   const [editValue, setEditValue] = useState("");
   const [saving, setSaving] = useState(false);
+  const [confirmKey, setConfirmKey] = useState(null); // qaysi xizmat o'chirish tasdig'ida
 
   const { mutate: updateTariff } = useUpdateAssignment();
   const { mutate: updateService } = useUpdateServiceAssignment();
@@ -949,7 +1076,10 @@ const StudentChargesTable = ({
   };
   const remove = (row) => {
     const done = {
-      onSuccess: () => toast.success("Xizmat o'chirildi"),
+      onSuccess: () => {
+        toast.success("Xizmat o'chirildi");
+        setConfirmKey(null);
+      },
       onError,
     };
     // O'tgan oyni qamragan biriktirma o'chirilmaydi — o'tgan oyda YOPILADI
@@ -1061,6 +1191,25 @@ const StudentChargesTable = ({
                             <X className="size-4" />
                           </button>
                         </>
+                      ) : confirmKey === row.key ? (
+                        // Mini-tasdiq — tasodifan o'chirib yubormaslik uchun
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-gray-500">O'chirilsinmi?</span>
+                          <button
+                            type="button"
+                            onClick={() => remove(row)}
+                            className="rounded-md bg-red-500 px-2 py-0.5 text-xs font-medium text-white hover:bg-red-600"
+                          >
+                            Ha
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmKey(null)}
+                            className="rounded-md px-2 py-0.5 text-xs font-medium text-gray-500 hover:bg-gray-100"
+                          >
+                            Yo'q
+                          </button>
+                        </div>
                       ) : (
                         <>
                           {row.editable && (
@@ -1080,7 +1229,7 @@ const StudentChargesTable = ({
                               <button
                                 type="button"
                                 title="Xizmatni o'chirish"
-                                onClick={() => remove(row)}
+                                onClick={() => setConfirmKey(row.key)}
                                 className="rounded-lg p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
                               >
                                 <Trash2 className="size-3.5" />
