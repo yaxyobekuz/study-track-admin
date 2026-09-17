@@ -101,7 +101,10 @@ import MonitorsPage from "@/features/monitors/pages/MonitorsPage";
 import ChangelogPage from "@/features/changelog/pages/ChangelogPage";
 
 // Pages - Tasks
+import TasksLayout from "@/features/tasks/layouts/TasksLayout";
 import TasksPage from "@/features/tasks/pages/TasksPage";
+import TaskReportsPage from "@/features/tasks/pages/TaskReportsPage";
+import TaskSettingsPage from "@/features/tasks/pages/TaskSettingsPage";
 import TaskDetailPage from "@/features/tasks/pages/TaskDetailPage";
 
 // Pages - Penalties
@@ -398,7 +401,14 @@ const Routes = () => {
           <Route path="/changelog" element={<ChangelogPage />} />
 
           {/* Tasks */}
-          <Route path="/tasks" element={<TasksPage />} />
+          {/* Asosiy / Hisobotlar / Sozlamalar — bitta layout ostida.
+              Detal sahifa layoutdan TASHQARIDA (o'z sarlavhasi bor);
+              statik `reports`/`settings` yo'llari `:taskId` dan ustun. */}
+          <Route path="/tasks" element={<TasksLayout />}>
+            <Route index element={<TasksPage />} />
+            <Route path="reports" element={<TaskReportsPage />} />
+            <Route path="settings" element={<TaskSettingsPage />} />
+          </Route>
           <Route path="/tasks/:taskId" element={<TaskDetailPage />} />
 
           {/* Penalties */}

@@ -11,7 +11,6 @@ import {
   UserRound,
   TrendingUp,
   ChevronRight,
-  ClipboardList,
   AlertTriangle,
   BadgeDollarSign,
   Crown,
@@ -109,6 +108,13 @@ const navItems = [
       {
         title: "Statistika",
         url: "/statistics",
+      },
+      {
+        // Topshiriqlar — bitta sahifa, ichida tablar (Asosiy / Hisobotlar /
+        // Sozlamalar), moliya bo'limi kabi. Tablar ruxsat bo'yicha
+        // `TasksLayout` ichida filtrlanadi.
+        title: "Topshiriqlar",
+        url: "/tasks",
       },
     ],
   },
@@ -281,17 +287,6 @@ const navItems = [
       {
         title: "Buyurtmalar",
         url: "/market/orders",
-      },
-    ],
-  },
-  {
-    title: "Topshiriqlar",
-    icon: ClipboardList,
-    isActive: false,
-    items: [
-      {
-        title: "Topshiriqlar ro'yxati",
-        url: "/tasks",
       },
     ],
   },
