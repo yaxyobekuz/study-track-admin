@@ -28,10 +28,11 @@ const TabsLinks = ({
   return (
     <nav role="tablist" className={cn(LIST_CLASS, className)}>
       {items.map((item) => {
+        // `to` so'rov parametrlarini olib yurishi mumkin (`?month=8`) —
+        // faol tab faqat YO'L bo'yicha aniqlanadi
+        const path = item.to.split("?")[0];
         const isActive =
-          item.exact === false
-            ? pathname.startsWith(item.to)
-            : pathname === item.to;
+          item.exact === false ? pathname.startsWith(path) : pathname === path;
 
         return (
           <NavLink

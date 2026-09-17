@@ -1,5 +1,5 @@
 // Router
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 // Icons
 import { ChevronLeft } from "lucide-react";
@@ -11,6 +11,7 @@ import UserRowActions from "../UserRowActions";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Helpers & data
+import { formatDateTimeUz } from "@/shared/utils/date.utils";
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
 import { getInitials, getRoleBadgeClass } from "../../data/users.data";
 
@@ -24,16 +25,35 @@ import { getInitials, getRoleBadgeClass } from "../../data/users.data";
  */
 const UserDetailHeader = ({ user, backTo, backLabel }) => {
   const { data: roles = [] } = useRoles();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // ⚠️ "ORQAGA" — KELGAN JOYGA, qat'iy ro'yxatga emas. Profilga davomat
+  // hisoboti, qarzdorlar, sinf moliyasi va boshqa ekranlardan kiriladi;
+  // qat'iy `backTo` foydalanuvchini butunlay boshqa bo'limga otib yuborardi.
+  // `default` kalit — sahifa to'g'ridan-to'g'ri ochilgan (havola, yangilash):
+  // ilova ichida qaytadigan joy yo'q, shuning uchun o'shanda ro'yxatga.
+  const hasHistory = location.key !== "default";
+  const backClassName =
+    "inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700";
 
   return (
     <div className="space-y-4">
-      <Link
-        to={backTo}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
-      >
-        <ChevronLeft className="size-4" />
-        {backLabel}
-      </Link>
+      {hasHistory ? (
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className={backClassName}
+        >
+          <ChevronLeft className="size-4" />
+          Orqaga
+        </button>
+      ) : (
+        <Link to={backTo} className={backClassName}>
+          <ChevronLeft className="size-4" />
+          {backLabel}
+        </Link>
+      )}
 
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
@@ -75,6 +95,19 @@ const UserDetailHeader = ({ user, backTo, backLabel }) => {
           redirectAfterDelete={backTo}
         />
       </div>
+
+      {/* Qachon va nega arxivlangani — izoh arxivlash oynasida yoziladi */}
+      {user.isArchived && (
+        <p className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-600">
+          Arxivlangan: {formatDateTimeUz(user.archivedAt)}
+          {user.archiveNote && (
+            <>
+              {" — "}
+              <span className="text-gray-800">{user.archiveNote}</span>
+            </>
+          )}
+        </p>
+      )}
     </div>
   );
 };

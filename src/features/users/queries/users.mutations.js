@@ -7,6 +7,26 @@ import { usersAPI } from "../api/users.api";
 // Keys
 import { usersKeys } from "./users.queries";
 
+/**
+ * Arxivlash/qaytarishdan keyin keshni eskirtiradi.
+ *
+ * ⚠️ Faqat `usersKeys` yetmaydi: arxivlangan o'quvchi sinflardan chiqariladi,
+ * o'qish davri yopiladi, qarzi 0 ga tushirilishi mumkin va u davomat
+ * hisobotlari, reytinglar, tanga/jarima statistikasi, to'garaklardan ham
+ * DARHOL yo'qolishi kerak — aks holda boshqa sahifa keshdagi eski ro'yxatni
+ * ko'rsatib turardi. Ro'yxatni qo'lda sanash yangi sahifa qo'shilganda
+ * eskirardi, shuning uchun hammasi eskiradi (faol bo'lmaganlari faqat
+ * belgilanadi, ochilganda yangilanadi).
+ *
+ * `auth` tegilmaydi: joriy foydalanuvchi o'zgarmagan, uni qayta so'rash esa
+ * `AuthGuard` ning xato holatiga bog'liq xavf tug'dirardi.
+ *
+ * Natija KUTILMAYDI: sahifada so'rov ko'p bo'lsa, oyna hammasi qayta
+ * yuklanguncha "Arxivlash..." bo'lib qotib turardi.
+ */
+const invalidateArchiveAffected = (qc) =>
+  qc.invalidateQueries({ predicate: (query) => query.queryKey[0] !== "auth" });
+
 export const useCreateUser = () => {
   const qc = useQueryClient();
   return useMutation({
@@ -53,7 +73,9 @@ export const useArchiveUser = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }) => usersAPI.archive(id, data).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
+    onSuccess: () => {
+      invalidateArchiveAffected(qc);
+    },
   });
 };
 
@@ -61,7 +83,9 @@ export const useRestoreUser = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id) => usersAPI.restore(id).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
+    onSuccess: () => {
+      invalidateArchiveAffected(qc);
+    },
   });
 };
 

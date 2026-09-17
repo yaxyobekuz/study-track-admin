@@ -66,6 +66,11 @@ const StudentsPage = () => {
               <div>
                 <p className="font-medium text-gray-900">{user.fullName}</p>
                 <p className="text-xs text-gray-500">@{user.username}</p>
+                {isArchived && user.archiveNote && (
+                  <p className="text-xs text-gray-500 line-clamp-1">
+                    Izoh: {user.archiveNote}
+                  </p>
+                )}
               </div>
             </div>
           </td>

@@ -11,6 +11,9 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { cn } from "@/shared/utils/cn";
 import { todayInputValue } from "@/shared/utils/date.utils";
 
+// Hooks
+import useScrollRestore from "@/shared/hooks/useScrollRestore";
+
 // Queries
 import { attendanceReportsQueries } from "../queries/attendance.queries";
 
@@ -74,6 +77,9 @@ const StudentReportsPage = () => {
     }),
   );
 
+  // O'quvchi profilidan "orqaga" qaytilganda jadvalning o'sha qatoriga qaytadi
+  const saveScroll = useScrollRestore(Boolean(data));
+
   if (isLoading) {
     return <div className="py-8 text-center text-gray-500">Yuklanmoqda...</div>;
   }
@@ -128,8 +134,10 @@ const StudentReportsPage = () => {
 
   // O'quvchi qatoriga bosilganda profil darhol "Davomat" tabida ochiladi:
   // bu hisobotdan kelgan odam aynan qoldirilgan kunlarni ko'rmoqchi
-  const buildStudentProfilePath = (studentId) =>
-    `/users/${studentId}?tab=attendance`;
+  const openStudentProfile = (studentId) => {
+    saveScroll();
+    navigate(`/users/${studentId}?tab=attendance`);
+  };
 
   // Umumiy foiz kartalari: KUNLIK (tanlangan kun) va OYLIK (tanlangan oy).
   // Foiz = kelganlar / KUTILGAN (jadval bo'yicha), belgilanganlarga nisbatan emas
@@ -304,7 +312,7 @@ const StudentReportsPage = () => {
                 {riskGroup.map((s) => (
                   <tr
                     key={s.studentId}
-                    onClick={() => navigate(buildStudentProfilePath(s.studentId))}
+                    onClick={() => openStudentProfile(s.studentId)}
                     className="cursor-pointer border-t border-gray-100 hover:bg-gray-50"
                   >
                     <td className="px-4 py-3 font-medium text-gray-900">
@@ -397,7 +405,7 @@ const StudentReportsPage = () => {
                 {topStudents.map((s, idx) => (
                   <tr
                     key={s.studentId}
-                    onClick={() => navigate(buildStudentProfilePath(s.studentId))}
+                    onClick={() => openStudentProfile(s.studentId)}
                     className="cursor-pointer border-t border-gray-100 hover:bg-gray-50"
                   >
                     <td className="px-4 py-3">
