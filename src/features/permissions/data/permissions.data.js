@@ -332,9 +332,17 @@ export const PERMISSION_SECTIONS = [
     actions: [
       A.view,
       A.create,
+      // Tahrirlash — sarlavha/tavsif/ijrochi/fayllar va yakunlangan
+      // topshiriqni qayta ochish
+      A.update,
+      A.delete,
       { key: "review", label: "Tasdiqlash / rad etish" },
       { key: "stop", label: "To'xtatish" },
       { key: "extend", label: "Muddatni uzaytirish" },
+      // Hisobotlar — butun jamoaning intizomi (kim orqada qolyapti),
+      // ro'yxatni ko'rish huquqidan kengroq kesim
+      { key: "reports", label: "Hisobotlar" },
+      A.settings,
     ],
   },
   {
@@ -918,6 +926,8 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/diagnostics/students", key: "diagnostics.analytics" },
   { prefix: "/market", key: "market.view" },
   { prefix: "/tasks", key: "tasks.view" },
+  { prefix: "/tasks/reports", key: "tasks.reports" },
+  { prefix: "/tasks/settings", key: "tasks.settings" },
   { prefix: "/penalties", key: "penalties.view" },
   { prefix: "/premium", key: "premium.view" },
   { prefix: "/coin-distribution", key: "coins.view" },
