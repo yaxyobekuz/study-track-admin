@@ -148,7 +148,7 @@ const TeacherHoursBody = ({ staffId, month }) => {
       />
 
       {/* ── Uch raqam ────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <Metric
           label="O'tildi"
           value={formatHourNumber(data.taughtHours)}
@@ -163,8 +163,18 @@ const TeacherHoursBody = ({ staffId, month }) => {
         <Metric
           label="Oy oxirida"
           value={formatMoney(data.projectedAmount)}
-          hint="prognoz"
+          hint={
+            Number(data.missedAmount) > 0
+              ? `o'tilmagan: − ${formatMoney(data.missedAmount)}`
+              : "prognoz"
+          }
           emphasis
+        />
+        {/* Dars qoldirilmaganda qancha bo'lardi — o'qituvchi profili bilan bir xil */}
+        <Metric
+          label="Dars qoldirmaganda"
+          value={formatMoney(data.plannedAmount ?? data.projectedAmount)}
+          hint="hamma dars o'tilganda"
         />
       </div>
 
