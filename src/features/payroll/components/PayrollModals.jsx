@@ -645,11 +645,7 @@ export const VoidSalaryPaymentModal = () => (
   </ResponsiveModal>
 );
 
-export const CancelPayrollEntryModal = () => (
-  <ResponsiveModal name="cancelPayrollEntry" title="Majburiyatni bekor qilish">
-    <ReasonForm kind="entry" />
-  </ResponsiveModal>
-);
+// Majburiyatni bekor qilish oynasi — `CancelEntryModal.jsx` (oy va qism tanlovi bilan)
 
 const ReasonForm = ({ close, isLoading, setIsLoading, kind, payment, entry }) => {
   const { mutate: voidPayment } = useVoidSalaryPayment();

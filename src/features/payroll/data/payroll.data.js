@@ -332,6 +332,12 @@ export const SUSPENSION_SCOPE_OPTIONS = [
 /** Server `MAX_MONTHS` bilan AYNI. */
 export const SUSPENSION_MAX_MONTHS = 12;
 
+/** Davr: bitta oy (sukut) yoki oraliq — muddatsiz to'xtatish YO'Q. */
+export const SUSPENSION_PERIOD_OPTIONS = [
+  { value: "once", label: "Faqat bitta oy" },
+  { value: "range", label: "Oraliq (oydan — oygacha)" },
+];
+
 export const SUSPENSION_HINTS = {
   all:
     "BARCHA xodimlar — keyin oyligi belgilanganlar ham. Tanlangan oy(lar)da " +
