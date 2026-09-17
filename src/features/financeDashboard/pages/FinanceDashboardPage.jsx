@@ -26,7 +26,9 @@ import {
   DirectionsCard,
   PayrollCard,
 } from "../components/TableCards";
-import ClassBreakdownCard from "../components/ClassBreakdownCard";
+import ClassBreakdownCard, {
+  SchoolCapacityCard,
+} from "../components/ClassBreakdownCard";
 import {
   BudgetEditButton,
   ExpenseBudgetCard,
@@ -200,17 +202,25 @@ const FinanceDashboardPage = () => {
       {/* ── 1-qator: KPI kartalari (kassa + qarz va oylik) ────────────── */}
       <KpiCards data={overview.data} isLoading={overview.isLoading} />
 
-      {/* ── 2-qator: sinflar jadvali (chap yarim) + xarajat limitlari (o'ng yarim) ── */}
-      {/* Yonma-yon, teng ikkiga bo'lingan: chapda sinflar bo'yicha sig'im/qarz,
-          o'ngda xarajat limitlari. Sinfni bosib o'sha sinfning to'liq moliyaviy
-          sahifasiga o'tadi. */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      {/* ── 2-qator: sinflar jadvali (2/3) + maktab sig'imi kartasi (1/3) ── */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <ClassBreakdownCard
           data={classBreakdown.data}
           isLoading={classBreakdown.isLoading}
           isError={classBreakdown.isError}
+          className="xl:col-span-2"
         />
-        <LimitsCard month={month} />
+        <SchoolCapacityCard
+          data={classBreakdown.data}
+          isLoading={classBreakdown.isLoading}
+          isError={classBreakdown.isError}
+        />
+      </div>
+
+      {/* ── 3-qator: xarajat limitlari (2/3) + top 5 xarajat (1/3) ─────── */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <LimitsCard month={month} className="xl:col-span-2" />
+        <TopExpensesCard {...state} />
       </div>
 
       {/* ── 3-qator: daromad tuzilmasi, cash flow, qarzdorlik ────────── */}
@@ -233,11 +243,8 @@ const FinanceDashboardPage = () => {
           (yetti ustun), shuning uchun qator o'ziga to'liq kenglikni oladi */}
       <PayrollCard {...state} />
 
-      {/* ── 6-qator: narx intizomi (keng) + top 5 xarajat ───────────── */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <PricingCard {...state} className="xl:col-span-2" />
-        <TopExpensesCard {...state} />
-      </div>
+      {/* ── narx intizomi (to'liq kenglik; top 5 xarajat yuqoriga ko'chdi) ── */}
+      <PricingCard {...state} />
 
       {/* ── 7-qator: yo'nalishlar natijasi (keng) + bank hisoblari ───── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

@@ -112,3 +112,66 @@ const ClassBreakdownCard = ({ data, isLoading, isError, className }) => {
 };
 
 export default ClassBreakdownCard;
+
+/** Bitta ko'rsatkich qatori — yorliq chapda, katta raqam o'ngda. */
+const CapacityStat = ({ label, value, accent }) => (
+  <div className="flex items-baseline justify-between gap-2">
+    <span className="text-xs text-gray-500">{label}</span>
+    <span className={cn("text-lg font-bold tabular-nums", accent)}>{value}</span>
+  </div>
+);
+
+/**
+ * MAKTAB SIG'IMI — butun maktab bo'yicha jami sig'im, band va bo'sh joy.
+ *
+ * ⚠️ Manba `byClass` (sinflar jadvali bilan BIR XIL): sig'im belgilangan
+ * sinflar bo'yicha jamlanadi. Sig'imi bor sinf yo'q bo'lsa — belgilanmagan
+ * deb ko'rsatiladi.
+ */
+export const SchoolCapacityCard = ({ data, isLoading, isError, className }) => {
+  const rows = data?.byClass ?? [];
+  const capRows = rows.filter((r) => r.capacity != null);
+  const totalCapacity = capRows.reduce((sum, r) => sum + r.capacity, 0);
+  const free = capRows.reduce((sum, r) => sum + (r.freeSpots ?? 0), 0);
+  const occupied = totalCapacity - free;
+  const hasCapacity = capRows.length > 0;
+  const pct = totalCapacity > 0 ? Math.min(100, Math.round((occupied / totalCapacity) * 100)) : 0;
+
+  return (
+    <DashboardCard
+      title="Maktab sig'imi"
+      hint={data ? data.monthLabel : ""}
+      isLoading={isLoading}
+      isError={isError}
+      className={className}
+    >
+      {!hasCapacity ? (
+        <p className="py-6 text-center text-sm text-gray-400">
+          Sig'im belgilanmagan. Sinf sozlamalarida ("Sinflar" bo'limi) har
+          sinfga sig'im qo'ying.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          <CapacityStat label="Jami sig'im" value={totalCapacity} accent="text-gray-900" />
+          <CapacityStat label="Band (o'quvchilar)" value={occupied} accent="text-blue-700" />
+          <CapacityStat
+            label="Bo'sh joy"
+            value={free}
+            accent={free < 0 ? "text-red-600" : "text-green-700"}
+          />
+
+          {/* Bandlik chizig'i — necha foizi to'lgan */}
+          <div className="pt-1">
+            <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
+              <div
+                className={cn("h-full rounded-full", pct >= 100 ? "bg-red-500" : "bg-blue-500")}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <p className="mt-1 text-[11px] text-gray-400">{pct}% band</p>
+          </div>
+        </div>
+      )}
+    </DashboardCard>
+  );
+};
