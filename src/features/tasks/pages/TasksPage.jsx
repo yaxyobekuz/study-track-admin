@@ -1,71 +1,97 @@
+// React
+import { useEffect, useState } from "react";
+
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
 // Router
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 // Icons
-import { Plus } from "lucide-react";
+import { ClipboardList, FilterX, Plus, X } from "lucide-react";
 
 // Queries
 import { tasksQueries } from "../queries/tasks.queries";
 
 // Data
 import {
+  SORT_OPTIONS,
+  TASKS_PAGE_LIMIT,
+  DUE_FILTER_OPTIONS,
   taskStatusOptions,
-  taskStatusLabels,
-  taskStatusColors,
 } from "../data/tasks.data";
 
-// Helpers
-import { getRoleLabel } from "@/shared/helpers/role.helpers";
-import { formatDateUZ } from "@/shared/utils/date.utils";
-
 // Components
-import Card from "@/shared/components/ui/Card";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
+import EmptyState from "@/shared/components/ui/EmptyState";
+import InputSearch from "@/shared/components/ui/input/InputSearch";
+import SelectAllUsers from "@/shared/components/ui/select/SelectAllUsers";
+import TasksTable from "../components/list/TasksTable";
+import TaskStatsStrip from "../components/list/TaskStatsStrip";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import useDebounce from "@/shared/hooks/useDebounce";
+import usePermissions from "@/shared/hooks/usePermissions";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Modals
 import CreateTaskModal from "../components/CreateTaskModal";
-import SelectAllUsers from "@/shared/components/ui/select/SelectAllUsers";
 
+// Filtr parametrlari — hammasi URL'da, sahifani filtr bilan link qilib yuborish mumkin
+const FILTER_KEYS = ["status", "due", "assigneeId", "search", "sort"];
+
+/**
+ * "Asosiy" tab: jonli hisoblagichlar + filtrlar + ro'yxat.
+ */
 const TasksPage = () => {
   const { openModal } = useModal();
+  const { can } = usePermissions();
   const { data: roles = [] } = useRoles();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
-  const statusFilter = searchParams.get("status") || "all";
-  const assigneeId = searchParams.get("assigneeId") || "all";
+  const status = searchParams.get("status") || "all";
+  const due = searchParams.get("due") || "all";
+  const assigneeId = searchParams.get("assigneeId") || "";
+  const sort = searchParams.get("sort") || "newest";
 
-  const { data, isLoading } = useQuery(
+  // Qidiruv maydoni lokal, URL'ga kechikish bilan yoziladi
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
+  const search = useDebounce(searchInput.trim());
+
+  const { data: stats } = useQuery(tasksQueries.stats());
+  const { data, isLoading, isFetching } = useQuery(
     tasksQueries.list({
       page: currentPage,
-      limit: 20,
-      ...(statusFilter !== "all" && { status: statusFilter }),
-      ...(assigneeId !== "all" && { assigneeId }),
+      limit: TASKS_PAGE_LIMIT,
+      sort,
+      ...(status !== "all" && { status }),
+      ...(due !== "all" && { due }),
+      ...(assigneeId && { assigneeId }),
+      ...(search && { search }),
     }),
   );
 
   const tasks = data?.data || [];
   const pagination = data?.pagination;
 
-  const handleFilterChange = (key, value) => {
+  const updateParams = (updates) => {
     const params = new URLSearchParams(searchParams);
-    if (value && value !== "all" && value !== "") {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value && value !== "all") params.set(key, value);
+      else params.delete(key);
+    });
     params.set("page", "1");
     setSearchParams(params);
   };
+
+  useEffect(() => {
+    if ((searchParams.get("search") || "") !== search) updateParams({ search });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   const handlePageChange = (page) => {
     const params = new URLSearchParams(searchParams);
@@ -73,142 +99,157 @@ const TasksPage = () => {
     setSearchParams(params);
   };
 
-  const formatUserName = (user) => {
-    if (!user) return "-";
-    return user.lastName
-      ? `${user.firstName} ${user.lastName}`
-      : user.firstName;
+  const hasFilters = FILTER_KEYS.some(
+    (key) => key !== "sort" && searchParams.get(key),
+  );
+
+  const resetFilters = () => {
+    setSearchInput("");
+    setSearchParams(new URLSearchParams());
   };
 
-  const isOverdue = (dueDate, status) => {
-    if (["completed", "stopped"].includes(status)) return false;
-    return new Date(dueDate) < new Date();
+  // Karta filtri: status yoki muddat kesimi. Bir karta bosilganda
+  // ikkinchi turdagi filtr tozalanadi — aks holda "Muddati o'tgan" +
+  // "Yakunlangan" kabi har doim bo'sh kesim hosil bo'lardi.
+  const isCardActive = (card) =>
+    Object.entries(card.filter).every(([k, v]) => searchParams.get(k) === v);
+
+  const selectCard = (card) => {
+    if (isCardActive(card)) updateParams({ status: "", due: "" });
+    else updateParams({ status: "", due: "", ...card.filter });
   };
 
   return (
-    <div>
-      {/* Top */}
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <h1 className="page-title">Topshiriqlar</h1>
+    <div className="space-y-4">
+      <TaskStatsStrip stats={stats} isActive={isCardActive} onSelect={selectCard} />
 
-        <div className="flex items-center gap-3 flex-wrap">
+      {/* Filtrlar */}
+      <div className="rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <InputSearch
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Sarlavha yoki tavsif bo'yicha qidirish..."
+            className="min-w-56 flex-1"
+          />
+
           <Select
-            value={statusFilter}
+            value={status}
             options={taskStatusOptions}
-            onChange={(v) => handleFilterChange("status", v)}
+            triggerClassName="w-52"
+            onChange={(v) => updateParams({ status: v })}
           />
 
-          <SelectAllUsers
-            hideLabel
-            label={null}
-            className="w-56"
-            value={assigneeId}
-            onChange={(v) => handleFilterChange("assigneeId", v)}
-            formatUsers={(user) => ({
-              value: user.id,
-              label: `${user.firstName} ${user.lastName?.[0] + "."} (${user.role})`,
-            })}
+          <Select
+            value={due}
+            options={DUE_FILTER_OPTIONS}
+            triggerClassName="w-44"
+            onChange={(v) => updateParams({ due: v })}
           />
 
-          <Button onClick={() => openModal("createTask")}>
-            <Plus />
-            Topshiriq yaratish
-          </Button>
+          <div className="flex items-center gap-1">
+            <SelectAllUsers
+              hideLabel
+              label={null}
+              required={false}
+              className="w-56"
+              value={assigneeId}
+              placeholder="Barcha ijrochilar"
+              onChange={(v) => updateParams({ assigneeId: v })}
+              formatUsers={(user) => ({
+                value: user.id,
+                label: `${user.firstName} ${user.lastName || ""}`.trim(),
+              })}
+            />
+            {assigneeId && (
+              <button
+                type="button"
+                aria-label="Ijrochi filtrini olib tashlash"
+                onClick={() => updateParams({ assigneeId: "" })}
+                className="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
+
+          <Select
+            value={sort}
+            options={SORT_OPTIONS}
+            triggerClassName="w-44"
+            onChange={(v) => updateParams({ sort: v === "newest" ? "" : v })}
+          />
+
+          <div className="ml-auto flex items-center gap-2">
+            {hasFilters && (
+              <Button variant="ghost" onClick={resetFilters}>
+                <FilterX />
+                Tozalash
+              </Button>
+            )}
+            {can("tasks.create") && (
+              <Button onClick={() => openModal("createTask")}>
+                <Plus />
+                Topshiriq berish
+              </Button>
+            )}
+          </div>
         </div>
+
+        {pagination && (
+          <p className="mt-2.5 px-1 text-xs text-gray-400">
+            {hasFilters ? "Topildi" : "Jami"}: {pagination.total} ta topshiriq
+            {isFetching && !isLoading && " · yangilanmoqda..."}
+          </p>
+        )}
       </div>
 
-      {/* Tasks Table */}
+      {/* Ro'yxat */}
       {isLoading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+        <div className="space-y-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-16 animate-pulse rounded-2xl bg-white ring-1 ring-gray-100" />
+          ))}
         </div>
       ) : tasks.length === 0 ? (
-        <Card className="text-center py-8">
-          <p className="text-sm text-gray-500">Topshiriqlar topilmadi</p>
-        </Card>
-      ) : (
-        <div className="overflow-x-auto rounded-lg">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-2.5 px-3">Ijrochi</th>
-                <th className="text-left py-2.5 px-3">Sarlavha</th>
-                <th className="text-left py-2.5 px-3">Ijro muddati</th>
-                <th className="text-center py-2.5 px-3">Jarima bali</th>
-                <th className="text-center py-2.5 px-3">Status</th>
-                <th className="text-left py-2.5 px-3">Yaratilgan</th>
-                <th className="text-center py-2.5 px-3">Harakatlar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tasks.map((task) => (
-                <tr key={task.id} className="text-sm">
-                  <td className="py-2.5 px-3">
-                    <p className="font-medium text-gray-800">
-                      {formatUserName(task.assignee)}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {getRoleLabel(task.assignee?.role, roles)}
-                    </p>
-                  </td>
-                  <td className="py-2.5 px-3">
-                    <p className="max-w-48 truncate text-gray-800">
-                      {task.title}
-                    </p>
-                  </td>
-                  <td className="py-2.5 px-3">
-                    <span
-                      className={
-                        isOverdue(task.dueDate, task.status)
-                          ? "text-red-600 font-medium"
-                          : "text-gray-600"
-                      }
-                    >
-                      {formatDateUZ(task.dueDate)}
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-3 text-center">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-red-50 text-red-600">
-                      {task.penaltyPoints} ball
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-3 text-center">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium ${taskStatusColors[task.status]}`}
-                    >
-                      {taskStatusLabels[task.status]}
-                    </span>
-                  </td>
-                  <td className="py-2.5 px-3 text-xs text-gray-500">
-                    {formatDateUZ(task.createdAt)}
-                  </td>
-                  <td className="py-2.5 px-3 text-center">
-                    <Link
-                      to={`/tasks/${task.id}`}
-                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      Batafsil
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Pagination */}
-      {pagination && pagination.totalPages > 1 && (
-        <div className="mt-4">
-          <Pagination
-            currentPage={pagination.page}
-            totalPages={pagination.totalPages}
-            onPageChange={handlePageChange}
+        <div className="rounded-2xl bg-white ring-1 ring-gray-100">
+          <EmptyState
+            icon={ClipboardList}
+            title={hasFilters ? "Bu filtr bo'yicha topshiriq yo'q" : "Hali topshiriq berilmagan"}
+            description={
+              hasFilters
+                ? "Filtrlarni o'zgartirib yoki tozalab ko'ring."
+                : "Xodim yoki o'quvchiga birinchi topshiriqni bering — u shu yerda paydo bo'ladi."
+            }
+            action={
+              hasFilters ? (
+                <Button variant="outline" onClick={resetFilters}>
+                  <FilterX />
+                  Filtrlarni tozalash
+                </Button>
+              ) : (
+                can("tasks.create") && (
+                  <Button onClick={() => openModal("createTask")}>
+                    <Plus />
+                    Topshiriq berish
+                  </Button>
+                )
+              )
+            }
           />
         </div>
+      ) : (
+        <TasksTable tasks={tasks} roles={roles} dueSoonHours={stats?.dueSoonHours} />
       )}
 
-      {/* Modals */}
+      {pagination && pagination.totalPages > 1 && (
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
+
       <CreateTaskModal />
     </div>
   );

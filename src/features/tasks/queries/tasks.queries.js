@@ -26,6 +26,33 @@ export const tasksQueries = {
       placeholderData: keepPreviousData,
     }),
 
+  /** Live counters for the "Asosiy" tab → `{ total, byStatus, overdue, dueSoon, ... }`. */
+  stats: () =>
+    queryOptions({
+      queryKey: [...tasksKeys.all, "stats"],
+      queryFn: () => tasksAPI.getStats().then((r) => r.data.data),
+      staleTime: 30 * 1000,
+    }),
+
+  /**
+   * Period report for the "Hisobotlar" tab.
+   * @param {{ from: string, to: string }} params - "YYYY-MM-DD"
+   */
+  report: (params) =>
+    queryOptions({
+      queryKey: [...tasksKeys.all, "report", params],
+      queryFn: () => tasksAPI.getReport(params).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Task rules singleton (create/submit validation, penalties). */
+  settings: () =>
+    queryOptions({
+      queryKey: [...tasksKeys.all, "settings"],
+      queryFn: () => tasksAPI.getSettings().then((r) => r.data.data),
+      staleTime: 5 * 60 * 1000,
+    }),
+
   /** Single task by id → the task object. */
   detail: (id) =>
     queryOptions({
@@ -42,13 +69,18 @@ export const tasksQueries = {
    * the list. Keyed under the users namespace with the users list's shape so
    * it is deduped/invalidated with the rest of users.
    *
-   * @param {{ group: "staff" | "student", search?: string }} params
+   * `role` (lavozim) faqat xodimlarda, `classId` faqat o'quvchilarda —
+   * ikkalasi ham guruh ichidagi toraytirish. `limit` — "Hammasini tanlash"
+   * butun filtrni bir so'rovda olishi uchun.
+   *
+   * @param {{ group: "staff" | "student", search?: string, role?: string, classId?: string, limit?: number }} params
    */
-  assignees: ({ group, search }) => {
+  assignees: ({ group, search, role, classId, limit }) => {
     const params = {
-      role: group,
-      limit: ASSIGNEES_PAGE_LIMIT,
+      role: role || group,
+      limit: limit || ASSIGNEES_PAGE_LIMIT,
       ...(search && { search }),
+      ...(classId && { class: classId }),
     };
 
     return queryOptions({
