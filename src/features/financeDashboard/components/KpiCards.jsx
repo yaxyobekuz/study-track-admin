@@ -21,7 +21,6 @@ import { useNavigate } from "react-router-dom";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
-import { formatMoney } from "@/shared/utils/formatMoney";
 
 // Data
 import {
@@ -74,7 +73,7 @@ const Delta = ({ change, changeUnit, inverse }) => {
  * alohida edi — bittasini tashlab qoldirish "reja bajarildimi?" yoki
  * "o'sdikmi?" savollaridan birini javobsiz qoldirardi.
  */
-const KpiCards = ({ data, isLoading }) => {
+const KpiCards = ({ data, isLoading, debtorTopClass }) => {
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -218,17 +217,18 @@ const KpiCards = ({ data, isLoading }) => {
       })}
 
       {/* Debitor qarzdorlik — "Foyda foizi" o'rniga, oddiy karta uslubida */}
-      <DebtorKpiCard debt={data.debt} />
+      <DebtorKpiCard debt={data.debt} topClass={debtorTopClass} />
     </div>
   );
 };
 
 /**
- * DEBITOR QARZDORLIK — KPI qatoridagi oddiy karta (donut EMAS). Jami qarz +
- * qarzdor o'quvchi, o'rtacha, 30+ kunlik va eng eski qarz. Manba
- * `overviewDashboard.debt`. Bosilsa qarzdorlar sahifasiga o'tadi.
+ * DEBITOR QARZDORLIK — KPI qatoridagi oddiy karta (donut EMAS, PUL summasisiz).
+ * Faqat sanoqlar: nechta qarzdor o'quvchi, nechtasi qisman to'lagan, nechtasi
+ * umuman to'lanmagan va eng ko'p qarzli sinf. Manba `overviewDashboard.debt`
+ * (sanoqlar) + `topClass` (sinflar kesimidan). Bosilsa qarzdorlar sahifasiga.
  */
-export const DebtorKpiCard = ({ debt, className }) => {
+export const DebtorKpiCard = ({ debt, topClass, className }) => {
   const navigate = useNavigate();
   if (!debt) return null;
 
@@ -247,41 +247,30 @@ export const DebtorKpiCard = ({ debt, className }) => {
           Debitor qarzdorlik
         </p>
         <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-rose-500 text-white shadow-sm">
-          <WalletCards className="size-[18px]" />
+          <Users className="size-[18px]" />
         </span>
       </div>
 
-      <p className="relative mt-3 text-[22px] font-bold leading-tight tracking-tight text-red-600 xl:text-2xl">
-        {formatMoney(debt.debt, { withLabel: false })}
+      {/* Asosiy raqam — qarzdor o'quvchilar soni (pul emas) */}
+      <p className="relative mt-3 text-[22px] font-bold leading-tight tracking-tight text-orange-600 xl:text-2xl">
+        {debt.debtorCount} ta
       </p>
-      {debt.asOfMonthLabel && (
-        <p className="relative mt-1 text-[11px] text-gray-500">
-          {debt.asOfMonthLabel} holatiga
-        </p>
-      )}
+      <p className="relative mt-1 text-[11px] text-gray-500">
+        qarzdor o'quvchi{debt.debtorShare != null ? ` · ${debt.debtorShare}%` : ""}
+      </p>
 
       <div className="relative mt-3 space-y-1 border-t border-gray-100 pt-2.5 text-[11px]">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-gray-400">Qarzdor o'quvchi</span>
-          <span className="font-semibold text-orange-600">
-            {debt.debtorCount} ta · {debt.debtorShare}%
-          </span>
+          <span className="text-gray-400">Qisman to'lagan</span>
+          <span className="font-semibold text-amber-600">{debt.partialCount ?? 0} ta</span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-gray-400">O'rtacha qarz</span>
-          <span className="font-medium text-gray-700">
-            {formatMoney(debt.average, { withLabel: false })}
-          </span>
+          <span className="text-gray-400">Umuman to'lanmagan</span>
+          <span className="font-semibold text-red-600">{debt.unpaidCount ?? 0} ta</span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-gray-400">30 kundan ortiq</span>
-          <span className="font-medium text-red-600">
-            {formatMoney(debt.overdue, { withLabel: false })}
-          </span>
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-gray-400">Eng eski qarz</span>
-          <span className="font-medium text-gray-700">{debt.oldestMonthLabel ?? "—"}</span>
+          <span className="text-gray-400">Eng ko'p qarzli sinf</span>
+          <span className="font-medium text-gray-700">{topClass ?? "—"}</span>
         </div>
       </div>
     </div>

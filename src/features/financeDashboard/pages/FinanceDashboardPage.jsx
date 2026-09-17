@@ -133,6 +133,11 @@ const FinanceDashboardPage = () => {
     .sort((a, b) => (b.assignedCount ?? 0) - (a.assignedCount ?? 0))
     .slice(0, 3);
 
+  // Eng ko'p qarzi bor sinf — debitor qarzdorlik kartasi uchun (sinflar kesimidan)
+  const debtorTopClass = [...(classBreakdown.data?.byClass ?? [])]
+    .filter((c) => c.classId && Number(c.debt) > 0)
+    .sort((a, b) => Number(b.debt) - Number(a.debt))[0]?.className ?? null;
+
   if (!allowed) {
     return (
       <Card className="p-0 xs:p-0">
@@ -213,7 +218,11 @@ const FinanceDashboardPage = () => {
       </div>
 
       {/* ── 1-qator: KPI kartalari (5 ta) ─────────────────────────────── */}
-      <KpiCards data={overview.data} isLoading={overview.isLoading} />
+      <KpiCards
+        data={overview.data}
+        isLoading={overview.isLoading}
+        debtorTopClass={debtorTopClass}
+      />
 
       {/* ── 2-qator: OYLIK (2/3) + o'quvchilar kartasi (1/3) ──────────── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
