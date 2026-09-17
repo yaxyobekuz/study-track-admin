@@ -89,9 +89,23 @@ const LimitsCard = ({ month, className }) => {
               const over = row.status === "over" || (rate != null && rate > 100);
 
               return (
-                <tr key={row.categoryId} className="border-t border-gray-50">
+                <tr
+                  key={row.categoryId}
+                  className={cn(
+                    "border-t border-gray-50",
+                    // Foyda — maxsus "qolgan ulush" qatori, yengil yashil urg'u
+                    row.isFoyda && "bg-emerald-50/50",
+                  )}
+                >
                   <td className="px-2 py-2">
-                    <p className="font-medium text-gray-900">{row.name}</p>
+                    <p
+                      className={cn(
+                        "font-medium",
+                        row.isFoyda ? "text-emerald-700" : "text-gray-900",
+                      )}
+                    >
+                      {row.name}
+                    </p>
                     {/* Foiz progress bar — limit qo'yilgan bo'lsa */}
                     {hasLimit && (
                       <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
@@ -175,47 +189,6 @@ const LimitsCard = ({ month, className }) => {
           )}
         </table>
       </div>
-
-      {/* KUTILAYOTGAN FOYDA — jami hisoblangan majburiyatdan limitlar olib
-          tashlanadi: "hamma yig'ilib, hamma limit ishlatilsa qancha qoladi".
-          Foizi ham ko'rinadi (limitlar 78% → foyda 22%). */}
-      {totals?.expectedProfit != null && (
-        <div className="mt-3 rounded-xl bg-emerald-50 px-3 py-2.5">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-emerald-800">Kutilayotgan foyda</p>
-            <div className="flex shrink-0 items-baseline gap-1.5">
-              <p
-                className={cn(
-                  "text-lg font-bold tabular-nums",
-                  Number(totals.expectedProfit) < 0 ? "text-red-600" : "text-emerald-700",
-                )}
-              >
-                {formatMoney(totals.expectedProfit)}
-              </p>
-              {totals.profitPercent != null && (
-                <span className="text-sm font-bold text-emerald-600">
-                  {totals.profitPercent}%
-                </span>
-              )}
-            </div>
-          </div>
-
-          <p className="mt-0.5 truncate text-[11px] text-emerald-600">
-            Hisoblangan {formatMoney(data.accrued)} − limit {formatMoney(totals.limit)}
-            {totals.limitPercent != null && ` · limitlar ${totals.limitPercent}%`}
-          </p>
-
-          {/* Ulush chizig'i — limit (qizil) + foyda (yashil) */}
-          {totals.limitPercent != null && (
-            <div className="mt-1.5 flex h-1.5 w-full overflow-hidden rounded-full bg-emerald-100">
-              <div
-                className="h-full bg-rose-400"
-                style={{ width: `${Math.min(Math.max(totals.limitPercent, 0), 100)}%` }}
-              />
-            </div>
-          )}
-        </div>
-      )}
     </DashboardCard>
   );
 };
