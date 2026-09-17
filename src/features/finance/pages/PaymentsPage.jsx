@@ -70,11 +70,15 @@ const PaymentsPage = () => {
   const { data: accountsData } = useQuery(financeQueries.accountList({}));
   const accounts = accountsData?.items ?? [];
 
+  // ⚠️ Bekor qilingan to'lovlar RO'YXATDA KO'RSATILMAYDI: bekor qilish =
+  // "to'liq o'chirish" (pul kassadan teskari qator bilan qaytadi, oy qayta
+  // ochiladi) va tizim egasi uni ro'yxatdan butunlay yo'qolishini xohladi.
+  // Yozuv bazada audit uchun qoladi (chek URL'i hamon ochiladi), lekin
+  // registrda ham, umumiy summada ham ko'rinmaydi.
   const { data, isLoading } = useQuery(
     financeQueries.paymentList({
       page,
       limit: 24,
-      includeVoided: "true",
       ...(accountId ? { accountId } : {}),
       ...(range.from ? { from: range.from } : {}),
       ...(range.to ? { to: range.to } : {}),
@@ -95,8 +99,8 @@ const PaymentsPage = () => {
         payment.allocations?.length
           ? `${payment.allocations.length} ta oy qayta ochiladi`
           : "Bu chek hech qaysi oyga taqsimlanmagan",
-        "Pul to'lov turidan chiqim sifatida yoziladi",
-        "Chek o'chirilmaydi — bekor qilingan deb belgilanadi",
+        "Pul to'lov turidan chiqim sifatida qaytariladi (depozitga qo'shilmaydi)",
+        "To'lov ro'yxatdan va umumiy summadan butunlay chiqariladi",
       ],
       warning:
         "Qisman bekor qilish yo'q. Summa xato bo'lsa, to'liq bekor qilib qaytadan kiriting.",
