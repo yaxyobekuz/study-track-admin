@@ -10,6 +10,9 @@ import EditUserPhoneModal from "../EditUserPhoneModal";
 import EditWorkScheduleModal from "../EditWorkScheduleModal";
 import EditStaffSubjectsModal from "../EditStaffSubjectsModal";
 import EditUserRolesModal from "../EditUserRolesModal";
+import TutorGroupsCard from "@/features/tutorGroups/components/TutorGroupsCard";
+import TutorGroupModal from "@/features/tutorGroups/components/TutorGroupModal";
+import RemoveTutorGroupModal from "@/features/tutorGroups/components/RemoveTutorGroupModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -249,6 +252,9 @@ const StaffMainTab = ({ user }) => {
           og'irlikda ko'rinardi. */}
       <UserRolesCard user={user} />
 
+      {/* Tyutor guruhlari — tyutor rolida yoki guruhi bor xodimda ko'rinadi */}
+      <TutorGroupsCard user={user} />
+
       {/* Xodim qayerda ishlashi — faqat O'QISH uchun qisqa ro'yxat.
           Biriktirish va ruxsatlar "Ruxsatlar" tabida: ular bir-biridan
           ajralmaydi va ikki joyda takrorlanmasligi kerak. */}
@@ -260,6 +266,8 @@ const StaffMainTab = ({ user }) => {
       <EditStaffSubjectsModal />
       <EditUserRolesModal />
       <EditUserPhoneModal />
+      <TutorGroupModal />
+      <RemoveTutorGroupModal />
     </div>
   );
 };

@@ -139,6 +139,27 @@ export const getRuleStatus = (rule, currentMonth) => {
 };
 
 /**
+ * Ustama qatori yorlig'i (`allowanceBreakdown` elementi).
+ *
+ * `tutor` — tyutor guruhi: sinf va o'quvchilar soni qatorda MUHRLANGAN, shuning
+ * uchun "nega shuncha" degan savolga qatorning o'zi javob beradi.
+ *
+ * @param {{label: string, type: string, value: number, studentCount?: number}} item
+ * @returns {string}
+ */
+export const allowanceLineLabel = (item) => {
+  if (item.type === "percent") return `${item.label} · ${item.value}%`;
+  if (item.type === "tutor" && item.studentCount != null) {
+    return `${item.label} · ${item.studentCount} o'quvchi`;
+  }
+  return item.label;
+};
+
+/** Ustama tafsiloti — jadval katagining `title` matni (qator-qator). */
+export const allowanceTooltip = (breakdown = []) =>
+  breakdown.map((item) => `${allowanceLineLabel(item)}: ${formatMoney(item.amount)}`).join("\n");
+
+/**
  * Oylik summasini o'zgartirish qoidasi — oynada ko'rsatiladi.
  * Server bilan bir xil (server/src/services/payroll.service.js).
  */

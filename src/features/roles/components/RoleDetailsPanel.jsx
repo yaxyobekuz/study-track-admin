@@ -10,6 +10,8 @@ import { Lock, Trash2, Users } from "lucide-react";
 // Components
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
+import Field from "@/shared/components/ui/field/Field";
+import Switch from "@/shared/components/ui/switch/Switch";
 import InputField from "@/shared/components/ui/input/InputField";
 import WeeklyScheduleEditor from "@/features/users/components/WeeklyScheduleEditor";
 import PermissionsMatrix from "@/features/permissions/components/PermissionsMatrix";
@@ -33,6 +35,7 @@ const toDraft = (role) => ({
   workEndTime: role.workEndTime || "",
   workDays: role.workDays || [1, 2, 3, 4, 5],
   weeklySchedule: role.weeklySchedule || {},
+  isTutor: Boolean(role.isTutor),
 });
 
 /**
@@ -136,6 +139,31 @@ const RoleDetailsPanel = ({ role, onDirtyChange, className = "" }) => {
             }
             onChange={(e) => setField("value", e.target.value?.toLowerCase().trim())}
           />
+        </div>
+      </section>
+
+      {/* Tyutor belgisi — rol kaliti emas, belgi: rollar dinamik */}
+      <section>
+        <h3 className="mb-2 text-sm font-semibold text-gray-900">Tyutor</h3>
+
+        <div className="space-y-2 rounded-xl border border-gray-100 p-3.5">
+          <Field
+            className="flex-row"
+            htmlFor="roleIsTutor"
+            label="Bu rol — tyutor roli"
+          >
+            <Switch
+              id="roleIsTutor"
+              checked={state.isTutor}
+              onChange={(v) => setField("isTutor", v)}
+            />
+          </Field>
+          <p className="text-xs text-gray-500">
+            Bu rol (asosiy yoki qo'shimcha) berilgan xodimga sinf (guruh)
+            biriktiriladi va o'quvchilar soniga qarab qo'shimcha oylik
+            hisoblanadi. Belgi olinsa mavjud guruhlar o'chmaydi — xodim
+            sahifasida ko'rinib turadi.
+          </p>
         </div>
       </section>
 

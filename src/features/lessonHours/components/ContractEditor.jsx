@@ -32,6 +32,7 @@ import {
   RATE_SOURCE_OPTIONS,
 } from "../data/lessonHours.data";
 import { contractQueries } from "../queries/lessonHours.queries";
+import { allowanceLineLabel } from "@/features/payroll/data/payroll.data";
 import { useSaveContract } from "../queries/lessonHours.mutations";
 
 /**
@@ -508,7 +509,7 @@ const ResultPanel = ({ contract, draft, preview, draftError, previewError, isBus
             {preview.allowanceBreakdown.map((item, index) => (
               <Line
                 key={`${item.label}-${index}`}
-                label={item.type === "percent" ? `${item.label} · ${item.value}%` : item.label}
+                label={allowanceLineLabel(item)}
                 value={formatMoney(item.amount)}
               />
             ))}

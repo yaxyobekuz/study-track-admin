@@ -37,6 +37,7 @@ import PermissionsPage from "@/features/permissions/pages/PermissionsPage";
 // Pages - Classes
 import ClassesPage from "@/features/classes/pages/ClassesPage";
 import ClassDetailPage from "@/features/classes/pages/ClassDetailPage";
+import TutorGroupPage from "@/features/tutorGroups/pages/TutorGroupPage";
 
 // Pages - Subjects
 import SubjectsPage from "@/features/subjects/pages/SubjectsPage";
@@ -292,6 +293,8 @@ const Routes = () => {
 
           <Route path="/users/new" element={<CreateUserPage />} />
           <Route path="/users/:userId" element={<UserDetailPage />} />
+          {/* Tyutor guruhi manzarasi — xodim sahifasidagi kartadan ochiladi */}
+          <Route path="/tutor-groups/:groupId" element={<TutorGroupPage />} />
 
           {/* Eski yo'l (backward-compat) */}
           <Route

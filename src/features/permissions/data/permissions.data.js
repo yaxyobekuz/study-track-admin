@@ -20,6 +20,7 @@ export const SECTIONS = {
   SCHEDULE_SYNC: "scheduleSync",
   PLANNER: "planner",
   SUBSTITUTIONS: "substitutions",
+  TUTORS: "tutors",
   TOPICS: "topics",
   CLASSES: "classes",
   SUBJECTS: "subjects",
@@ -518,6 +519,23 @@ export const PERMISSION_SECTIONS = [
     ],
   },
   {
+    // TYUTOR GURUHLARI — tyutorga sinf biriktirish va shu biriktirish uchun
+    // qo'shimcha oylik (o'quvchiga / guruhga summa).
+    //
+    // ⚠️ `assign` PULNI belgilaydi: summa oylikka ustama bo'lib muhrlanadi.
+    // Guruhni ko'rish va biriktirish shuning uchun alohida amal.
+    //
+    // ⚠️ Server katalogi bilan QO'LDA sinxron:
+    // `server/src/utils/permissions.js`.
+    key: SECTIONS.TUTORS,
+    label: "Tyutor guruhlari",
+    group: "Ta'lim",
+    actions: [
+      { key: "view", label: "Ko'rish (guruh, davomat, baho, qo'shimcha oylik)" },
+      { key: "assign", label: "Guruh biriktirish va qo'shimcha oylik belgilash" },
+    ],
+  },
+  {
     key: SECTIONS.PAYROLL,
     label: "Xodimlar oyligi",
     group: "Moliya",
@@ -917,6 +935,8 @@ const ROUTE_PERMISSIONS = [
   // eng UZUN prefiks yutadigan qoidaga tayanamiz: bo'limga kirish
   // `payroll.hours` bilan, o'rinbosarlik tabiga esa o'z kaliti bilan.
   { prefix: "/lesson-hours/substitutions", key: "substitutions.view" },
+  // Tyutor guruhi manzarasi (xodim sahifasidagi kartadan ochiladi)
+  { prefix: "/tutor-groups", key: "tutors.view" },
   { prefix: "/lesson-hours/grading-access", key: "grades.unlock" },
   { prefix: "/lesson-hours", key: "payroll.hours" },
   // Bosh sahifadagi "Dars soatlari" tabi — `/lesson-hours/overview` bilan

@@ -16,6 +16,8 @@ export const MODAL_NAMES = [
   "attendanceDay",
   "editStudentAttendance",
   "editUserPhone",
+  "tutorGroup",
+  "removeTutorGroup",
   "deleteUser",
   "archiveUser",
   "restoreUser",

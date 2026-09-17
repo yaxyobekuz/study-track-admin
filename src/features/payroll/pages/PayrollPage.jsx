@@ -62,6 +62,7 @@ import {
   CATEGORY_TABLE_COLUMNS,
   CATEGORY_STATUS_OPTIONS,
   getRuleStatus,
+  allowanceTooltip,
 } from "../data/payroll.data";
 import AllowancesView from "../components/AllowancesView";
 import AssignBonusModal from "../components/AssignBonusModal";
@@ -361,9 +362,13 @@ const EntriesView = () => {
                     align="right"
                     className={Number(entry.allowanceAmount) > 0 ? "text-amber-600" : "text-gray-400"}
                   >
-                    {Number(entry.allowanceAmount) > 0
-                      ? formatMoney(entry.allowanceAmount)
-                      : "—"}
+                    {Number(entry.allowanceAmount) > 0 ? (
+                      <span title={allowanceTooltip(entry.allowanceBreakdown)}>
+                        {formatMoney(entry.allowanceAmount)}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
                   </Td>
 
                   {/* JAMI = oylik + ustama − ushlab qolish */}

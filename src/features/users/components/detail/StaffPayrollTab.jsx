@@ -22,6 +22,7 @@ import {
 } from "../../data/staffPayroll.data";
 import {
   ENTRY_STATUS_META,
+  allowanceLineLabel,
   getRuleStatus,
 } from "@/features/payroll/data/payroll.data";
 import { payrollQueries } from "@/features/payroll/queries/payroll.queries";
@@ -116,8 +117,18 @@ const StaffPayrollTab = ({ user }) => {
 
               return (
                 <Tr key={entry.id}>
-                  <Td className="font-medium text-gray-900">
+                  <Td nowrap={false} className="font-medium text-gray-900">
                     {entry.monthLabel}
+                    {/* Ustamalar (tyutor guruhlari ham) — summa qayerdan
+                        kelgani muhrlangan qatorning o'zida */}
+                    {entry.allowanceBreakdown?.map((item, index) => (
+                      <span
+                        key={`${item.label}-${index}`}
+                        className="block text-xs font-normal text-amber-600"
+                      >
+                        + {allowanceLineLabel(item)}: {formatMoney(item.amount)}
+                      </span>
+                    ))}
                   </Td>
 
                   <Td align="right">{formatMoney(entry.amount)}</Td>
