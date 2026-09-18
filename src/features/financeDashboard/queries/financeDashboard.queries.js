@@ -46,6 +46,17 @@ export const dashboardQueries = {
       staleTime: STALE,
     }),
 
+  /**
+   * Kunlik pul harakati. `staleTime` qisqa: bugungi kun ichida kassa
+   * o'zgarib turadi, oylik yig'ma raqamlardek sekin emas.
+   */
+  dailyCash: (params) =>
+    queryOptions({
+      queryKey: [...dashboardKeys.all, "daily-cash", params],
+      queryFn: () => financeDashboardAPI.getDailyCash(params).then((r) => r.data.data),
+      staleTime: 60 * 1000,
+    }),
+
   expenseBudgets: (params) =>
     queryOptions({
       queryKey: [...dashboardKeys.all, "expense-budgets", params],

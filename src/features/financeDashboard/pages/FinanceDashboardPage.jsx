@@ -17,6 +17,7 @@ import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import KpiCards, { PayrollKpiCard } from "../components/KpiCards";
 import StudentsKpiCard from "../components/StudentsKpiCard";
+import DailyCashCard from "../components/DailyCashCard";
 import { AccrualChart } from "../components/TrendCharts";
 import {
   DebtAgingCard,
@@ -229,6 +230,9 @@ const FinanceDashboardPage = () => {
         <PayrollKpiCard kpi={overview.data?.kpi} className="xl:col-span-2" />
         <StudentsKpiCard data={classBreakdown.data} topServices={topServices} />
       </div>
+
+      {/* ── Kunlik pul harakati — kirim / chiqim / kassa qoldig'i har kun ── */}
+      <DailyCashCard month={month} />
 
       {/* ── Maktab sig'imi — bitta qatorda, sinflar jadvali tepasida ──── */}
       <SchoolCapacityBar data={classBreakdown.data} />

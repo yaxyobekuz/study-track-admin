@@ -21,6 +21,9 @@ export const financeDashboardAPI = {
   getAccrualTrend: (params) =>
     http.get("/finance-reports/accrual-trend", { params }),
 
+  /** Kunlik pul harakati: kirim / chiqim / kassa qoldig'i har kun uchun. Params: { month } */
+  getDailyCash: (params) => http.get("/finance-reports/daily-cash", { params }),
+
   /** Oylik reja (byudjet) qatorlari. Params: { month } */
   getTargets: (params) => http.get("/finance-reports/targets", { params }),
 
