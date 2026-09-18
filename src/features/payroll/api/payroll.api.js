@@ -103,19 +103,19 @@ export const suspensionsAPI = {
 /**
  * Oylik majburiyatlari va to'lovlar.
  *
- * ⚠️ Majburiyat summasini o'zgartiradigan endpoint YO'Q va bo'lmasligi kerak:
- * u muhrlangan fakt. Xato bo'lsa bekor qilinib, qoida to'g'rilangach qayta
- * shakllantiriladi.
+ * ⚠️ Majburiyat summasini QO'LDA yozadigan endpoint YO'Q: u muhrlangan fakt.
+ * Yagona yo'l — "Qayta hisoblash": qator AMALDAGI shartnomadan qayta
+ * hisoblanadi (to'lov, chek va kassaga tegmasdan), avval ro'yxat ko'rsatiladi.
  */
 export const payrollAPI = {
   getEntries: (params) => http.get("/payroll", { params }),
   getStaffEntries: (staffId) => http.get(`/payroll/staff/${staffId}`),
   generate: (data) => http.post("/payroll/generate", data),
   cancelEntry: (id, reason) => http.post(`/payroll/${id}/cancel`, { reason }),
-  // Bekor qilinganini qaytarish yoki qoida to'g'rilangandan keyin summani
-  // yangilash — oylik passi bunday qatorga tegmaydi
-  regenerateEntry: (id, reason) =>
-    http.post(`/payroll/${id}/regenerate`, { reason }),
+  // Qayta hisoblash: { month, entryIds? } → "eski → yangi" ro'yxati (hech
+  // narsa yozilmaydi); `recalc` esa { month, entryIds?, reason } bilan yozadi
+  previewRecalc: (data) => http.post("/payroll/recalc/preview", data),
+  recalc: (data) => http.post("/payroll/recalc", data),
 
   getPayments: (params) => http.get("/payroll/payments", { params }),
   previewPayment: (data) => http.post("/payroll/payments/preview", data),

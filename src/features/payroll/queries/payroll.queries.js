@@ -131,6 +131,21 @@ export const payrollQueries = {
       placeholderData: keepPreviousData,
     }),
 
+  /**
+   * Qayta hisoblash ro'yxati ("eski → yangi") — hech narsa yozilmaydi.
+   * `entriesKey` ostida: majburiyatlar yangilanganda u ham eskiradi.
+   */
+  recalcPreview: ({ month, entryIds } = {}) =>
+    queryOptions({
+      queryKey: [...entriesKey, "recalc", month, entryIds ?? null],
+      queryFn: () =>
+        payrollAPI
+          .previewRecalc({ month, ...(entryIds ? { entryIds } : {}) })
+          .then((r) => r.data.data),
+      enabled: Boolean(month),
+      retry: false,
+    }),
+
   /** Bitta xodimning majburiyatlari va qarzi. */
   staffEntries: (staffId) =>
     queryOptions({

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Icons
-import { Ban, Pencil, Plus, Receipt, RefreshCw, Search, Users, Wallet, XCircle, Award, Archive, Trash2 } from "lucide-react";
+import { Ban, Calculator, Pencil, Plus, Receipt, RefreshCw, Search, Users, Wallet, XCircle, Award, Archive, Trash2 } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -28,6 +28,7 @@ import {
   SalaryEntryPaymentsModal,
 } from "../components/PayrollModals";
 import { CancelPayrollEntryModal } from "../components/CancelEntryModal";
+import { RecalcPayrollModal } from "../components/RecalcPayrollModal";
 import {
   DepartmentModal,
   PositionModal,
@@ -116,6 +117,7 @@ const PayrollPage = () => {
       <EditSalaryPaymentModal />
       <SalaryEntryPaymentsModal />
       <CancelPayrollEntryModal />
+      <RecalcPayrollModal />
     </div>
   );
 };
@@ -310,10 +312,22 @@ const EntriesView = () => {
         </div>
 
         <Can do="payroll.generate">
-          <Button onClick={handleGenerate} loading={isGenerating}>
-            <RefreshCw />
-            Shakllantirish
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Muhrlangan oylikni amaldagi shartnomaga keltirish — to'lovga
+                tegmasdan; avval "eski → yangi" ro'yxati ko'rsatiladi */}
+            <Button
+              variant="outline"
+              disabled={!monthKey}
+              onClick={() => openModal("recalcPayroll", { month: monthKey })}
+            >
+              <Calculator />
+              Qayta hisoblash
+            </Button>
+            <Button onClick={handleGenerate} loading={isGenerating}>
+              <RefreshCw />
+              Shakllantirish
+            </Button>
+          </div>
         </Can>
       </div>
 
@@ -468,6 +482,26 @@ const EntriesView = () => {
                         >
                           <Receipt className="size-3.5" />
                         </button>
+                      )}
+
+                      {/* Qayta hisoblash — shartnoma o'zgargan yoki ushlab qolish
+                          bekor qilingan bo'lsa (to'lov tushgan qatorda ham) */}
+                      {!isCancelled && (
+                        <Can do="payroll.generate">
+                          <button
+                            title="Qayta hisoblash"
+                            onClick={() =>
+                              openModal("recalcPayroll", {
+                                month: entry.month,
+                                entryIds: [entry.id],
+                                staffName: entry.staffName,
+                              })
+                            }
+                            className="rounded-lg p-1.5 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600"
+                          >
+                            <Calculator className="size-3.5" />
+                          </button>
+                        </Can>
                       )}
 
                       {!isCancelled && entry.status !== "paid" && (

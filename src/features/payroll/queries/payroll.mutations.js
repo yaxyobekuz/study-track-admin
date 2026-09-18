@@ -162,11 +162,11 @@ export const useGeneratePayroll = () => {
   });
 };
 
-export const useRegenerateEntry = () => {
+// Qayta hisoblash — muhrlangan oylikni amaldagi shartnomaga keltiradi
+export const useRecalcPayroll = () => {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: ({ id, reason }) =>
-      payrollAPI.regenerateEntry(id, reason).then((r) => r.data.data),
+    mutationFn: (data) => payrollAPI.recalc(data).then((r) => r.data.data),
     onSuccess: invalidate,
   });
 };

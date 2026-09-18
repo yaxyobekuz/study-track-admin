@@ -282,10 +282,15 @@ export const DebtorKpiCard = ({ debt, topClass, className }) => {
  * haqida to'liq manzara: qancha tarqatish kerak, tarqatildi, qoldi, o'tgan
  * oy bilan taqqoslash va tarqatilgan ulushi. Ma'lumot avvalgidek uch
  * kalitda keladi (`payrollDue`/`payrollPaid`/`payrollLeft`).
+ *
+ * Birinchi blok — UMUMIY OYLIK (`payrollPlanned`): xodimlarga belgilangan jami
+ * oylik (hamma dars o'tilganda, ushlab qolishsiz). Shunda bir qarashda
+ * "jami qancha belgilangan → qancha tarqatish kerak" ko'rinadi.
  */
 export const PayrollKpiCard = ({ kpi, className }) => {
   const navigate = useNavigate();
   const card = KPI_CARDS.find((c) => c.key === "payroll");
+  const planned = kpi?.payrollPlanned;
   const due = kpi?.payrollDue;
   const paid = kpi?.payrollPaid;
   const left = kpi?.payrollLeft;
@@ -297,6 +302,7 @@ export const PayrollKpiCard = ({ kpi, className }) => {
   const rate = dueN > 0 ? Math.min(100, Math.round((paidN / dueN) * 100)) : 0;
 
   const blocks = [
+    ...(planned ? [{ label: "Umumiy oylik", value: planned.value, tone: "text-gray-900" }] : []),
     { label: "Tarqatish kerak", value: due.value, sub: due.sub, tone: "text-gray-900" },
     { label: "Tarqatildi", value: paid?.value, sub: paid?.sub, tone: "text-teal-700" },
     { label: "Qoldi", value: left?.value, sub: left?.sub, tone: "text-red-600" },
@@ -347,8 +353,14 @@ export const PayrollKpiCard = ({ kpi, className }) => {
         </span>
       </div>
 
-      {/* To'rt qiymat yonma-yon */}
-      <div className="relative mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {/* Qiymatlar yonma-yon. Beshta blok faqat keng ekranda bir qatorga
+          sig'adi — torroqda raqamlar kesilib qolmasin deb ikki qatorga tushadi */}
+      <div
+        className={cn(
+          "relative mt-4 grid grid-cols-2 gap-4",
+          blocks.length > 4 ? "sm:grid-cols-3 2xl:grid-cols-5" : "sm:grid-cols-4",
+        )}
+      >
         {blocks.map((b) => (
           <div key={b.label} className="min-w-0">
             <p className="text-[11px] text-gray-400">{b.label}</p>
