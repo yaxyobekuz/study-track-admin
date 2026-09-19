@@ -327,6 +327,7 @@ export const TIMELINE_SKIP_LABELS = {
 
 export const DEBTOR_TABLE_COLUMNS = [
   "O'quvchi",
+  "Sinf",
   "To'lanmagan oylar",
   "Eng eski qarz",
   { label: "Qarz", align: "right" },

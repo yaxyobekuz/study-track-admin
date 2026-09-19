@@ -275,6 +275,8 @@ const DebtorsPage = () => {
                     )}
                   </Td>
 
+                  <Td className="text-gray-700">{debtor.className || "—"}</Td>
+
                   <Td className="text-gray-500">{debtor.unpaidCount} oy</Td>
 
                   <Td>
