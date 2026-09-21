@@ -22,7 +22,8 @@ import { dashboardQueries } from "../queries/financeDashboard.queries";
 const COLLAPSED_DAYS = 7;
 
 const money = (value) => formatMoney(value, { withLabel: false });
-const isZero = (value) => Number(value) === 0;
+// Maydon yo'q (eski server) ham nol — deploy tartibidan qat'i nazar
+const isZero = (value) => !Number(value);
 
 /** Ishorali summa: "+1 200 000" / "−300 000" / "—". */
 const signed = (value) => {
@@ -30,6 +31,9 @@ const signed = (value) => {
   if (n === 0) return "—";
   return `${n > 0 ? "+" : "−"}${money(Math.abs(n))}`;
 };
+
+/** Kun (yoki oy) da bekor qilish bo'lganmi — sof ta'sir 0 bo'lsa ham. */
+const hasVoids = (row) => !isZero(row.voidedIncome) || !isZero(row.voidedExpense);
 
 /** Kichik izoh qatori: faqat nolga teng bo'lmagan qismlar. */
 const parts = (list) =>
@@ -46,6 +50,10 @@ const parts = (list) =>
  * hisoblaydi va "kun boshi + kirim − chiqim = kun oxiri" har kuni aniq
  * bajariladi — oxirgi qoldiq "Kassadagi pul" kartasi bilan bir xil.
  *
+ * ⚠️ BEKOR QILISH ALOHIDA USTUNDA: kirim va chiqim faqat haqiqatan tushgan /
+ * chiqqan pul, shuning uchun hech qachon manfiy bo'lmaydi. Boshqa kungi
+ * to'lov bugun bekor qilinsa, u "Bekor qilindi" da ayriladi.
+ *
  * ⚠️ KARTA ICHIDA SURILISH YO'Q (`DashboardCard` qoidasi): standart holatda
  * oxirgi 7 kun, qolgani "Butun oy" tugmasi bilan shu yerning o'zida ochiladi.
  *
@@ -58,6 +66,7 @@ const DailyCashCard = ({ month, className }) => {
   const days = [...(data?.days ?? [])].reverse(); // yangi kun tepada
   const visible = expanded ? days : days.slice(0, COLLAPSED_DAYS);
   const hasOther = days.some((day) => !isZero(day.other));
+  const hasVoided = days.some(hasVoids);
   const totals = data?.totals;
   const isCurrent = days.some((day) => day.isToday);
 
@@ -76,7 +85,7 @@ const DailyCashCard = ({ month, className }) => {
       className={className}
     >
       {totals && (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className={cn("grid grid-cols-2 gap-3", hasVoids(totals) ? "lg:grid-cols-5" : "lg:grid-cols-4")}>
           <SummaryBlock label="Oy boshida kassada" value={formatMoney(data.openingBalance)} />
           <SummaryBlock
             label="Kirim"
@@ -96,6 +105,17 @@ const DailyCashCard = ({ month, className }) => {
               ["xarajat", totals.expenses],
             ])}
           />
+          {hasVoids(totals) && (
+            <SummaryBlock
+              label="Bekor qilindi"
+              value={signed(totals.voided)}
+              tone="text-amber-600"
+              sub={parts([
+                ["kirim", totals.voidedIncome],
+                ["chiqim", totals.voidedExpense],
+              ])}
+            />
+          )}
           <SummaryBlock
             label={isCurrent ? "Hozir kassada" : "Oy oxirida kassada"}
             value={formatMoney(data.closingBalance)}
@@ -106,12 +126,13 @@ const DailyCashCard = ({ month, className }) => {
 
       {visible.length > 0 && (
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[640px] text-sm">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-gray-100 text-left text-[11px] font-medium uppercase tracking-wide text-gray-400">
                 <th className="py-2 pr-3 font-medium">Sana</th>
                 <th className="py-2 pr-3 text-right font-medium">Kirim</th>
                 <th className="py-2 pr-3 text-right font-medium">Chiqim</th>
+                {hasVoided && <th className="py-2 pr-3 text-right font-medium">Bekor qilindi</th>}
                 {hasOther && (
                   <th className="py-2 pr-3 text-right font-medium">Qaytarish / to'g'rilash</th>
                 )}
@@ -121,7 +142,8 @@ const DailyCashCard = ({ month, className }) => {
             </thead>
             <tbody>
               {visible.map((day) => {
-                const quiet = isZero(day.income) && isZero(day.expense) && isZero(day.other);
+                const quiet =
+                  isZero(day.income) && isZero(day.expense) && isZero(day.other) && !hasVoids(day);
                 const net = Number(day.net);
                 return (
                   <tr
@@ -169,6 +191,23 @@ const DailyCashCard = ({ month, className }) => {
                         </>
                       )}
                     </td>
+                    {hasVoided && (
+                      <td className="py-2.5 pr-3 text-right tabular-nums">
+                        {!hasVoids(day) ? (
+                          <span className="text-gray-300">—</span>
+                        ) : (
+                          <>
+                            <span className="font-medium text-amber-600">{signed(day.voided)}</span>
+                            <span className="block text-[11px] text-gray-400">
+                              {parts([
+                                ["kirim", day.voidedIncome],
+                                ["chiqim", day.voidedExpense],
+                              ])}
+                            </span>
+                          </>
+                        )}
+                      </td>
+                    )}
                     {hasOther && (
                       <td className="py-2.5 pr-3 text-right tabular-nums text-gray-600">
                         {isZero(day.other) ? <span className="text-gray-300">—</span> : signed(day.other)}
