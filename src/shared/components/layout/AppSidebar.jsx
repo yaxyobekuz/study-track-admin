@@ -179,6 +179,10 @@ const navItems = [
         url: "/grades",
       },
       {
+        title: "Baholar tahlili",
+        url: "/grade-analysis",
+      },
+      {
         title: "Dars jadvali",
         url: "/schedules",
       },

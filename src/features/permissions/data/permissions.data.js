@@ -14,6 +14,7 @@ export const SECTIONS = {
   ATTENDANCE: "attendance",
   GRADES: "grades",
   EDUCATION: "education",
+  GRADE_ANALYSIS: "gradeAnalysis",
   ACHIEVEMENTS: "achievements",
   CLUBS: "clubs",
   SCHEDULES: "schedules",
@@ -167,6 +168,22 @@ export const PERMISSION_SECTIONS = [
     label: "Ta'lim dashboardi",
     group: "Ta'lim",
     actions: [A.view, { key: "plan", label: "Reja belgilash" }],
+  },
+  {
+    // BAHOLAR TAHLILI — har bir o'quvchining fan/mavzu kesimidagi xulosasi.
+    // ⚠️ `server/src/utils/permissions.js` bilan QO'LDA SINXRON. `publish`
+    // alohida: yuborilgan hisobotni ota-ona o'qiydi, ishga tushirish huquqi
+    // buni o'zi bermaydi.
+    key: SECTIONS.GRADE_ANALYSIS,
+    label: "Baholar tahlili",
+    group: "Ta'lim",
+    actions: [
+      A.view,
+      { key: "run", label: "Tahlilni ishga tushirish" },
+      { key: "publish", label: "O'quvchi va ota-onaga yuborish" },
+      A.delete,
+      A.settings,
+    ],
   },
   {
     // Olimpiada va musobaqa yutuqlari — tashqi hodisa qaydi.
@@ -901,6 +918,7 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/statistics", key: "statistics.view" },
   { prefix: "/attendance", key: "attendance.view" },
   { prefix: "/grades", key: "grades.view" },
+  { prefix: "/grade-analysis", key: "gradeAnalysis.view" },
   { prefix: "/schedules", key: "schedules.view" },
   // ⚠️ `/schedules` dan UZUNROQ — eng uzun mos prefiks yutadi. Aks holda
   // sahifa `schedules.view` bilan ochilib ketardi (bo'limlar alohida).

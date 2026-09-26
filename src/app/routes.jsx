@@ -147,6 +147,7 @@ import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
 import FinanceIndex from "@/features/finance/layouts/FinanceIndex";
 import FinanceDashboardPage from "@/features/financeDashboard/pages/FinanceDashboardPage";
 import AcademicDashboardPage from "@/features/academicDashboard/pages/AcademicDashboardPage";
+import GradeAnalysisPage from "@/features/gradeAnalysis/pages/GradeAnalysisPage";
 import InventoryDashboardPage from "@/features/inventoryDashboard/pages/InventoryDashboardPage";
 
 // Pages - Faollik va Xavfsizlik
@@ -351,6 +352,8 @@ const Routes = () => {
           {/* Grades */}
           <Route path="/grades" element={<GradesPage />} />
           <Route path="/grades/missing" element={<MissingGradesPage />} />
+          {/* BAHOLAR TAHLILI — o'quvchilar bilimi: fan, mavzu, sabab, tavsiya */}
+          <Route path="/grade-analysis" element={<GradeAnalysisPage />} />
 
           {/* Schedules */}
           <Route path="/schedules" element={<SchedulesPage />} />

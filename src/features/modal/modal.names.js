@@ -34,6 +34,11 @@ export const MODAL_NAMES = [
   "moveClassStudents",
   "removeClassStudents",
 
+  // Baholar tahlili
+  "gradeAnalysisLaunch",
+  "gradeAnalysisReport",
+  "gradeAnalysisSettings",
+
   // Diagnostika
   "diagnosticQuestion",
   "deleteDiagnosticQuestion",
