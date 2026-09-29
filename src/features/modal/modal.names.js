@@ -18,6 +18,9 @@ export const MODAL_NAMES = [
   "deviceAssignPolicy",
   "deviceApp",
 
+  // ERP va Kundalik.com
+  "exportStudentSystems",
+
   // User
   "profile",
   "editUserBasic",

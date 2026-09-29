@@ -24,6 +24,7 @@ export const SECTIONS = {
   TUTORS: "tutors",
   TOPICS: "topics",
   CLASSES: "classes",
+  STUDENT_SYSTEMS: "studentSystems",
   SUBJECTS: "subjects",
   TESTS: "tests",
   DIAGNOSTICS: "diagnostics",
@@ -283,6 +284,17 @@ export const PERMISSION_SECTIONS = [
       { key: "history", label: "Sinf o'zgarishlari tarixi (sabablari bilan)" },
       A.export,
     ],
+  },
+  {
+    // ERP VA KUNDALIK.COM — o'quvchi shu ikki tashqi tizimga kiritilganmi.
+    // `classes` / `users` dan ALOHIDA: belgini tashqi tizimga kirituvchi
+    // mas'ul qo'yadi, unga profil yoki sinf tarkibini tahrirlash kerak emas.
+    // `mark` `view` bilan berilmaydi — ko'radigan har kim belgini o'zgartirsa,
+    // "kiritildi" degan belgiga ishonib bo'lmay qolardi.
+    key: SECTIONS.STUDENT_SYSTEMS,
+    label: "ERP va Kundalik.com",
+    group: "Ta'lim",
+    actions: [A.view, { key: "mark", label: "Bor / yo'q belgilash" }, A.export],
   },
   {
     key: SECTIONS.SUBJECTS,
@@ -964,6 +976,7 @@ const ROUTE_PERMISSIONS = [
   // ⚠️ `/classes` dan UZUNROQ — eng uzun mos prefiks yutadi: chiqarish /
   // ko'chirish SABABLARI sinf ro'yxatini ko'rish huquqi bilan ochilmasin
   { prefix: "/classes/changes", key: "classes.history" },
+  { prefix: "/student-systems", key: "studentSystems.view" },
   { prefix: "/subjects", key: "subjects.view" },
   { prefix: "/test-seasons", key: "tests.view" },
   { prefix: "/test-settings", key: "tests.view" },

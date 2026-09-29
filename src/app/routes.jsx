@@ -38,6 +38,9 @@ import PermissionsPage from "@/features/permissions/pages/PermissionsPage";
 import ClassesPage from "@/features/classes/pages/ClassesPage";
 import ClassDetailPage from "@/features/classes/pages/ClassDetailPage";
 import ClassChangesPage from "@/features/classes/pages/ClassChangesPage";
+
+// Pages - ERP va Kundalik.com (o'quvchi tashqi tizimlarda bormi)
+import StudentSystemsPage from "@/features/studentSystems/pages/StudentSystemsPage";
 import TutorGroupPage from "@/features/tutorGroups/pages/TutorGroupPage";
 
 // Pages - Subjects
@@ -373,6 +376,9 @@ const Routes = () => {
           {/* Sinf o'zgarishlari jurnali (`classes.history`). ⚠️ `:classId` dan OLDIN */}
           <Route path="/classes/changes" element={<ClassChangesPage />} />
           <Route path="/classes/:classId" element={<ClassDetailPage />} />
+
+          {/* ERP va Kundalik.com (`studentSystems.view`) */}
+          <Route path="/student-systems" element={<StudentSystemsPage />} />
 
           {/* Subjects & Topics */}
           <Route path="/subjects" element={<SubjectsPage />} />

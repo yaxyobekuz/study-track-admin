@@ -215,6 +215,12 @@ const navItems = [
         url: "/classes/changes",
       },
       {
+        // O'quvchi ERP va Kundalik.com da bormi — belgi va Excel ro'yxatlari.
+        // Alohida ruxsat (`studentSystems.*`), `permissionForPath` filtrlaydi
+        title: "ERP va Kundalik.com",
+        url: "/student-systems",
+      },
+      {
         title: "Fanlar",
         url: "/subjects",
       },
