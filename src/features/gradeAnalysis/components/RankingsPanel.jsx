@@ -19,10 +19,10 @@ import { cn } from "@/shared/utils/cn";
 import { fmtAvg } from "../data/gradeAnalysis.data";
 import { DELAY, LEVEL, MOTION, SURFACE, T, levelKeyOfAverage, placeBadgeOf, toneOf } from "../data/analysis.tokens";
 
-/** Maktab ro'yxatida birinchi ko'rinadigan qatorlar soni (qolgani — "Hammasi"). */
-const SCHOOL_VISIBLE = 10;
-/** Sinf kartalari — birinchi ko'rinadigan soni. */
-const CLASSES_VISIBLE = 6;
+/** Maktab ro'yxatida birinchi ko'rinadigan qatorlar soni — eng yaxshi 3 / eng past 3 (qolgani — "Hammasi"). */
+const SCHOOL_VISIBLE = 3;
+/** Sinf kartalari — birinchi ko'rinadigan soni (blok sahifa tepasida — bitta qator). */
+const CLASSES_VISIBLE = 3;
 
 const KIND = {
   best: { label: "Eng yaxshi natijalar", icon: Crown, accent: "bg-amber-50 text-amber-600", empty: "Reytingga kirgan o'quvchi yo'q" },
@@ -45,7 +45,8 @@ const KIND = {
 
 /* ─────────────────────────── Maktab bo'yicha ─────────────────────────── */
 
-export const SchoolRankings = ({ run, delay }) => {
+/** `note` — izohga qo'shiladigan qator (tahlil davri), `action` — sarlavha o'ngidagi amal. */
+export const SchoolRankings = ({ run, delay, note, action }) => {
   const rankings = run?.overview?.rankings;
   const scopeLabel = run?.scope === "classes" ? "Tanlangan sinflar bo'yicha" : "Maktab bo'yicha";
   const size = rankings?.size ?? 3;
@@ -55,10 +56,12 @@ export const SchoolRankings = ({ run, delay }) => {
       title={`${scopeLabel} reyting`}
       hint={
         `Har sinfning eng yaxshi ${size} va eng past ${size} o'quvchisi bitta ro'yxatga o'rni bilan joylashtirilgan` +
-        (rankings?.school?.classes ? ` · ${rankings.school.classes} ta sinf` : "")
+        (rankings?.school?.classes ? ` · ${rankings.school.classes} ta sinf` : "") +
+        (note ? ` · ${note}` : "")
       }
       icon={Trophy}
       accent="bg-amber-50 text-amber-600"
+      action={action}
       delay={delay}
       className="h-auto"
       isEmpty={!rankings || (!rankings.school?.best?.length && !rankings.school?.worst?.length)}
@@ -130,7 +133,7 @@ const SchoolColumn = ({ kind, rows, delay }) => {
 
 /* ─────────────────────────── Sinflar kesimida ─────────────────────────── */
 
-export const ClassRankings = ({ run, delay }) => {
+export const ClassRankings = ({ run, delay, note, action }) => {
   const rankings = run?.overview?.rankings;
   const classes = useMemo(() => rankings?.classes ?? [], [rankings]);
   const [classId, setClassId] = useState("");
@@ -156,9 +159,13 @@ export const ClassRankings = ({ run, delay }) => {
   return (
     <Panel
       title="Sinflar kesimida reyting"
-      hint={`Har sinfda eng yaxshi ${size} va eng past ${size} o'quvchi. Bosing — to'liq hisobot va tavsiyalar`}
+      hint={
+        `Har sinfda eng yaxshi ${size} va eng past ${size} o'quvchi. Bosing — to'liq hisobot va tavsiyalar` +
+        (note ? ` · ${note}` : "")
+      }
       icon={LayoutGrid}
       accent="bg-sky-50 text-sky-600"
+      action={action}
       delay={delay}
       className="h-auto"
       isEmpty={classes.length === 0}

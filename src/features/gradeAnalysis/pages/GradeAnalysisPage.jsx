@@ -25,7 +25,7 @@ import SettingsModal from "../components/SettingsModal";
 import StudentReportModal from "../components/StudentReportModal";
 import { CausesPanel, HeatmapPanel, SignalsPanel, SubjectBoard, TopicsPanel } from "../components/OverviewPanels";
 import { NarrativePanel, StudentSpotlight } from "../components/InsightPanels";
-import { ClassRankings, SchoolRankings } from "../components/RankingsPanel";
+import RankingsSection from "../components/RankingsSection";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -222,16 +222,17 @@ const GradeAnalysisPage = () => {
   const noRuns = !runs.isLoading && (runs.data?.data?.length ?? 0) === 0 && !selectedId;
   const ready = run?.status === "completed" && run.overview;
   const isStudentScope = run?.scope === "student";
-  // Reyting — bitta o'quvchi tahlilida ma'nosiz; bitta sinf bo'lsa maktab
-  // ro'yxati sinf kartasini aynan takrorlardi
-  const rankings = !isStudentScope ? run?.overview?.rankings : null;
-  const showSchoolRankings = (rankings?.classes?.length ?? 0) > 1;
   // Reyting bloklari birinchi chiqadi — qolganlarining xoreografiyasi suriladi
-  const rowDelay = (index) => DELAY.row(index + (rankings ? 2 : 0));
+  const rowDelay = (index) => DELAY.row(index + 2);
 
   return (
     <>
       <div className="space-y-4 pb-8">
+        {/* Reyting — ENG TEPADA va tanlangan tahlildan mustaqil (RankingsSection izohi) */}
+        {!noRuns && (
+          <RankingsSection selectedRun={run} canRun={perms.run} onLaunch={openLaunch} onOpenRun={select} />
+        )}
+
         {noRuns ? (
           <EmptyHero actions={settingsButton} canRun={perms.run} onLaunch={openLaunch} />
         ) : (
@@ -259,13 +260,6 @@ const GradeAnalysisPage = () => {
                   </span>
                 </span>
               </button>
-            )}
-
-            {rankings && (
-              <>
-                {showSchoolRankings && <SchoolRankings run={run} delay={DELAY.row(0)} />}
-                <ClassRankings run={run} delay={DELAY.row(showSchoolRankings ? 1 : 0)} />
-              </>
             )}
 
             <div className="grid gap-4 xl:grid-cols-12">
