@@ -19,6 +19,12 @@ export const gradeAnalysisAPI = {
   /** O'quvchining barcha tahlillari (dinamika). */
   getStudentHistory: (studentId) => http.get(`/grade-analysis/students/${studentId}/history`),
 
+  /**
+   * O'quvchilar natijalari — baholardan JONLI eng yuqori / eng past
+   * natijalar (tahlilsiz, AI'siz). Params: { period }
+   */
+  getResults: (params) => http.get("/grade-analysis/results", { params }),
+
   /** Tahlillar tarixi. Params: { page, limit, status, trigger } */
   getRuns: (params) => http.get("/grade-analysis/runs", { params }),
 

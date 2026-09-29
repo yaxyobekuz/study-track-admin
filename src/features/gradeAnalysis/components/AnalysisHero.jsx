@@ -190,7 +190,8 @@ const HeroDelta = ({ delta, previous }) => {
   );
 };
 
-const HeroTile = ({ index, icon: Icon, label, value, hint, tone }) => (
+/** Hero ichidagi ko'rsatkich kartasi — "O'quvchilar natijalari" tabi ham shuni ishlatadi. */
+export const HeroTile = ({ index, icon: Icon, label, value, hint, tone }) => (
   <div
     className={cn(SURFACE.heroTile, MOTION.enter, "min-w-[132px]")}
     style={{ animationDelay: `${DELAY.item(80, index)}ms` }}

@@ -25,7 +25,8 @@ import SettingsModal from "../components/SettingsModal";
 import StudentReportModal from "../components/StudentReportModal";
 import { CausesPanel, HeatmapPanel, SignalsPanel, SubjectBoard, TopicsPanel } from "../components/OverviewPanels";
 import { NarrativePanel, StudentSpotlight } from "../components/InsightPanels";
-import RankingsSection from "../components/RankingsSection";
+import StudentResults from "../components/StudentResults";
+import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -62,9 +63,53 @@ const HERO_BTN = {
 const errorText = (error, fallback) => error?.response?.data?.message || fallback;
 
 /**
- * BAHOLAR TAHLILI — o'quv bo'limining "diagnostika markazi".
+ * Sahifa tablari (`?tab=`). Ikkalasi ham `gradeAnalysis.view` bilan ochiq.
  *
- * Sahifa BITTA tahlilni ko'rsatadi (`?run=`), tarix tasmasi orqali
+ * ⚠️ IKKI ALOHIDA MANBA, aralashtirilmaydi:
+ *   · "AI tahlil" — ishga tushiriladigan, MUHRLANGAN tahlil (sabab,
+ *     tavsiya, AI matni);
+ *   · "O'quvchilar natijalari" — eng yuqori / eng past natijalar, har
+ *     so'rovda QO'YILGAN BAHOLARDAN jonli (AI yo'q, tahlil kutilmaydi).
+ * Reyting ilgari tahlil ichida edi va tahlil o'tkazilmaguncha ko'rinmasdi.
+ */
+const PAGE_TABS = [
+  { value: "ai", label: "AI tahlil" },
+  { value: "results", label: "O'quvchilar natijalari" },
+];
+
+/** BAHOLAR TAHLILI — ruxsat va tablar; har tab o'z holatini o'zi boshqaradi. */
+const GradeAnalysisPage = () => {
+  const { can } = usePermissions();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get("tab") === "results" ? "results" : "ai";
+
+  if (!can("gradeAnalysis.view")) {
+    return (
+      <Card className="p-0 xs:p-0">
+        <EmptyState
+          icon={Lock}
+          title="Ruxsat yo'q"
+          description="Baholar tahlilini ko'rish uchun ruxsatingiz yo'q. Kerak bo'lsa administratordan so'rang."
+        />
+      </Card>
+    );
+  }
+
+  // Tab almashganda boshqa tabning parametrlari (`run`, `period`) tashlanadi
+  const changeTab = (value) => setSearchParams(value === "results" ? { tab: value } : {}, { replace: true });
+
+  return (
+    <div className="space-y-4 pb-8">
+      <TabsButtons items={PAGE_TABS} value={tab} onChange={changeTab} />
+      {tab === "results" ? <StudentResults /> : <AiAnalysis />}
+    </div>
+  );
+};
+
+/**
+ * AI TAHLIL — o'quv bo'limining "diagnostika markazi".
+ *
+ * Tab BITTA tahlilni ko'rsatadi (`?run=`), tarix tasmasi orqali
  * boshqasiga o'tiladi. Tanlanmagan bo'lsa — eng so'nggisi.
  *
  * ⚠️ RUXSATLAR (`gradeAnalysis.*`): `view` — ko'rish, `run` — ishga
@@ -76,13 +121,12 @@ const errorText = (error, fallback) => error?.response?.data?.message || fallbac
  * ekrandagi har bir raqam o'quvchi va ota-ona ko'radigan hisobot bilan
  * bir manbadan.
  */
-const GradeAnalysisPage = () => {
+const AiAnalysis = () => {
   const { can } = usePermissions();
   const { openModal } = useModal();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const allowed = can("gradeAnalysis.view");
   const perms = {
     run: can("gradeAnalysis.run"),
     publish: can("gradeAnalysis.publish"),
@@ -90,9 +134,9 @@ const GradeAnalysisPage = () => {
     settings: can("gradeAnalysis.settings"),
   };
 
-  const runs = useQuery({ ...gradeAnalysisQueries.runs({ page: 1, limit: 6 }), enabled: allowed });
+  const runs = useQuery(gradeAnalysisQueries.runs({ page: 1, limit: 6 }));
   const selectedId = searchParams.get("run") || runs.data?.data?.[0]?.id || null;
-  const runQuery = useQuery({ ...gradeAnalysisQueries.run(selectedId), enabled: allowed && Boolean(selectedId) });
+  const runQuery = useQuery(gradeAnalysisQueries.run(selectedId));
   const run = runQuery.data;
 
   const cancel = useCancelGradeAnalysis();
@@ -114,18 +158,6 @@ const GradeAnalysisPage = () => {
     }
     lastStatus.current = status ?? null;
   }, [run?.status, queryClient]);
-
-  if (!allowed) {
-    return (
-      <Card className="p-0 xs:p-0">
-        <EmptyState
-          icon={Lock}
-          title="Ruxsat yo'q"
-          description="Baholar tahlilini ko'rish uchun ruxsatingiz yo'q. Kerak bo'lsa administratordan so'rang."
-        />
-      </Card>
-    );
-  }
 
   const openLaunch = () => openModal("gradeAnalysisLaunch", { onCreated: select });
   const isActive = run && ACTIVE_STATUSES.includes(run.status);
@@ -222,17 +254,10 @@ const GradeAnalysisPage = () => {
   const noRuns = !runs.isLoading && (runs.data?.data?.length ?? 0) === 0 && !selectedId;
   const ready = run?.status === "completed" && run.overview;
   const isStudentScope = run?.scope === "student";
-  // Reyting bloklari birinchi chiqadi — qolganlarining xoreografiyasi suriladi
-  const rowDelay = (index) => DELAY.row(index + 2);
 
   return (
     <>
-      <div className="space-y-4 pb-8">
-        {/* Reyting — ENG TEPADA va tanlangan tahlildan mustaqil (RankingsSection izohi) */}
-        {!noRuns && (
-          <RankingsSection selectedRun={run} canRun={perms.run} onLaunch={openLaunch} onOpenRun={select} />
-        )}
-
+      <div className="space-y-4">
         {noRuns ? (
           <EmptyHero actions={settingsButton} canRun={perms.run} onLaunch={openLaunch} />
         ) : (
@@ -248,7 +273,7 @@ const GradeAnalysisPage = () => {
                 type="button"
                 onClick={() => openModal("gradeAnalysisReport", { reportId: run.overview.topStudents[0].reportId })}
                 className={cn(SURFACE.card, SURFACE.hover, MOTION.enter, "flex w-full items-center gap-4 px-5 py-4 text-left")}
-                style={{ animationDelay: `${rowDelay(0)}ms` }}
+                style={{ animationDelay: `${DELAY.row(0)}ms` }}
               >
                 <span className="flex size-10 items-center justify-center rounded-xl bg-indigo-600 text-white">
                   <FileSearch className="size-5" />
@@ -264,15 +289,15 @@ const GradeAnalysisPage = () => {
 
             <div className="grid gap-4 xl:grid-cols-12">
               <div className="min-w-0 xl:col-span-7">
-                <SubjectBoard overview={run.overview} delay={rowDelay(0)} />
+                <SubjectBoard overview={run.overview} delay={DELAY.row(0)} />
               </div>
               {isStudentScope ? (
                 <div className="xl:col-span-5">
-                  <NarrativePanel narrative={run.narrative} delay={rowDelay(0) + 45} />
+                  <NarrativePanel narrative={run.narrative} delay={DELAY.row(0) + 45} />
                 </div>
               ) : (
                 <div className="xl:col-span-5">
-                  <StudentSpotlight overview={run.overview} delay={rowDelay(0) + 45} />
+                  <StudentSpotlight overview={run.overview} delay={DELAY.row(0) + 45} />
                 </div>
               )}
             </div>
@@ -280,21 +305,21 @@ const GradeAnalysisPage = () => {
             {!isStudentScope && (
               <div className="grid gap-4 xl:grid-cols-12">
                 <div className="xl:col-span-5">
-                  <NarrativePanel narrative={run.narrative} delay={rowDelay(1)} />
+                  <NarrativePanel narrative={run.narrative} delay={DELAY.row(1)} />
                 </div>
                 <div className="min-w-0 xl:col-span-7">
-                  <HeatmapPanel overview={run.overview} delay={rowDelay(1) + 45} />
+                  <HeatmapPanel overview={run.overview} delay={DELAY.row(1) + 45} />
                 </div>
               </div>
             )}
 
             <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-              <TopicsPanel overview={run.overview} delay={rowDelay(2)} />
-              <CausesPanel overview={run.overview} delay={rowDelay(2) + 45} />
-              <SignalsPanel overview={run.overview} delay={rowDelay(2) + 90} />
+              <TopicsPanel overview={run.overview} delay={DELAY.row(2)} />
+              <CausesPanel overview={run.overview} delay={DELAY.row(2) + 45} />
+              <SignalsPanel overview={run.overview} delay={DELAY.row(2) + 90} />
             </div>
 
-            {!isStudentScope && <ReportsTable run={run} delay={rowDelay(3)} />}
+            {!isStudentScope && <ReportsTable run={run} delay={DELAY.row(3)} />}
           </>
         )}
 

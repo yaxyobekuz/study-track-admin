@@ -1,6 +1,9 @@
 // React
 import { useMemo, useState } from "react";
 
+// Router
+import { useNavigate } from "react-router-dom";
+
 // Icons
 import { ChevronDown, ChevronRight, Crown, LayoutGrid, TrendingDown, Trophy } from "lucide-react";
 
@@ -9,62 +12,56 @@ import Select from "@/shared/components/ui/select/Select";
 import Panel from "./Panel";
 import { Initials } from "./InsightPanels";
 
-// Hooks
-import useModal from "@/shared/hooks/useModal";
-
 // Utils
 import { cn } from "@/shared/utils/cn";
 
 // Data
-import { fmtAvg } from "../data/gradeAnalysis.data";
+import { deltaTone, fmtAvg, fmtDelta } from "../data/gradeAnalysis.data";
 import { DELAY, LEVEL, MOTION, SURFACE, T, levelKeyOfAverage, placeBadgeOf, toneOf } from "../data/analysis.tokens";
 
-/** Maktab ro'yxatida birinchi ko'rinadigan qatorlar soni — eng yaxshi 3 / eng past 3 (qolgani — "Hammasi"). */
+/** Maktab ro'yxatida birinchi ko'rinadigan qatorlar soni — eng yuqori 3 / eng past 3 (qolgani — "Hammasi"). */
 const SCHOOL_VISIBLE = 3;
-/** Sinf kartalari — birinchi ko'rinadigan soni (blok sahifa tepasida — bitta qator). */
-const CLASSES_VISIBLE = 3;
+/** Sinf kartalari — birinchi ko'rinadigan soni. */
+const CLASSES_VISIBLE = 6;
 
 const KIND = {
-  best: { label: "Eng yaxshi natijalar", icon: Crown, accent: "bg-amber-50 text-amber-600", empty: "Reytingga kirgan o'quvchi yo'q" },
-  worst: { label: "Eng past natijalar", icon: TrendingDown, accent: "bg-rose-50 text-rose-600", empty: "Eng past natijalar ro'yxati bo'sh" },
+  best: { label: "Eng yuqori natijalar", short: "Eng yuqori", icon: Crown, accent: "bg-amber-50 text-amber-600", empty: "Reytingga kirgan o'quvchi yo'q" },
+  worst: { label: "Eng past natijalar", short: "Eng past", icon: TrendingDown, accent: "bg-rose-50 text-rose-600", empty: "Eng past natijalar ro'yxati bo'sh" },
 };
 
 /**
- * ENG YAXSHI VA ENG PAST NATIJALAR.
+ * ENG YUQORI VA ENG PAST NATIJALAR — "O'quvchilar natijalari" tabi.
  *
- * ⚠️ HISOB SERVERDA (`buildRankings`, `helpers/gradeAnalysis.js`): sahifa
- * hech narsani qayta saralamaydi va o'rin bermaydi — ekrandagi o'rin
- * hisobot bilan bir manbadan. Qoidalar qisqacha:
- *   · sinfda — eng yaxshi 3 va eng past 3 (kichik sinfda yarmidan
+ * ⚠️ HISOB SERVERDA (`buildStudentResults` → `buildRankings`,
+ * `helpers/gradeAnalysis.js`): sahifa hech narsani qayta saralamaydi va
+ * o'rin bermaydi. Qoidalar qisqacha:
+ *   · sinfda — eng yuqori 3 va eng past 3 (kichik sinfda yarmidan
  *     bo'linadi, ro'yxatlar kesishmaydi);
  *   · maktabda — har sinfning uchtaligi yig'ilib, qayta o'rin oladi;
  *   · o'rtacha teng bo'lsa baholar soni ko'pi oldinda, ikkalasi ham teng
  *     bo'lsa o'rin ulashiladi;
  *   · baholari juda kam o'quvchi reytingga kirmaydi (kartada aytiladi).
+ *
+ * Qatorni bosish — o'quvchi profili (`/users/:id`).
  */
 
 /* ─────────────────────────── Maktab bo'yicha ─────────────────────────── */
 
-/** `note` — izohga qo'shiladigan qator (tahlil davri), `action` — sarlavha o'ngidagi amal. */
-export const SchoolRankings = ({ run, delay, note, action }) => {
-  const rankings = run?.overview?.rankings;
-  const scopeLabel = run?.scope === "classes" ? "Tanlangan sinflar bo'yicha" : "Maktab bo'yicha";
+export const SchoolRankings = ({ rankings, delay }) => {
   const size = rankings?.size ?? 3;
 
   return (
     <Panel
-      title={`${scopeLabel} reyting`}
+      title="Maktab bo'yicha"
       hint={
-        `Har sinfning eng yaxshi ${size} va eng past ${size} o'quvchisi bitta ro'yxatga o'rni bilan joylashtirilgan` +
-        (rankings?.school?.classes ? ` · ${rankings.school.classes} ta sinf` : "") +
-        (note ? ` · ${note}` : "")
+        `Har sinfning eng yuqori ${size} va eng past ${size} natijasi bitta ro'yxatda, maktab bo'yicha o'rni bilan` +
+        (rankings?.school?.classes ? ` · ${rankings.school.classes} ta sinf` : "")
       }
       icon={Trophy}
       accent="bg-amber-50 text-amber-600"
-      action={action}
       delay={delay}
       className="h-auto"
-      isEmpty={!rankings || (!rankings.school?.best?.length && !rankings.school?.worst?.length)}
+      isEmpty={!rankings?.school?.best?.length && !rankings?.school?.worst?.length}
       emptyText="Reyting uchun baholar yetarli emas"
     >
       {rankings && (
@@ -79,7 +76,7 @@ export const SchoolRankings = ({ run, delay, note, action }) => {
 
 const SchoolColumn = ({ kind, rows, delay }) => {
   const [expanded, setExpanded] = useState(false);
-  const { openModal } = useModal();
+  const openStudent = useOpenStudent();
   const meta = KIND[kind];
   const Icon = meta.icon;
   const visible = expanded ? rows : rows.slice(0, SCHOOL_VISIBLE);
@@ -91,7 +88,6 @@ const SchoolColumn = ({ kind, rows, delay }) => {
           <Icon className="size-3.5" />
         </span>
         <p className={T.bodyStrong}>{meta.label}</p>
-        <span className={cn(T.meta, "tabular-nums")}>{rows.length}</span>
         {kind === "worst" && <span className={cn(T.meta, "ml-auto")}>1 — eng past</span>}
       </div>
 
@@ -108,9 +104,8 @@ const SchoolColumn = ({ kind, rows, delay }) => {
               <RankRow
                 kind={kind}
                 row={row}
-                place={row.place}
                 subtitle={`${row.className ?? "—"} · sinfda ${row.classPlace}-o'rin (${row.classSize} tadan) · ${row.gradeCount} baho`}
-                onOpen={row.reportId ? () => openModal("gradeAnalysisReport", { reportId: row.reportId }) : undefined}
+                onOpen={() => openStudent(row.studentId)}
               />
             </li>
           ))}
@@ -133,24 +128,17 @@ const SchoolColumn = ({ kind, rows, delay }) => {
 
 /* ─────────────────────────── Sinflar kesimida ─────────────────────────── */
 
-export const ClassRankings = ({ run, delay, note, action }) => {
-  const rankings = run?.overview?.rankings;
+export const ClassRankings = ({ rankings, delay }) => {
   const classes = useMemo(() => rankings?.classes ?? [], [rankings]);
   const [classId, setClassId] = useState("");
   const [expanded, setExpanded] = useState(false);
-
-  // Sinf o'rtachasi — yig'madagi sinf kesimidan (xom baholardan), qayta hisoblanmaydi
-  const classAverage = useMemo(
-    () => new Map((run?.overview?.classes ?? []).map((row) => [row.classId, row.average])),
-    [run?.overview?.classes],
-  );
 
   const options = useMemo(
     () => [{ value: "", label: "Barcha sinflar" }, ...classes.map((row) => ({ value: row.classId, label: row.name }))],
     [classes],
   );
 
-  // Tanlangan sinf ro'yxatda yo'q bo'lsa (boshqa tahlilga o'tildi) — hammasi ko'rinadi
+  // Tanlangan sinf ro'yxatda yo'q bo'lsa (davr o'zgardi) — hammasi ko'rinadi
   const picked = classId && classes.some((row) => row.classId === classId) ? classId : "";
   const filtered = picked ? classes.filter((row) => row.classId === picked) : classes;
   const visible = picked || expanded ? filtered : filtered.slice(0, CLASSES_VISIBLE);
@@ -158,14 +146,10 @@ export const ClassRankings = ({ run, delay, note, action }) => {
 
   return (
     <Panel
-      title="Sinflar kesimida reyting"
-      hint={
-        `Har sinfda eng yaxshi ${size} va eng past ${size} o'quvchi. Bosing — to'liq hisobot va tavsiyalar` +
-        (note ? ` · ${note}` : "")
-      }
+      title="Sinflar kesimida"
+      hint={`Har sinfda eng yuqori ${size} va eng past ${size} natija. Bosing — o'quvchi profili`}
       icon={LayoutGrid}
       accent="bg-sky-50 text-sky-600"
-      action={action}
       delay={delay}
       className="h-auto"
       isEmpty={classes.length === 0}
@@ -182,12 +166,7 @@ export const ClassRankings = ({ run, delay, note, action }) => {
 
       <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
         {visible.map((row, index) => (
-          <ClassCard
-            key={row.classId}
-            row={row}
-            average={classAverage.get(row.classId) ?? null}
-            delay={DELAY.item(delay, Math.min(index, 8))}
-          />
+          <ClassCard key={row.classId} row={row} delay={DELAY.item(delay, Math.min(index, 8))} />
         ))}
       </div>
 
@@ -205,10 +184,9 @@ export const ClassRankings = ({ run, delay, note, action }) => {
   );
 };
 
-const ClassCard = ({ row, average, delay }) => {
-  const { openModal } = useModal();
-  const open = (item) => (item.reportId ? () => openModal("gradeAnalysisReport", { reportId: item.reportId }) : undefined);
-  const levelKey = levelKeyOfAverage(average);
+const ClassCard = ({ row, delay }) => {
+  const levelKey = levelKeyOfAverage(row.average);
+  const outside = (row.total ?? row.students) - row.ranked;
 
   return (
     <div className={cn(SURFACE.tile, "px-4 py-3.5", MOTION.enter)} style={{ animationDelay: `${delay}ms` }}>
@@ -216,30 +194,31 @@ const ClassCard = ({ row, average, delay }) => {
         <div className="min-w-0">
           <p className={cn(T.title, "truncate")}>{row.name}</p>
           <p className={cn(T.meta, "mt-0.5")}>
-            {row.ranked} o'quvchi reytingda
-            {row.excluded > 0 && ` · ${row.excluded} nafari kam baho sabab chetda (kamida ${row.minGrades} baho kerak)`}
+            {row.total != null ? `${row.total} tadan ${row.ranked} o'quvchi reytingda` : `${row.ranked} o'quvchi reytingda`}
+            {outside > 0 && ` · ${outside} nafarida baho kam (kamida ${row.minGrades} ta kerak)`}
           </p>
         </div>
-        {average != null && (
+        {row.average != null && (
           <div className="shrink-0 text-right">
             <p className={T.label}>Sinf</p>
-            <p className={cn(T.tdNum, "mt-0.5", LEVEL[levelKey]?.text)}>{fmtAvg(average)}</p>
+            <p className={cn(T.tdNum, "mt-0.5", LEVEL[levelKey]?.text)}>{fmtAvg(row.average)}</p>
           </div>
         )}
       </div>
 
-      <MiniList kind="best" rows={row.best} onOpen={open} />
-      {row.worst.length > 0 && <MiniList kind="worst" rows={row.worst} onOpen={open} />}
+      <MiniList kind="best" rows={row.best} />
+      {row.worst.length > 0 && <MiniList kind="worst" rows={row.worst} />}
     </div>
   );
 };
 
-const MiniList = ({ kind, rows, onOpen }) => {
+const MiniList = ({ kind, rows }) => {
+  const openStudent = useOpenStudent();
   const Icon = KIND[kind].icon;
   return (
     <div className="mt-3">
       <p className={cn(T.section, "mb-1 flex items-center gap-1.5", toneOf(kind === "best" ? "positive" : "critical").text)}>
-        <Icon className="size-3" /> {kind === "best" ? "Eng yaxshi" : "Eng past"}
+        <Icon className="size-3" /> {KIND[kind].short}
       </p>
       <ul className="-mx-2">
         {rows.map((item) => (
@@ -248,10 +227,9 @@ const MiniList = ({ kind, rows, onOpen }) => {
               compact
               kind={kind}
               row={item}
-              place={item.place}
               hot
               subtitle={`${item.gradeCount} baho`}
-              onOpen={onOpen(item)}
+              onOpen={() => openStudent(item.studentId)}
             />
           </li>
         ))}
@@ -262,8 +240,30 @@ const MiniList = ({ kind, rows, onOpen }) => {
 
 /* ─────────────────────────── Qator ─────────────────────────── */
 
-const RankRow = ({ kind, row, place, hot, subtitle, onOpen, compact = false }) => {
+const useOpenStudent = () => {
+  const navigate = useNavigate();
+  return (studentId) => navigate(`/users/${studentId}`);
+};
+
+const DELTA_TEXT = { positive: "text-emerald-600", critical: "text-rose-600", neutral: "text-slate-400" };
+
+/** O'tgan davrga nisbatan o'zgarish — o'tgan davrda baho yetarli bo'lmasa chizilmaydi. */
+const Delta = ({ value }) => {
+  if (value == null) return null;
+  const tone = deltaTone(value);
+  return (
+    <span
+      title="O'tgan davrga nisbatan"
+      className={cn("block text-[10.5px] font-semibold tabular-nums leading-none", DELTA_TEXT[tone])}
+    >
+      {tone === "neutral" ? fmtDelta(value) : `${tone === "positive" ? "↑" : "↓"}${fmtAvg(Math.abs(value))}`}
+    </span>
+  );
+};
+
+const RankRow = ({ kind, row, hot, subtitle, onOpen, compact = false }) => {
   const Tag = onOpen ? "button" : "div";
+  const place = row.place;
   return (
     <Tag
       {...(onOpen ? { type: "button", onClick: onOpen } : {})}
@@ -288,8 +288,9 @@ const RankRow = ({ kind, row, place, hot, subtitle, onOpen, compact = false }) =
         <p className={cn(T.tdName, "truncate")}>{row.name}</p>
         <p className={cn(T.meta, compact ? "truncate" : "break-words")}>{subtitle}</p>
       </div>
-      <span className={cn(T.tdNum, "w-10 shrink-0 text-right", LEVEL[levelKeyOfAverage(row.average)]?.text)}>
-        {fmtAvg(row.average)}
+      <span className="w-12 shrink-0 space-y-1 text-right">
+        <span className={cn(T.tdNum, "block", LEVEL[levelKeyOfAverage(row.average)]?.text)}>{fmtAvg(row.average)}</span>
+        <Delta value={row.delta} />
       </span>
       {onOpen && (
         <ChevronRight className="size-4 shrink-0 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-500" />

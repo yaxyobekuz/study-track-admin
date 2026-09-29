@@ -29,6 +29,19 @@ export const gradeAnalysisQueries = {
       staleTime: 60 * 1000,
     }),
 
+  /**
+   * Jonli natijalar — muhrlanmagan, har so'rovda baholardan hisoblanadi.
+   * Qisqa `staleTime`: yangi qo'yilgan baho tez ko'rinsin, lekin tab
+   * almashtirishda har safar qayta so'ralmasin.
+   */
+  results: (params) =>
+    queryOptions({
+      queryKey: [...gradeAnalysisKeys.all, "results", params],
+      queryFn: () => gradeAnalysisAPI.getResults(params).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+      staleTime: 60 * 1000,
+    }),
+
   runs: (params) =>
     queryOptions({
       queryKey: [...gradeAnalysisKeys.lists(), params],
