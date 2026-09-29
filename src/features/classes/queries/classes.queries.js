@@ -42,6 +42,21 @@ export const classesQueries = {
     }),
 
   /**
+   * SINF O'ZGARISHLARI JURNALI — ko'chirilganlar / sinfdan chiqarilganlar,
+   * sababi va aktyori bilan. Javob to'liq qaytadi (`data`, `pagination`,
+   * `totals`): tablar yorlig'idagi sanoq ham shu so'rovdan.
+   *
+   * `classesKeys.all` ostida — sinf a'zoligini o'zgartiradigan har mutatsiya
+   * uni ham eskirtiradi.
+   */
+  changes: (params) =>
+    queryOptions({
+      queryKey: [...classesKeys.all, "changes", params],
+      queryFn: () => classesAPI.getChanges(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /**
    * Student search used by the "add students to class" picker (debounced by
    * the caller via the `search` term). Keyed off `classesKeys.all` so it is
    * invalidated together with the rest of the feature.

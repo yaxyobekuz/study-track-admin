@@ -37,6 +37,7 @@ import PermissionsPage from "@/features/permissions/pages/PermissionsPage";
 // Pages - Classes
 import ClassesPage from "@/features/classes/pages/ClassesPage";
 import ClassDetailPage from "@/features/classes/pages/ClassDetailPage";
+import ClassChangesPage from "@/features/classes/pages/ClassChangesPage";
 import TutorGroupPage from "@/features/tutorGroups/pages/TutorGroupPage";
 
 // Pages - Subjects
@@ -369,6 +370,8 @@ const Routes = () => {
 
           {/* Classes */}
           <Route path="/classes" element={<ClassesPage />} />
+          {/* Sinf o'zgarishlari jurnali (`classes.history`). ⚠️ `:classId` dan OLDIN */}
+          <Route path="/classes/changes" element={<ClassChangesPage />} />
           <Route path="/classes/:classId" element={<ClassDetailPage />} />
 
           {/* Subjects & Topics */}

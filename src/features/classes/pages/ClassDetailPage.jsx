@@ -15,9 +15,10 @@ import {
 } from "@/features/classes/queries/classes.queries";
 
 // Router
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 
 // Components
+import Can from "@/shared/components/guards/Can";
 import Button from "@/shared/components/ui/button/Button";
 
 // Icons
@@ -28,6 +29,7 @@ import {
   UserPlus,
   ArrowRightLeft,
   LogOut,
+  History,
   X,
 } from "lucide-react";
 
@@ -131,6 +133,16 @@ const ClassDetail = () => {
             <UserPlus strokeWidth={1.5} />
             <span className="max-xs:hidden">O'quvchi qo'shish</span>
           </Button>
+
+          {/* Shu sinf bo'yicha ko'chirish / chiqarish tarixi */}
+          <Can do="classes.history">
+            <Button asChild variant="secondary">
+              <Link to={`/classes/changes?class=${classId}`}>
+                <History strokeWidth={1.5} />
+                <span className="max-xs:hidden">Tarix</span>
+              </Link>
+            </Button>
+          </Can>
 
           {/* Export */}
           {students?.length > 0 && (

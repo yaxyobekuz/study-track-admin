@@ -6,6 +6,7 @@ import InfoCard from "./InfoCard";
 import UserAccountCard from "./UserAccountCard";
 import UserBasicInfoCard from "./UserBasicInfoCard";
 import UserPhoneCard from "./UserPhoneCard";
+import StudentClassHistory from "./StudentClassHistory";
 import EditUserBasicModal from "../EditUserBasicModal";
 import EditUserPhoneModal from "../EditUserPhoneModal";
 import EditStudentClassesModal from "../EditStudentClassesModal";
@@ -73,6 +74,9 @@ const StudentMainTab = ({ user }) => {
                 : "Sinf biriktirilmagan."}
             </p>
           )}
+
+          {/* Ko'chirish / chiqarish tarixi, sababi bilan (`classes.history`) */}
+          <StudentClassHistory user={user} />
         </InfoCard>
 
         <UserAccountCard user={user} />

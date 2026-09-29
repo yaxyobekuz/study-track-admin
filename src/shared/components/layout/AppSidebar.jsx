@@ -209,6 +209,12 @@ const navItems = [
         url: "/classes",
       },
       {
+        // Ko'chirilganlar / sinfdan chiqarilganlar, sababi bilan —
+        // alohida ruxsat (`classes.history`), `permissionForPath` filtrlaydi
+        title: "Sinf o'zgarishlari",
+        url: "/classes/changes",
+      },
+      {
         title: "Fanlar",
         url: "/subjects",
       },

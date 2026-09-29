@@ -278,6 +278,9 @@ export const PERMISSION_SECTIONS = [
       A.delete,
       { key: "students", label: "O'quvchi qo'shish / chiqarish" },
       { key: "transfer", label: "O'quvchilarni ko'chirish" },
+      // Chiqarish / ko'chirish SABABLARI registri — alohida: sinf
+      // ro'yxatini ko'rish huquqi "nega chiqarildi" izohlarini ochmasin
+      { key: "history", label: "Sinf o'zgarishlari tarixi (sabablari bilan)" },
       A.export,
     ],
   },
@@ -958,6 +961,9 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/schedule-planner", key: "planner.view" },
   { prefix: "/topics", key: "topics.view" },
   { prefix: "/classes", key: "classes.view" },
+  // ⚠️ `/classes` dan UZUNROQ — eng uzun mos prefiks yutadi: chiqarish /
+  // ko'chirish SABABLARI sinf ro'yxatini ko'rish huquqi bilan ochilmasin
+  { prefix: "/classes/changes", key: "classes.history" },
   { prefix: "/subjects", key: "subjects.view" },
   { prefix: "/test-seasons", key: "tests.view" },
   { prefix: "/test-settings", key: "tests.view" },

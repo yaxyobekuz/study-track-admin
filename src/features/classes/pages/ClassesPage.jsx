@@ -1,4 +1,5 @@
 // Components
+import Can from "@/shared/components/guards/Can";
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
 
@@ -6,7 +7,7 @@ import Button from "@/shared/components/ui/button/Button";
 import { classesAPI } from "@/features/classes/api/classes.api";
 
 // Icons
-import { Plus, Edit, Trash2, ChevronRight, Download } from "lucide-react";
+import { Plus, Edit, Trash2, ChevronRight, Download, History } from "lucide-react";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -50,9 +51,21 @@ const Classes = () => {
           Yangi sinf
         </Button>
 
-        <Button onClick={handleExport} className="px-3.5">
-          <Download strokeWidth={1.5} />
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* Ko'chirilganlar / sinfdan chiqarilganlar — sababi bilan */}
+          <Can do="classes.history">
+            <Button asChild variant="secondary" className="px-3.5">
+              <Link to="/classes/changes">
+                <History strokeWidth={1.5} />
+                <span className="max-xs:hidden">Sinf o'zgarishlari</span>
+              </Link>
+            </Button>
+          </Can>
+
+          <Button onClick={handleExport} className="px-3.5">
+            <Download strokeWidth={1.5} />
+          </Button>
+        </div>
       </div>
 
       {/* Grid */}
