@@ -6,6 +6,7 @@ import { usersAPI } from "../api/users.api";
 
 // Keys
 import { usersKeys } from "./users.queries";
+import { classesKeys } from "@/features/classes/queries/classes.queries";
 
 /**
  * Arxivlash/qaytarishdan keyin keshni eskirtiradi.
@@ -41,6 +42,30 @@ export const useUpdateUser = () => {
     mutationFn: ({ id, data }) => usersAPI.update(id, data).then((r) => r.data),
     // Refresh both the list and the edited user's detail.
     onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
+  });
+};
+
+/**
+ * O'quvchi sinflarini almashtirish (`PUT /users/:id` → `classes`).
+ *
+ * `classes` — to'liq YANGI ro'yxat (bo'sh = barcha sinflardan chiqarish).
+ * O'quvchi biror sinfini yo'qotsa `reason` majburiy — server
+ * `classChangeReason` siz so'rovni rad etadi va o'zgarishni jurnalga yozadi.
+ *
+ * `useUpdateUser` dan farqi — sinflar keshi ham eskiradi: sinfdagi
+ * o'quvchilar ro'yxati va "Sinf o'zgarishlari" jurnali (`classesKeys.all`).
+ */
+export const useUpdateStudentClasses = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, classes, reason }) =>
+      usersAPI
+        .update(id, { classes, ...(reason ? { classChangeReason: reason } : {}) })
+        .then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: usersKeys.all });
+      qc.invalidateQueries({ queryKey: classesKeys.all });
+    },
   });
 };
 

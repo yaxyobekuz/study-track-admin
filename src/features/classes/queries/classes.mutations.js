@@ -46,29 +46,36 @@ export const useAddStudentsToClass = () => {
   });
 };
 
+/**
+ * Sinfdan chiqarish / ko'chirish — ro'yxat, jurnal va o'quvchilar keshi.
+ *
+ * ⚠️ `onSettled`, `onSuccess` EMAS: server eskirgan tanlovni ("o'quvchi bu
+ * sinfda topilmadi") rad etadi — shunda ham ro'yxat yangilanishi kerak,
+ * aks holda admin o'sha eskirgan ro'yxat bilan qayta-qayta urinardi.
+ */
+const invalidateMembership = (qc) => {
+  qc.invalidateQueries({ queryKey: classesKeys.all });
+  qc.invalidateQueries({ queryKey: usersKeys.all });
+};
+
 export const useRemoveClassStudents = () => {
   const qc = useQueryClient();
   return useMutation({
+    // `payload` — `{ studentIds | all, reason }`
     mutationFn: ({ classId, payload }) =>
       classesAPI.removeStudents(classId, payload).then((r) => r.data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: classesKeys.all });
-      qc.invalidateQueries({ queryKey: usersKeys.all });
-    },
+    onSettled: () => invalidateMembership(qc),
   });
 };
 
 export const useMoveClassStudents = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ classId, studentIds, targetClassId }) =>
+    mutationFn: ({ classId, studentIds, targetClassId, reason }) =>
       classesAPI
-        .moveStudents(classId, studentIds, targetClassId)
+        .moveStudents(classId, { studentIds, targetClassId, reason })
         .then((r) => r.data),
     // Both source and target class rosters change → invalidate the whole feature.
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: classesKeys.all });
-      qc.invalidateQueries({ queryKey: usersKeys.all });
-    },
+    onSettled: () => invalidateMembership(qc),
   });
 };
