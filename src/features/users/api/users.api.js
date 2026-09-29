@@ -17,8 +17,12 @@ export const usersAPI = {
   restore: (id) => http.put(`/users/${id}/restore`),
   resetPassword: (id, data) => http.put(`/users/${id}/reset-password`, data),
   getPassword: (id) => http.get(`/users/${id}/password`),
-  exportUsers: (role) =>
-    http.get("/users/export", { params: { role }, responseType: "blob" }),
+  // `classId` — faqat `role: "student"` bilan (server boshqa rolda rad etadi)
+  exportUsers: (role, { classId } = {}) =>
+    http.get("/users/export", {
+      params: { role, ...(classId ? { classId } : {}) },
+      responseType: "blob",
+    }),
 
   // KO'P ROLLILIK — faqat OWNER (server `authorize(ROLES.OWNER)` bilan
   // yopgan). To'liq ro'yxat yuboriladi, "qo'sh"/"olib tashla" emas:

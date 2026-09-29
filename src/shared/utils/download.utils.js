@@ -38,3 +38,32 @@ export const downloadBlob = (response, fallbackName = "hisobot.xlsx") => {
   link.remove();
   window.URL.revokeObjectURL(url);
 };
+
+/**
+ * `responseType: "blob"` so'rovi xatosidan server matnini olish.
+ *
+ * ⚠️ Blob javobda server xatosi (`{ success: false, message }`) ham Blob
+ * bo'lib keladi — `error.response.data.message` u yerda `undefined`, axios
+ * esa "Request failed with status code 400" deydi. Shu sababli matn o'qilib
+ * JSON sifatida ochiladi.
+ *
+ * @param {unknown} error - axios xatosi
+ * @param {string} fallback
+ * @returns {Promise<string>}
+ */
+export const readBlobErrorMessage = async (error, fallback) => {
+  const data = error?.response?.data;
+  if (typeof Blob !== "undefined" && data instanceof Blob) {
+    try {
+      const parsed = JSON.parse(await data.text());
+      if (typeof parsed?.message === "string" && parsed.message) {
+        return parsed.message;
+      }
+    } catch {
+      return fallback;
+    }
+    return fallback;
+  }
+  const message = data?.message;
+  return typeof message === "string" && message ? message : fallback;
+};

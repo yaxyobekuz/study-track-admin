@@ -149,6 +149,14 @@ const UsersListView = ({
   const users = data?.data ?? [];
   const pagination = data?.pagination;
 
+  // Eksport oynasi sahifaga mos turda ochiladi: O'quvchilar sahifasida —
+  // o'quvchilar va joriy sinf filtri. ⚠️ Har doim OBYEKT yuboriladi:
+  // ma'lumotsiz `openModal` avvalgi holatni saqlaydi va Xodimlar sahifasida
+  // o'quvchilar sahifasining sinfi qolib ketardi.
+  const exportDefaults = isStudentList
+    ? { defaultRole: "student", defaultClassId: classFilter || "all" }
+    : { defaultRole: "all" };
+
   const goToPage = (next) =>
     setSearchParams((prev) => {
       prev.set("page", String(next));
@@ -191,7 +199,7 @@ const UsersListView = ({
                 <Button
                   variant="secondary"
                   className="flex-1 sm:flex-none"
-                  onClick={() => openModal("exportUsers")}
+                  onClick={() => openModal("exportUsers", exportDefaults)}
                 >
                   <Download />
                   <span className="sm:hidden">Yuklab olish</span>
