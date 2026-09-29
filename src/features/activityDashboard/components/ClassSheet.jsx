@@ -1,21 +1,31 @@
+// React
+import { useState } from "react";
+
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
+
+// Notifications
+import { toast } from "sonner";
 
 // Icons
 import {
   BellOff,
   Link2,
   Link2Off,
+  Loader2,
   PhoneOff,
+  Sheet,
   TriangleAlert,
   UserCheck,
 } from "lucide-react";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
+import { downloadBlob, readBlobErrorMessage } from "@/shared/utils/download.utils";
 
 // Hooks
 import useMediaQuery from "@/shared/hooks/useMediaQuery";
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Ui components
 import {
@@ -31,7 +41,8 @@ import {
   DrawerTitle,
 } from "@/shared/components/shadcn/drawer";
 
-// Queries
+// API & queries
+import { activityAPI } from "../api/activity.api";
 import { activityQueries } from "../queries/activity.queries";
 
 // Tokens
@@ -94,6 +105,13 @@ const ClassSheet = ({ open, onOpenChange, classId, days }) => {
     <Body data={query.data} isLoading={query.isLoading} isError={query.isError} />
   );
 
+  // ⚠️ Tugma TAVSIF QATORIDA, sarlavha yonida emas: sarlavha qatorining
+  // o'ng burchagida modalning yopish tugmasi turadi va ular ustma-ust
+  // tushardi
+  const exportButton = (
+    <ExportButton classId={classId} days={days} data={query.data} />
+  );
+
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -101,7 +119,10 @@ const ClassSheet = ({ open, onOpenChange, classId, days }) => {
           <DialogTitle className="text-[15px] font-semibold tracking-[-0.01em] text-slate-900">
             {title}
           </DialogTitle>
-          <DialogDescription className={T.hint}>{subtitle}</DialogDescription>
+          <div className="flex items-center justify-between gap-3">
+            <DialogDescription className={T.hint}>{subtitle}</DialogDescription>
+            {exportButton}
+          </div>
           {body}
         </DialogContent>
       </Dialog>
@@ -118,10 +139,67 @@ const ClassSheet = ({ open, onOpenChange, classId, days }) => {
         <DrawerTitle className="text-[15px] font-semibold tracking-[-0.01em] text-slate-900">
           {title}
         </DrawerTitle>
-        <DrawerDescription className={T.hint}>{subtitle}</DrawerDescription>
+        <div className="flex items-center justify-between gap-3">
+          <DrawerDescription className={T.hint}>{subtitle}</DrawerDescription>
+          {exportButton}
+        </div>
         {body}
       </DrawerContent>
     </Drawer>
+  );
+};
+
+/* ═══════════════════════ EXCEL ═══════════════════════ */
+
+/**
+ * SINF KESIMI → EXCEL: "Bog'langanlar" va "Bog'lanmaganlar" varaqlari.
+ *
+ * ⚠️ `activity.export` ALOHIDA tekshiriladi: modalni ochish (`roster`)
+ * ro'yxatni KO'RISH, fayl esa uni maktabdan tashqariga OLIB CHIQISH —
+ * server ham ikkalasini talab qiladi. Ruxsat bo'lmasa tugma umuman
+ * chizilmaydi (bosib, 403 olishdan ko'ra).
+ *
+ * ⚠️ Davr modal bilan AYNI (`days`): fayl ekrandagi ro'yxatning nusxasi.
+ */
+const ExportButton = ({ classId, days, data }) => {
+  const { can } = usePermissions();
+  const [isExporting, setIsExporting] = useState(false);
+
+  if (!can("activity.export")) return null;
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const response = await activityAPI.exportClass(classId, { days });
+      downloadBlob(response, `bot-qamrovi_${data?.class?.name || "sinf"}.xlsx`);
+    } catch (error) {
+      toast.error(await readBlobErrorMessage(error, "Faylni yuklab bo'lmadi"));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleExport}
+      // O'quvchisiz sinf — faylda faqat sarlavhalar bo'lardi
+      disabled={isExporting || !data || !data.class?.students}
+      title="Botga bog'langanlar va bog'lanmaganlar ro'yxatini Excel'ga yuklab olish"
+      className={cn(
+        "flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5",
+        "bg-slate-50 text-[11.5px] font-medium text-slate-600",
+        "transition-colors duration-200 ease-out-quint hover:bg-slate-100 hover:text-slate-900",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+      )}
+    >
+      {isExporting ? (
+        <Loader2 className="size-3.5 shrink-0 animate-spin" strokeWidth={2} />
+      ) : (
+        <Sheet className="size-3.5 shrink-0 text-emerald-600" strokeWidth={2} />
+      )}
+      {isExporting ? "Tayyorlanmoqda…" : "Excel"}
+    </button>
   );
 };
 

@@ -25,6 +25,18 @@ export const activityAPI = {
    */
   getClass: (classId, params) =>
     http.get(`/activity/classes/${classId}`, { params }),
+
+  /**
+   * Sinf kesimi → Excel (bog'langanlar / bog'lanmaganlar). Params: { days }
+   *
+   * ⚠️ `responseType: "blob"` MAJBURIY — usiz axios ikkilik faylni
+   * matn deb o'qib, buzib yuborardi.
+   */
+  exportClass: (classId, params) =>
+    http.get(`/activity/classes/${classId}/export`, {
+      params,
+      responseType: "blob",
+    }),
 };
 
 export default activityAPI;
