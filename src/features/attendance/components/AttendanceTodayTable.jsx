@@ -82,7 +82,15 @@ const AttendanceTodayTable = ({ rows }) => {
                 )}
               </td>
               <td className="px-4 py-3 text-gray-700">{formatTime(row.checkIn)}</td>
-              <td className="px-4 py-3 text-gray-700">{formatTime(row.checkOut)}</td>
+              <td className="px-4 py-3 text-gray-700">
+                {formatTime(row.checkOut)}
+                {/* Ishlar tugamay, rahbariyat ruxsati bilan ketgan */}
+                {row.checkoutApproved && (
+                  <span className="block text-xs text-amber-700">
+                    Ruxsat bilan
+                  </span>
+                )}
+              </td>
               <td className="px-4 py-3">
                 {row.isLate ? (
                   <span className="text-yellow-600 text-xs">

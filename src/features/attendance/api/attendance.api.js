@@ -18,4 +18,9 @@ export const attendanceAPI = {
   getRecentExcuses: () => http.get("/attendance/excuse/recent"),
   getExcuse: (id) => http.get(`/attendance/excuse/${id}`),
   reviewExcuse: (id, data) => http.put(`/attendance/excuse/${id}/review`, data),
+  // Kunni yopish — o'qituvchining "ishlar tugamay ketish" so'rovlari
+  getCheckoutRequests: (params) =>
+    http.get("/attendance/checkout-requests", { params }),
+  reviewCheckoutRequest: (id, data) =>
+    http.put(`/attendance/checkout-requests/${id}/review`, data),
 };

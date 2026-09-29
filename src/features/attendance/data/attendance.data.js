@@ -160,6 +160,25 @@ export const EXCUSE_STATUS_COLORS = {
   rejected: "bg-red-100 text-red-700",
 };
 
+// ─────────────────────────────────────────────
+// KETISH SO'ROVLARI (kunni yopish) — server `CheckoutRequestStatus`
+// ─────────────────────────────────────────────
+
+export const CHECKOUT_REQUEST_STATUS_OPTIONS = [
+  { label: "Barcha so'rovlar", value: "all" },
+  { label: "Kutilmoqda", value: "pending" },
+  { label: "Tasdiqlangan", value: "approved" },
+  { label: "Rad etilgan", value: "rejected" },
+  { label: "Bekor qilingan", value: "cancelled" },
+];
+
+export const CHECKOUT_REQUEST_STATUS_COLORS = {
+  pending: "bg-yellow-100 text-yellow-700",
+  approved: "bg-green-100 text-green-700",
+  rejected: "bg-red-100 text-red-700",
+  cancelled: "bg-gray-100 text-gray-600",
+};
+
 export const REVIEW_ACTION_OPTIONS = [
   { label: "Tasdiqlash", value: "approved" },
   { label: "Rad etish", value: "rejected" },

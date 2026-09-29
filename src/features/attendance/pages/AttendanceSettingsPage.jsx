@@ -69,6 +69,8 @@ const AttendanceSettingsPage = () => {
     pausedRoles: [],
     pausedUsers: [],
     gradingRequiresPresence: true,
+    checkoutRequireGrades: true,
+    checkoutRequireTasks: true,
   });
 
   useEffect(() => {
@@ -86,6 +88,8 @@ const AttendanceSettingsPage = () => {
       pausedRoles: settings.pausedRoles || [],
       pausedUsers: settings.pausedUsers || [],
       gradingRequiresPresence: settings.gradingRequiresPresence ?? true,
+      checkoutRequireGrades: settings.checkoutRequireGrades ?? true,
+      checkoutRequireTasks: settings.checkoutRequireTasks ?? true,
     });
   }, [settings]);
 
@@ -187,6 +191,8 @@ const AttendanceSettingsPage = () => {
       pausedRoles: state.pausedRoles,
       pausedUsers: state.pausedUsers,
       gradingRequiresPresence: state.gradingRequiresPresence,
+      checkoutRequireGrades: state.checkoutRequireGrades,
+      checkoutRequireTasks: state.checkoutRequireTasks,
     };
 
     saveSettings(data, {
@@ -358,6 +364,40 @@ const AttendanceSettingsPage = () => {
               ketmagan bo'lishi kerak — aks holda "Siz maktabda emassiz" chiqadi. Boshliq ochib bergan
               o'tgan kunlarga bu shart qo'yilmaydi. "Kelish" tugmasi ishlamay qolgan kuni vaqtincha
               o'chirib turish mumkin.
+            </p>
+          </Card>
+
+          {/* Kunni yopish — "Men ketdim" dan oldin ishlar tugashi */}
+          <Card title="Kunni yopish (Men ketdim)" className="space-y-3">
+            <Field
+              className="flex-row"
+              htmlFor="checkoutRequireGrades"
+              label="Bugungi darslarga baho qo'yilgan bo'lishi kerak"
+            >
+              <Switch
+                id="checkoutRequireGrades"
+                checked={state.checkoutRequireGrades}
+                onChange={(v) => setField("checkoutRequireGrades", v)}
+              />
+            </Field>
+            <Field
+              className="flex-row"
+              htmlFor="checkoutRequireTasks"
+              label="Muddati kelgan topshiriqlar topshirilgan bo'lishi kerak"
+            >
+              <Switch
+                id="checkoutRequireTasks"
+                checked={state.checkoutRequireTasks}
+                onChange={(v) => setField("checkoutRequireTasks", v)}
+              />
+            </Field>
+            <p className="text-xs text-gray-500">
+              O'qituvchi "Men ketdim" ni faqat bugungi ishlari tugagach, tasdiqlab bosadi.
+              Baho talabi — har bir bugungi darsga kamida bitta baho (baho jarimasidan ozod
+              o'qituvchilar ozod). Bugungi darslarga baho dars boshlangandan "Men ketdim"
+              bosilguncha qo'yiladi — dars tugashi yopmaydi. Ishlar tugamagan bo'lsa
+              o'qituvchi sabab yozib ruxsat so'raydi — "Ketish so'rovlari" tabida
+              tasdiqlanadi. Admin qo'lda belgilagan ketishga bu shart qo'yilmaydi.
             </p>
           </Card>
 

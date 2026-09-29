@@ -68,6 +68,19 @@ export const attendanceQueries = {
    * Bugun uchun JONLI: dars boshlanishi bilan ro'yxat o'zgaradi, shuning
    * uchun daqiqada bir yangilanadi. O'tgan kun o'zgarmaydi.
    */
+  /**
+   * Ketish so'rovlari (rahbariyat) → `{ data, pagination, pendingCount }`.
+   * O'qituvchi javobni kutib turibdi — ro'yxat yarim daqiqada bir yangilanadi.
+   */
+  checkoutRequests: (params) =>
+    queryOptions({
+      queryKey: [...attendanceKeys.all, "checkout-requests", params],
+      queryFn: () =>
+        attendanceAPI.getCheckoutRequests(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+      refetchInterval: 30 * 1000,
+    }),
+
   lessonAbsentees: (date, isToday) =>
     queryOptions({
       queryKey: [...attendanceKeys.all, "lesson-absentees", date],

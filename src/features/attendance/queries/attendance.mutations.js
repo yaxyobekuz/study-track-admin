@@ -41,6 +41,19 @@ export const useDeleteAbsenceReason = () => {
   });
 };
 
+/** Ketish so'rovini tasdiqlash / rad etish. */
+export const useReviewCheckoutRequest = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      attendanceAPI.reviewCheckoutRequest(id, data).then((r) => r.data.data),
+    onSuccess: () =>
+      qc.invalidateQueries({
+        queryKey: [...attendanceKeys.all, "checkout-requests"],
+      }),
+  });
+};
+
 export const useUpdateAttendanceSettings = () => {
   const qc = useQueryClient();
   return useMutation({

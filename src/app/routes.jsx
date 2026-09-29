@@ -145,6 +145,7 @@ import ClassAttendanceReportPage from "@/features/attendance/pages/ClassAttendan
 import StaffReportsPage from "@/features/attendance/pages/StaffReportsPage";
 import AttendanceSettingsPage from "@/features/attendance/pages/AttendanceSettingsPage";
 import LessonAbsenteesPage from "@/features/attendance/pages/LessonAbsenteesPage";
+import CheckoutRequestsPage from "@/features/attendance/pages/CheckoutRequestsPage";
 
 // Moliya (Finance) - layout & route-level pages
 import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
@@ -534,6 +535,9 @@ const Routes = () => {
 
             {/* Uzrli so'rovlar */}
             <Route path="excuses" element={<ExcuseRequestsPage />} />
+
+            {/* Ketish so'rovlari — ishlar tugamay ketishga rahbariyat ruxsati */}
+            <Route path="checkout-requests" element={<CheckoutRequestsPage />} />
 
             {/* Kelmaslik sabablari */}
             <Route path="reasons" element={<AbsenceReasonsPage />} />

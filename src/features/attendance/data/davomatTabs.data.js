@@ -41,6 +41,15 @@ export const ATTENDANCE_TABS = [
     exact: false,
   },
   {
+    // O'qituvchi bugungi ishlarini tugatmay ketmoqchi — rahbariyat qarori
+    to: "/attendance/checkout-requests",
+    label: "Ketish so'rovlari",
+    title: "Ketish so'rovlari",
+    description:
+      "O'qituvchi darslariga baho qo'ymay yoki topshiriqni topshirmay ketishi kerak bo'lsa — shu yerda ruxsat so'raydi",
+    exact: false,
+  },
+  {
     to: "/attendance/reasons",
     label: "Kelmaslik sabablari",
     title: "Kelmaslik sabablari",
