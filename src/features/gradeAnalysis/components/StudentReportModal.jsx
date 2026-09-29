@@ -10,6 +10,7 @@ import {
   FlaskConical,
   Info,
   Sparkles,
+  Target,
   UserRound,
 } from "lucide-react";
 
@@ -424,8 +425,32 @@ const AudienceView = ({ view }) => {
                         <span className={cn("rounded-md px-1.5 py-0.5 text-[10px] font-semibold ring-1", priority.chip)}>
                           {priority.label}
                         </span>
+                        {item.target != null && (
+                          <span
+                            title="Keyingi davr uchun maqsad — shu fandagi o'rtacha baho"
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold ring-1",
+                              toneOf("info").soft,
+                            )}
+                          >
+                            <Target className="size-3" /> Maqsad: {fmtAvg(item.target)}
+                          </span>
+                        )}
                       </div>
                       <p className={cn(T.body, "mt-1 text-slate-600")}>{item.detail}</p>
+                      {/* Qadamlar — 2026-09-29 dan; eski muhrlangan hisobotlarda yo'q */}
+                      {item.steps?.length > 0 && (
+                        <ol className="mt-2.5 space-y-1.5">
+                          {item.steps.map((step, stepIndex) => (
+                            <li key={stepIndex} className="flex items-start gap-2">
+                              <span className="mt-px flex size-[18px] shrink-0 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold tabular-nums text-white">
+                                {stepIndex + 1}
+                              </span>
+                              <span className={cn(T.body, "text-slate-700")}>{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      )}
                     </div>
                   </div>
                 </li>

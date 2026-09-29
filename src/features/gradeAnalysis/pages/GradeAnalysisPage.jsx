@@ -25,6 +25,7 @@ import SettingsModal from "../components/SettingsModal";
 import StudentReportModal from "../components/StudentReportModal";
 import { CausesPanel, HeatmapPanel, SignalsPanel, SubjectBoard, TopicsPanel } from "../components/OverviewPanels";
 import { NarrativePanel, StudentSpotlight } from "../components/InsightPanels";
+import { ClassRankings, SchoolRankings } from "../components/RankingsPanel";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -221,6 +222,12 @@ const GradeAnalysisPage = () => {
   const noRuns = !runs.isLoading && (runs.data?.data?.length ?? 0) === 0 && !selectedId;
   const ready = run?.status === "completed" && run.overview;
   const isStudentScope = run?.scope === "student";
+  // Reyting — bitta o'quvchi tahlilida ma'nosiz; bitta sinf bo'lsa maktab
+  // ro'yxati sinf kartasini aynan takrorlardi
+  const rankings = !isStudentScope ? run?.overview?.rankings : null;
+  const showSchoolRankings = (rankings?.classes?.length ?? 0) > 1;
+  // Reyting bloklari birinchi chiqadi — qolganlarining xoreografiyasi suriladi
+  const rowDelay = (index) => DELAY.row(index + (rankings ? 2 : 0));
 
   return (
     <>
@@ -240,7 +247,7 @@ const GradeAnalysisPage = () => {
                 type="button"
                 onClick={() => openModal("gradeAnalysisReport", { reportId: run.overview.topStudents[0].reportId })}
                 className={cn(SURFACE.card, SURFACE.hover, MOTION.enter, "flex w-full items-center gap-4 px-5 py-4 text-left")}
-                style={{ animationDelay: `${DELAY.row(0)}ms` }}
+                style={{ animationDelay: `${rowDelay(0)}ms` }}
               >
                 <span className="flex size-10 items-center justify-center rounded-xl bg-indigo-600 text-white">
                   <FileSearch className="size-5" />
@@ -254,17 +261,24 @@ const GradeAnalysisPage = () => {
               </button>
             )}
 
+            {rankings && (
+              <>
+                {showSchoolRankings && <SchoolRankings run={run} delay={DELAY.row(0)} />}
+                <ClassRankings run={run} delay={DELAY.row(showSchoolRankings ? 1 : 0)} />
+              </>
+            )}
+
             <div className="grid gap-4 xl:grid-cols-12">
               <div className="min-w-0 xl:col-span-7">
-                <SubjectBoard overview={run.overview} delay={DELAY.row(0)} />
+                <SubjectBoard overview={run.overview} delay={rowDelay(0)} />
               </div>
               {isStudentScope ? (
                 <div className="xl:col-span-5">
-                  <NarrativePanel narrative={run.narrative} delay={DELAY.row(0) + 45} />
+                  <NarrativePanel narrative={run.narrative} delay={rowDelay(0) + 45} />
                 </div>
               ) : (
                 <div className="xl:col-span-5">
-                  <StudentSpotlight overview={run.overview} delay={DELAY.row(0) + 45} />
+                  <StudentSpotlight overview={run.overview} delay={rowDelay(0) + 45} />
                 </div>
               )}
             </div>
@@ -272,21 +286,21 @@ const GradeAnalysisPage = () => {
             {!isStudentScope && (
               <div className="grid gap-4 xl:grid-cols-12">
                 <div className="xl:col-span-5">
-                  <NarrativePanel narrative={run.narrative} delay={DELAY.row(1)} />
+                  <NarrativePanel narrative={run.narrative} delay={rowDelay(1)} />
                 </div>
                 <div className="min-w-0 xl:col-span-7">
-                  <HeatmapPanel overview={run.overview} delay={DELAY.row(1) + 45} />
+                  <HeatmapPanel overview={run.overview} delay={rowDelay(1) + 45} />
                 </div>
               </div>
             )}
 
             <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-              <TopicsPanel overview={run.overview} delay={DELAY.row(2)} />
-              <CausesPanel overview={run.overview} delay={DELAY.row(2) + 45} />
-              <SignalsPanel overview={run.overview} delay={DELAY.row(2) + 90} />
+              <TopicsPanel overview={run.overview} delay={rowDelay(2)} />
+              <CausesPanel overview={run.overview} delay={rowDelay(2) + 45} />
+              <SignalsPanel overview={run.overview} delay={rowDelay(2) + 90} />
             </div>
 
-            {!isStudentScope && <ReportsTable run={run} delay={DELAY.row(3)} />}
+            {!isStudentScope && <ReportsTable run={run} delay={rowDelay(3)} />}
           </>
         )}
 

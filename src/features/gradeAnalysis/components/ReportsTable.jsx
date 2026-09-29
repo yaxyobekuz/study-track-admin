@@ -77,6 +77,7 @@ const ReportsTable = ({ run, delay }) => {
       icon={TableProperties}
       accent="bg-slate-900 text-white"
       delay={delay}
+      className="h-auto"
       flush
     >
       <div ref={containerRef} className="flex flex-wrap items-center gap-2 px-5">

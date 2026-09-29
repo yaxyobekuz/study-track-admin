@@ -15,6 +15,11 @@ import { MOTION, SURFACE, T } from "../data/analysis.tokens";
  * o'zgarishdayoq bloklar bir-biridan ajralib ketardi.
  *
  * `accent` — sarlavha ikonkasining foni (blok toifasi rangi).
+ *
+ * ⚠️ `h-full` — GRID ichidagi qo'shni bloklar teng bo'yli bo'lishi uchun.
+ * Sahifaga to'g'ridan-to'g'ri qo'yilgan blokda (grid emas) `className="h-auto"`
+ * bering: aks holda u ota elementning TO'LIQ balandligini olib, ostida
+ * sahifa bo'yi bo'sh joy qoldiradi.
  */
 const Panel = ({
   title,

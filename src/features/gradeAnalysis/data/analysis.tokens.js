@@ -223,6 +223,33 @@ export const PRIORITY = {
   low: { label: "Past", rail: "bg-slate-300", chip: TONE.neutral.soft },
 };
 
+/* ─────────────────────────── REYTING O'RNI ─────────────────────────── */
+
+/**
+ * O'rin belgisi. Eng yaxshilarda 1–3 — medal (oltin, kumush, bronza),
+ * eng pastlarda 1–3 — qizil ohang; qolgani neytral. Rang faqat shu yerda.
+ */
+export const MEDAL = {
+  1: "bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 ring-amber-400/60",
+  2: "bg-gradient-to-br from-slate-200 to-slate-400 text-slate-900 ring-slate-400/60",
+  3: "bg-gradient-to-br from-orange-200 to-orange-400 text-orange-950 ring-orange-400/60",
+};
+
+const PLACE_NEUTRAL = "bg-slate-100 text-slate-600 ring-slate-200/70";
+
+/**
+ * @param {"best"|"worst"} kind
+ * @param {number} place
+ * @param {boolean} [hot] - ajratib ko'rsatilsinmi (sukut: birinchi uchtalik).
+ *   Sinf kartasidagi eng pastlarning o'rni sinfdagi o'rin (28, 27, 26) —
+ *   ular uchun chaqiruvchi `true` beradi.
+ */
+export const placeBadgeOf = (kind, place, hot = place <= 3) => {
+  if (!hot) return PLACE_NEUTRAL;
+  if (kind === "best") return MEDAL[place] ?? PLACE_NEUTRAL;
+  return TONE.critical.soft;
+};
+
 /* ─────────────────────────── HARAKAT ─────────────────────────── */
 
 export const MOTION = {
