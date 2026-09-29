@@ -150,6 +150,17 @@ import AcademicDashboardPage from "@/features/academicDashboard/pages/AcademicDa
 import GradeAnalysisPage from "@/features/gradeAnalysis/pages/GradeAnalysisPage";
 import InventoryDashboardPage from "@/features/inventoryDashboard/pages/InventoryDashboardPage";
 
+// Pages - Qurilma nazorati (o'quvchi telefoni)
+import DevicesLayout from "@/features/devices/layouts/DevicesLayout";
+import DevicesIndex from "@/features/devices/layouts/DevicesIndex";
+import DevicesOverviewPage from "@/features/devices/pages/OverviewPage";
+import DevicesListPage from "@/features/devices/pages/DevicesPage";
+import DevicePoliciesPage from "@/features/devices/pages/PoliciesPage";
+import DeviceAppsPage from "@/features/devices/pages/AppsPage";
+import DeviceUnlocksPage from "@/features/devices/pages/UnlocksPage";
+import DeviceReportsPage from "@/features/devices/pages/ReportsPage";
+import DeviceSettingsPage from "@/features/devices/pages/SettingsPage";
+
 // Pages - Faollik va Xavfsizlik
 import ActivityDashboardPage from "@/features/activityDashboard/pages/ActivityDashboardPage";
 import SecurityPage from "@/features/security/pages/SecurityPage";
@@ -315,6 +326,25 @@ const Routes = () => {
           {/* FAOLLIK — sidebar kirish nuqtasi (bosh sahifadagi
               "Faollik" tabi bilan AYNI sahifa). */}
           <Route path="/activity" element={<ActivityDashboardPage />} />
+
+          {/* QURILMA NAZORATI — o'quvchi telefonidagi ilovalar va ekran
+              vaqti. Bitta sahifa, ichida tablar (moliya va inventar bilan
+              bir xil shakl).
+
+              ⚠️ Yashirin kuzatuv EMAS: o'quvchi o'ziga qo'llangan qoidani
+              o'z panelida to'liq ko'radi (`.claude/rules/devices.md` §0). */}
+          <Route path="/devices" element={<DevicesLayout />}>
+            {/* Ruxsati bor birinchi tab — faqat `devices.apps` bor xodim
+                ham "Ruxsat yo'q" ekraniga tushmaydi */}
+            <Route index element={<DevicesIndex />} />
+            <Route path="overview" element={<DevicesOverviewPage />} />
+            <Route path="list" element={<DevicesListPage />} />
+            <Route path="policies" element={<DevicePoliciesPage />} />
+            <Route path="unlocks" element={<DeviceUnlocksPage />} />
+            <Route path="apps" element={<DeviceAppsPage />} />
+            <Route path="reports" element={<DeviceReportsPage />} />
+            <Route path="settings" element={<DeviceSettingsPage />} />
+          </Route>
 
           {/* XAVFSIZLIK — seanslar, kirish urinishlari, ogohlantirishlar.
               Faollikdan ALOHIDA bo'lim: u "kim foydalanyapti" ni,

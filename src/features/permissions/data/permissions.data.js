@@ -53,6 +53,7 @@ export const SECTIONS = {
   LEADS: "leads",
   ACTIVITY: "activity",
   SECURITY: "security",
+  DEVICES: "devices",
 };
 
 // Tez-tez takrorlanadigan amal nomlari
@@ -780,6 +781,36 @@ export const PERMISSION_SECTIONS = [
       A.export,
     ],
   },
+  {
+    // QURILMA NAZORATI — "o'quvchi telefonida nima ochiladi va qancha vaqt".
+    //
+    // ⚠️ Bu bo'lim BOLANING SHAXSIY QURILMASINI cheklaydi, shuning uchun
+    // amallari eng mayda bo'linganlaridan: har biri boshqa og'irlikdagi
+    // qaror va ularni bitta kalitga yig'ish "ro'yxatni ko'rsin" degan
+    // ruxsatni "butun maktabni qulflasin" ga aylantirardi.
+    //
+    //   `policies` — qoida YOZISH (hali hech kimga tegmaydi),
+    //   `assign`   — o'sha qoidani YOQISH. ⚠️ Ikkalasi ALOHIDA —
+    //                `payroll.assign` va `payroll.deduct` ajratilgani
+    //                bilan AYNI mulohaza.
+    //   `reports`  — foydalanish hisoboti. ⚠️ `view` DAN ALOHIDA:
+    //                qurilmalar ro'yxati texnik ish, bolaning qaysi
+    //                ilovada qancha o'tirgani esa SHAXSIY MA'LUMOT
+    //                (`security.sessions` bilan bir xil).
+    key: SECTIONS.DEVICES,
+    label: "Qurilma nazorati",
+    group: "Nazorat",
+    actions: [
+      A.view,
+      { key: "policies", label: "Siyosat yaratish / tahrirlash" },
+      { key: "assign", label: "Siyosatni biriktirish (yoqish)" },
+      { key: "enroll", label: "Qurilma biriktirish / olib tashlash" },
+      { key: "unlock", label: "Vaqtinchalik ochish" },
+      { key: "apps", label: "Ilovalar katalogi" },
+      { key: "reports", label: "Foydalanish hisoboti" },
+      A.settings,
+    ],
+  },
 ];
 
 /** Barcha ruxsat kalitlari: ["users.view", "users.create", ...] */
@@ -1001,6 +1032,13 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/pulse", key: "activity.view" },
   { prefix: "/activity", key: "activity.view" },
   { prefix: "/security", key: "security.view" },
+  // QURILMA NAZORATI — bo'limga kirish `devices.view` bilan; ilovalar
+  // katalogi, hisobot va sozlamalar tablari o'z kalitini talab qiladi
+  // (eng UZUN mos prefiks yutadi).
+  { prefix: "/devices", key: "devices.view" },
+  { prefix: "/devices/apps", key: "devices.apps" },
+  { prefix: "/devices/reports", key: "devices.reports" },
+  { prefix: "/devices/settings", key: "devices.settings" },
   // Bosh sahifadagi "Xavfsizlik" tabi — `/security` bilan ayni sahifa
   { prefix: "/watch", key: "security.view" },
   { prefix: "/roles", key: "roles" },

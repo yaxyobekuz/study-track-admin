@@ -382,6 +382,7 @@ export const CHANNEL_LABELS = {
   student: "O'quvchi paneli",
   reception: "Qabulxona",
   worker: "Xodim paneli",
+  parent: "Ota-ona ilovasi",
 };
 
 export const channelLabel = (key) => CHANNEL_LABELS[key] ?? key;

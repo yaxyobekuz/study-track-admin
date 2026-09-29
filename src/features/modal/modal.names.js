@@ -6,6 +6,18 @@
  * opening an unregistered name logs a warning so typos surface immediately.
  */
 export const MODAL_NAMES = [
+  // Qurilma nazorati
+  "deviceEnrollCode",
+  "deviceUnlock",
+  "cancelDeviceUnlock",
+  "devicePause",
+  "deviceResume",
+  "deviceRemove",
+  "studentDevice",
+  "devicePolicyEditor",
+  "deviceAssignPolicy",
+  "deviceApp",
+
   // User
   "profile",
   "editUserBasic",

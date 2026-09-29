@@ -479,6 +479,28 @@ const navItems = [
         title: "Xavfsizlik",
         url: "/security",
       },
+      // QURILMA NAZORATI — shu guruhda va bu ataylab. Faollik "kim
+      // foydalanyapti", xavfsizlik "kim kirdi", bu esa "o'quvchi
+      // telefonida nima ochiladi" degan savolga javob beradi: uchalasi
+      // ham KUZATUV/NAZORAT, sozlama emas. Bo'g'inlar ichki tablar bilan
+      // ham ochiladi, lekin yon menyuda ham turadi — har biri o'z
+      // ruxsati ortida va `permissionForPath` ularni avtomatik filtrlaydi.
+      {
+        title: "Qurilmalar",
+        url: "/devices/list",
+      },
+      {
+        title: "Telefon qoidalari",
+        url: "/devices/policies",
+      },
+      {
+        title: "Vaqtinchalik ruxsatlar",
+        url: "/devices/unlocks",
+      },
+      {
+        title: "Ekran vaqti hisoboti",
+        url: "/devices/reports",
+      },
     ],
   },
   {
