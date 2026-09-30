@@ -235,6 +235,8 @@ export const MODAL_NAMES = [
   "cancelSubstitution",
   "createGradingUnlock",
   "revokeGradingUnlock",
+  "createGradingGrant",
+  "revokeGradingGrant",
 
   // Moliya - ta'til
   "markVacation",

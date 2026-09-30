@@ -48,6 +48,15 @@ export const HOURS_TABS = [
     monthScoped: false,
     exact: false,
   },
+  {
+    // O'qituvchiga o'ziniki bo'lmagan sinf + fanga baho qo'yishni ochish
+    to: "/lesson-hours/grading-grants",
+    label: "Fanga baho ruxsati",
+    title: "Dars soatlari",
+    can: "gradeGrants.view",
+    monthScoped: false,
+    exact: false,
+  },
 ];
 
 /* ─────────────────────── O'RINBOSARLIK ─────────────────────── */
@@ -168,6 +177,57 @@ export const UNLOCK_PRESET_OPTIONS = [
   { value: "monthEnd", label: "Oy oxirigacha" },
   { value: "custom", label: "Sana" },
 ];
+
+/* ─────────────────────── FANGA BAHO RUXSATI ─────────────────────── */
+
+/** Ruxsat shakli — server `MODES` (`gradingGrant.service.js`). */
+export const GRANT_MODE_OPTIONS = [
+  { value: "period", label: "Muddat bilan" },
+  { value: "lesson", label: "Bitta dars" },
+];
+
+/** Muddat — server `PRESETS`. Hammasi tanlangan kundan boshlab, inklyuziv. */
+export const GRANT_PRESET_OPTIONS = [
+  { value: "1w", label: "1 hafta" },
+  { value: "1m", label: "1 oy" },
+  { value: "1y", label: "1 yil" },
+  { value: "custom", label: "Sana" },
+];
+
+/** Bitta ruxsat eng ko'pi bilan — server `MAX_RANGE_DAYS`. */
+export const GRANT_MAX_RANGE_DAYS = 366;
+
+/** Ruxsat holati — server `statusOf`. */
+export const GRANT_STATUS_META = {
+  active: { label: "Amalda", chip: "bg-emerald-50 text-emerald-700" },
+  upcoming: { label: "Kutilmoqda", chip: "bg-indigo-50 text-indigo-700" },
+  expired: { label: "Muddati tugagan", chip: "bg-slate-100 text-slate-500" },
+  revoked: { label: "Yopilgan", chip: "bg-rose-50 text-rose-700" },
+};
+
+export const GRANT_STATUS_FILTERS = [
+  { key: "", label: "Barchasi" },
+  { key: "active", label: "Amalda" },
+  { key: "upcoming", label: "Kutilmoqda" },
+  { key: "expired", label: "Muddati tugagan" },
+  { key: "revoked", label: "Yopilgan" },
+];
+
+/**
+ * Qoida matni — server `gradingGrant.service.js` sarlavhasi bilan AYNI.
+ * ⚠️ Pulga tegmasligi saqlashdan OLDIN aytiladi: aks holda boshliq "bu
+ * o'qituvchiga shu darslar uchun ham pul yoziladimi" deb o'ylardi.
+ */
+export const GRANT_HINT = {
+  rule:
+    "O'qituvchi tanlangan sinfning shu fan darslariga baho qo'ya oladi — dars egasi ham o'z bahosini qo'yishda davom etadi. Baho shu fanning oddiy bahosi bo'lib hisoblanadi.",
+  money:
+    "Ruxsat pulga tegmaydi: bu baholar dars egasining darsini oylikda \"o'tilgan\" qilmaydi, ruxsat oluvchiga ham soat yozilmaydi.",
+  day:
+    "Bugungi darsga o'qituvchi maktabda turib baho qo'yadi. O'tgan kunlar \"Baho qo'yishni ochish\" orqali ochiladi.",
+  revoke:
+    "Yopilgach o'qituvchi bu sinf va fanga yangi baho qo'ya olmaydi va qo'yganini o'zgartira olmaydi. Qo'yilgan baholar o'z kuchida qoladi.",
+};
 
 /* ─────────────────────── JADVAL USTUNLARI ─────────────────────── */
 

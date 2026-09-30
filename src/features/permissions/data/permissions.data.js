@@ -13,6 +13,7 @@ export const SECTIONS = {
   STATISTICS: "statistics",
   ATTENDANCE: "attendance",
   GRADES: "grades",
+  GRADE_GRANTS: "gradeGrants",
   EDUCATION: "education",
   GRADE_ANALYSIS: "gradeAnalysis",
   ACHIEVEMENTS: "achievements",
@@ -155,6 +156,16 @@ export const PERMISSION_SECTIONS = [
       // Oylikka ta'sir qiladi — server `permissions.js` bilan AYNI
       { key: "unlock", label: "O'tgan kunlarga baho qo'yishni ochish" },
     ],
+  },
+  {
+    // FANGA BAHO RUXSATI — o'qituvchiga o'ziniki bo'lmagan sinf+fanga baho
+    // qo'yishni ochish. ⚠️ ALOHIDA BO'LIM: eski bare "grades" kaliti
+    // bo'limning hamma amalini beradi — bu amal o'sha yerda bo'lsa, owner
+    // bermagan odamga ham jimgina tarqalardi (server `permissions.js` bilan AYNI).
+    key: SECTIONS.GRADE_GRANTS,
+    label: "Fanga baho ruxsati",
+    group: "Ta'lim",
+    actions: [A.view, { key: "manage", label: "Ruxsat berish va yopish" }],
   },
   {
     // TA'LIM DASHBOARDI — bitta ekranda butun maktabning o'quv manzarasi.
@@ -1021,6 +1032,7 @@ const ROUTE_PERMISSIONS = [
   // Tyutor guruhi manzarasi (xodim sahifasidagi kartadan ochiladi)
   { prefix: "/tutor-groups", key: "tutors.view" },
   { prefix: "/lesson-hours/grading-access", key: "grades.unlock" },
+  { prefix: "/lesson-hours/grading-grants", key: "gradeGrants.view" },
   { prefix: "/lesson-hours", key: "payroll.hours" },
   // Bosh sahifadagi "Dars soatlari" tabi — `/lesson-hours/overview` bilan
   // AYNI sahifa, shuning uchun kalit ham bir xil (moliya `/reports` bilan

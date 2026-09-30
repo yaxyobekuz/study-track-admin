@@ -7,6 +7,7 @@ import { createQueryKeys } from "@/shared/lib/query";
 // API
 import {
   contractAPI,
+  gradingGrantAPI,
   gradingUnlockAPI,
   lessonHoursAPI,
   substitutionAPI,
@@ -20,6 +21,7 @@ const teacherKey = [...lessonHoursKeys.all, "teacher"];
 const substitutionsKey = [...lessonHoursKeys.all, "substitutions"];
 const contractKey = [...lessonHoursKeys.all, "contract"];
 const gradingUnlocksKey = [...lessonHoursKeys.all, "gradingUnlocks"];
+export const gradingGrantsKey = [...lessonHoursKeys.all, "gradingGrants"];
 
 export const lessonHoursQueries = {
   /** Boshliq ko'rinishi → `{ totals, modes, series, topTeachers }`. */
@@ -130,5 +132,32 @@ export const gradingUnlockQueries = {
       queryKey: [...gradingUnlocksKey, "teachers"],
       queryFn: () => gradingUnlockAPI.getTeachers().then((r) => r.data.data),
       staleTime: 5 * 60 * 1000,
+    }),
+};
+
+export const gradingGrantQueries = {
+  /** Fanga baho ruxsatlari → `{ data, pagination, totals }`. */
+  list: (params) =>
+    queryOptions({
+      queryKey: [...gradingGrantsKey, params],
+      queryFn: () => gradingGrantAPI.getList(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Tanlov ro'yxatlari (o'qituvchilar, sinflar) — kamdan-kam o'zgaradi. */
+  options: () =>
+    queryOptions({
+      queryKey: [...gradingGrantsKey, "options"],
+      queryFn: () => gradingGrantAPI.getOptions().then((r) => r.data.data),
+      staleTime: 5 * 60 * 1000,
+    }),
+
+  /** Tanlangan sinfning haftalik darslari (fan va dars tanlovi). */
+  classLessons: (classId) =>
+    queryOptions({
+      queryKey: [...gradingGrantsKey, "classLessons", classId],
+      queryFn: () => gradingGrantAPI.getClassLessons(classId).then((r) => r.data.data),
+      enabled: Boolean(classId),
+      staleTime: 60 * 1000,
     }),
 };

@@ -114,3 +114,30 @@ export const gradingUnlockAPI = {
 
   revoke: (id) => http.post(`/grades/unlocks/${id}/revoke`),
 };
+
+/**
+ * FANGA BAHO QO'YISH RUXSATI — o'qituvchiga O'ZINIKI BO'LMAGAN sinf + fanga.
+ *
+ * ⚠️ Manzil `/grades/grants` ostida (ruxsat — alohida bo'lim `gradeGrants`). Ruxsat bilan
+ * qo'yilgan baho oddiy baho, lekin dars egasining oyligida darsni
+ * "o'tilgan" qilmaydi — pulga tegmaydi.
+ */
+export const gradingGrantAPI = {
+  /** `?status=active|upcoming|expired|revoked&teacherId&classId&page&limit` → `{ data, pagination, totals }` */
+  getList: (params) => http.get("/grades/grants", { params }),
+
+  /** Tanlov uchun `{ teachers, classes }`. */
+  getOptions: () => http.get("/grades/grants/options"),
+
+  /** Sinfning haftalik darslari fanlar kesimida → `{ class, subjects }`. */
+  getClassLessons: (classId) => http.get(`/grades/grants/class-lessons/${classId}`),
+
+  /**
+   * Muddat: `{ teacherId, classId, subjectId, mode: "period", dateFrom,
+   *   preset: "1w"|"1m"|"1y"|"custom", dateTo, reason }`
+   * Bitta dars: `{ teacherId, classId, subjectId, mode: "lesson", date, lessonOrder, reason }`
+   */
+  create: (data) => http.post("/grades/grants", data),
+
+  revoke: (id, reason) => http.post(`/grades/grants/${id}/revoke`, { reason }),
+};

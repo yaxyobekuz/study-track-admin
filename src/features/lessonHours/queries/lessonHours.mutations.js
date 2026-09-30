@@ -2,8 +2,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // API
-import { contractAPI, gradingUnlockAPI, substitutionAPI } from "../api/lessonHours.api";
-import { lessonHoursKeys } from "./lessonHours.queries";
+import {
+  contractAPI,
+  gradingGrantAPI,
+  gradingUnlockAPI,
+  substitutionAPI,
+} from "../api/lessonHours.api";
+import { gradingGrantsKey, lessonHoursKeys } from "./lessonHours.queries";
 
 // O'rinbosarlik SOATNI ko'chiradi, soat esa oylikka kiradi — shuning uchun
 // oylik registri ham eskiradi. Dars jadvali o'zgarmaydi (yozuv jadvalga
@@ -112,3 +117,27 @@ export const useRevokeGradingUnlock = () => {
   });
 };
 
+/**
+ * FANGA BAHO RUXSATI — pulga tegmaydi, shuning uchun faqat ruxsatlar
+ * ro'yxati yangilanadi (oylik va dashboard keshi shart emas).
+ */
+const useInvalidateGrants = () => {
+  const queryClient = useQueryClient();
+  return () => queryClient.invalidateQueries({ queryKey: gradingGrantsKey });
+};
+
+export const useCreateGradingGrant = () => {
+  const invalidate = useInvalidateGrants();
+  return useMutation({
+    mutationFn: (data) => gradingGrantAPI.create(data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+export const useRevokeGradingGrant = () => {
+  const invalidate = useInvalidateGrants();
+  return useMutation({
+    mutationFn: ({ id, reason }) => gradingGrantAPI.revoke(id, reason).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
