@@ -9,10 +9,15 @@ import {
   BellRing,
   CalendarClock,
   CheckCircle2,
+  Loader2,
   Lock,
+  Sheet,
   Users,
   Wallet,
 } from "lucide-react";
+
+// Notifications
+import { toast } from "sonner";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -38,6 +43,13 @@ import usePermissions from "@/shared/hooks/usePermissions";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
+import {
+  downloadBlob,
+  readBlobErrorMessage,
+} from "@/shared/utils/download.utils";
+
+// API
+import { invoicesAPI } from "../api/invoices.api";
 
 // Data & queries
 import {
@@ -96,6 +108,7 @@ const DebtorsPage = () => {
 
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 400);
+  const [isExporting, setIsExporting] = useState(false);
 
   const setParam = (key, value) =>
     setSearchParams((prev) => {
@@ -107,15 +120,18 @@ const DebtorsPage = () => {
 
   const { data: classes = [] } = useQuery(classesQueries.list());
 
+  // ⚠️ FILTRLAR BITTA JOYDA — ro'yxat ham, Excel ham SHU obyektni oladi.
+  // Ikki joyda yig'ilsa, biri o'zgarib ikkinchisi eskirardi va fayl
+  // ekrandagidan boshqa ro'yxat qaytarardi.
+  const filters = {
+    sort,
+    ...(month ? { month } : {}),
+    ...(classId ? { classId } : {}),
+    ...(debouncedSearch ? { search: debouncedSearch } : {}),
+  };
+
   const { data, isLoading } = useQuery({
-    ...financeQueries.debtors({
-      page,
-      limit: 24,
-      sort,
-      ...(month ? { month } : {}),
-      ...(classId ? { classId } : {}),
-      ...(debouncedSearch ? { search: debouncedSearch } : {}),
-    }),
+    ...financeQueries.debtors({ page, limit: 24, ...filters }),
     // Ruxsat yo'q bo'lsa so'rov ham yuborilmaydi — 403 ni kutib turishning
     // ma'nosi yo'q va konsolda keraksiz xato paydo bo'lardi.
     enabled: allowed,
@@ -132,6 +148,29 @@ const DebtorsPage = () => {
   const monthLabel = data?.monthLabel;
 
   const isFiltered = Boolean(month || classId || debouncedSearch);
+
+  /**
+   * Excel — EKRANDAGI filtrlar bilan, lekin SAHIFALASHSIZ: faylga butun
+   * ro'yxat tushadi. Sahifa bilan chegaralansa, xodim 24 qatorlik fayl
+   * olib, qolgan qarzdorlarni yo'q deb o'ylardi.
+   *
+   * ⚠️ Xato xabari BLOB'dan o'qiladi: so'rov `responseType: "blob"` bilan
+   * ketgani uchun server xatosi ham Blob bo'lib keladi va oddiy
+   * `error.response.data.message` har doim `undefined` bo'lardi.
+   */
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const response = await invoicesAPI.exportDebtors(filters);
+      downloadBlob(response, "qarzdorlar.xlsx");
+    } catch (error) {
+      toast.error(
+        await readBlobErrorMessage(error, "Faylni yuklab bo'lmadi"),
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Havolani to'g'ridan-to'g'ri ochgan xodimga tushunarli javob berish
   if (!allowed) {
@@ -238,6 +277,25 @@ const DebtorsPage = () => {
             onChange={(v) => setParam("sort", v)}
           />
         </div>
+
+        {/* Excel — tanlangan filtrlar bo'yicha BUTUN ro'yxat (sahifalashsiz).
+            Eslatmadan farqli: fayl ichki ish uchun, xabar esa maktabdan
+            tashqariga chiqadi — shuning uchun qamrovi ham boshqacha. */}
+        {debtors.length > 0 && (
+          <Button
+            variant="secondary"
+            onClick={handleExport}
+            disabled={isExporting}
+            title="Ro'yxatni tanlangan filtrlar bo'yicha Excel'ga yuklab olish"
+          >
+            {isExporting ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Sheet className="text-emerald-600" />
+            )}
+            {isExporting ? "Tayyorlanmoqda…" : "Excel"}
+          </Button>
+        )}
 
         {/* Faqat SHU SAHIFADAGI qarzdorlarga — butun ro'yxatga emas. Xodim
             kimga xabar ketishini ko'rib turgan bo'lishi kerak, "hammasi"
