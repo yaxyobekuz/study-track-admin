@@ -173,8 +173,12 @@ export const useCloseAssignment = () => {
 export const useChangeAssignmentTariff = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }) =>
-      studentTariffsAPI.changeTariff(id, data).then((r) => r.data.data),
+    // `force` — O'TGAN oydan almashtirish (muhrlangan oylar qayta
+    // hisoblanadi). `tariffs.adjust` ruxsati talab qilinadi, server logga yozadi.
+    mutationFn: ({ id, data, force }) =>
+      studentTariffsAPI
+        .changeTariff(id, data, force ? { force: true } : undefined)
+        .then((r) => r.data.data),
     onSuccess: () => invalidateFinance(qc),
   });
 };

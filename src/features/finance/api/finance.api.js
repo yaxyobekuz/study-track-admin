@@ -48,8 +48,8 @@ export const studentTariffsAPI = {
   update: (id, data) => http.put(`/student-tariffs/${id}`, data),
   close: (id, endMonth) =>
     http.post(`/student-tariffs/${id}/close`, { endMonth }),
-  changeTariff: (id, data) =>
-    http.post(`/student-tariffs/${id}/change-tariff`, data),
+  changeTariff: (id, data, params) =>
+    http.post(`/student-tariffs/${id}/change-tariff`, data, { params }),
   delete: (id) => http.delete(`/student-tariffs/${id}`),
 };
 

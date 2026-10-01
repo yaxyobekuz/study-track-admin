@@ -1,11 +1,15 @@
 // Toast
 import { toast } from "sonner";
 
+// Icons
+import { TriangleAlert } from "lucide-react";
+
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
+import usePermissions from "@/shared/hooks/usePermissions";
 import { useChangeAssignmentTariff } from "../queries/finance.mutations";
 
 // Components
@@ -34,9 +38,13 @@ import { financeQueries } from "../queries/finance.queries";
  * yopiladi, yangisi `fromMonth` dan ochiladi. Ikki alohida so'rov qilinsa,
  * oraliqda o'quvchi tarifsiz qolib ketardi.
  *
- * Boshlanish oyi JORIY oy ham bo'la oladi — chegara o'tgan oyda. Joriy oy
- * hisob-fakturasi allaqachon shakllangan bo'lsa, u muhrlangan bo'lib qoladi
- * va server ogohlantirish qaytaradi (uni qayta shakllantirish kerak).
+ * Boshlanish oyi JORIY oy ham bo'la oladi — chegara o'tgan oyda.
+ *
+ * O'TGAN oy ham tanlanadi, lekin u muhrlangan tarixni qayta yozadi: shu
+ * sababli `force` bilan yuboriladi, alohida `tariffs.adjust` ruxsatini talab
+ * qiladi va server logga yozadi (`EditTariffVersionModal` dagi naqsh).
+ * Qamralgan oylarning hisob-fakturalari server tomonida avtomat qayta
+ * hisoblanadi — natija `warnings` da qaytadi.
  */
 const ChangeStudentTariffModal = () => (
   <ResponsiveModal name="changeStudentTariff" title="Tarifni almashtirish">
@@ -45,6 +53,7 @@ const ChangeStudentTariffModal = () => (
 );
 
 const Content = ({ close, isLoading, setIsLoading, assignment }) => {
+  const { can } = usePermissions();
   const { mutate: changeTariff } = useChangeAssignmentTariff();
   const { data: tariffs = [] } = useQuery(financeQueries.assignableTariffs());
 
@@ -53,8 +62,7 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
     // individual narx o'zgaradi.
     tariffId: assignment?.tariffId ?? "",
     // Odatda tarif joriy oydan almashtiriladi — narx bugun kelishiladi.
-    // O'tgan oy yopiq (server ham shuni talab qiladi): u yerdagi
-    // hisob-fakturalar muhrlangan fakt.
+    // O'tgan oy ham mumkin, lekin u ruxsat + ogohlantirish bilan.
     fromMonth: monthKeyToInputValue(currentMonthKey()),
     // Individual (maxsus) narx — bo'sh bo'lsa tanlangan tarifning katalog narxi
     customAmount: assignment?.customAmount ?? "",
@@ -64,10 +72,19 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
   const fromMonthKey = inputValueToMonthKey(fromMonth);
   const sameTariff = tariffId === assignment?.tariffId;
 
+  // O'tgan oydan almashtirish — muhrlangan hisob-fakturalar qayta yoziladi,
+  // shuning uchun alohida ruxsat. Ruxsat yo'q bo'lsa forma bloklanadi (server
+  // ham 403 qaytaradi, lekin foydalanuvchi buni oldin bilishi kerak).
+  const isRetroactive = fromMonthKey != null && fromMonthKey < currentMonthKey();
+  const blocked = isRetroactive && !can("tariffs.adjust");
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!assignment) return;
     if (!tariffId) return toast.error("Tarifni tanlang");
+    if (blocked) {
+      return toast.error("O'tgan oydan almashtirish uchun ruxsatingiz yo'q");
+    }
     if (
       sameTariff &&
       Number(customAmount || -1) === Number(assignment.customAmount ?? -1)
@@ -80,6 +97,7 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
     changeTariff(
       {
         id: assignment.id,
+        force: isRetroactive,
         data: {
           tariffId,
           fromMonth: fromMonthKey,
@@ -115,11 +133,23 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
         </div>
       )}
 
+      {isRetroactive && (
+        <div className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
+          <TriangleAlert className="size-4 shrink-0 mt-0.5" />
+          <p>
+            {blocked
+              ? "O'tgan oydan tarif almashtirish uchun sizda ruxsat yo'q («Amaldagi yozuvni to'g'rilash»)."
+              : `${formatMonthKey(fromMonthKey)} — o'tgan oy. Shu oydan boshlab hisob-fakturalar yangi tarif bo'yicha qayta hisoblanadi; to'lov tushgan oylarda farq qarzga yoki depozitga tushadi. Amal jurnalga yoziladi.`}
+          </p>
+        </div>
+      )}
+
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Tarif</p>
         <SelectSearch
           inline
           value={tariffId}
+          disabled={blocked}
           placeholder="Tarifni tanlang"
           onChange={(v) => setField("tariffId", v)}
           options={tariffs.map((t) => ({
@@ -129,13 +159,17 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
         />
       </div>
 
+      {/* `min` — serverning HAQIQIY chegarasi: yangi tarif biriktirish
+          boshlangan oydan oldin boshlana olmaydi. Ilgari bu yerda joriy oy
+          turardi va o'tgan oyni tanlashning umuman imkoni yo'q edi. */}
       <InputField
         required
         type="month"
         name="fromMonth"
         label="Qaysi oydan"
         value={fromMonth}
-        min={monthKeyToInputValue(currentMonthKey())}
+        disabled={blocked}
+        min={monthKeyToInputValue(assignment?.startMonth)}
         onChange={(e) => setField("fromMonth", e.target.value)}
       />
 
@@ -147,6 +181,7 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
         name="customAmount"
         label="Individual narx (so'm)"
         value={customAmount}
+        disabled={blocked}
         placeholder="Bo'sh qolsa — katalog narxi"
         onChange={(e) => setField("customAmount", e.target.value)}
       />
@@ -155,6 +190,7 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
         name="note"
         value={note}
         label="Izoh"
+        disabled={blocked}
         placeholder="Ixtiyoriy"
         onChange={(e) => setField("note", e.target.value)}
       />
@@ -180,7 +216,11 @@ const Content = ({ close, isLoading, setIsLoading, assignment }) => {
           Bekor qilish
         </Button>
 
-        <Button autoFocus className="w-full xs:w-32" disabled={isLoading}>
+        <Button
+          autoFocus
+          className="w-full xs:w-32"
+          disabled={isLoading || blocked}
+        >
           Almashtirish
           {isLoading && "..."}
         </Button>
