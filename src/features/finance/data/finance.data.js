@@ -325,11 +325,28 @@ export const TIMELINE_SKIP_LABELS = {
 
 // ── Qarzdorlar ───────────────────────────────
 
-export const DEBTOR_TABLE_COLUMNS = [
+/**
+ * Ustunlar TANLANGAN OYGA qarab o'zgaradi.
+ *
+ * Umumiy kesimda "nechta oy to'lanmagan" va "eng eski qarz" — undiruvni
+ * qaysi o'quvchidan boshlash kerakligini aytadigan ikki raqam. Bitta oy
+ * tanlanganda ikkalasi ham ma'nosini yo'qotadi: to'lanmagan oy har doim
+ * bitta, eng eskisi esa o'sha tanlangan oyning o'zi. Ularning o'rniga
+ * o'sha oyning "hisoblangan / to'langan" taqsimoti ko'rsatiladi — bitta
+ * oyda qisman to'lov odatiy hol va faqat "qolgan qarz" uni yashirardi.
+ *
+ * @param {boolean} byMonth - bitta oy tanlanganmi
+ * @returns {Array<string|{label: string, align: string}>}
+ */
+export const getDebtorTableColumns = (byMonth) => [
   "O'quvchi",
   "Sinf",
-  "To'lanmagan oylar",
-  "Eng eski qarz",
+  ...(byMonth
+    ? [
+        { label: "Hisoblangan", align: "right" },
+        { label: "To'langan", align: "right" },
+      ]
+    : ["To'lanmagan oylar", "Eng eski qarz"]),
   { label: "Qarz", align: "right" },
   "",
 ];

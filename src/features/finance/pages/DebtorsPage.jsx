@@ -42,11 +42,23 @@ import { formatMoney } from "@/shared/utils/formatMoney";
 // Data & queries
 import {
   DEBTOR_SORT_OPTIONS,
-  DEBTOR_TABLE_COLUMNS,
+  getDebtorTableColumns,
   getDebtAgeMeta,
 } from "../data/finance.data";
+import { buildMonthOptions } from "@/shared/helpers/month.helpers";
 import { financeQueries } from "../queries/finance.queries";
 import { classesQueries } from "@/features/classes/queries/classes.queries";
+
+/**
+ * Oy filtri variantlari — "Umumiy qarz" (sukut) + o'tgan 24 oy.
+ *
+ * Kelgusi oylar ro'yxatga KIRMAYDI: ular hali majburiyat emas, qarz ham
+ * bo'la olmaydi. Ro'yxat modul yuklanganda bir marta tuziladi.
+ */
+const DEBTOR_MONTH_OPTIONS = [
+  { label: "Umumiy qarz", value: "" },
+  ...buildMonthOptions({ back: 24, forward: 0 }).reverse(),
+];
 
 const StatCard = ({ icon: Icon, label, value, sub, className }) => (
   <Card className="flex items-center gap-3">
@@ -79,6 +91,8 @@ const DebtorsPage = () => {
   const page = Number(searchParams.get("page")) || 1;
   const classId = searchParams.get("classId") || "";
   const sort = searchParams.get("sort") || "debt";
+  // Bo'sh = "Umumiy qarz" (barcha oylar) — sukutdagi holat
+  const month = searchParams.get("month") || "";
 
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 400);
@@ -98,6 +112,7 @@ const DebtorsPage = () => {
       page,
       limit: 24,
       sort,
+      ...(month ? { month } : {}),
       ...(classId ? { classId } : {}),
       ...(debouncedSearch ? { search: debouncedSearch } : {}),
     }),
@@ -111,7 +126,12 @@ const DebtorsPage = () => {
   const totals = data?.totals;
   const currentMonth = data?.currentMonth;
 
-  const isFiltered = Boolean(classId || debouncedSearch);
+  // Server tasdiqlagan oy — so'rov hali ketayotganda jadval ustunlari
+  // sakrab qolmasligi uchun URL dagi qiymatga tayaniladi
+  const byMonth = Boolean(month);
+  const monthLabel = data?.monthLabel;
+
+  const isFiltered = Boolean(month || classId || debouncedSearch);
 
   // Havolani to'g'ridan-to'g'ri ochgan xodimga tushunarli javob berish
   if (!allowed) {
@@ -133,24 +153,38 @@ const DebtorsPage = () => {
       <div className="grid gap-3 sm:grid-cols-3">
         <StatCard
           icon={Wallet}
-          label={isFiltered ? "Tanlangan bo'yicha qarz" : "Jami qarz"}
+          label={
+            byMonth
+              ? "Tanlangan oy bo'yicha qarz"
+              : isFiltered
+                ? "Tanlangan bo'yicha qarz"
+                : "Jami qarz"
+          }
           value={formatMoney(totals?.totalDebt)}
+          sub={byMonth ? monthLabel : null}
           className="bg-red-50 text-red-600"
         />
         <StatCard
           icon={Users}
           label="Qarzdorlar"
           value={`${totals?.debtorCount ?? 0} ta`}
+          sub={byMonth ? "shu oyda qarzi borlar" : null}
           className="bg-amber-50 text-amber-600"
         />
+        {/* Oy tanlanganda "eng eski qarz" o'sha oyning o'zi bo'lib qoladi —
+            uning o'rniga qaysi kesim ko'rilayotgani ko'rsatiladi */}
         <StatCard
           icon={CalendarClock}
-          label="Eng eski qarz"
-          value={totals?.oldestMonthLabel ?? "—"}
+          label={byMonth ? "Tanlangan oy" : "Eng eski qarz"}
+          value={
+            byMonth ? (monthLabel ?? "—") : (totals?.oldestMonthLabel ?? "—")
+          }
           sub={
-            totals?.oldestMonth && currentMonth
-              ? getDebtAgeMeta(totals.oldestMonth, currentMonth).label
-              : null
+            byMonth
+              ? "faqat shu oy hisob-fakturalari"
+              : totals?.oldestMonth && currentMonth
+                ? getDebtAgeMeta(totals.oldestMonth, currentMonth).label
+                : null
           }
           className="bg-gray-100 text-gray-600"
         />
@@ -168,6 +202,19 @@ const DebtorsPage = () => {
             value={search}
             placeholder="Ism yoki username..."
             onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {/* OY — sukut bo'yicha "Umumiy qarz". Oy tanlansa ro'yxat ham,
+            yuqoridagi yig'ma ham faqat o'sha oy hisob-fakturalaridan
+            hisoblanadi (server `where` ichida filtrlaydi). */}
+        <div className="flex w-full flex-col gap-3 xs:w-48">
+          <Label htmlFor="month">Oy</Label>
+          <Select
+            id="month"
+            value={month}
+            options={DEBTOR_MONTH_OPTIONS}
+            onChange={(v) => setParam("month", v)}
           />
         </div>
 
@@ -224,15 +271,17 @@ const DebtorsPage = () => {
             icon={CheckCircle2}
             title={isFiltered ? "Qarzdor topilmadi" : "Qarzdor yo'q"}
             description={
-              isFiltered
-                ? "Tanlangan shart bo'yicha qarzdor o'quvchi yo'q. Filtrni o'zgartirib ko'ring."
-                : "Hamma o'quvchi to'lovini yopgan. Yangi majburiyatlar shakllantirilgach bu ro'yxat to'ladi."
+              byMonth
+                ? `${monthLabel ?? "Tanlangan oy"} uchun qarzdor o'quvchi yo'q. Boshqa oyni yoki "Umumiy qarz" ni tanlab ko'ring.`
+                : isFiltered
+                  ? "Tanlangan shart bo'yicha qarzdor o'quvchi yo'q. Filtrni o'zgartirib ko'ring."
+                  : "Hamma o'quvchi to'lovini yopgan. Yangi majburiyatlar shakllantirilgach bu ro'yxat to'ladi."
             }
           />
         </Card>
       ) : (
         <>
-          <Table columns={DEBTOR_TABLE_COLUMNS}>
+          <Table columns={getDebtorTableColumns(byMonth)}>
             {debtors.map((debtor) => {
               const age = getDebtAgeMeta(debtor.oldestMonth, currentMonth);
 
@@ -277,16 +326,32 @@ const DebtorsPage = () => {
 
                   <Td className="text-gray-700">{debtor.className || "—"}</Td>
 
-                  <Td className="text-gray-500">{debtor.unpaidCount} oy</Td>
+                  {byMonth ? (
+                    <>
+                      <Td align="right" className="text-gray-700">
+                        {formatMoney(debtor.charged)}
+                      </Td>
+                      {/* Qisman to'lov — bitta oyda odatiy hol */}
+                      <Td align="right" className="text-gray-500">
+                        {formatMoney(debtor.paid)}
+                      </Td>
+                    </>
+                  ) : (
+                    <>
+                      <Td className="text-gray-500">{debtor.unpaidCount} oy</Td>
 
-                  <Td>
-                    <span className="text-gray-700">{debtor.oldestMonthLabel}</span>
-                    <span
-                      className={`ml-2 inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium ${age.className}`}
-                    >
-                      {age.label}
-                    </span>
-                  </Td>
+                      <Td>
+                        <span className="text-gray-700">
+                          {debtor.oldestMonthLabel}
+                        </span>
+                        <span
+                          className={`ml-2 inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium ${age.className}`}
+                        >
+                          {age.label}
+                        </span>
+                      </Td>
+                    </>
+                  )}
 
 
                   <Td align="right" className="font-semibold text-red-600">
