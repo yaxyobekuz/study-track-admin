@@ -244,8 +244,15 @@ const TimeBox = ({ label, value }) => (
 const ScheduleNote = ({ schedule }) => {
   if (!schedule) return null;
 
-  const { workStartTime, workEndTime, isWorkDayToday, source, scheduleMissing } =
-    schedule;
+  const {
+    workStartTime,
+    workEndTime,
+    isWorkDayToday,
+    source,
+    scheduleMissing,
+    firstLessonTime,
+    arrivalLeadMinutes,
+  } = schedule;
 
   let text;
   if (workStartTime && workEndTime) {
@@ -266,6 +273,11 @@ const ScheduleNote = ({ schedule }) => {
         <p className="mt-0.5 text-xs text-blue-700">
           {isWorkDayToday ? "Bugun ish kuni" : "Bugun dam olish kuni"}
           {source === "schedule" && " · dars jadvalingiz bo'yicha"}
+          {/* Kelish vaqti = birinchi darsdan oldin: "nega 08:20" ko'rinib tursin */}
+          {source === "schedule" &&
+            firstLessonTime &&
+            arrivalLeadMinutes &&
+            `: birinchi dars ${firstLessonTime}, kelish ${arrivalLeadMinutes} daqiqa oldin`}
         </p>
       )}
     </div>

@@ -190,7 +190,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
             current={state.mode}
             onSelect={(mode) => setField("mode", mode)}
             title="Dars jadvalidan (avtomatik)"
-            description="Kunning birinchi darsi boshlanishi — ish boshlanishi, oxirgi darsi tugashi — ish tugashi. Darsi yo'q kun ish kuni sanalmaydi."
+            description="Kelish — kunning birinchi darsidan 10 daqiqa oldin, ketish — oxirgi darsi tugagach. Kechikish kelish vaqtidan sanaladi. Darsi yo'q kun ish kuni sanalmaydi."
           />
         )}
       </div>

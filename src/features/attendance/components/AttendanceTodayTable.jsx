@@ -64,6 +64,13 @@ const AttendanceTodayTable = ({ rows }) => {
                 {row.expectedStart && row.expectedEnd
                   ? `${row.expectedStart}–${row.expectedEnd}`
                   : "-"}
+                {/* Dars jadvalidagi o'qituvchi: kutilgan vaqt — KELISH
+                    (birinchi darsdan oldin), darsning o'zi alohida */}
+                {row.firstLessonTime && (
+                  <span className="block text-gray-400">
+                    birinchi dars {row.firstLessonTime}
+                  </span>
+                )}
               </td>
               <td className="px-4 py-3">
                 {row.status === "not_marked" ? (

@@ -62,7 +62,9 @@ const LessonScheduleView = ({ schedule }) => {
   return (
     <div className="space-y-3">
       <p className="text-sm text-gray-500">
-        Ish vaqti dars jadvalidan olinadi — birinchi darsdan oxirgi darsgacha.
+        Ish vaqti dars jadvalidan olinadi: kelish — birinchi darsdan{" "}
+        {schedule?.arrivalLeadMinutes ?? 10} daqiqa oldin, ketish — oxirgi dars
+        tugagach. Kechikish kelish vaqtidan sanaladi.
       </p>
 
       <ul className="space-y-1.5">
@@ -75,6 +77,8 @@ const LessonScheduleView = ({ schedule }) => {
                 : "vaqti belgilanmagan"}
               <span className="ml-2 text-xs text-gray-400">
                 {byDay[day].lessonCount} dars
+                {byDay[day].firstLessonTime &&
+                  ` · birinchi dars ${byDay[day].firstLessonTime}`}
               </span>
             </span>
           </li>
