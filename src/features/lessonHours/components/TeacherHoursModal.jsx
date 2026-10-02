@@ -164,9 +164,12 @@ const TeacherHoursBody = ({ staffId, month }) => {
           label="Oy oxirida"
           value={formatMoney(data.projectedAmount)}
           hint={
-            Number(data.missedAmount) > 0
-              ? `o'tilmagan: − ${formatMoney(data.missedAmount)}`
-              : "prognoz"
+            [
+              Number(data.missedAmount) > 0 && `o'tilmagan: − ${formatMoney(data.missedAmount)}`,
+              Number(data.absenceAmount) > 0 && `kelmagan: − ${formatMoney(data.absenceAmount)}`,
+            ]
+              .filter(Boolean)
+              .join(" · ") || "prognoz"
           }
           emphasis
         />
@@ -188,6 +191,13 @@ const TeacherHoursBody = ({ staffId, month }) => {
             isCurrentMonth={data.isCurrentMonth}
             sealed={Boolean(data.entryStatus && data.entryStatus !== "cancelled")}
           />
+        </Section>
+      )}
+
+      {/* ── Kelmagan kunlar — fiksadan kunlik ayirma ─────────── */}
+      {data.absence?.dayCount > 0 && (
+        <Section title={`Kelmagan kunlar · ${data.absence.dayCount}`}>
+          <AbsenceDays absence={data.absence} />
         </Section>
       )}
 
@@ -371,6 +381,33 @@ const Section = ({ title, children }) => (
     </div>
     {children}
   </section>
+);
+
+/**
+ * Kelmagan ish kunlari — har kun uchun fiksadan ayrilgan summa (server
+ * `absence`, `amount` dan ALLAQACHON ayirilgan). Arifmetika yo'q.
+ */
+const AbsenceDays = ({ absence }) => (
+  <div className={SURFACE.tile}>
+    <p className={T.hint}>
+      Fiksa oylik {absence.workDays} ish kuniga bo'linadi (yakshanba va bayramlarsiz): kuniga{" "}
+      {formatMoney(absence.dailyRate)}
+    </p>
+    <ul className="mt-2 space-y-1.5">
+      {absence.days.map((day) => (
+        <li key={day.date} className="flex items-center justify-between gap-3">
+          <span className={cn(T.td, "min-w-0 truncate")}>
+            {day.dateLabel} · {day.statusLabel}
+          </span>
+          <span className={cn(T.tdNum, "shrink-0 text-rose-600")}>− {formatMoney(day.amount)}</span>
+        </li>
+      ))}
+      <li className="flex items-center justify-between gap-3 border-t border-slate-200/70 pt-2">
+        <span className={cn(T.td, "font-medium text-slate-900")}>Jami ayrildi</span>
+        <span className={cn(T.tdNum, "shrink-0 text-rose-600")}>− {formatMoney(absence.amount)}</span>
+      </li>
+    </ul>
+  </div>
 );
 
 const Metric = ({ label, value, hint, emphasis }) => (

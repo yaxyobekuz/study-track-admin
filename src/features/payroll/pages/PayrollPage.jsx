@@ -65,6 +65,7 @@ import {
   CATEGORY_STATUS_OPTIONS,
   getRuleStatus,
   allowanceTooltip,
+  absenceTooltip,
   entryStatusMetaOf,
 } from "../data/payroll.data";
 import AllowancesView from "../components/AllowancesView";
@@ -428,6 +429,14 @@ const EntriesView = () => {
                   {/* JAMI = oylik + ustama − ushlab qolish */}
                   <Td align="right" className="font-semibold text-gray-900">
                     {formatMoney(entry.amount)}
+                    {Number(entry.absenceAmount) > 0 && (
+                      <span
+                        className="block text-xs font-normal text-red-500"
+                        title={absenceTooltip(entry.absence)}
+                      >
+                        − {formatMoney(entry.absenceAmount)} kelmagan {entry.absence?.dayCount ?? ""} kun
+                      </span>
+                    )}
                     {Number(entry.suspendedAmount) > 0 && (
                       <span
                         className="block text-xs font-normal text-slate-500"

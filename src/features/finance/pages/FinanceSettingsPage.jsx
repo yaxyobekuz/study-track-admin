@@ -57,6 +57,8 @@ const FinanceSettingsPage = () => {
     firstPayrollMonth,
     depositAutoApply,
     defaultTariffId,
+    absenceEnabled,
+    absenceFromMonth,
     setFields,
     setField,
   } = useObjectState({
@@ -67,6 +69,8 @@ const FinanceSettingsPage = () => {
     firstPayrollMonth: "",
     depositAutoApply: true,
     defaultTariffId: "",
+    absenceEnabled: false,
+    absenceFromMonth: "",
   });
 
   // Server javobi kelgach formani to'ldiramiz
@@ -80,12 +84,22 @@ const FinanceSettingsPage = () => {
       firstPayrollMonth: monthKeyToInputValue(settings.firstPayrollMonth),
       depositAutoApply: settings.depositAutoApply,
       defaultTariffId: settings.defaultTariffId ?? "",
+      // null — o'chirilgan; oy kaliti — shu oydan boshlab ayiriladi
+      absenceEnabled: settings.absenceDeductionFromMonth != null,
+      absenceFromMonth: monthKeyToInputValue(
+        settings.absenceDeductionFromMonth ?? settings.current?.month,
+      ),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (absenceEnabled && !absenceFromMonth) {
+      toast.error("Kelmagan kun ayirmasi qaysi oydan boshlanishini tanlang");
+      return;
+    }
 
     updateSettings(
       {
@@ -95,6 +109,11 @@ const FinanceSettingsPage = () => {
         firstInvoiceMonth: inputValueToMonthKey(firstInvoiceMonth),
         firstPayrollMonth: inputValueToMonthKey(firstPayrollMonth),
         depositAutoApply,
+        // O'chirilgan — null: server ayirmani to'xtatadi va muhrlangan
+        // oyliklarni qayta hisoblaydi
+        absenceDeductionFromMonth: absenceEnabled
+          ? inputValueToMonthKey(absenceFromMonth)
+          : null,
         // Bo'sh satr ATAYLAB yuboriladi: server uni "standart tarif yo'q"
         // deb tushunadi va avtomat biriktirishni o'chiradi
         defaultTariffId,
@@ -213,6 +232,41 @@ const FinanceSettingsPage = () => {
             onChange={(v) => setField("depositAutoApply", v)}
           />
         </div>
+      </Card>
+
+      {/* Kelmagan kun uchun ayirma — fiksa oylikdan */}
+      <Card title="Kelmagan kun uchun ayirma">
+        <p className="mt-1 text-sm text-gray-500">
+          Fiksa oylik oyning ish kunlariga (yakshanba va bayramlarsiz) bo'linadi.
+          Xodim "kelmadi" yoki "sababli" belgilangan har bir ish kuni uchun shu
+          kunlik summa oylikdan ayriladi. Kech kelish ayrilmaydi.
+        </p>
+
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-gray-700">Yoqilgan</p>
+            <p className="text-xs text-gray-500">
+              O'chirilsa, ayirilgan summalar oylikka qaytadi
+            </p>
+          </div>
+          <Switch
+            checked={absenceEnabled}
+            onChange={(v) => setField("absenceEnabled", v)}
+          />
+        </div>
+
+        {absenceEnabled && (
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <InputField
+              type="month"
+              name="absenceFromMonth"
+              label="Qaysi oydan"
+              value={absenceFromMonth}
+              description="Bundan oldingi oylarga tegilmaydi"
+              onChange={(e) => setField("absenceFromMonth", e.target.value)}
+            />
+          </div>
+        )}
       </Card>
 
       {/* Ta'til oylari */}

@@ -159,7 +159,8 @@ export const allowanceLineLabel = (item) => {
  * Majburiyat summasining TARKIBI — qator-qator (`PayrollEntryBreakdown`).
  *
  * Tartib summa qanday yig'ilgani bilan bir xil: asosiy maosh → dars soati →
- * ustamalar (+) → ushlab qolish (−). Nol qatorlar ko'rsatilmaydi.
+ * ustamalar (+) → kelmagan kunlar (−) → to'xtatish (−) → ushlab qolish (−).
+ * Nol qatorlar ko'rsatilmaydi.
  *
  * @param {object} entry - `serializeEntry` natijasi
  * @returns {Array<{key: string, label: string, amount: string, tone: "base"|"plus"|"minus"}>}
@@ -201,6 +202,19 @@ export const buildEntryBreakdownLines = (entry) => {
     });
   });
 
+  // Kelmagan kunlar — fiksadan kunlik ayirma, har kun alohida qator
+  if (Number(entry.absenceAmount) > 0 && entry.absence) {
+    entry.absence.days.forEach((day) => {
+      if (!(Number(day.amount) > 0)) return;
+      lines.push({
+        key: `absence-${day.date}`,
+        label: `${day.statusLabel}: ${day.dateLabel} (kunlik ${formatMoney(entry.absence.dailyRate)})`,
+        amount: day.amount,
+        tone: "minus",
+      });
+    });
+  }
+
   // To'xtatilgan qismlar — shu oy hisoblanmaydi (Moliya → "Oylikni to'xtatish")
   (entry.suspensionBreakdown ?? []).forEach((item, index) => {
     if (!(Number(item.amount) > 0)) return;
@@ -226,6 +240,15 @@ export const buildEntryBreakdownLines = (entry) => {
 
   return lines;
 };
+
+/** Kelmagan kunlar tafsiloti — jadval katagining `title` matni (qator-qator). */
+export const absenceTooltip = (absence) =>
+  absence
+    ? [
+        `${absence.workDays} ish kuni, kuniga ${formatMoney(absence.dailyRate)}`,
+        ...absence.days.map((day) => `${day.dateLabel} — ${day.statusLabel}: ${formatMoney(day.amount)}`),
+      ].join("\n")
+    : "";
 
 /** Ustama tafsiloti — jadval katagining `title` matni (qator-qator). */
 export const allowanceTooltip = (breakdown = []) =>

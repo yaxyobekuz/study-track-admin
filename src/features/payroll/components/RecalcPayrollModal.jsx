@@ -51,6 +51,9 @@ const changeNotes = (item) => {
         : `ushlab qolish ${formatMoney(before.deductionAmount)} → ${formatMoney(after.deductionAmount)}`,
     );
   }
+  if (Number(before.absenceAmount) !== Number(after.absenceAmount)) {
+    notes.push(`kelmagan kunlar ${formatMoney(before.absenceAmount)} → ${formatMoney(after.absenceAmount)}`);
+  }
   if (Number(before.suspendedAmount) !== Number(after.suspendedAmount)) {
     notes.push(`to'xtatilgan ${formatMoney(before.suspendedAmount)} → ${formatMoney(after.suspendedAmount)}`);
   }

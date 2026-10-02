@@ -522,6 +522,14 @@ const ResultPanel = ({ contract, draft, preview, draftError, previewError, isBus
                 value={formatMoney(item.amount)}
               />
             ))}
+            {/* Kelmagan kunlar — fiksadan kunlik ayirma (davomat fakti) */}
+            {Number(preview.absenceAmount) > 0 && preview.absence && (
+              <Line
+                label={`Kelmagan kunlar · ${preview.absence.dayCount} kun × ${formatMoney(preview.absence.dailyRate)}`}
+                value={`− ${formatMoney(preview.absenceAmount)}`}
+                valueClassName="text-rose-600"
+              />
+            )}
             {suspensions.map((item, index) => (
               <Line
                 key={item.id ?? `${item.label}-${index}`}
