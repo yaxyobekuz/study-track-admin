@@ -245,7 +245,7 @@ export const buildEntryBreakdownLines = (entry) => {
 export const absenceTooltip = (absence) =>
   absence
     ? [
-        `${absence.workDays} ish kuni, kuniga ${formatMoney(absence.dailyRate)}`,
+        `${absence.workDays} kunga bo'linadi (yakshanbasiz), kuniga ${formatMoney(absence.dailyRate)}`,
         ...absence.days.map((day) => `${day.dateLabel} — ${day.statusLabel}: ${formatMoney(day.amount)}`),
       ].join("\n")
     : "";

@@ -237,9 +237,10 @@ const FinanceSettingsPage = () => {
       {/* Kelmagan kun uchun ayirma — fiksa oylikdan */}
       <Card title="Kelmagan kun uchun ayirma">
         <p className="mt-1 text-sm text-gray-500">
-          Fiksa oylik oyning ish kunlariga (yakshanba va bayramlarsiz) bo'linadi.
-          Xodim "kelmadi" yoki "sababli" belgilangan har bir ish kuni uchun shu
-          kunlik summa oylikdan ayriladi. Kech kelish ayrilmaydi.
+          Fiksa oylik oyning yakshanbadan boshqa kunlariga bo'linadi (dam olish
+          kunlari ham hisobga kiradi). Xodim "kelmadi" yoki "sababli" belgilangan
+          har bir ish kuni uchun shu kunlik summa oylikdan ayriladi. Dam olish
+          kunida kelmaslik va kech kelish ayrilmaydi.
         </p>
 
         <div className="mt-4 flex items-center justify-between gap-3">
