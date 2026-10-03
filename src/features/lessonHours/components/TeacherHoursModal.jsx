@@ -390,7 +390,7 @@ const Section = ({ title, children }) => (
 const AbsenceDays = ({ absence }) => (
   <div className={SURFACE.tile}>
     <p className={T.hint}>
-      Fiksa oylik {absence.workDays} ish kuniga bo'linadi (yakshanba va bayramlarsiz): kuniga{" "}
+      Fiksa oylik {absence.workDays} kunga bo'linadi (yakshanbalarsiz, dam olish kunlari ichida): kuniga{" "}
       {formatMoney(absence.dailyRate)}
     </p>
     <ul className="mt-2 space-y-1.5">
