@@ -18,6 +18,24 @@ export const enrollmentQueries = {
       enabled: Boolean(studentId),
     }),
 
+  /**
+   * Davr shu sanalar bilan saqlansa hisob-fakturalar bilan NIMA bo'ladi:
+   * to'liq to'lanadigan ketish oyi va bekor qilinadigan oylar. Yopish va
+   * tahrirlash oynasi saqlashdan oldin ko'rsatadi.
+   *
+   * @param {string} id - davr id
+   * @param {{startDate?: string, endDate?: string|null}} data
+   */
+  preview: (id, data) =>
+    queryOptions({
+      queryKey: [...enrollmentKeys.all, "preview", id, data],
+      queryFn: () => enrollmentAPI.preview(id, data).then((r) => r.data.data),
+      enabled: Boolean(id),
+      placeholderData: keepPreviousData,
+      // Noto'g'ri sana 400 qaytaradi — qayta urinish foydasiz
+      retry: false,
+    }),
+
   /** Umumiy ro'yxat (sahifalangan) — kelajakdagi alohida ekran uchun. */
   list: (params) =>
     queryOptions({

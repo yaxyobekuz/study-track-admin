@@ -18,5 +18,8 @@ export const enrollmentAPI = {
   update: (id, data) => http.put(`/student-enrollments/${id}`, data),
   // Yopish — "o'quvchi maktabdan ketdi" (sana + toifa + izoh)
   close: (id, data) => http.patch(`/student-enrollments/${id}/close`, data),
+  // Saqlashdan OLDIN: ketish oyi va bekor qilinadigan hisob-fakturalar.
+  // Hech narsa yozmaydi — POST, chunki tana (yangi sanalar) bilan ketadi.
+  preview: (id, data) => http.post(`/student-enrollments/${id}/preview`, data),
   delete: (id) => http.delete(`/student-enrollments/${id}`),
 };

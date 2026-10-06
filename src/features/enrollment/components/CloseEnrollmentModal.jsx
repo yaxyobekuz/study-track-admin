@@ -6,6 +6,7 @@ import useObjectState from "@/shared/hooks/useObjectState";
 import { useCloseEnrollment } from "../queries/enrollment.mutations";
 
 // Components
+import EnrollmentInvoiceImpact from "./EnrollmentInvoiceImpact";
 import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import InputField from "@/shared/components/ui/input/InputField";
@@ -13,23 +14,21 @@ import InputGroup from "@/shared/components/ui/input/InputGroup";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Utils
-import { formatDateUZ } from "@/shared/utils/date.utils";
+import { formatDateUz, todayInputValue } from "@/shared/utils/date.utils";
+
+// Helpers
+import { notifyInvoiceImpact } from "../helpers/invoiceImpact.helpers";
 
 // Data
 import { END_REASON_OPTIONS } from "../data/enrollment.data";
-
-const todayInputValue = () => {
-  const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 10);
-};
 
 /**
  * O'qish davrini yopish — "o'quvchi maktabdan ketdi".
  *
  * Ketgan oy TO'LIQ to'lanadi (proratsiya faqat kirishda), keyingi oylarga
- * esa hisob-faktura umuman yozilmaydi. Foydalanuvchi buni bosishdan oldin
- * ko'rishi kerak.
+ * esa hisob-faktura yozilmaydi — allaqachon yozilgani server tomonida bekor
+ * qilinadi. Qaysi oy to'lanishi va nima bekor bo'lishi bosishdan OLDIN
+ * ko'rsatiladi (`EnrollmentInvoiceImpact`).
  *
  * `openModal("closeEnrollment", { period })`
  */
@@ -60,6 +59,7 @@ const Content = ({ close, isLoading, setIsLoading, period }) => {
         onSuccess: (result) => {
           close();
           toast.success("O'qish davri yopildi");
+          notifyInvoiceImpact(result?.invoiceImpact);
           result?.warnings?.forEach((warning) => toast.warning(warning));
         },
         onError: (err) =>
@@ -75,7 +75,7 @@ const Content = ({ close, isLoading, setIsLoading, period }) => {
         <div className="rounded-xl bg-gray-50 p-3 text-sm">
           <p className="text-gray-500">Davr boshlangan</p>
           <p className="font-medium text-gray-900">
-            {formatDateUZ(period.startDate)}
+            {formatDateUz(period.startDate)}
           </p>
         </div>
       )}
@@ -88,8 +88,17 @@ const Content = ({ close, isLoading, setIsLoading, period }) => {
         label="Oxirgi o'qigan kun"
         value={endDate}
         min={period?.startDate}
+        description="Shu kun tushgan oy to'liq to'lanadi"
         onChange={(e) => setField("endDate", e.target.value)}
       />
+
+      {period && (
+        <EnrollmentInvoiceImpact
+          periodId={period.id}
+          endDate={endDate}
+          onPickEndDate={(value) => setField("endDate", value)}
+        />
+      )}
 
       <div className="space-y-1.5">
         <p className="text-sm font-medium text-gray-700">Ketish sababi</p>
@@ -116,11 +125,10 @@ const Content = ({ close, isLoading, setIsLoading, period }) => {
         </li>
         <li className="flex gap-2">
           <span className="text-gray-400">•</span>
-          <span>Keyingi oylarga hisob-faktura yozilmaydi</span>
-        </li>
-        <li className="flex gap-2">
-          <span className="text-gray-400">•</span>
-          <span>Allaqachon chiqarilgan hisob-fakturalar avtomatik bekor qilinmaydi</span>
+          <span>
+            Keyingi oylarga hisob-faktura yozilmaydi, allaqachon chiqarilgani
+            bekor qilinadi — to'langan pul depozitga qaytadi
+          </span>
         </li>
       </ul>
 

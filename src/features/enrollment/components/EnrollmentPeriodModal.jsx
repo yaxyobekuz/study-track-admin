@@ -9,6 +9,7 @@ import {
 } from "../queries/enrollment.mutations";
 
 // Components
+import EnrollmentInvoiceImpact from "./EnrollmentInvoiceImpact";
 import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import InputField from "@/shared/components/ui/input/InputField";
@@ -17,6 +18,9 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
+
+// Helpers
+import { notifyInvoiceImpact } from "../helpers/invoiceImpact.helpers";
 
 // Data
 import { END_REASON_OPTIONS } from "../data/enrollment.data";
@@ -40,7 +44,9 @@ const monthKeyToInput = (key) => {
  *
  * Boshlanish sanasi PULGA ta'sir qiladi: oy o'rtasida bo'lsa o'sha oy
  * ulushga hisoblanadi. Tugash sanasi esa faqat hisob-faktura bor-yo'qligini
- * hal qiladi — ketish oyi har doim to'liq to'lanadi.
+ * hal qiladi — ketish oyi har doim to'liq to'lanadi. Davr endi qamramaydigan
+ * oylarning hisob-fakturasi server tomonida bekor qilinadi; tahrirlashda bu
+ * saqlashdan OLDIN ko'rsatiladi (`EnrollmentInvoiceImpact`).
  *
  * `openModal("enrollmentPeriod", { studentId, period? })`
  */
@@ -116,6 +122,7 @@ const Content = ({ close, isLoading, setIsLoading, studentId, period }) => {
         );
       }
 
+      notifyInvoiceImpact(result?.invoiceImpact);
       result?.warnings?.forEach((warning) => toast.warning(warning));
     };
 
@@ -153,7 +160,7 @@ const Content = ({ close, isLoading, setIsLoading, studentId, period }) => {
         label="Tugash sanasi"
         value={endDate}
         min={startDate}
-        description="Bo'sh qolsa — hozir o'qiyapti"
+        description="Oxirgi o'qigan kun. Bo'sh qolsa — hozir o'qiyapti"
         onChange={(e) => setField("endDate", e.target.value)}
       />
 
@@ -208,9 +215,18 @@ const Content = ({ close, isLoading, setIsLoading, studentId, period }) => {
         onChange={(e) => setField("reason", e.target.value)}
       />
 
+      {isEdit && (
+        <EnrollmentInvoiceImpact
+          periodId={period.id}
+          startDate={startDate}
+          endDate={endDate}
+          onPickEndDate={(value) => setField("endDate", value)}
+        />
+      )}
+
       <p className="text-xs text-gray-500">
-        Ketish oyi har doim to'liq to'lanadi — tugash sanasi faqat keyingi
-        oylarga hisob yozilmasligini bildiradi.
+        Ketish oyi har doim to'liq to'lanadi. Keyingi oylarga allaqachon
+        chiqarilgan hisob-fakturalar bekor qilinadi.
       </p>
 
       <div className="mt-5 flex w-full flex-col-reverse gap-3.5 xs:m-0 xs:flex-row xs:justify-end">
