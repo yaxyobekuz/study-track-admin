@@ -7,15 +7,22 @@ import { enrollmentAPI } from "../api/enrollment.api";
 // Keys
 import { enrollmentKeys } from "./enrollment.queries";
 import { financeKeys } from "@/features/finance/queries/finance.queries";
+import {
+  attendanceReportsKeys,
+  studentAttendanceKeys,
+} from "@/features/attendance/queries/attendance.queries";
 
 /**
  * O'qish davri o'zgarsa MOLIYA ham eskiradi: hisob-faktura bor-yo'qligi va
- * oy ulushi aynan shundan kelib chiqadi. Shuning uchun ikkala bo'lim ham
- * bekor qilinadi.
+ * oy ulushi aynan shundan kelib chiqadi. DAVOMAT ham: kunlik ro'yxatlar va
+ * hisobot faqat shu kuni o'qiyotgan o'quvchini ko'rsatadi — davr davomat
+ * sahifasidan yopilganda qator darhol yangilanishi kerak.
  */
 const invalidate = (qc) => {
   qc.invalidateQueries({ queryKey: enrollmentKeys.all });
   qc.invalidateQueries({ queryKey: financeKeys.all });
+  qc.invalidateQueries({ queryKey: studentAttendanceKeys.all });
+  qc.invalidateQueries({ queryKey: attendanceReportsKeys.all });
 };
 
 export const useCreateEnrollment = () => {

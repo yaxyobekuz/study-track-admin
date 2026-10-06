@@ -30,7 +30,14 @@ import { END_REASON_OPTIONS } from "../data/enrollment.data";
  * qilinadi. Qaysi oy to'lanishi va nima bekor bo'lishi bosishdan OLDIN
  * ko'rsatiladi (`EnrollmentInvoiceImpact`).
  *
- * `openModal("closeEnrollment", { period })`
+ * Ikki joydan ochiladi — profil ("O'qish davrlari") va kunlik davomat
+ * (profilga kirmasdan). Davomatdan ochilganda kimning davri yopilayotgani
+ * ko'rinishi uchun `student` beriladi, davomatdagi izoh (masalan "boshqa
+ * maktabga o'tyapti") esa `note` bilan izohga oldindan yoziladi.
+ *
+ * `openModal("closeEnrollment", { period, student?, note? })`
+ * — `period`: `{ id, startDate }` (YYYY-MM-DD);
+ * — `student`: `{ firstName, lastName, classes? }`.
  */
 const CloseEnrollmentModal = () => (
   <ResponsiveModal name="closeEnrollment" title="O'qish davrini yopish">
@@ -38,14 +45,23 @@ const CloseEnrollmentModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, isLoading, setIsLoading, period }) => {
+/** "9-A, 10-B" — sinflar bo'lmasa bo'sh. */
+const formatClassNames = (classes) =>
+  (Array.isArray(classes) ? classes : [])
+    .map((cls) => cls?.name)
+    .filter(Boolean)
+    .join(", ");
+
+const Content = ({ close, isLoading, setIsLoading, period, student, note }) => {
   const { mutate: closeEnrollment } = useCloseEnrollment();
 
   const { endDate, endReason, reason, setField } = useObjectState({
     endDate: todayInputValue(),
     endReason: "",
-    reason: "",
+    reason: note?.trim() || "",
   });
+
+  const classNames = formatClassNames(student?.classes);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -71,12 +87,25 @@ const Content = ({ close, isLoading, setIsLoading, period }) => {
 
   return (
     <InputGroup onSubmit={handleSubmit} as="form">
-      {period && (
-        <div className="rounded-xl bg-gray-50 p-3 text-sm">
-          <p className="text-gray-500">Davr boshlangan</p>
-          <p className="font-medium text-gray-900">
-            {formatDateUz(period.startDate)}
-          </p>
+      {(student || period) && (
+        <div className="space-y-2 rounded-xl bg-gray-50 p-3 text-sm">
+          {student && (
+            <div>
+              <p className="font-semibold text-gray-900">
+                {student.lastName} {student.firstName}
+              </p>
+              {classNames && <p className="text-gray-500">{classNames}</p>}
+            </div>
+          )}
+
+          {period && (
+            <div>
+              <p className="text-gray-500">Davr boshlangan</p>
+              <p className="font-medium text-gray-900">
+                {formatDateUz(period.startDate)}
+              </p>
+            </div>
+          )}
         </div>
       )}
 

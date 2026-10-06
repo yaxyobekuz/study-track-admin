@@ -1,17 +1,17 @@
 // React
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
 // Router
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
-import useDebounce from "@/shared/hooks/useDebounce";
 import usePermissions from "@/shared/hooks/usePermissions";
+import useScrollRestore from "@/shared/hooks/useScrollRestore";
 
 // Components
 import Input from "@/shared/components/ui/input/Input";
@@ -21,6 +21,7 @@ import Pagination from "@/shared/components/ui/Pagination";
 import StudentAttendanceTodayTable from "../components/StudentAttendanceTodayTable";
 import AttendanceSummaryCards from "../components/AttendanceSummaryCards";
 import EditStudentAttendanceModal from "../components/EditStudentAttendanceModal";
+import CloseEnrollmentModal from "@/features/enrollment/components/CloseEnrollmentModal";
 
 // Queries
 import { studentAttendanceQueries } from "../queries/attendance.queries";
@@ -39,50 +40,121 @@ import {
 } from "../data/attendance.data";
 
 const ALL_CLASSES = "all";
+const SEARCH_DEBOUNCE_MS = 300;
+
+// URL'dagi `?status=` faqat ro'yxatdagi qiymat bo'lsa olinadi
+const STATUS_VALUES = new Set(
+  STUDENT_DAILY_STATUS_OPTIONS.map((option) => option.value).filter(
+    (value) => value !== "all",
+  ),
+);
 
 /**
  * O'quvchilar kunlik davomati.
  *
  * Yig'indi har doim butun doira (sinf yoki maktab) bo'yicha: "bugun nechta
- * bola keldi/kelmadi". Qatorga bosilganda tahrirlash oynasi ochiladi -
- * belgilanmagan o'quvchi uchun ham (yozuv yaratadi).
+ * bola keldi/kelmadi".
+ *
+ * Ro'yxatda faqat shu kuni O'QIYOTGAN o'quvchilar (o'qish davri kunni
+ * qamragan). Qatordagi amallar:
+ * - qatorning o'ziga bosish — o'quvchi profili, darhol "O'qish davrlari"
+ *   tabida (davrni yopish/tahrirlash, tarix);
+ * - "Tahrirlash" — davomatni to'g'rilash oynasi (belgilanmagan o'quvchi
+ *   uchun ham — yozuv yaratadi);
+ * - "O'qishni tugatish" — profilga kirmasdan davrni yopish (profildagi AYNI
+ *   oyna, ketish oyi va bekor qilinadigan hisob-fakturalar oldindan ko'rinadi).
+ *
+ * ⚠️ Filtrlar (sinf, holat, qidiruv, sahifa) URL'da, holatda emas: profilga
+ * kirib "orqaga" qaytilganda sahifa qayta o'rnatiladi va holatdagi "Kelmadi"
+ * tanlovi yo'qolib, ro'yxat boshidan ochilardi. Yozuv `replace` bilan —
+ * "orqaga" filtrlar bo'ylab emas, oldingi sahifaga qaytadi.
  */
 const StudentDailyPage = () => {
   const { date, filterSlot } = useOutletContext();
+  const navigate = useNavigate();
   const { openModal } = useModal();
   const { can } = usePermissions();
   // Tahrirlash oynasi `POST /mark` chaqiradi — sahifa esa `attendance.view`
-  // bilan ochiladi. Belgilash ruxsati bo'lmasa qator bosilmaydi (403 o'rniga).
+  // bilan ochiladi. Belgilash ruxsati bo'lmasa tugma chiqmaydi (403 o'rniga).
   const canMark = can("attendance.mark");
+  // Davrni yopish — `PATCH /student-enrollments/:id/close` bilan AYNI ruxsat
+  const canCloseEnrollment = can("enrollment.update");
+  // Profil `GET /users/:id` ga tayanadi — ruxsatsiz qator bosilmaydi
+  const canOpenProfile = can("users.view");
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawStatus = searchParams.get("status") || "";
+  const status = STATUS_VALUES.has(rawStatus) ? rawStatus : ""; // "" => barcha holatlar
+  const search = searchParams.get("q") || "";
+  const page = Number(searchParams.get("page")) || 1;
+
+  /** Filtr yozuvi: sahifa raqami har doim boshiga qaytadi. */
+  const setFilter = useCallback(
+    (key, value) =>
+      setSearchParams(
+        (prev) => {
+          if (value) prev.set(key, value);
+          else prev.delete(key);
+          prev.delete("page");
+          return prev;
+        },
+        { replace: true },
+      ),
+    [setSearchParams],
+  );
+
+  const setPage = (next) =>
+    setSearchParams(
+      (prev) => {
+        if (next > 1) prev.set("page", String(next));
+        else prev.delete("page");
+        return prev;
+      },
+      { replace: true },
+    );
+
+  // Qidiruv inputi darhol yangilanadi, URL esa to'xtagach (serverga ham
+  // har harfda emas). URL tashqaridan o'zgarsa ("orqaga") input ham
+  // moslashadi — render paytida, effektsiz (`UsersListView` bilan bir xil).
+  const [searchInput, setSearchInput] = useState(search);
+  const [syncedSearch, setSyncedSearch] = useState(search);
+  if (syncedSearch !== search) {
+    setSyncedSearch(search);
+    setSearchInput(search);
+  }
+
+  const debounceRef = useRef(null);
+  const handleSearchChange = (value) => {
+    setSearchInput(value);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(
+      () => setFilter("q", value.trim()),
+      SEARCH_DEBOUNCE_MS,
+    );
+  };
+  useEffect(() => () => clearTimeout(debounceRef.current), []);
+
+  const { data: classes = [], isSuccess: classesLoaded } = useQuery(
+    studentAttendanceQueries.classes(),
+  );
+
   // Default — BARCHA SINFLAR: kunlik davomat ekrani "bugun maktabda nima
   // bo'ldi" degan savolga javob beradi, bitta sinfga tushib qolgan default
-  // esa qolgan sinflarni ko'rinmas qilib qo'yardi.
-  const [classId, setClassId] = useState(ALL_CLASSES);
-  const [status, setStatus] = useState(""); // "" => barcha holatlar
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-
-  // Serverga (barcha sinflar rejimi) har harfda emas, to'xtagach yuboriladi
-  const debouncedSearch = useDebounce(search.trim());
-
-  const { data: classes = [] } = useQuery(studentAttendanceQueries.classes());
-  const firstClassId = classes[0]?.id || "";
+  // esa qolgan sinflarni ko'rinmas qilib qo'yardi. URL'dagi sinf o'chirilgan
+  // bo'lsa ham "Barcha sinflar"ga qaytadi (aks holda 404 bilan bo'sh ro'yxat);
+  // ro'yxat hali yuklanmagan paytda esa URL'ga ishoniladi.
+  const rawClassId = searchParams.get("class") || "";
+  const classId =
+    rawClassId &&
+    (!classesLoaded || classes.some((cls) => cls.id === rawClassId))
+      ? rawClassId
+      : ALL_CLASSES;
   const isAll = classId === ALL_CLASSES;
-  const perClassId = isAll ? "" : classId || firstClassId;
-  const selectValue = classId || firstClassId; // SelectSearch ko'rsatadigan qiymat (bo'sh => birinchi sinf)
-
-  // Sinf / holat / qidiruv / sana o'zgarsa sahifani boshiga qaytaramiz (render vaqtida, effektsiz)
-  const resetKey = `${date}|${status}|${classId}|${debouncedSearch}`;
-  const [prevResetKey, setPrevResetKey] = useState(resetKey);
-  if (resetKey !== prevResetKey) {
-    setPrevResetKey(resetKey);
-    setPage(1);
-  }
 
   // Bitta sinf ko'rinishi
   const classQuery = useQuery({
-    ...studentAttendanceQueries.todayClass(perClassId, date),
-    enabled: !isAll && !!perClassId,
+    ...studentAttendanceQueries.todayClass(isAll ? "" : classId, date),
+    enabled: !isAll,
     refetchInterval: 30000,
   });
 
@@ -91,7 +163,7 @@ const StudentDailyPage = () => {
     ...studentAttendanceQueries.todayAll({
       date,
       status: status || undefined,
-      search: debouncedSearch || undefined,
+      search: search || undefined,
       page,
       limit: 20,
     }),
@@ -102,17 +174,20 @@ const StudentDailyPage = () => {
   const data = isAll ? allQuery.data : classQuery.data;
   const isLoading = isAll ? allQuery.isLoading : classQuery.isLoading;
 
+  // Profildan "orqaga" qaytilganda ro'yxatning o'sha joyiga qaytadi
+  const saveScroll = useScrollRestore(Boolean(data));
+
   let students = data?.students || [];
   const summary = data?.summary || {};
   const pagination = isAll ? data?.pagination : null;
 
   // Bitta sinf ko'rinishida holat filtri va qidiruv mijoz tomonda qo'llanadi
   // (barcha sinflarda esa server tomonda filtrlanadi)
-  if (!isAll && (status || search)) {
+  if (!isAll && (status || searchInput)) {
     students = students.filter(
       ({ student, attendance }) =>
         matchesStatusFilter(attendance?.status || null, status) &&
-        matchesNameSearch(student, search),
+        matchesNameSearch(student, searchInput),
     );
   }
 
@@ -121,6 +196,11 @@ const StudentDailyPage = () => {
     ...classes.map((cls) => ({ label: cls.name, value: cls.id })),
   ];
 
+  const openProfile = (row) => {
+    saveScroll();
+    navigate(`/users/${row.student.id}?tab=enrollment`);
+  };
+
   return (
     <div className="space-y-4">
       {/* Sinf va holat filtri - layoutdagi tablar qatoriga portal orqali joylanadi */}
@@ -128,12 +208,12 @@ const StudentDailyPage = () => {
         createPortal(
           <>
             <SelectSearch
-              value={selectValue || undefined}
+              value={classId}
               triggerClassName="min-w-44"
               placeholder="Sinfni tanlang"
               searchPlaceholder="Sinfni qidirish..."
               emptyText="Sinf topilmadi"
-              onChange={(v) => setClassId(v)}
+              onChange={(v) => setFilter("class", v === ALL_CLASSES ? "" : v)}
               options={classOptions}
             />
 
@@ -142,7 +222,7 @@ const StudentDailyPage = () => {
               triggerClassName="min-w-40"
               placeholder="Barcha holatlar"
               options={STUDENT_DAILY_STATUS_OPTIONS}
-              onChange={(v) => setStatus(v === "all" ? "" : v)}
+              onChange={(v) => setFilter("status", v === "all" ? "" : v)}
             />
           </>,
           filterSlot,
@@ -160,22 +240,34 @@ const StudentDailyPage = () => {
       {/* Qidiruv - portal slotga sig'maydi, sahifa ichida */}
       <Input
         type="search"
-        value={search}
+        value={searchInput}
         className="sm:max-w-sm"
         placeholder="Ism yoki familiya bo'yicha qidirish..."
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => handleSearchChange(e.target.value)}
       />
 
-      {/* Jadval - qatorga bosilganda tahrirlash oynasi */}
+      {/* Jadval - qatorga bosilganda profil ochiladi */}
       {isLoading ? (
         <div className="py-8 text-center text-gray-500">Yuklanmoqda...</div>
       ) : (
         <StudentAttendanceTodayTable
           students={students}
           showClass={isAll}
-          onRowClick={
+          onRowClick={canOpenProfile ? openProfile : undefined}
+          onEdit={
             canMark
               ? (row) => openModal("editStudentAttendance", { row, date })
+              : undefined
+          }
+          onCloseEnrollment={
+            canCloseEnrollment
+              ? (row) =>
+                  openModal("closeEnrollment", {
+                    period: row.enrollment,
+                    student: row.student,
+                    // Davomatdagi izoh ketish sababining izohiga o'tadi
+                    note: row.attendance?.excuseReason || "",
+                  })
               : undefined
           }
         />
@@ -193,6 +285,7 @@ const StudentDailyPage = () => {
       )}
 
       {canMark && <EditStudentAttendanceModal />}
+      {canCloseEnrollment && <CloseEnrollmentModal />}
     </div>
   );
 };

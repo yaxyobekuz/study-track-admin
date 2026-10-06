@@ -26,7 +26,8 @@ const resolveClassName = (student, classId) => {
 };
 
 /**
- * Kunlik davomat sahifasida qatorga bosilganda ochiladigan tahrirlash oynasi.
+ * Kunlik davomat sahifasida qatordagi "Tahrirlash" tugmasi ochadigan oyna
+ * (qatorning o'ziga bosish o'quvchi profilini ochadi).
  *
  * Belgilanmagan o'quvchi uchun ham ishlaydi — saqlash `mark` orqali yozuv
  * yaratadi yoki mavjudini yangilaydi (idempotent). Telefon raqamlari shu
