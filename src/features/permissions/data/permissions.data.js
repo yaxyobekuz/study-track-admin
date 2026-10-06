@@ -14,6 +14,7 @@ export const SECTIONS = {
   ATTENDANCE: "attendance",
   GRADES: "grades",
   GRADE_GRANTS: "gradeGrants",
+  LESSON_CREDITS: "lessonCredits",
   EDUCATION: "education",
   GRADE_ANALYSIS: "gradeAnalysis",
   ACHIEVEMENTS: "achievements",
@@ -166,6 +167,15 @@ export const PERMISSION_SECTIONS = [
     label: "Fanga baho ruxsati",
     group: "Ta'lim",
     actions: [A.view, { key: "manage", label: "Ruxsat berish va yopish" }],
+  },
+  {
+    // O'TILMAGAN DARSNI "O'TILDI" DEB BELGILASH — soati (puli) oylikka
+    // qaytadi. ⚠️ ALOHIDA BO'LIM: eski bare "grades"/"payroll" kaliti bu
+    // huquqni jimgina bermasligi uchun (server `permissions.js` bilan AYNI).
+    key: SECTIONS.LESSON_CREDITS,
+    label: "Darsni o'tildi deb belgilash",
+    group: "Ta'lim",
+    actions: [A.view, { key: "manage", label: "Belgilash va bekor qilish" }],
   },
   {
     // TA'LIM DASHBOARDI — bitta ekranda butun maktabning o'quv manzarasi.
@@ -1033,6 +1043,7 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/tutor-groups", key: "tutors.view" },
   { prefix: "/lesson-hours/grading-access", key: "grades.unlock" },
   { prefix: "/lesson-hours/grading-grants", key: "gradeGrants.view" },
+  { prefix: "/lesson-hours/missed", key: "lessonCredits.view" },
   { prefix: "/lesson-hours", key: "payroll.hours" },
   // Bosh sahifadagi "Dars soatlari" tabi — `/lesson-hours/overview` bilan
   // AYNI sahifa, shuning uchun kalit ham bir xil (moliya `/reports` bilan

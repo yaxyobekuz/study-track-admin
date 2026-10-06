@@ -197,6 +197,7 @@ import SubstitutionsPage from "@/features/lessonHours/pages/SubstitutionsPage";
 import LessonLoadPage from "@/features/lessonHours/pages/LessonLoadPage";
 import GradingAccessPage from "@/features/lessonHours/pages/GradingAccessPage";
 import GradingGrantsPage from "@/features/lessonHours/pages/GradingGrantsPage";
+import LessonCreditsPage from "@/features/lessonHours/pages/LessonCreditsPage";
 
 // Pages - Oylik zayavkalari (o'qituvchi/xodim so'rovlari — paneldan tasdiqlash)
 import PayrollRequestsPage from "@/features/payroll/pages/PayrollRequestsPage";
@@ -572,6 +573,7 @@ const Routes = () => {
             <Route path="substitutions" element={<SubstitutionsPage />} />
             <Route path="grading-access" element={<GradingAccessPage />} />
             <Route path="grading-grants" element={<GradingGrantsPage />} />
+            <Route path="missed" element={<LessonCreditsPage />} />
           </Route>
 
           {/* Moliya bo'limi - bitta sahifa, ichida tablar */}

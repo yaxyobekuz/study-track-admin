@@ -188,9 +188,36 @@ const TeacherHoursBody = ({ staffId, month }) => {
             rows={data.missedLessons}
             unlocks={data.gradingUnlocks}
             teacherId={data.staffId}
+            teacherName={data.staffName}
             isCurrentMonth={data.isCurrentMonth}
             sealed={Boolean(data.entryStatus && data.entryStatus !== "cancelled")}
+            // Yopilgan oyda soatbay oylik muhrlangan — "o'tildi" belgisi uni
+            // o'zi o'zgartirmaydi (server `lessonCredit.service.js`)
+            creditSealed={Boolean(
+              data.entryStatus && data.entryStatus !== "cancelled" && !data.isCurrentMonth && data.usesHours,
+            )}
           />
+        </Section>
+      )}
+
+      {/* ── Rahbariyat "o'tildi" deb belgilagan darslar — soati yozilgan ── */}
+      {data.creditedLessons?.length > 0 && (
+        <Section title={`O'tildi deb belgilangan · ${data.creditedLessons.length}`}>
+          <ul className="max-h-[220px] space-y-1.5 overflow-y-auto pr-1 hidden-scrollbar">
+            {data.creditedLessons.map((row) => (
+              <li key={row.creditId} className={cn(SURFACE.tile, "flex items-center gap-3 py-2.5")}>
+                <div className="min-w-0 flex-1">
+                  <p className={cn(T.td, "truncate")}>
+                    {`${row.dateLabel} · ${row.className}, ${row.lessonOrder}-dars · ${row.subjectName}`}
+                  </p>
+                  {row.creditReason && <p className={cn(T.meta, "truncate")}>{row.creditReason}</p>}
+                </div>
+                <span className={cn(CHIP, "shrink-0 bg-emerald-50 text-emerald-700")}>
+                  {`${row.reasonLabel} → o'tildi`}
+                </span>
+              </li>
+            ))}
+          </ul>
         </Section>
       )}
 

@@ -1,5 +1,5 @@
 // Icons
-import { LockOpen } from "lucide-react";
+import { CheckCheck, LockOpen } from "lucide-react";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -33,14 +33,39 @@ const dayKeyOf = (value) => String(value).slice(0, 10);
  * @param {object} props
  * @param {Array} props.rows - `missedLessons`
  * @param {Array} props.unlocks - `gradingUnlocks` (shu o'qituvchini qamragan oynalar)
+ * ⚠️ "O'TILDI DEB BELGILASH" — kun sarlavhasida (`lessonCredits.manage`):
+ * umumiy belgilash oynasini SHU o'qituvchi va SHU kun darslari bilan ochadi
+ * ("O'tilmagan darslar" tabidagi AYNI oyna). Baho qo'ydirishning iloji
+ * bo'lmaganda (platforma ishlamagan kun) — to'g'ridan-to'g'ri yo'l.
+ *
  * @param {string} props.teacherId
+ * @param {string} [props.teacherName]
  * @param {boolean} props.isCurrentMonth
  * @param {boolean} props.sealed - shu oy oyligi muhrlangan
+ * @param {boolean} [props.creditSealed] - yopilgan oyda soatbay oylik muhrlangan
  */
-const MissedLessons = ({ rows, unlocks = [], teacherId, isCurrentMonth, sealed }) => {
+const MissedLessons = ({
+  rows,
+  unlocks = [],
+  teacherId,
+  teacherName,
+  isCurrentMonth,
+  sealed,
+  creditSealed = false,
+}) => {
   const { can } = usePermissions();
   const { openModal } = useModal();
   const canUnlock = can("grades.unlock");
+  const canCredit = can("lessonCredits.manage");
+
+  const openCredit = (day) =>
+    openModal("createLessonCredits", {
+      date: day.key,
+      dateLabel: day.label,
+      mode: "lessons",
+      groups: [{ teacherId, teacherName: teacherName ?? "O'qituvchi", lessons: day.lessons }],
+      sealed: creditSealed,
+    });
 
   // Kun → darslar (server tartibi saqlanadi — sana bo'yicha)
   const days = [];
@@ -102,16 +127,28 @@ const MissedLessons = ({ rows, unlocks = [], teacherId, isCurrentMonth, sealed }
                     {unlock.status === "active" ? `Ochiq · ${unlock.expiresAtLabel} gacha` : meta.label}
                   </span>
                 )}
-                {canUnlock && unlock?.status !== "active" && (
-                  <button
-                    type="button"
-                    onClick={() => openUnlock(day.key, day.key)}
-                    className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11.5px] font-medium text-indigo-600 transition-colors duration-200 hover:bg-indigo-50"
-                  >
-                    <LockOpen className="size-3" strokeWidth={2.2} />
-                    Baho qo'yishni ochish
-                  </button>
-                )}
+                <div className="flex flex-wrap items-center gap-1">
+                  {canUnlock && unlock?.status !== "active" && (
+                    <button
+                      type="button"
+                      onClick={() => openUnlock(day.key, day.key)}
+                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11.5px] font-medium text-indigo-600 transition-colors duration-200 hover:bg-indigo-50"
+                    >
+                      <LockOpen className="size-3" strokeWidth={2.2} />
+                      Baho qo'yishni ochish
+                    </button>
+                  )}
+                  {canCredit && (
+                    <button
+                      type="button"
+                      onClick={() => openCredit(day)}
+                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11.5px] font-medium text-emerald-700 transition-colors duration-200 hover:bg-emerald-50"
+                    >
+                      <CheckCheck className="size-3" strokeWidth={2.2} />
+                      O'tildi deb belgilash
+                    </button>
+                  )}
+                </div>
               </div>
 
               <ul className="space-y-1">

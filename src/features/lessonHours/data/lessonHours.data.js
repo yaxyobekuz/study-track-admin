@@ -57,6 +57,16 @@ export const HOURS_TABS = [
     monthScoped: false,
     exact: false,
   },
+  {
+    // O'tilmagan darsni rahbariyat "o'tildi" qiladi — soat (pul) qaytadi.
+    // Kun bilan ishlaydi, oy tanlagichi bu yerda chalg'itardi.
+    to: "/lesson-hours/missed",
+    label: "O'tilmagan darslar",
+    title: "Dars soatlari",
+    can: "lessonCredits.view",
+    monthScoped: false,
+    exact: false,
+  },
 ];
 
 /* ─────────────────────── O'RINBOSARLIK ─────────────────────── */
@@ -228,6 +238,62 @@ export const GRANT_HINT = {
   revoke:
     "Yopilgach o'qituvchi bu sinf va fanga yangi baho qo'ya olmaydi va qo'yganini o'zgartira olmaydi. Qo'yilgan baholar o'z kuchida qoladi.",
 };
+
+/* ─────────────────────── "O'TILDI" BELGISI ─────────────────────── */
+
+/**
+ * Qoida matni — server `lessonCredit.service.js` sarlavhasi bilan AYNI.
+ * ⚠️ Oqibatlar SAQLASHDAN OLDIN aytiladi: pul qaytadi, jarima (ixtiyoriy)
+ * bekor bo'ladi, davomat va muhrlangan oylik esa o'zi o'zgarmaydi.
+ */
+export const CREDIT_HINT = {
+  rule:
+    "Belgilangan dars o'tilgan hisoblanadi: soati oylikka qaytadi va o'tilmagan darslar uchun ayrilgan summadan chiqadi.",
+  today: "Faqat o'tgan kunlar — bugungi darslar ertaga tekshiriladi.",
+  penalty:
+    "Shu darslar uchun yozilgan \"Baho qo'ymaslik\" jarimasi bekor qilinadi va jarima bali olib tashlanadi. Belgi bekor qilinsa, jarima qaytadi.",
+  attendance:
+    "Dars o'tilgan kuni o'qituvchi kelgan hisoblanadi: davomatdagi \"kelmadi\" yoki \"sababli\" — \"keldi\" bo'ladi, kelmagan kun uchun fiksadan ayirma va \"kelmadi\" jarimasi olib tashlanadi.",
+  sealed:
+    "Bu oyning oyligi allaqachon muhrlangan — summasi o'zi o'zgarmaydi, \"Qayta hisoblash\" bilan yangilanadi.",
+  revoke:
+    "Dars yana faktlar bo'yicha baholanadi: o'tilmagan bo'lsa soati yana ayriladi, shu belgi bilan bekor qilingan jarima qaytadi. Kunda boshqa belgi qolmasa, davomat ham avvalgi holatiga qaytadi.",
+};
+
+/** Belgi holati — server `serialize` → `status`. */
+export const CREDIT_STATUS_META = {
+  active: { label: "Amalda", chip: "bg-emerald-50 text-emerald-700" },
+  revoked: { label: "Bekor qilingan", chip: "bg-slate-100 text-slate-500" },
+};
+
+export const CREDIT_STATUS_FILTERS = [
+  { key: "", label: "Barchasi" },
+  { key: "active", label: "Amalda" },
+  { key: "revoked", label: "Bekor qilingan" },
+];
+
+/** Sabab uzunligi — server `REASON_MAX`. */
+export const CREDIT_REASON_MAX = 200;
+
+const DAY_MS = 24 * 3600 * 1000;
+
+/**
+ * "YYYY-MM-DD" ni `days` kunga suradi. YAKSHANBA O'TKAZIB YUBORILADI:
+ * u kuni dars yo'q, unga tushish bo'sh ekran ko'rsatardi.
+ *
+ * ⚠️ MASHINA QIYMATI — ekranga chiqmaydi (`dates.md` §3 istisnosi). Hisob
+ * `Date.UTC` bilan: lokal konstruktor oy chegarasini siljitishi mumkin.
+ */
+export const shiftDayValue = (value, days) => {
+  const [y, m, d] = String(value).split("-").map(Number);
+  let date = new Date(Date.UTC(y, m - 1, d) + days * DAY_MS);
+  if (date.getUTCDay() === 0) date = new Date(date.getTime() + Math.sign(days || -1) * DAY_MS);
+  return date.toISOString().slice(0, 10);
+};
+
+/** Bitta dars kaliti (panelda tanlov uchun): kim + sinf + fan + tartib. */
+export const creditLessonKey = (teacherId, lesson) =>
+  `${teacherId}|${lesson.classId}|${lesson.subjectId}|${lesson.lessonOrder}`;
 
 /* ─────────────────────── JADVAL USTUNLARI ─────────────────────── */
 

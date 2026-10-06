@@ -6,6 +6,7 @@ import {
   contractAPI,
   gradingGrantAPI,
   gradingUnlockAPI,
+  lessonCreditAPI,
   substitutionAPI,
 } from "../api/lessonHours.api";
 import { gradingGrantsKey, lessonHoursKeys } from "./lessonHours.queries";
@@ -138,6 +139,29 @@ export const useRevokeGradingGrant = () => {
   const invalidate = useInvalidateGrants();
   return useMutation({
     mutationFn: ({ id, reason }) => gradingGrantAPI.revoke(id, reason).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+/**
+ * "O'TILDI" BELGISI — belgilash va bekor qilish.
+ *
+ * ⚠️ SOAT VA PUL DARHOL O'ZGARADI: belgilangan dars o'tilgan hisoblanadi —
+ * vedomost, oylik registri va moliya dashboardi birga eskiradi
+ * (`useInvalidateGrading` bilan AYNI sabab). Kassaga tegmaydi.
+ */
+export const useCreateLessonCredits = () => {
+  const invalidate = useInvalidateGrading();
+  return useMutation({
+    mutationFn: (data) => lessonCreditAPI.create(data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
+export const useRevokeLessonCredits = () => {
+  const invalidate = useInvalidateGrading();
+  return useMutation({
+    mutationFn: (data) => lessonCreditAPI.revoke(data).then((r) => r.data.data),
     onSuccess: invalidate,
   });
 };

@@ -20,6 +20,8 @@ import EmptyState from "@/shared/components/ui/EmptyState";
 import LedgerTable from "../components/LedgerTable";
 import TeacherHoursModal from "../components/TeacherHoursModal";
 import { CreateGradingUnlockModal } from "../components/GradingUnlockModals";
+import { CreateLessonCreditsModal } from "../components/LessonCreditModals";
+import { RecalcPayrollModal } from "@/features/payroll/components/RecalcPayrollModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -168,6 +170,10 @@ const LessonHoursLedgerPage = () => {
       <TeacherHoursModal />
       {/* O'tilmagan darslardagi "Baho qo'yishni ochish" — shu oynani to'ldirib ochadi */}
       <CreateGradingUnlockModal />
+      {/* ...va "O'tildi deb belgilash" — umumiy belgilash oynasi; yopilgan oy
+          muhrlangan bo'lsa, xabardagi "Qayta hisoblash" shu sahifada ochiladi */}
+      <CreateLessonCreditsModal />
+      <RecalcPayrollModal />
     </div>
   );
 };

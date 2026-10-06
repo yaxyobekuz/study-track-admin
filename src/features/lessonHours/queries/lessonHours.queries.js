@@ -9,6 +9,7 @@ import {
   contractAPI,
   gradingGrantAPI,
   gradingUnlockAPI,
+  lessonCreditAPI,
   lessonHoursAPI,
   substitutionAPI,
 } from "../api/lessonHours.api";
@@ -22,6 +23,7 @@ const substitutionsKey = [...lessonHoursKeys.all, "substitutions"];
 const contractKey = [...lessonHoursKeys.all, "contract"];
 const gradingUnlocksKey = [...lessonHoursKeys.all, "gradingUnlocks"];
 export const gradingGrantsKey = [...lessonHoursKeys.all, "gradingGrants"];
+const lessonCreditsKey = [...lessonHoursKeys.all, "lessonCredits"];
 
 export const lessonHoursQueries = {
   /** Boshliq ko'rinishi → `{ totals, modes, series, topTeachers }`. */
@@ -159,5 +161,36 @@ export const gradingGrantQueries = {
       queryFn: () => gradingGrantAPI.getClassLessons(classId).then((r) => r.data.data),
       enabled: Boolean(classId),
       staleTime: 60 * 1000,
+    }),
+};
+
+export const lessonCreditQueries = {
+  /**
+   * Kunning o'tilmagan darslari va belgilari.
+   *
+   * ⚠️ `keepPreviousData` YO'Q: kun almashganda eski kunning darslari
+   * ekranda qolib, ular yangi kun nomi ostida belgilanib ketishi mumkin edi.
+   */
+  day: (params) =>
+    queryOptions({
+      queryKey: [...lessonCreditsKey, "day", params],
+      queryFn: () => lessonCreditAPI.getDay(params).then((r) => r.data.data),
+      enabled: Boolean(params?.date),
+    }),
+
+  /** Belgilar registri → `{ data, pagination, totals }`. */
+  list: (params) =>
+    queryOptions({
+      queryKey: [...lessonCreditsKey, "list", params],
+      queryFn: () => lessonCreditAPI.getList(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Filtr ro'yxati — kamdan-kam o'zgaradi, uzoq saqlanadi. */
+  teachers: () =>
+    queryOptions({
+      queryKey: [...lessonCreditsKey, "teachers"],
+      queryFn: () => lessonCreditAPI.getTeachers().then((r) => r.data.data),
+      staleTime: 5 * 60 * 1000,
     }),
 };

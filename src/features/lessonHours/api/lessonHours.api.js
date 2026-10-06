@@ -141,3 +141,32 @@ export const gradingGrantAPI = {
 
   revoke: (id, reason) => http.post(`/grades/grants/${id}/revoke`, { reason }),
 };
+
+/**
+ * "O'TILDI" BELGISI — o'tilmagan darsni rahbariyat o'tilgan deb belgilaydi.
+ *
+ * ⚠️ Manzil `/lesson-hours/credits` ostida (ruxsat — alohida bo'lim
+ * `lessonCredits`). Belgilangan darsning soati oylikka QAYTADI: yopilgan
+ * oyning muhrlangan oyligi esa "Qayta hisoblash" bilan yangilanadi
+ * (javobdagi `sealed`).
+ */
+export const lessonCreditAPI = {
+  /** Kun ekrani → `{ teachers, credited, totals, ... }`. `?date=YYYY-MM-DD&teacherId` */
+  getDay: (params) => http.get("/lesson-hours/credits/day", { params }),
+
+  /** Registr: `?status=active|revoked&teacherId&month&date&page&limit` → `{ data, pagination, totals }` */
+  getList: (params) => http.get("/lesson-hours/credits", { params }),
+
+  /** Filtr uchun o'qituvchilar (haftalik dars soni bilan). */
+  getTeachers: () => http.get("/lesson-hours/credits/teachers"),
+
+  /**
+   * Tanlanganlar: `{ date, mode: "lessons", lessons: [{ teacherId, classId,
+   *   subjectId, lessonOrder }], reason, cancelGradePenalty }`
+   * Kunning hammasi: `{ date, mode: "day", teacherIds?, reason, cancelGradePenalty }`
+   */
+  create: (data) => http.post("/lesson-hours/credits", data),
+
+  /** `{ ids, reason }` — bittalab yoki bir nechtalab. */
+  revoke: (data) => http.post("/lesson-hours/credits/revoke", data),
+};
