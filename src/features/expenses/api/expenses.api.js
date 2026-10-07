@@ -17,12 +17,15 @@ export const expenseCategoriesAPI = {
  * Xarajat yozuvlari.
  *
  * ⚠️ `update` YO'Q va bo'lmasligi ham kerak: xarajat kassa daftariga yozilgan
- * hujjat. Xato yozuv tahrirlanmaydi — bekor qilinib, qaytadan kiritiladi.
+ * hujjat, daftar esa append-only. Tahrirlash `replace` orqali: server eski
+ * yozuvni bekor qilib, to'g'ri qiymatlar bilan yangisini yozadi — bitta
+ * tranzaksiyada, ikkala qator ham registrda qoladi.
  */
 export const expensesAPI = {
   getAll: (params) => http.get("/expenses", { params }),
   create: (data) => http.post("/expenses", data),
   void: (id, reason) => http.post(`/expenses/${id}/void`, { reason }),
+  replace: (id, data) => http.post(`/expenses/${id}/replace`, data),
 };
 
 /**

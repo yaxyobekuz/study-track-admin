@@ -30,6 +30,7 @@ import ConfirmPopover from "@/shared/components/ui/ConfirmPopover";
 import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 import {
   ExpenseEntryModal,
+  EditExpenseModal,
   VoidExpenseModal,
   ExpenseCategoryModal,
 } from "../components/ExpenseModals";
@@ -96,6 +97,7 @@ const ExpensesPage = () => {
 
       {/* Modallar shu bo'lim ichida mount qilinadi */}
       <ExpenseEntryModal />
+      <EditExpenseModal />
       <VoidExpenseModal />
       <ExpenseCategoryModal />
       <EditSalaryPaymentModal />
@@ -286,14 +288,29 @@ const ExpenseList = () => {
                         </Can>
                       </div>
                     ) : (
+                      // Tahrirlash = bekor qilish + qaytadan yozish, shuning
+                      // uchun u IKKALA huquqni so'raydi (server ham shunday
+                      // tekshiradi). Bekor qilish esa yolg'iz yetarli.
                       <Can do="expenses.void">
-                        <button
-                          title="Bekor qilish"
-                          onClick={() => openModal("voidExpense", { expense })}
-                          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
-                        >
-                          <Ban className="size-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <Can do="expenses.create">
+                            <button
+                              title="Tahrirlash"
+                              onClick={() => openModal("editExpense", { expense })}
+                              className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                            >
+                              <Pencil className="size-3.5" />
+                            </button>
+                          </Can>
+
+                          <button
+                            title="Bekor qilish"
+                            onClick={() => openModal("voidExpense", { expense })}
+                            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                          >
+                            <Ban className="size-3.5" />
+                          </button>
+                        </div>
                       </Can>
                     )}
                   </div>

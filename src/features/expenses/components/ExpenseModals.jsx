@@ -23,6 +23,7 @@ import useModal from "@/shared/hooks/useModal";
 
 // Utils
 import { formatMoney } from "@/shared/utils/formatMoney";
+import { formatDateUz, todayInputValue, toDateInputValue } from "@/shared/utils/date.utils";
 
 // Queries
 import { financeQueries } from "@/features/finance/queries/finance.queries";
@@ -33,20 +34,15 @@ import { expenseQueries } from "../queries/expenses.queries";
 import {
   useCreateExpense,
   useVoidExpense,
+  useReplaceExpense,
   useCreateCategory,
   useUpdateCategory,
 } from "../queries/expenses.mutations";
+import { EDIT_EXPENSE_HINT } from "../data/expenses.data";
 
 /** Chiqim kategoriyasi xodimlar oyligimi — nomiga qarab (foydalanuvchi "Oylik"
  *  deb ataydi). Shu holatda modal oylik to'lash rejimiga o'tadi. */
 const isSalaryName = (name) => String(name ?? "").trim().toLowerCase() === "oylik";
-
-/** Bugungi sana — `<input type="date">` qiymati. */
-const todayInputValue = () => {
-  const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 10);
-};
 
 // ─────────────────────────────────────────────
 // Xarajat qo'shish
@@ -382,6 +378,180 @@ const ExpenseForm = ({ close, isLoading, setIsLoading }) => {
         }
       >
         {isSalary ? "Oylik to'lash" : "Qayd etish"}
+      </Button>
+    </InputGroup>
+  );
+};
+
+// ─────────────────────────────────────────────
+// Tahrirlash
+// ─────────────────────────────────────────────
+
+export const EditExpenseModal = () => (
+  <ResponsiveModal name="editExpense" title="Xarajatni tahrirlash">
+    <EditExpenseForm />
+  </ResponsiveModal>
+);
+
+/**
+ * Xato kiritilgan xarajatni to'g'rilaydi. Server yozuvni JOYIDA
+ * o'zgartirmaydi: eskisini bekor qilib, to'g'ri qiymatlar bilan yangisini
+ * yozadi (bitta tranzaksiya). Shuning uchun sabab MAJBURIY — u bekor qilingan
+ * qatorning izohi bo'lib qoladi.
+ */
+const EditExpenseForm = ({ close, isLoading, setIsLoading, expense }) => {
+  const { data: categories = [] } = useQuery(expenseQueries.activeCategories());
+  const { data: accounts = [] } = useQuery(financeQueries.activeAccounts());
+  const { mutate: replaceExpense } = useReplaceExpense();
+
+  const initialDate = toDateInputValue(expense?.occurredAt);
+
+  const { categoryId, accountId, amount, payee, note, occurredAt, reason, setField } =
+    useObjectState({
+      categoryId: expense?.categoryId ?? "",
+      accountId: expense?.accountId ?? "",
+      amount: expense?.amount != null ? String(Number(expense.amount)) : "",
+      payee: expense?.payee ?? "",
+      note: expense?.note ?? "",
+      occurredAt: initialDate,
+      reason: "",
+    });
+
+  // "Oylik" xarajat emas, XODIM OYLIGI (`salaryPayment`) — uni shu oynadan
+  // tanlab bo'lmaydi, aks holda kassada qarzga bog'lanmagan soxta "oylik"
+  // qatori paydo bo'lardi. Oylik to'lovi o'z oynasida tahrirlanadi.
+  const selectable = categories.filter((c) => !isSalaryName(c.name));
+
+  // Yozuvning kategoriyasi arxivlangan bo'lsa ro'yxatda yo'q — uni qo'lda
+  // qo'shamiz, aks holda Select bo'sh ochilib, kassir boshqa kategoriyani
+  // tanlashga majbur bo'lardi
+  const categoryOptions = selectable.map((c) => ({ label: c.name, value: c.id }));
+  if (expense?.categoryId && !selectable.some((c) => c.id === expense.categoryId)) {
+    categoryOptions.unshift({
+      label: `${expense.currentCategoryName || expense.categoryName} (arxivlangan)`,
+      value: expense.categoryId,
+    });
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    replaceExpense(
+      {
+        id: expense.id,
+        data: {
+          categoryId,
+          accountId,
+          amount: String(amount),
+          payee,
+          note,
+          reason,
+          // Kun o'zgarmasa yuborilmaydi — eski yozuvning VAQTI saqlanadi
+          ...(occurredAt !== initialDate ? { occurredAt } : {}),
+        },
+      },
+      {
+        onSuccess: () => {
+          close();
+          toast.success("Xarajat tahrirlandi");
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+        onSettled: () => setIsLoading(false),
+      },
+    );
+  };
+
+  return (
+    <InputGroup onSubmit={handleSubmit} as="form">
+      <div className="rounded-xl bg-gray-50 p-3 text-sm">
+        <p className="font-medium text-gray-900">{expense?.categoryName}</p>
+        <p className="text-gray-500">
+          Kiritilgan: {formatMoney(expense?.amount)} ·{" "}
+          {formatDateUz(expense?.occurredAt)}
+        </p>
+      </div>
+
+      <p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800">
+        {EDIT_EXPENSE_HINT}
+      </p>
+
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Kategoriya</p>
+        <Select
+          searchable
+          value={categoryId}
+          placeholder="Kategoriyani tanlang"
+          onChange={(v) => setField("categoryId", v)}
+          options={categoryOptions}
+        />
+      </div>
+
+      <InputField
+        required
+        min="1"
+        type="number"
+        name="amount"
+        label="To'g'ri summa"
+        value={amount}
+        description={amount ? formatMoney(amount) : "So'mda"}
+        onChange={(e) => setField("amount", e.target.value)}
+      />
+
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-gray-700">Pul qayerdan chiqdi</p>
+        <Select
+          searchable
+          value={accountId}
+          placeholder="To'lov turini tanlang"
+          onChange={(v) => setField("accountId", v)}
+          options={accounts.map((a) => ({ label: a.name, value: a.id }))}
+        />
+      </div>
+
+      <InputField
+        required
+        type="date"
+        name="occurredAt"
+        label="Sana"
+        value={occurredAt}
+        max={todayInputValue()}
+        onChange={(e) => setField("occurredAt", e.target.value)}
+      />
+
+      <InputField
+        name="payee"
+        label="Kimga (ixtiyoriy)"
+        value={payee}
+        placeholder="Hududgaz / Anvar aka"
+        onChange={(e) => setField("payee", e.target.value)}
+      />
+
+      <InputField
+        name="note"
+        label="Izoh (ixtiyoriy)"
+        value={note}
+        placeholder="Avgust oyi uchun gaz to'lovi"
+        onChange={(e) => setField("note", e.target.value)}
+      />
+
+      <InputField
+        required
+        name="reason"
+        label="Tahrirlash sababi"
+        value={reason}
+        placeholder="Adashib boshqa summa kiritilgan"
+        onChange={(e) => setField("reason", e.target.value)}
+      />
+
+      <Button
+        type="submit"
+        className="w-full"
+        loading={isLoading}
+        disabled={!categoryId || !accountId || !amount || !reason.trim()}
+      >
+        Saqlash
       </Button>
     </InputGroup>
   );

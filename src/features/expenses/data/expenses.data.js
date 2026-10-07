@@ -43,6 +43,16 @@ export const getCategoryStatus = (category) => {
 };
 
 /**
+ * Tahrirlash o'chirish EMASLIGINI tushuntiradigan matn — kassir "tuzatdim"
+ * deb o'ylab, aslida ikki qator paydo bo'lganini ko'rib hayron bo'lmasligi
+ * uchun oynaning o'zida turadi.
+ */
+export const EDIT_EXPENSE_HINT =
+  "Yozuv o'chirilmaydi: eski xarajat bekor qilinadi va to'g'ri qiymatlar " +
+  "bilan yangisi yoziladi, ikkalasi ham tarixda qoladi. Kassa qoldig'i " +
+  "avtomatik to'g'rilanadi.";
+
+/**
  * Kategoriya nima uchun o'chirilmasligini tushuntiradigan matn.
  * O'chirish o'rniga arxivlash — o'tgan hisobotlar shu kesimga tayanadi.
  */

@@ -37,6 +37,17 @@ export const useVoidExpense = () => {
   });
 };
 
+// Tahrirlash — eskisi bekor qilinib, yangisi yoziladi. Shuning uchun
+// invalidatsiya bekor qilishdagi bilan bir xil (kassa + hisobotlar).
+export const useReplaceExpense = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      expensesAPI.replace(id, data).then((r) => r.data.data),
+    onSuccess: invalidate,
+  });
+};
+
 export const useCreateCategory = () => {
   const invalidate = useInvalidate();
   return useMutation({
