@@ -11,6 +11,7 @@ import EditWorkScheduleModal from "../EditWorkScheduleModal";
 import EditStaffSubjectsModal from "../EditStaffSubjectsModal";
 import EditUserRolesModal from "../EditUserRolesModal";
 import TutorGroupsCard from "@/features/tutorGroups/components/TutorGroupsCard";
+import UserTransfersCard from "@/features/branchTransfers/components/UserTransfersCard";
 import TutorGroupModal from "@/features/tutorGroups/components/TutorGroupModal";
 import RemoveTutorGroupModal from "@/features/tutorGroups/components/RemoveTutorGroupModal";
 
@@ -263,6 +264,9 @@ const StaffMainTab = ({ user }) => {
           Biriktirish va ruxsatlar "Ruxsatlar" tabida: ular bir-biridan
           ajralmaydi va ikki joyda takrorlanmasligi kerak. */}
       <UserBranchesCard user={user} />
+
+      {/* Filiallararo ko'chirish tarixi, tugmasi va oylik filiallar kesimida */}
+      <UserTransfersCard user={user} />
 
       {/* Modallar shu tab ichida — ro'yxat sahifalariga tegishli emas */}
       <EditUserBasicModal />

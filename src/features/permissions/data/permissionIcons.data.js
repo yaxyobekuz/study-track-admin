@@ -5,6 +5,7 @@
 // Icons
 import {
   Hash,
+  ArrowLeftRight,
   Users,
   Store,
   Crown,
@@ -33,6 +34,7 @@ import { SECTIONS } from "./permissions.data";
 
 /** `{ [bo'lim kaliti]: IkonkaKomponenti }` */
 export const SECTION_ICONS = {
+  [SECTIONS.TRANSFERS]: ArrowLeftRight,
   [SECTIONS.USERS]: Users,
   [SECTIONS.STATISTICS]: ChartColumn,
   [SECTIONS.ATTENDANCE]: CalendarCheck,

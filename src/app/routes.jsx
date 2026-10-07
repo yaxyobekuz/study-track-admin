@@ -23,6 +23,7 @@ import UserDetailPage from "@/features/users/pages/UserDetailPage";
 
 // Pages - Branches (filiallar)
 import BranchesPage from "@/features/branches/pages/BranchesPage";
+import BranchTransfersPage from "@/features/branchTransfers/pages/BranchTransfersPage";
 
 // Pages - AI yordamchi (faqat tizim egasi)
 import AiAssistantPage from "@/features/aiAssistant/pages/AiAssistantPage";
@@ -329,6 +330,8 @@ const Routes = () => {
 
           {/* Filiallar */}
           <Route path="/branches" element={<BranchesPage />} />
+          {/* Filiallararo ko'chirish (`transfers.view`) */}
+          <Route path="/transfers" element={<BranchTransfersPage />} />
 
           {/* FAOLLIK — sidebar kirish nuqtasi (bosh sahifadagi
               "Faollik" tabi bilan AYNI sahifa). */}

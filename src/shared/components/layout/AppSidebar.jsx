@@ -98,6 +98,10 @@ const navItems = [
         url: "/branches",
       },
       {
+        title: "Filiallararo ko'chirish",
+        url: "/transfers",
+      },
+      {
         title: "Xodimlar",
         url: "/users/staff",
       },

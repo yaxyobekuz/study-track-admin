@@ -97,6 +97,12 @@ const LedgerTable = ({ data, isLoading, isError, onSelect, delay = 0 }) => {
                     <p className={cn(T.formula, "mt-0.5 truncate")}>
                       {row.formulaLabel ?? "Oylik qoidasi yo'q"}
                     </p>
+                    {/* Ko'p filialli xodim — asosiy oylik bitta filialda */}
+                    {row.fixedOwner && (
+                      <p className="mt-0.5 truncate text-[11px] text-blue-700">
+                        Asosiy oylik — "{row.fixedOwner.branchName}" filialida
+                      </p>
+                    )}
                   </div>
 
                   <span className={cn(CHIP, modeOf(row.salaryType).chip)}>

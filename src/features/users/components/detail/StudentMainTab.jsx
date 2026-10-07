@@ -10,6 +10,7 @@ import StudentClassHistory from "./StudentClassHistory";
 import EditUserBasicModal from "../EditUserBasicModal";
 import EditUserPhoneModal from "../EditUserPhoneModal";
 import EditStudentClassesModal from "../EditStudentClassesModal";
+import UserTransfersCard from "@/features/branchTransfers/components/UserTransfersCard";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -85,6 +86,10 @@ const StudentMainTab = ({ user }) => {
             uchun. Ko'rish hammaga, tahrirlash `users.phone` bilan. */}
         <UserPhoneCard user={user} canEdit={canManage} />
       </div>
+
+      {/* Filiallararo ko'chirish: tarix va tugma. Ko'chirilgan o'quvchining
+          eski filialdagi profilida — "hozir qayerda" ogohlantirishi */}
+      <UserTransfersCard user={user} />
 
       {/* Modallar shu tab ichida — ro'yxat sahifalariga tegishli emas */}
       <EditUserBasicModal />

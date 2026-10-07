@@ -8,6 +8,7 @@
 /** Bo'lim kalitlari. */
 export const SECTIONS = {
   BRANCHES: "branches",
+  TRANSFERS: "transfers",
   USERS: "users",
   ENROLLMENT: "enrollment",
   STATISTICS: "statistics",
@@ -87,6 +88,20 @@ export const PERMISSION_SECTIONS = [
       A.update,
       { key: "archive", label: "Arxivlash" },
       { key: "assign", label: "Xodimni filialga biriktirish" },
+    ],
+  },
+  {
+    // Filiallararo ko'chirish — o'quvchi, xodim va sinf. Amallar mayda:
+    // o'quvchi ko'chirish moliyani, xodim ko'chirish oylik egasini o'zgartiradi.
+    // ⚠️ Ruxsat MAQSAD filialda ham bo'lishi shart (server tekshiradi).
+    key: SECTIONS.TRANSFERS,
+    label: "Filiallararo ko'chirish",
+    group: "Asosiy",
+    actions: [
+      A.view,
+      { key: "students", label: "O'quvchilarni ko'chirish" },
+      { key: "staff", label: "Xodimlarni ko'chirish" },
+      { key: "classes", label: "Sinflarni ko'chirish" },
     ],
   },
   {
@@ -981,6 +996,7 @@ export const SCHEDULE_SYNC_ACCESS = [
 // `key` RO'YXAT bo'lishi mumkin — "istalgan biri" (`hasPermission`).
 const ROUTE_PERMISSIONS = [
   { prefix: "/branches", key: "branches.view" },
+  { prefix: "/transfers", key: "transfers.view" },
   { prefix: "/users", key: "users.view" },
   { prefix: "/statistics", key: "statistics.view" },
   { prefix: "/attendance", key: "attendance.view" },

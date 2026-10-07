@@ -6,6 +6,9 @@
  * opening an unregistered name logs a warning so typos surface immediately.
  */
 export const MODAL_NAMES = [
+  // Filiallararo ko'chirish
+  "branchTransfer",
+
   // Qurilma nazorati
   "deviceEnrollCode",
   "deviceUnlock",
