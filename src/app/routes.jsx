@@ -112,6 +112,12 @@ import TaskReportsPage from "@/features/tasks/pages/TaskReportsPage";
 import TaskSettingsPage from "@/features/tasks/pages/TaskSettingsPage";
 import TaskDetailPage from "@/features/tasks/pages/TaskDetailPage";
 
+// Pages - Muammolar (botdan kelgan murojaatlar)
+import IssuesLayout from "@/features/issues/layouts/IssuesLayout";
+import IssuesPage from "@/features/issues/pages/IssuesPage";
+import IssueReportsPage from "@/features/issues/pages/IssueReportsPage";
+import IssueCategoriesPage from "@/features/issues/pages/IssueCategoriesPage";
+
 // Pages - Penalties
 import PenaltiesPage from "@/features/penalties/pages/PenaltiesPage";
 import PenaltyDetailPage from "@/features/penalties/pages/PenaltyDetailPage";
@@ -458,6 +464,15 @@ const Routes = () => {
             <Route path="settings" element={<TaskSettingsPage />} />
           </Route>
           <Route path="/tasks/:taskId" element={<TaskDetailPage />} />
+
+          {/* Muammolar */}
+          {/* Muammolar / Hisobotlar / Kategoriyalar — bitta layout ostida
+              (topshiriqlar bo'limi bilan ayni naqsh). */}
+          <Route path="/issues" element={<IssuesLayout />}>
+            <Route index element={<IssuesPage />} />
+            <Route path="reports" element={<IssueReportsPage />} />
+            <Route path="categories" element={<IssueCategoriesPage />} />
+          </Route>
 
           {/* Penalties */}
           <Route path="/penalties" element={<PenaltiesPage />} />

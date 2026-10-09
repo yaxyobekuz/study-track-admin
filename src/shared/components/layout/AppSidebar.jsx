@@ -12,6 +12,7 @@ import {
   TrendingUp,
   ChevronRight,
   AlertTriangle,
+  MessageSquareWarning,
   BadgeDollarSign,
   Crown,
   Wallet,
@@ -307,6 +308,29 @@ const navItems = [
       {
         title: "Buyurtmalar",
         url: "/market/orders",
+      },
+    ],
+  },
+  {
+    // MUAMMOLAR — bitta sahifa, ichida tablar (Muammolar / Hisobotlar /
+    // Kategoriyalar), topshiriqlar bo'limi kabi. Tablar ruxsat bo'yicha
+    // `IssuesLayout` ichida filtrlanadi, yon menyudagi bo'g'inlar esa
+    // `permissionForPath` orqali (eng uzun mos prefiks yutadi).
+    title: "Muammolar",
+    icon: MessageSquareWarning,
+    isActive: false,
+    items: [
+      {
+        title: "Murojaatlar",
+        url: "/issues",
+      },
+      {
+        title: "Hisobotlar",
+        url: "/issues/reports",
+      },
+      {
+        title: "Kategoriyalar",
+        url: "/issues/categories",
       },
     ],
   },
