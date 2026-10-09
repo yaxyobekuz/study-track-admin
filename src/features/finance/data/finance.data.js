@@ -323,6 +323,42 @@ export const TIMELINE_SKIP_LABELS = {
   before_first_invoice_month: "Tizimga o'tishdan oldin",
 };
 
+// ── Sinf moliyaviy sahifasi ──────────────────
+
+/**
+ * ⚠️ IKKI XIL QARZ USTUNI bor va ularni aralashtirmaslik kerak:
+ * "Oy qarzi" — TANLANGAN oyning fakturasidan, "Umumiy qarz" — barcha
+ * oylardan. Sarlavhalar shuning uchun "Qarz" deb emas, aniq nomlangan:
+ * ilgari bitta "Qarz" ustuni bor edi va u oy filtriga ERGASHMASDI —
+ * foydalanuvchi sentabrni tanlab, oktabrning qarzini ko'rib turardi.
+ */
+export const CLASS_FINANCE_TABLE_COLUMNS = [
+  "O'quvchi",
+  "Tarif",
+  { label: "Oylik summa", align: "right" },
+  { label: "To'langan", align: "right" },
+  { label: "Oy qarzi", align: "right" },
+  { label: "Umumiy qarz", align: "right" },
+  "Holat",
+];
+
+/**
+ * Tanlangan oyga hisob-faktura NEGA yo'q (server `noInvoiceReason`).
+ *
+ * `not_generated` — KAMCHILIK (shakllantirish tugmasi bosilmagan),
+ * qolganlari esa QOIDA: ta'til, o'quvchi o'qimagan, muzlatilgan, tarifi
+ * yo'q. Ikkisini ajratish kerak, aks holda admin "nega 0?" deb har safar
+ * tekshirishga tushardi.
+ */
+export const NO_INVOICE_REASON_LABELS = {
+  ...TIMELINE_SKIP_LABELS,
+  cancelled: "Bekor qilingan",
+  frozen: "Muzlatilgan",
+  no_assignment: "Tarif biriktirilmagan",
+  no_price: "Bu oyga narx yo'q",
+  not_generated: "Faktura shakllantirilmagan",
+};
+
 // ── Qarzdorlar ───────────────────────────────
 
 /**
