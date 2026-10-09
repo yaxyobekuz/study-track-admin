@@ -10,9 +10,7 @@
 // Icons
 import {
   Inbox,
-  Eye,
   Timer,
-  CircleSlash,
   CircleCheckBig,
   MessageSquareWarning,
 } from "lucide-react";
@@ -81,22 +79,6 @@ export const issueStatusColors = {
   resolved: "bg-green-100 text-green-700",
   rejected: "bg-gray-100 text-gray-600",
 };
-
-export const issueStatusIcons = {
-  new: Inbox,
-  in_review: Eye,
-  resolved: CircleCheckBig,
-  rejected: CircleSlash,
-};
-
-/** Holat filtri — "Barchasi" birinchi. */
-export const issueStatusOptions = [
-  { label: "Barcha holatlar", value: "all" },
-  ...ISSUE_STATUSES.map((value) => ({
-    value,
-    label: issueStatusLabels[value],
-  })),
-];
 
 /** Ro'yxat ustidagi holat tablari (sanoq bilan). */
 export const ISSUE_STATUS_TABS = [
