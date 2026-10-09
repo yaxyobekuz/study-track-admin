@@ -56,6 +56,7 @@ export const SECTIONS = {
   SOCIAL: "social",
   LEADS: "leads",
   ACTIVITY: "activity",
+  ISSUES: "issues",
   SECURITY: "security",
   DEVICES: "devices",
 };
@@ -814,6 +815,34 @@ export const PERMISSION_SECTIONS = [
     ],
   },
   {
+    // MUAMMOLAR — "foydalanuvchi NIMADAN shikoyat qilyapti?".
+    //
+    // Xodim yoki ota-ona botdan muammo yuboradi (kategoriya + matn),
+    // ma'muriyat panelda ko'rib chiqadi va javob yozadi.
+    //
+    // ⚠️ `view` — RO'YXAT, `review` — HOLAT VA JAVOB. Ajratilgani
+    // `penalties.review` bilan ayni mulohaza: javob botga ketadi va
+    // maktab nomidan yoziladi, ya'ni uni kim yozishini owner alohida
+    // hal qiladi.
+    //
+    // ⚠️ `categories` ALOHIDA: botdagi klaviatura aynan shu ro'yxatdan
+    // chiziladi, ya'ni kategoriyani o'chirish FOYDALANUVCHI KO'RADIGAN
+    // narsani o'zgartiradi.
+    //
+    // ⚠️ `reports` — `tasks.reports` bilan ayni mulohaza: kesim butun
+    // shikoyat manzarasini ochadi va ro'yxatni ko'rishdan kengroq.
+    key: SECTIONS.ISSUES,
+    label: "Muammolar",
+    group: "Nazorat",
+    actions: [
+      A.view,
+      { key: "review", label: "Holatni o'zgartirish / javob yozish" },
+      A.delete,
+      { key: "categories", label: "Kategoriyalarni boshqarish" },
+      { key: "reports", label: "Hisobotlar" },
+    ],
+  },
+  {
     // XAVFSIZLIK — "hisobga KIM kirdi?".
     //
     // ⚠️ AMALLAR ATAYLAB MAYDA (moliyadagi bilan bir xil mantiq):
@@ -1034,6 +1063,12 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/tasks/reports", key: "tasks.reports" },
   { prefix: "/tasks/settings", key: "tasks.settings" },
   { prefix: "/penalties", key: "penalties.view" },
+  // Muammolar — bo'limga kirish `issues.view` bilan; ichki tablar o'z
+  // kalitini talab qiladi (eng UZUN mos prefiks yutadi, topshiriqlar
+  // bo'limi bilan ayni naqsh).
+  { prefix: "/issues", key: "issues.view" },
+  { prefix: "/issues/reports", key: "issues.reports" },
+  { prefix: "/issues/categories", key: "issues.categories" },
   { prefix: "/premium", key: "premium.view" },
   { prefix: "/coin-distribution", key: "coins.view" },
   { prefix: "/coin-settings", key: "coins.view" },

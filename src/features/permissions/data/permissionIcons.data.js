@@ -23,6 +23,7 @@ import {
   CalendarCog,
   CalendarCheck,
   MessageSquare,
+  MessageSquareWarning,
   TriangleAlert,
   ClipboardList,
   GraduationCap,
@@ -56,6 +57,7 @@ export const SECTION_ICONS = {
   [SECTIONS.MESSAGES]: MessageSquare,
   [SECTIONS.SOCIAL]: Hash,
   [SECTIONS.LEADS]: UserPlus,
+  [SECTIONS.ISSUES]: MessageSquareWarning,
 };
 
 /** Bo'lim ikonkasi; topilmasa — umumiy qalqon. */
