@@ -133,6 +133,7 @@ import PremiumEmojisPage from "@/features/premium/pages/PremiumEmojisPage";
 // Davomat (Attendance) - layouts & route-level pages
 // Mening davomatim — o'z davomatidan o'tish (ruxsatsiz, har bir xodim uchun)
 import MyAttendancePage from "@/features/myAttendance/pages/MyAttendancePage";
+import MySalaryPage from "@/features/mySalary/pages/MySalaryPage";
 
 import AttendanceLayout from "@/features/attendance/layouts/AttendanceLayout";
 import DailyAttendanceLayout from "@/features/attendance/layouts/DailyAttendanceLayout";
@@ -492,12 +493,17 @@ const Routes = () => {
           <Route path="/premium/emojis" element={<PremiumEmojisPage />} />
           <Route path="/premium/settings" element={<PremiumSettingsPage />} />
 
-          {/* MENING DAVOMATIM — ruxsat talab qilmaydi.
-              Ma'muriy `/attendance` bo'limidan ATAYLAB ajratilgan: u
-              "kim keldi" degan savolga javob beradi va `attendance.view`
-              ortida turadi, bu esa "men keldim" — har bir xodimning o'z
-              ishi (server ham uni faqat `protect` bilan himoyalaydi). */}
+          {/* SHAXSIY — ruxsat talab qilmaydi (ikkalasi ham tokendagi odam
+              haqida, server ham ularni faqat `protect` bilan himoyalaydi).
+
+              Ma'muriy bo'limlardan ATAYLAB ajratilgan: `/attendance` "kim
+              keldi" va `attendance.view` ortida, `/finance/main/payroll`
+              esa butun shtatning oyligi va `payroll.view` ortida. Bu
+              yerdagilar — "men keldim" va "mening oyligim": har bir
+              xodimning o'z ishi. Admin panelga kiradigan rahbar/ma'mur
+              ham xuddi o'qituvchi kabi ishga keladi va oylik oladi. */}
           <Route path="/my-attendance" element={<MyAttendancePage />} />
+          <Route path="/my-salary" element={<MySalaryPage />} />
 
           {/* Davomat - yagona layout + route-darajali sahifalar */}
           <Route path="/attendance" element={<AttendanceLayout />}>

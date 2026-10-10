@@ -35,13 +35,33 @@ import { payrollQueries } from "@/features/payroll/queries/payroll.queries";
  * Ikkita so'rov ATAYLAB: qoida (kimga qancha) va majburiyat (har oy nima
  * hisoblangani) — ikki xil narsa. Qoida to'g'rilansa o'tgan oy majburiyati
  * o'zgarmaydi, chunki uning summasi MUHRLANGAN.
+ *
+ * ⚠️ MANBA ALMASHTIRILADI, EKRAN EMAS (`UserAttendancePanel` bilan AYNI
+ * naqsh). Sukut bo'yicha ma'muriy yo'l (`payroll.view` ruxsati ortidagi
+ * `/payroll/staff/:id`), xodim O'Z oyligini ko'rganda esa ruxsat kalitisiz
+ * `/payroll/my` — javob SHAKLI bir xil, shuning uchun ekran ikkinchi marta
+ * yozilmaydi. Ikki nusxa bo'lsa, biriga qo'shilgan ustun (masalan kelmagan
+ * kunlar) ikkinchisida unutilardi.
+ *
+ * @param {object} props
+ * @param {{id: string}} props.user
+ * @param {object} [props.salaryQuery] - oylik qoidasi uchun `queryOptions`
+ * @param {object} [props.entriesQuery] - majburiyatlar uchun `queryOptions`
+ * @param {object|null} [props.stats] - `GET /payroll/my-stats` (faqat o'ziniki)
+ * @param {boolean} [props.self] - ekran xodimning O'ZINIKIMI (yorliqlar uchun)
  */
-const StaffPayrollTab = ({ user }) => {
+const StaffPayrollTab = ({
+  user,
+  salaryQuery = null,
+  entriesQuery = null,
+  stats = null,
+  self = false,
+}) => {
   const { data: salary, isLoading: isSalaryLoading } = useQuery(
-    payrollQueries.staffSalary(user.id),
+    salaryQuery ?? payrollQueries.staffSalary(user.id),
   );
   const { data: entries, isLoading: isEntriesLoading } = useQuery(
-    payrollQueries.staffEntries(user.id),
+    entriesQuery ?? payrollQueries.staffEntries(user.id),
   );
 
   if (isSalaryLoading || isEntriesLoading) {
@@ -56,10 +76,12 @@ const StaffPayrollTab = ({ user }) => {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 lg:grid-cols-4">
-        {buildPayrollTiles({ salary, entries }).map((tile) => (
-          <StatTile key={tile.key} {...tile}>
+        {/* ⚠️ `key` tile obyektidan AJRATILADI: `{...tile}` ichida qolsa React
+            uni prop deb o'qib ogohlantiradi va kalit JSX'ga yetib bormaydi. */}
+        {buildPayrollTiles({ salary, entries, stats, self }).map(({ key, ...tile }) => (
+          <StatTile key={key} {...tile}>
             {/* Joriy oy summasi nimalardan yig'ilgani */}
-            {tile.key === "currentMonth" && currentEntry && (
+            {key === "currentMonth" && currentEntry && (
               <PayrollEntryBreakdown
                 entry={currentEntry}
                 showTotal
@@ -75,7 +97,11 @@ const StaffPayrollTab = ({ user }) => {
           <EmptyState
             icon={Wallet}
             title="Oylik belgilanmagan"
-            description="Xodimga fiksa oylik belgilansa, har oy majburiyat avtomatik hisoblanadi. Bu 'Xodimlar oyligi' bo'limining 'Qoidalar' tabida qilinadi."
+            description={
+              self
+                ? "Sizga hali oylik qoidasi belgilanmagan. Oylik belgilansa, har oy majburiyat avtomatik hisoblanadi va shu yerda ko'rinadi."
+                : "Xodimga fiksa oylik belgilansa, har oy majburiyat avtomatik hisoblanadi. Bu 'Xodimlar oyligi' bo'limining 'Qoidalar' tabida qilinadi."
+            }
           />
         </Card>
       ) : (

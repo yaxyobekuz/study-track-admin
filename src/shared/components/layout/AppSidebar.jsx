@@ -20,7 +20,6 @@ import {
   Radar,
   Brain,
   Timer,
-  Clock,
   Sparkles,
 } from "lucide-react";
 
@@ -146,26 +145,34 @@ const navItems = [
     ],
   },
   {
-    // MENING DAVOMATIM — RUXSAT TALAB QILMAYDI.
+    // SHAXSIY — XODIMNING O'ZI HAQIDA, RUXSAT TALAB QILMAYDI.
     //
-    // ⚠️ "Ta'lim → Davomat" bilan chalkashtirmang: u boshqalarning davomati
-    // va `attendance.view` ortida turadi. Bu esa xodimning O'ZI kelgan-
-    // ketganini qayd etishi — server ham uni faqat `protect` bilan
-    // himoyalaydi (`/attendance/check-in`). Ilgari bu ekran faqat
-    // o'qituvchi va xodim panellarida bo'lgani uchun admin panelga
-    // kiradigan rahbar/ma'mur o'zini umuman davomatdan o'tkaza olmasdi.
+    // ⚠️ Ma'muriy bo'limlar bilan chalkashtirmang: "Ta'lim → Davomat"
+    // boshqalarning davomati (`attendance.view`), "Moliya → Xodimlar
+    // oyligi" esa butun shtatning oyligi (`payroll.view`). Bu yerdagilar —
+    // xodimning O'ZI kelgan-ketgani va O'Z oyligi; server ham ularni faqat
+    // `protect` bilan himoyalaydi va identifikatorni TOKENDAN oladi.
     //
-    // `hideForOwner` — owner'da davomat yozuvi YO'Q (`attendance.service.js`
-    // uni `student` bilan birga rad etadi), shuning uchun unga hech qachon
-    // ishlamaydigan bo'lim ko'rsatilmaydi.
-    title: "Mening davomatim",
-    icon: Clock,
+    // Ilgari bu ekranlar faqat o'qituvchi va xodim panellarida bo'lgani
+    // uchun admin panelga kiradigan rahbar/ma'mur o'zini davomatdan
+    // o'tkaza olmasdi va o'z oyligini ko'ra olmasdi — holbuki ular ham
+    // ishga keladi va oylik oladi.
+    //
+    // `hideForOwner` — owner'da davomat yozuvi ham, oylik ham YO'Q
+    // (`attendance.service.js` uni `student` bilan birga rad etadi),
+    // shuning uchun unga hech qachon ishlamaydigan bo'lim ko'rsatilmaydi.
+    title: "Shaxsiy",
+    icon: UserRound,
     isActive: false,
     hideForOwner: true,
     items: [
       {
-        title: "Davomatdan o'tish",
+        title: "Mening davomatim",
         url: "/my-attendance",
+      },
+      {
+        title: "Mening oyligim",
+        url: "/my-salary",
       },
     ],
   },

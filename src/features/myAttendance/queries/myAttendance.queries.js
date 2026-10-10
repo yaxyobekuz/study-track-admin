@@ -17,6 +17,15 @@ import { myAttendanceAPI } from "../api/myAttendance.api";
  */
 export const myAttendanceKeys = createQueryKeys("myAttendance");
 
+/**
+ * Kunni yopish tayyorligi — ALOHIDA kalit (`myAttendanceKeys.all` ostida).
+ *
+ * Mutatsiyalar (ruxsat so'rash / bekor qilish) va `check-out` ning 409
+ * javobi aynan shu kalitni yangilaydi, shuning uchun u eksport qilinadi:
+ * oynaning ro'yxati server qarori bilan BIR MANBADAN bo'lishi kerak.
+ */
+export const checkoutReadinessKey = [...myAttendanceKeys.all, "checkout-readiness"];
+
 export const myAttendanceQueries = {
   /** Bugungi yozuvim → `{ checkIn, checkOut, status, ... }` yoki `null`. */
   today: () =>
@@ -45,6 +54,27 @@ export const myAttendanceQueries = {
       queryKey: [...myAttendanceKeys.all, "month", month, year],
       queryFn: () => myAttendanceAPI.getMyHistory(month, year).then((r) => r.data),
       placeholderData: keepPreviousData,
+    }),
+
+  /**
+   * "Men ketdim" oynasidagi bugungi ishlar → `{ applies, ready, canCheckOut,
+   * closed, grades, tasks, blockers, request }`.
+   *
+   * ⚠️ `applies: false` — darvoza bu xodimga tegishli emas (o'qituvchi roli
+   * yo'q yoki sozlama o'chirilgan): oyna oddiy tasdiqqa aylanadi.
+   *
+   * Baho boshqa panelda qo'yiladi, rahbar qarori boshqa odamdan keladi —
+   * shuning uchun har ochilganda qayta so'raladi, so'rov javob kutayotganda
+   * esa tez-tez (oyna ochiq turganda ruxsat o'zi ko'rinsin).
+   */
+  checkoutReadiness: () =>
+    queryOptions({
+      queryKey: checkoutReadinessKey,
+      queryFn: () =>
+        myAttendanceAPI.getCheckoutReadiness().then((r) => r.data.data),
+      refetchOnMount: "always",
+      refetchInterval: (query) =>
+        query.state.data?.request?.status === "pending" ? 15_000 : 60_000,
     }),
 
   /** Mening uzrli so'rovlarim → massiv. */

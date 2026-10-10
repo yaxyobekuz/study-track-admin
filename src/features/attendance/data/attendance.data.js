@@ -185,6 +185,39 @@ export const REVIEW_ACTION_OPTIONS = [
 ];
 
 /**
+ * KUNNI YOPISH TAYYORLIGI (`GET /attendance/checkout-readiness`) —
+ * "Men ketdim" oynasidagi ro'yxat uchun.
+ *
+ * ⚠️ Yorliqlar O'QITUVCHI PANELIDAGI bilan AYNI bo'lishi shart: darvoza
+ * qarori serverda bitta joyda (`checkoutGate.service.js`), ya'ni bir xil
+ * holat ikki panelda boshqacha nomlanmasin. Admin panelga kiradigan
+ * rahbar — qo'shimcha rolda o'qituvchi bo'lsa — aynan shu ro'yxatni
+ * ko'radi (`education.md` §12).
+ */
+export const CHECKOUT_LESSON_STATE_COLORS = {
+  done: "bg-green-100 text-green-700",
+  pending: "bg-red-100 text-red-700",
+  notStarted: "bg-gray-100 text-gray-600",
+};
+
+export const CHECKOUT_CLOSED_LABELS = {
+  sunday: "Bugun yakshanba — dars yo'q",
+  holiday: "Bugun bayram — dars yo'q",
+  vacation: "Ta'til oyi — dars yo'q",
+};
+
+/**
+ * Server qoidasi (`checkoutGate.service.js`): darsga KAMIDA BITTA baho —
+ * oylikdagi "dars o'tildimi" bilan AYNI. Baho dars boshlangandan "Men
+ * ketdim" gacha qo'yiladi — dars tugashi yopmaydi.
+ */
+export const CHECKOUT_GRADE_REQUIREMENT =
+  "Talab: har bir darsga kamida bitta baho. Bugungi darslarga baho \"Men ketdim\" bosilguncha qo'yiladi.";
+
+/** Server bilan AYNI chegara (`checkoutGate.service.js` -> `REASON_MIN`). */
+export const CHECKOUT_REASON_MIN = 5;
+
+/**
  * ISH VAQTI MANBAI — serverdagi `WorkTimeSource` enumining ko'zgusi.
  *
  * `manual`   — qo'lda kiritilgan vaqt (bo'sh bo'lsa rol standarti).

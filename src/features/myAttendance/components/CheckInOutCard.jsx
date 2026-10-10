@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { LogIn, LogOut, MapPinOff } from "lucide-react";
 
 // TanStack Query
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
@@ -17,8 +17,8 @@ import { formatDurationShortUz, formatTimeUz } from "@/shared/utils/date.utils";
 // Components
 import Card from "@/shared/components/ui/Card";
 import GeolocationStatus from "./GeolocationStatus";
+import CheckoutGatePanel from "./CheckoutGatePanel";
 import Button from "@/shared/components/ui/button/Button";
-import ConfirmPopover from "@/shared/components/ui/ConfirmPopover";
 import AttendanceStatusPill from "@/features/attendance/components/AttendanceStatusPill";
 
 // Data
@@ -31,7 +31,10 @@ import {
 import useGeolocation from "@/shared/hooks/useGeolocation";
 
 // Queries
-import { myAttendanceQueries } from "../queries/myAttendance.queries";
+import {
+  checkoutReadinessKey,
+  myAttendanceQueries,
+} from "../queries/myAttendance.queries";
 import { useCheckIn, useCheckOut } from "../queries/myAttendance.mutations";
 
 /** Ketganlikni qayd etishdan oldingi eng qisqa ish vaqti (daqiqa). */
@@ -49,6 +52,7 @@ const MIN_MINUTES_BEFORE_CHECKOUT = 5;
  * @param {boolean} [props.showTitle] - kartaning o'z sarlavhasi kerakmi
  */
 const CheckInOutCard = ({ showTitle = true }) => {
+  const queryClient = useQueryClient();
   const { data: today, isLoading } = useQuery(myAttendanceQueries.today());
   const { data: schedule } = useQuery(myAttendanceQueries.schedule());
 
@@ -73,6 +77,8 @@ const CheckInOutCard = ({ showTitle = true }) => {
   // Ref — bitta kadr ichidagi ikki bosish holatni ko'rmasdan o'tib ketmasin.
   const [locating, setLocating] = useState(false);
   const locatingRef = useRef(false);
+  // "Men ketdim" — darhol emas: avval kunni yakunlash oynasi (`CheckoutGatePanel`)
+  const [showConfirm, setShowConfirm] = useState(false);
   const isBusy = locating || checkInMutation.isPending || checkOutMutation.isPending;
 
   // "Men ketdim" tugmasi vaqt bilan ochiladi — sekundni jonli sanaymiz.
@@ -94,8 +100,14 @@ const CheckInOutCard = ({ showTitle = true }) => {
   );
   const canCheckOut = remainingSeconds === 0;
 
-  /** Qayd etish — joylashuv olinmasa ham davom etadi (server ixtiyoriy). */
-  const submit = async (mutation, successMessage) => {
+  /**
+   * Qayd etish — joylashuv olinmasa ham davom etadi (server ixtiyoriy).
+   *
+   * @param {object} mutation - `useCheckIn()` yoki `useCheckOut()`
+   * @param {string} successMessage
+   * @param {{ onDone?: () => void }} [options]
+   */
+  const submit = async (mutation, successMessage, { onDone } = {}) => {
     if (locatingRef.current || mutation.isPending) return;
 
     locatingRef.current = true;
@@ -109,12 +121,23 @@ const CheckInOutCard = ({ showTitle = true }) => {
     }
 
     mutation.mutate(location || {}, {
-      onSuccess: () =>
+      onSuccess: () => {
+        onDone?.();
         toast.success(
           location ? successMessage : `${successMessage} — joylashuvsiz`,
-        ),
-      onError: (error) =>
-        toast.error(error?.response?.data?.message || "Xatolik yuz berdi"),
+        );
+      },
+      onError: (error) => {
+        // ⚠️ KUNNI YOPISH DARVOZASI: server ishlar tugamaganini ko'rsa 409
+        // qaytaradi (`details.reason = "checkout_blocked"`). Oyna YOPILMAYDI
+        // — ro'yxat javobdagi AYNI tayyorlik bilan yangilanadi, chunki
+        // ekrandagi ro'yxat va server qarori bitta manbadan bo'lishi kerak.
+        const details = error?.response?.data?.details;
+        if (details?.reason === "checkout_blocked" && details.readiness) {
+          queryClient.setQueryData(checkoutReadinessKey, details.readiness);
+        }
+        toast.error(error?.response?.data?.message || "Xatolik yuz berdi");
+      },
     });
   };
 
@@ -177,20 +200,32 @@ const CheckInOutCard = ({ showTitle = true }) => {
       )}
 
       {hasCheckedIn && !hasCheckedOut && (
-        <ConfirmPopover
-          danger
-          title="Ketganlikni qayd etamizmi?"
-          confirmLabel="Ha, ketdim"
-          description="Qayd etilgandan keyin uni o'zgartirib bo'lmaydi — davomat daftari faqat qo'shimcha yozuv qabul qiladi."
-          onConfirm={() => submit(checkOutMutation, "Ketganligingiz qayd etildi")}
+        <Button
+          variant="danger"
+          className="w-full"
+          disabled={isBusy || !canCheckOut}
+          onClick={() => setShowConfirm(true)}
         >
-          <Button variant="danger" className="w-full" disabled={isBusy || !canCheckOut}>
-            <LogOut strokeWidth={1.5} />
-            {canCheckOut
-              ? `Men ketdim${locating || checkOutMutation.isPending ? "..." : ""}`
-              : `Men ketdim (${formatCountdown(remainingSeconds)})`}
-          </Button>
-        </ConfirmPopover>
+          <LogOut strokeWidth={1.5} />
+          {canCheckOut
+            ? `Men ketdim${locating || checkOutMutation.isPending ? "..." : ""}`
+            : `Men ketdim (${formatCountdown(remainingSeconds)})`}
+        </Button>
+      )}
+
+      {/* Kunni yakunlash — bugungi ishlar, tasdiq yoki rahbariyat ruxsati.
+          Darvoza bu xodimga tegishli bo'lmasa, panelning o'zi oddiy
+          tasdiqqa aylanadi (`applies: false`). */}
+      {showConfirm && hasCheckedIn && !hasCheckedOut && (
+        <CheckoutGatePanel
+          loading={isBusy}
+          onCancel={() => setShowConfirm(false)}
+          onConfirm={() =>
+            submit(checkOutMutation, "Ketganligingiz qayd etildi", {
+              onDone: () => setShowConfirm(false),
+            })
+          }
+        />
       )}
 
       {hasCheckedIn && hasCheckedOut && (

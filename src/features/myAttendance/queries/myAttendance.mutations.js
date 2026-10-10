@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { myAttendanceAPI } from "../api/myAttendance.api";
 
 // Keys
-import { myAttendanceKeys } from "./myAttendance.queries";
+import { checkoutReadinessKey, myAttendanceKeys } from "./myAttendance.queries";
 
 /**
  * Kelganlikni qayd etish.
@@ -31,6 +31,34 @@ export const useCheckOut = () => {
   return useMutation({
     mutationFn: (location) => myAttendanceAPI.checkOut(location).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: myAttendanceKeys.all }),
+  });
+};
+
+/**
+ * Rahbariyatga "ishlarni tugatmay ketish" so'rovi (`CheckoutRequest`).
+ *
+ * ⚠️ Faqat TAYYORLIK kaliti eskiradi: so'rov davomat yozuviga tegmaydi —
+ * u ketishni emas, ketishga RUXSATNI hal qiladi. Bugungi yozuvni ham
+ * eskirtirsak, karta sababsiz qayta yuklanardi.
+ */
+export const useCreateCheckoutRequest = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) =>
+      myAttendanceAPI.createCheckoutRequest(data).then((r) => r.data.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: checkoutReadinessKey }),
+  });
+};
+
+/** Kutilayotgan so'rovni bekor qilish (faqat `pending` holatida). */
+export const useCancelCheckoutRequest = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) =>
+      myAttendanceAPI.cancelCheckoutRequest(id).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: checkoutReadinessKey }),
   });
 };
 
