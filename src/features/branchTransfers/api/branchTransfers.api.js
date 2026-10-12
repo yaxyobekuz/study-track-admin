@@ -32,4 +32,10 @@ export const branchTransfersAPI = {
   getUserTransfers: (userId) => http.get(`/branch-transfers/users/${userId}`),
   getUserPayroll: (userId, params) =>
     http.get(`/branch-transfers/users/${userId}/payroll`, { params }),
+
+  // O'quvchining boshqa filiallardagi moliya tarixi. Server uni JONLI
+  // o'qiydi (nusxa olinmaydi) — shuning uchun bitta to'lov ikki filialning
+  // tushum hisobotida ikki marta sanalmaydi.
+  getUserFinance: (userId, params) =>
+    http.get(`/branch-transfers/users/${userId}/finance`, { params }),
 };

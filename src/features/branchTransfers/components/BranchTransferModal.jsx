@@ -503,10 +503,23 @@ const Lines = ({ items = [], tone }) => {
   );
 };
 
-/** Bitta odamning rejasi. */
+/**
+ * Bitta odamning rejasi.
+ *
+ * ⚠️ Yorliqlar NIMA KO'CHISHINI aytadi, nima qolishini emas: qarz va
+ * depozit endi o'quvchi bilan ketadi (serverdagi `branchTransferFinance`),
+ * shuning uchun "shu filialda qoladi" degan eski matn yo'q — u endi
+ * YOLG'ON bo'lardi.
+ */
 const PlanItem = ({ item }) => {
   const isBlocked = item.status === "blocked";
   const finance = item.finance;
+  const history = item.history;
+  const hasFinanceChip =
+    finance &&
+    (hasMoney(finance.debt) || hasMoney(finance.deposit) || hasMoney(finance.damageDue));
+  const hasHistoryChip = history && (history.grades > 0 || history.attendance > 0);
+
   return (
     <div
       className={cn(
@@ -522,21 +535,31 @@ const PlanItem = ({ item }) => {
             {item.classes?.length ? ` · ${item.classes.map((c) => c.name).join(", ")}` : ""}
           </p>
         </div>
-        {finance && (hasMoney(finance.debt) || hasMoney(finance.deposit) || hasMoney(finance.damageDue)) && (
+        {(hasFinanceChip || hasHistoryChip) && (
           <div className="flex flex-wrap gap-1.5 text-[11px]">
-            {hasMoney(finance.debt) && (
+            {hasMoney(finance?.debt) && (
               <Chip className="border-red-200 bg-red-50 text-red-700">
-                Qarz shu filialda: {formatMoney(finance.debt)}
+                Qarz ko'chadi: {formatMoney(finance.debt)}
               </Chip>
             )}
-            {hasMoney(finance.deposit) && (
+            {hasMoney(finance?.deposit) && (
               <Chip className="border-blue-200 bg-blue-50 text-blue-700">
-                Depozit: {formatMoney(finance.deposit)}
+                Depozit ko'chadi: {formatMoney(finance.deposit)}
               </Chip>
             )}
-            {hasMoney(finance.damageDue) && (
+            {hasMoney(finance?.damageDue) && (
               <Chip className="border-amber-200 bg-amber-50 text-amber-800">
-                Zarar qarzi: {formatMoney(finance.damageDue)}
+                Zarar qarzi qoladi: {formatMoney(finance.damageDue)}
+              </Chip>
+            )}
+            {hasHistoryChip && (
+              <Chip className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                Tarix: {history.grades} baho · {history.attendance} davomat
+              </Chip>
+            )}
+            {history?.testsStaying > 0 && (
+              <Chip className="border-gray-200 bg-gray-50 text-gray-600">
+                {history.testsStaying} test qoladi
               </Chip>
             )}
           </div>

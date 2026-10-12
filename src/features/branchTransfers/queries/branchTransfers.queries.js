@@ -42,4 +42,13 @@ export const branchTransfersQueries = {
         branchTransfersAPI.getUserPayroll(userId, { months }).then((r) => r.data.data),
       enabled: Boolean(userId),
     }),
+
+  /** O'quvchining boshqa filiallardagi moliya tarixi (jonli o'qiladi). */
+  userFinance: (userId, limit = 50) =>
+    queryOptions({
+      queryKey: [...branchTransfersKeys.all, "userFinance", userId, limit],
+      queryFn: () =>
+        branchTransfersAPI.getUserFinance(userId, { limit }).then((r) => r.data.data),
+      enabled: Boolean(userId),
+    }),
 };

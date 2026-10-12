@@ -51,6 +51,16 @@ const UserTransfersCard = ({ user }) => {
     enabled: canPayroll,
   });
 
+  // O'quvchining boshqa filiallardagi moliya tarixi. Ko'chishda OCHIQ holat
+  // (qarz va depozit) o'quvchi bilan ketadi, YOPILGAN fakt (to'langan oy va
+  // uning cheki) o'z filialida qoladi — u shu yerda KO'RINADI.
+  const canFinance = isStudent && can("finance.view");
+  const { data: finance } = useQuery({
+    ...branchTransfersQueries.userFinance(user.id),
+    enabled: canFinance,
+  });
+  const financeBranches = finance?.branches ?? [];
+
   const kind = isStudent ? "student" : "staff";
   const canTransfer =
     isLive &&
@@ -59,7 +69,15 @@ const UserTransfersCard = ({ user }) => {
     can(isStudent ? "transfers.students" : "transfers.staff");
   const multiBranch = (payroll?.branches?.length ?? 0) > 1;
 
-  if (isLive && !canTransfer && transfers.length === 0 && !multiBranch) return null;
+  if (
+    isLive &&
+    !canTransfer &&
+    transfers.length === 0 &&
+    !multiBranch &&
+    financeBranches.length === 0
+  ) {
+    return null;
+  }
 
   return (
     <section className="space-y-3 rounded-2xl bg-white p-5">
@@ -156,6 +174,51 @@ const UserTransfersCard = ({ user }) => {
                       </p>
                     );
                   })
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {financeBranches.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-gray-900">Boshqa filiallardagi moliya tarixi</p>
+          <p className="text-xs text-gray-500">
+            Ko'chishda qarz va depozit o'quvchi bilan ketadi; to'langan oylar va ularning cheklari
+            esa o'sha filialda qoladi — pul o'sha kassaga tushgan. Bu yerda ular faqat ko'rinadi.
+          </p>
+          <div className="divide-y rounded-xl border border-gray-100">
+            {financeBranches.map((row) => (
+              <div key={row.branch.id} className="space-y-1.5 px-3.5 py-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-900">
+                    <Building2 className="size-3.5 text-gray-400" />
+                    {row.branch.name}
+                  </span>
+                  {row.totals && (
+                    <span className="text-xs text-gray-600">
+                      To'langan: {formatMoney(row.totals.paid)}
+                      {row.totals.debt !== "0.00" && (
+                        <span className="ml-2 font-medium text-red-700">
+                          Qarz: {formatMoney(row.totals.debt)}
+                        </span>
+                      )}
+                      {row.totals.deposit !== "0.00" && (
+                        <span className="ml-2 font-medium text-blue-700">
+                          Depozit: {formatMoney(row.totals.deposit)}
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </div>
+                {row.error ? (
+                  <p className="text-xs text-amber-700">{row.error}</p>
+                ) : (
+                  <p className="text-xs text-gray-500">
+                    {row.invoices.length} ta oy · {row.payments.length} ta chek
+                    {row.payments[0] && ` · oxirgi to'lov ${row.payments[0].paidAtLabel}`}
+                  </p>
                 )}
               </div>
             ))}
