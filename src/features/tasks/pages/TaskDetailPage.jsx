@@ -21,6 +21,7 @@ import {
   FileCheck2,
   CalendarPlus,
   SearchX,
+  MessageSquareWarning,
 } from "lucide-react";
 
 // Queries
@@ -250,6 +251,28 @@ const TaskDetailPage = () => {
         {/* Chap */}
         <div className="space-y-4 lg:col-span-2">
           <Section icon={AlignLeft} title="Nima qilish kerak">
+            {/* MANBA MUAMMO — topshiriq botdan kelgan murojaatni hal
+                qilish uchun berilgan bo'lsa. ⚠️ IJROCHIGA KERAK: tavsifda
+                matn ko'chirilgan bo'lsa ham, u KIMDAN kelganini va qaysi
+                yo'nalish ekanini bilishi kerak. Oddiy topshiriqda `null`. */}
+            {task.issue && (
+              <Link
+                to={`/issues?search=${encodeURIComponent(task.issue.body.slice(0, 40))}`}
+                className="mb-3 block rounded-xl bg-violet-50 px-3.5 py-2.5 ring-1 ring-violet-100 transition-colors hover:bg-violet-100"
+              >
+                <p className="flex items-center gap-1.5 text-xs font-medium text-violet-800">
+                  <MessageSquareWarning className="size-3.5" />
+                  Botdan kelgan muammo · {task.issue.category?.name || "—"}
+                </p>
+                <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-xs text-violet-900/80">
+                  {task.issue.body}
+                </p>
+                <p className="mt-1 text-[11px] text-violet-700/70">
+                  Bu topshiriq tasdiqlanganda muammo avtomatik yopiladi
+                </p>
+              </Link>
+            )}
+
             {task.description ? (
               <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-700">
                 {task.description}
