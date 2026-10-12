@@ -17,6 +17,9 @@ import {
 } from "../data/issues.data";
 
 // Components
+// Icons
+import { TriangleAlert } from "lucide-react";
+
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 import SelectField from "@/shared/components/ui/select/SelectField";
@@ -48,7 +51,8 @@ const ReviewIssueForm = ({ close, isLoading, setIsLoading, ...issue }) => {
     reply: issue.reply || "",
   });
 
-  const needsReply = ISSUE_FINAL_STATUSES.includes(status);
+  const isFinal = ISSUE_FINAL_STATUSES.includes(status);
+  const needsReply = isFinal;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -114,6 +118,23 @@ const ReviewIssueForm = ({ close, isLoading, setIsLoading, ...issue }) => {
           {issue.body}
         </p>
       </div>
+
+      {/* ⚠️ FAOL TOPSHIRIQ TURGANDA OGOHLANTIRISH. Muammoni qo'lda
+          yopish topshiriqlarni TO'XTATMAYDI: odamlar ishni davom etadi,
+          lekin tugatganda muammo allaqachon yopilgani uchun hech narsa
+          o'zgarmaydi (`issueTask.service#onTaskCompleted` yakuniy
+          holatga tegmaydi). Buni jim o'tkazib yuborish ma'muriyatni
+          "topshiriq ham bekor bo'ldi" deb o'ylashga majburlardi. */}
+      {issue.tasks?.active > 0 && isFinal && (
+        <div className="flex items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2.5 text-xs text-amber-900">
+          <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+          <p>
+            Bu muammoda <b>{issue.tasks.active} ta faol topshiriq</b> bor.
+            Qo'lda yopsangiz topshiriqlar TO'XTAMAYDI — ularni kerak
+            bo'lmasa topshiriqlar bo'limida alohida to'xtatish kerak.
+          </p>
+        </div>
+      )}
 
       <SelectField
         required
