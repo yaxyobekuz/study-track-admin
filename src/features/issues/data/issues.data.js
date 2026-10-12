@@ -274,6 +274,68 @@ export const buildIssueKpis = (report) => {
   ];
 };
 
+// ─────────────────────────────────────────────
+// TOPSHIRIQ BIRIKTIRISH
+// ─────────────────────────────────────────────
+
+/**
+ * Tezkor muddat tugmalari — topshiriqlar bo'limidagi bilan AYNI
+ * (`tasks.data.js` dagi `DUE_PRESETS`). Nusxa ataylab: ikki bo'lim bitta
+ * `*.data.js` ni bo'lishsa, biri ikkinchisining ichki tuzilishiga
+ * bog'lanib qolardi — bu yerda esa ro'yxat ikki qatorlik va u
+ * o'zgarganda ikkisi bir-biridan mustaqil o'zgarishi mumkin.
+ */
+const atHour = (daysAhead, hour) => {
+  const d = new Date();
+  d.setDate(d.getDate() + daysAhead);
+  d.setHours(hour, 0, 0, 0);
+  return d;
+};
+
+export const DUE_PRESETS = [
+  { label: "Bugun 18:00", build: () => atHour(0, 18) },
+  { label: "Ertaga", build: () => atHour(1, 18) },
+  { label: "3 kun", build: () => atHour(3, 18) },
+  { label: "1 hafta", build: () => atHour(7, 18) },
+];
+
+/**
+ * TOPSHIRIQ HOLATI — ro'yxatdagi bir qatorlik xulosa.
+ *
+ * ⚠️ `total === 0` — "biriktirilmagan", nol bajarilgan EMAS: ikkisi
+ * ekranda boshqacha ko'rinishi kerak, aks holda hech kim biriktirilmagan
+ * muammo "0/0 bajarildi" bo'lib, ish boshlangandek ko'rinardi.
+ *
+ * @param {{total: number, active: number, completed: number, stopped: number}} tasks
+ * @returns {{label: string, tone: "none"|"active"|"done"|"stopped"}}
+ */
+export const taskProgressLabel = (tasks) => {
+  const t = tasks || {};
+  if (!t.total) return { label: "Biriktirilmagan", tone: "none" };
+
+  if (t.active > 0) {
+    return {
+      label: `${t.completed}/${t.total} bajarildi · ${t.active} ta jarayonda`,
+      tone: "active",
+    };
+  }
+
+  // Faol topshiriq yo'q — yo hammasi bajarilgan, yo to'xtatilgan
+  if (t.completed > 0) {
+    return { label: `${t.completed}/${t.total} bajarildi`, tone: "done" };
+  }
+
+  return { label: `${t.stopped} ta to'xtatilgan`, tone: "stopped" };
+};
+
+/** `taskProgressLabel` ohangi → nishon ranglari. */
+export const taskProgressColors = {
+  none: "bg-gray-100 text-gray-500",
+  active: "bg-amber-100 text-amber-700",
+  done: "bg-green-100 text-green-700",
+  stopped: "bg-rose-100 text-rose-700",
+};
+
 export const REPORT_PERIODS = [
   { value: "7d", label: "7 kun" },
   { value: "30d", label: "30 kun" },
