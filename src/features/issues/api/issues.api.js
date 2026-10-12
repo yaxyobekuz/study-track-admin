@@ -6,6 +6,9 @@ export const issuesAPI = {
   getCounts: () => http.get("/issues/counts"),
   getById: (id) => http.get(`/issues/${id}`),
   review: (id, data) => http.patch(`/issues/${id}/review`, data),
+  // Topshiriq biriktirish — MULTIPART (fayl biriktirish mumkin), shuning
+  // uchun `FormData` uzatiladi, JSON emas.
+  assignTasks: (id, formData) => http.post(`/issues/${id}/tasks`, formData),
   delete: (id) => http.delete(`/issues/${id}`),
 
   // ── Hisobot ──

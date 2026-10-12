@@ -23,6 +23,27 @@ export const useReviewIssue = () => {
   });
 };
 
+/**
+ * TOPSHIRIQ BIRIKTIRISH.
+ *
+ * ⚠️ TOPSHIRIQLAR KESHINI HAM YANGILAYDI: yangi topshiriqlar
+ * topshiriqlar bo'limida ham paydo bo'ladi va u yerdagi ro'yxat eski
+ * holicha qolib ketardi. Kalit qo'lda yoziladi (`["tasks"]`) — boshqa
+ * feature'ning kalit fabrikasini import qilish ikki modulni bir-biriga
+ * bog'lab qo'yardi.
+ */
+export const useAssignIssueTasks = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, formData }) =>
+      issuesAPI.assignTasks(id, formData).then((r) => r.data.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: issuesKeys.all });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+};
+
 export const useDeleteIssue = () => {
   const qc = useQueryClient();
   return useMutation({
