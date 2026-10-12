@@ -8,7 +8,12 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 // Icons
-import { Trash2, MessageSquareReply, MessageSquareWarning } from "lucide-react";
+import {
+  Trash2,
+  UserPlus,
+  MessageSquareReply,
+  MessageSquareWarning,
+} from "lucide-react";
 
 // Utils
 import { formatDateTimeUz } from "@/shared/utils/date.utils";
@@ -28,6 +33,8 @@ import {
   ISSUE_STATUS_TABS,
   issueStatusColors,
   issueStatusLabels,
+  taskProgressLabel,
+  taskProgressColors,
   issueAuthorKindColors,
   issueAuthorKindLabels,
   issueAuthorKindOptions,
@@ -44,6 +51,7 @@ import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import ReviewIssueForm from "../components/ReviewIssueForm";
 import DeleteIssueForm from "../components/DeleteIssueForm";
+import AssignIssueTaskForm from "../components/AssignIssueTaskForm";
 
 const PAGE_SIZE = 20;
 
@@ -223,6 +231,7 @@ const IssuesPage = () => {
                 <th className="px-3 py-2.5">Kimdan</th>
                 <th className="px-3 py-2.5">Kategoriya</th>
                 <th className="px-3 py-2.5">Muammo</th>
+                <th className="px-3 py-2.5">Topshiriq</th>
                 <th className="px-3 py-2.5">Holat</th>
                 <th className="px-3 py-2.5">Sana</th>
                 <th className="px-3 py-2.5">Harakatlar</th>
@@ -273,6 +282,21 @@ const IssuesPage = () => {
                   </td>
 
                   <td className="px-3 py-2.5 text-center">
+                    {(() => {
+                      const progress = taskProgressLabel(issue.tasks);
+                      return (
+                        <span
+                          className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${
+                            taskProgressColors[progress.tone]
+                          }`}
+                        >
+                          {progress.label}
+                        </span>
+                      );
+                    })()}
+                  </td>
+
+                  <td className="px-3 py-2.5 text-center">
                     <span
                       className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${
                         issueStatusColors[issue.status]
@@ -280,6 +304,14 @@ const IssuesPage = () => {
                     >
                       {issueStatusLabels[issue.status]}
                     </span>
+
+                    {/* ⚠️ Topshiriq yopgan muammoni qo'lda yopilganidan
+                        farqlash kerak: ma'muriyat javobni o'zi yozmagan */}
+                    {issue.closedByTask && (
+                      <span className="mt-0.5 block text-[10px] text-gray-400">
+                        topshiriq bilan
+                      </span>
+                    )}
 
                     {/* ⚠️ Javob yozilgan, lekin yetib bormagan (odam botni
                         bloklagan) — ma'muriyat buni bilishi kerak */}
@@ -296,6 +328,19 @@ const IssuesPage = () => {
 
                   <td className="px-3 py-2.5">
                     <div className="flex items-center justify-center gap-2">
+                      {/* Yakunlangan muammoga topshiriq berilmaydi —
+                          server ham rad etadi */}
+                      {can("issues.assign") &&
+                        !["resolved", "rejected"].includes(issue.status) && (
+                          <button
+                            title="Topshiriq biriktirish"
+                            onClick={() => openModal("assignIssueTask", issue)}
+                            className="text-violet-600 hover:text-violet-800"
+                          >
+                            <UserPlus size={16} />
+                          </button>
+                        )}
+
                       {can("issues.review") && (
                         <button
                           title="Ko'rib chiqish"
@@ -342,6 +387,16 @@ const IssuesPage = () => {
         className="max-w-lg"
       >
         <ReviewIssueForm />
+      </ResponsiveModal>
+
+      {/* Topshiriq biriktirish */}
+      <ResponsiveModal
+        name="assignIssueTask"
+        title="Muammoni hal qilishga topshiriq biriktirish"
+        description="Har bir ijrochiga alohida topshiriq yaratiladi"
+        className="max-w-2xl"
+      >
+        <AssignIssueTaskForm />
       </ResponsiveModal>
 
       {/* O'chirish */}
