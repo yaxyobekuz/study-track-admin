@@ -14,7 +14,6 @@ import CoinStats from "../components/CoinStats";
 import UsersStats from "../components/UsersStats";
 import BotActivityStats from "../components/BotActivityStats";
 import HolidayInfo from "../components/HolidayInfo";
-import MyWorkSection from "../components/MyWorkSection";
 import PenaltyStats from "../components/PenaltyStats";
 import RecentExcuses from "../components/RecentExcuses";
 import DownloadAppModal from "../components/DownloadAppModal";
@@ -59,9 +58,6 @@ const Dashboard = () => {
 
       {/* Holiday Info */}
       <HolidayInfo />
-
-      {/* SHAXSIY — "men keldim/ketdim" va "mening oyligim" (owner'da yo'q) */}
-      <MyWorkSection />
 
       {/* User Statistics */}
       <UsersStats />

@@ -15,6 +15,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
+import MyWorkSection from "../components/MyWorkSection";
 
 const INITIAL_FORM = {
   firstName: "",
@@ -123,6 +124,9 @@ const ProfilePage = () => {
   return (
     <div className="space-y-4">
       <h1 className="page-title">Profil</h1>
+
+      {/* SHAXSIY — "men keldim/ketdim" va "mening oyligim" (owner'da yo'q) */}
+      <MyWorkSection />
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

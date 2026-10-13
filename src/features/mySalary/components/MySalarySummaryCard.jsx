@@ -18,12 +18,13 @@ import { formatMoney } from "@/shared/utils/formatMoney";
 import { mySalaryQueries } from "../queries/mySalary.queries";
 
 /**
- * MENING OYLIGIM — bosh sahifadagi qisqa karta (`GET /payroll/my-stats`).
+ * MENING OYLIGIM — PROFILDAGI qisqa karta (`GET /payroll/my-stats`).
  *
- * Rahbar "bu oy qancha olaman" degan javobni tugma bosmasdan, kirgan
- * zahoti ko'rishi kerak — to'liq ekran "Shaxsiy → Mening oyligim" da.
+ * Rahbar "bu oy qancha olaman" degan javobni tugma bosmasdan ko'rishi
+ * kerak — to'liq ekran "Shaxsiy → Mening oyligim" da. ⚠️ Bosh sahifada
+ * EMAS: o'z maoshi — shaxsiy ma'lumot (`profile/components/MyWorkSection`).
  *
- * ⚠️ Oyligi YO'Q xodimga umuman chizilmaydi: bo'sh karta bosh sahifani
+ * ⚠️ Oyligi YO'Q xodimga umuman chizilmaydi: bo'sh karta profil sahifasini
  * ma'nosiz ishg'ol qilardi. Bo'lim sidebarda baribir turadi va u yerda
  * "oylik belgilanmagan" deb OCHIQ aytiladi.
  *
@@ -119,7 +120,7 @@ const MySalarySummaryCard = () => {
   );
 };
 
-/** Pul katakchasi — bosh sahifadagi "Keldim/Ketdim" bilan bir shaklda. */
+/** Pul katakchasi — yonidagi "Keldim/Ketdim" kartasi bilan bir shaklda. */
 const AmountBox = ({ label, value, className }) => (
   <div className="rounded-xl bg-gray-50 p-3 text-center">
     <p className="text-xs text-gray-500">{label}</p>
