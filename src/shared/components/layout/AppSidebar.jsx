@@ -65,6 +65,9 @@ import { permissionForPath } from "@/features/permissions/data/permissions.data"
 // Filial almashtirgich
 import BranchSwitcher from "@/features/branches/components/BranchSwitcher";
 
+// Global qidiruv
+import GlobalSearchButton from "@/features/globalSearch/components/GlobalSearchButton";
+
 // Navigation items — yagona manba (qidiruv modali ham shu ro'yxatni o'qiydi)
 import { navItems } from "@/shared/data/navigation.data";
 
@@ -127,6 +130,8 @@ const Header = () => {
           filialga tegishli. */}
       <BranchSwitcher />
 
+      {/* Global qidiruv — butun platforma bo'yicha (foydalanuvchi + sahifa) */}
+      <GlobalSearchButton />
 
       {/* Collapse Button */}
       {!open && <SidebarTrigger className="size-8" />}

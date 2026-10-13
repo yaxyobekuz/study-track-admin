@@ -41,6 +41,7 @@ import ReviewExcuseModal from "@/features/attendance/components/ReviewExcuseModa
 import CreateBranchModal from "@/features/branches/components/CreateBranchModal";
 import EditBranchModal from "@/features/branches/components/EditBranchModal";
 import ArchiveBranchModal from "@/features/branches/components/ArchiveBranchModal";
+import GlobalSearchModal from "@/features/globalSearch/components/GlobalSearchModal";
 import BugReport from "../components/layout/BugReport";
 
 /**
@@ -74,6 +75,9 @@ const DashboardLayout = () => {
 
       {/* Background Patterns */}
       <MainBackgroundPatterns />
+
+      {/* Global qidiruv (sidebar tugmasi va Ctrl+K) */}
+      <GlobalSearchModal />
 
       {/* Filial Modals */}
       <CreateBranchModal />
