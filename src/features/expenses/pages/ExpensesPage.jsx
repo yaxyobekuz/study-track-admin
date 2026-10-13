@@ -54,6 +54,10 @@ import { cn } from "@/shared/utils/cn";
 import { formatMoney } from "@/shared/utils/formatMoney";
 import { formatDateUz } from "@/shared/utils/date.utils";
 import { downloadBlob, readBlobErrorMessage } from "@/shared/utils/download.utils";
+import {
+  formatMonthKey,
+  inputValueToMonthKey,
+} from "@/shared/helpers/month.helpers";
 
 // Data & queries
 import {
@@ -124,10 +128,18 @@ const ExpenseList = () => {
   const [accountId, setAccountId] = useState("");
   const [isExporting, setIsExporting] = useState(false);
 
+  // ⚠️ OY — BO'SH BOSHLANADI ("Butun tarix"). Joriy oy qo'yilsa, sahifa
+  // ochilganda ro'yxat jimgina qisqarib, o'tgan oydagi xarajat
+  // "yo'qolgan" bo'lib ko'rinardi. Moliyada oy — o'lchov birligi
+  // (`finance.md` §0), lekin registr butun tarixni ko'rsatadi.
+  const [month, setMonth] = useState("");
+
   // ⚠️ FILTRLAR BITTA JOYDA — ro'yxat ham, Excel ham SHU obyektni oladi.
   // Ikki joyda yig'ilsa, biri o'zgarib ikkinchisi eskirardi va fayl
   // ekrandagidan boshqa ro'yxat qaytarardi.
+  const monthKey = inputValueToMonthKey(month);
   const filters = {
+    ...(monthKey ? { month: monthKey } : {}),
     ...(categoryId ? { categoryId } : {}),
     ...(accountId ? { accountId } : {}),
   };
@@ -161,13 +173,43 @@ const ExpenseList = () => {
   const { data: accounts = [] } = useQuery(financeQueries.activeAccounts());
 
   const items = data?.data ?? [];
-  const isFiltered = Boolean(categoryId || accountId);
+  const isFiltered = Boolean(monthKey || categoryId || accountId);
 
   return (
     <div className="space-y-4">
       {/* Filtr paneli */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white p-3 ring-1 ring-gray-100 xs:p-4">
         <div className="flex flex-wrap items-center gap-2">
+          {/* Oy — eng yirik kesim, shuning uchun birinchi turadi.
+              Bo'sh qoldirilsa butun tarix ko'rinadi. */}
+          <input
+            type="month"
+            value={month}
+            onChange={(event) => {
+              setMonth(event.target.value);
+              setPage(1);
+            }}
+            title="Oy bo'yicha filtr — bo'sh qoldirilsa butun tarix"
+            className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-primary"
+          />
+
+          {/* Oy tanlanganda uni bir bosishda tozalash — nativ
+              `input[type=month]` da "tozalash" tugmasi hamma brauzerda
+              ham yo'q, oyni qo'lda o'chirish esa noqulay */}
+          {month && (
+            <button
+              type="button"
+              onClick={() => {
+                setMonth("");
+                setPage(1);
+              }}
+              title="Oy filtrini olib tashlash"
+              className="h-10 rounded-xl px-2.5 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            >
+              Butun tarix
+            </button>
+          )}
+
           <Select searchable
             triggerClassName="min-w-44"
             value={categoryId}
@@ -236,8 +278,14 @@ const ExpenseList = () => {
 
       {data?.totals && (
         <Card>
+          {/* Oy tanlangan bo'lsa uning NOMI turadi: "qaysi oyning
+              summasi" degan savol ochiq qolmasligi kerak */}
           <p className="text-xs font-medium text-gray-500">
-            {isFiltered ? "Tanlangan filtr bo'yicha" : "Jami xarajat"}
+            {monthKey
+              ? `${formatMonthKey(monthKey)} — jami chiqim`
+              : isFiltered
+                ? "Tanlangan filtr bo'yicha"
+                : "Jami xarajat"}
           </p>
           <p className="mt-1 text-2xl font-bold text-green-700">
             {formatMoney(data.totals.amount)}
@@ -256,9 +304,11 @@ const ExpenseList = () => {
             icon={Coins}
             title={isFiltered ? "Yozuv topilmadi" : "Xarajat yo'q"}
             description={
-              isFiltered
-                ? "Filtrni o'zgartirib ko'ring."
-                : "O'quvchi to'lovidan tashqari kelgan pul shu yerda qayd etiladi: ijara, kitob sotuvi, homiylik."
+              monthKey
+                ? `${formatMonthKey(monthKey)} oyida chiqim qayd etilmagan. Boshqa oyni tanlang yoki filtrni olib tashlang.`
+                : isFiltered
+                  ? "Filtrni o'zgartirib ko'ring."
+                  : "O'quvchi to'lovidan tashqari kelgan pul shu yerda qayd etiladi: ijara, kitob sotuvi, homiylik."
             }
             action={
               <Can do="expenses.create">
