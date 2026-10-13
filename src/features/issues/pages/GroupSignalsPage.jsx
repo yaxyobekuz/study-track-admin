@@ -107,18 +107,36 @@ const GroupSignalsPage = () => {
           toast.info("AI sozlanmagan — tahlil ishlamayapti");
           return;
         }
+        // ⚠️ TAHLIL YIQILGANI "TOPILMADI" DEB KO'RSATILMAYDI. AI
+        // ishlamasa xabarlar navbatda qoladi va ularni "ko'rildi" deb
+        // aytish yolg'on bo'lardi — aynan shu xato bo'lgan edi: 4 ta
+        // ochiq shikoyat turgan-u, panel "gap topilmadi" degan.
+        if (result?.failedGroups > 0 && !result?.analyzed) {
+          toast.error(
+            "Tahlil qilib bo'lmadi — AI xizmati javob bermadi. Xabarlar saqlanib turibdi, keyinroq qayta urinib ko'ring",
+          );
+          return;
+        }
+
         if (!result?.analyzed) {
           toast.info("Yangi xabar yo'q — tekshiradigan narsa topilmadi");
           return;
         }
+        // Bir qism guruh tahlil qilinmay qolgan bo'lsa — buni aytish
+        // kerak, aks holda "topilmadi" to'liq manzara bo'lib ko'rinardi.
+        const tail =
+          result.failedGroups > 0
+            ? ` (${result.failedGroups} ta guruh tahlil qilinmadi — keyin qayta ko'riladi)`
+            : "";
+
         if (!result.signals) {
           toast.success(
-            `${result.analyzed} ta xabar ko'rildi — e'tibor talab qiladigan gap topilmadi`,
+            `${result.analyzed} ta xabar ko'rildi — e'tibor talab qiladigan gap topilmadi${tail}`,
           );
           return;
         }
         toast.success(
-          `${result.analyzed} ta xabar ko'rildi — ${result.signals} ta signal topildi`,
+          `${result.analyzed} ta xabar ko'rildi — ${result.signals} ta signal topildi${tail}`,
         );
       },
       onError: (error) =>
