@@ -214,77 +214,90 @@ const GroupSignalsPage = () => {
             const statusMeta = SIGNAL_STATUS_META[signal.status];
 
             return (
-              <Card key={signal.id} className="space-y-3">
-                {/* Yorliqlar + guruh nomi */}
-                <div className="flex flex-wrap items-center gap-2">
-                  {kind && (
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${kind.className}`}
-                    >
-                      {kind.label}
-                    </span>
-                  )}
-                  {severity && (
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${severity.className}`}
-                    >
-                      {severity.label}
-                    </span>
-                  )}
-                  {statusMeta && signal.status !== "new" && (
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusMeta.className}`}
-                    >
-                      {statusMeta.label}
-                    </span>
-                  )}
+              /* ⚠️ IKKI USTUN, `justify-between`: chapda ma'lumot, o'ngda
+                 amallar va ikkalasi VERTIKAL MARKAZDA (`items-center`).
+                 Avval tugmalar matn ostida, o'ng chetda turardi va
+                 kartaning pastki qismi bo'sh qolib ketardi.
 
-                  <span className="ml-auto text-xs text-gray-500">
-                    {signal.group?.title}
-                  </span>
+                 ⚠️ TELEFONDA USTMA-UST (`max-sm:` sinflari): yonma-yon
+                 turgan tugmalar tor ekranda matnni siqib qo'yardi. */
+              <Card
+                key={signal.id}
+                className="flex items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch"
+              >
+                <div className="min-w-0 space-y-2">
+                  {/* Yorliqlar */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {kind && (
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${kind.className}`}
+                      >
+                        {kind.label}
+                      </span>
+                    )}
+                    {severity && (
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${severity.className}`}
+                      >
+                        {severity.label}
+                      </span>
+                    )}
+                    {statusMeta && signal.status !== "new" && (
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusMeta.className}`}
+                      >
+                        {statusMeta.label}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Xabarning o'z matni */}
+                  <p className="font-medium text-gray-900">{signal.summary}</p>
+
+                  {/* Manba: kim, qachon, qayerda */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                    {signal.senderName && (
+                      <span className="font-medium text-gray-700">
+                        {signal.senderName}
+                      </span>
+                    )}
+                    {signal.sentAt && (
+                      <span>{formatDateTimeUz(signal.sentAt)}</span>
+                    )}
+
+                    <span>{signal.group?.title}</span>
+
+                    {/* ⚠️ HAVOLA YANGI OYNADA: panelni tashlab ketmasligi kerak */}
+                    {signal.messageLink && (
+                      <a
+                        href={signal.messageLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 font-medium text-blue-600 hover:underline"
+                      >
+                        <ExternalLink className="size-3.5" strokeWidth={1.5} />
+                        Xabarni ochish
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Biriktirilgan bo'lsa — kim va qachon */}
+                  {signal.status === "attached" && (
+                    <p className="text-xs text-gray-500">
+                      {signal.attachedBy
+                        ? `${signal.attachedBy.firstName} ${signal.attachedBy.lastName} biriktirgan`
+                        : "Biriktirilgan"}
+                      {signal.attachedAt
+                        ? ` · ${formatDateTimeUz(signal.attachedAt)}`
+                        : ""}
+                    </p>
+                  )}
                 </div>
 
-                {/* AI xulosasi */}
-                <p className="font-medium text-gray-900">{signal.summary}</p>
-
-                {/* Manba: kim, qachon, qayerda */}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                  {signal.senderName && (
-                    <span className="font-medium text-gray-700">
-                      {signal.senderName}
-                    </span>
-                  )}
-                  {signal.sentAt && <span>{formatDateTimeUz(signal.sentAt)}</span>}
-
-                  {/* ⚠️ HAVOLA YANGI OYNADA: panelni tashlab ketmasligi kerak */}
-                  {signal.messageLink && (
-                    <a
-                      href={signal.messageLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 font-medium text-blue-600 hover:underline"
-                    >
-                      <ExternalLink className="size-3.5" strokeWidth={1.5} />
-                      Xabarni ochish
-                    </a>
-                  )}
-                </div>
-
-                {/* Biriktirilgan bo'lsa — kim va qachon */}
-                {signal.status === "attached" && (
-                  <p className="text-xs text-gray-500">
-                    {signal.attachedBy
-                      ? `${signal.attachedBy.firstName} ${signal.attachedBy.lastName} biriktirgan`
-                      : "Biriktirilgan"}
-                    {signal.attachedAt
-                      ? ` · ${formatDateTimeUz(signal.attachedAt)}`
-                      : ""}
-                  </p>
-                )}
-
-                {/* Amallar — faqat hal qilinmagan signalda */}
+                {/* Amallar — faqat hal qilinmagan signalda.
+                    ⚠️ `shrink-0`: uzun matn tugmalarni siqmasligi kerak. */}
                 {canManage && signal.status === "new" && (
-                  <div className="flex flex-wrap justify-end gap-2">
+                  <div className="flex shrink-0 items-center gap-2 max-sm:justify-end">
                     <Button
                       size="sm"
                       variant="ghost"
