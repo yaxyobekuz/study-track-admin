@@ -44,7 +44,7 @@ const AttentionCard = ({ report, roles }) => {
           {rows.map((p) => (
             <li key={p.userId}>
               <Link
-                to={`/tasks?assigneeId=${p.userId}`}
+                to={`/tasks/list?assigneeId=${p.userId}`}
                 className="flex items-center gap-3 rounded-xl p-1.5 hover:bg-gray-50"
               >
                 <UserAvatar name={p.name} />

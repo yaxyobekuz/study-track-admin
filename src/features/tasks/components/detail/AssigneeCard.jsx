@@ -98,7 +98,7 @@ const AssigneeCard = ({ task, roles }) => {
 
       {user?.id && (
         <Link
-          to={`/tasks?assigneeId=${user.id}`}
+          to={`/tasks/list?assigneeId=${user.id}`}
           className="mt-3 flex items-center justify-center gap-1.5 rounded-xl bg-gray-50 py-2 text-xs font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-700"
         >
           <ListTodo className="size-3.5" />

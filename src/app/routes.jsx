@@ -108,6 +108,7 @@ import ChangelogPage from "@/features/changelog/pages/ChangelogPage";
 // Pages - Tasks
 import TasksLayout from "@/features/tasks/layouts/TasksLayout";
 import TasksPage from "@/features/tasks/pages/TasksPage";
+import TaskDashboardPage from "@/features/tasks/pages/TaskDashboardPage";
 import TaskReportsPage from "@/features/tasks/pages/TaskReportsPage";
 import TaskSettingsPage from "@/features/tasks/pages/TaskSettingsPage";
 import TaskDetailPage from "@/features/tasks/pages/TaskDetailPage";
@@ -466,12 +467,15 @@ const Routes = () => {
           {/* Changelog */}
           <Route path="/changelog" element={<ChangelogPage />} />
 
-          {/* Tasks */}
-          {/* Asosiy / Hisobotlar / Sozlamalar — bitta layout ostida.
-              Detal sahifa layoutdan TASHQARIDA (o'z sarlavhasi bor);
-              statik `reports`/`settings` yo'llari `:taskId` dan ustun. */}
+          {/* Lavozimlar markazi */}
+          {/* Dashboard / Topshiriqlar / Hisobotlar / Sozlamalar — bitta
+              layout ostida. Detal sahifa layoutdan TASHQARIDA (o'z
+              sarlavhasi bor); statik yo'llar `:taskId` dan ustun.
+              ⚠️ Yo'l `/tasks` bo'lib qoladi: ruxsat kalitlari va saqlangan
+              havolalar shunga bog'langan, bo'lim nomi esa o'zgardi. */}
           <Route path="/tasks" element={<TasksLayout />}>
-            <Route index element={<TasksPage />} />
+            <Route index element={<TaskDashboardPage />} />
+            <Route path="list" element={<TasksPage />} />
             <Route path="reports" element={<TaskReportsPage />} />
             <Route path="settings" element={<TaskSettingsPage />} />
           </Route>

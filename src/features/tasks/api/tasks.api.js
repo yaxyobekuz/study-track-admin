@@ -12,6 +12,15 @@ export const tasksAPI = {
   // Hisobot: { from, to } — "YYYY-MM-DD"
   getReport: (params) => http.get("/tasks/reports", { params }),
 
+  // Lavozimlar markazi dashboardi: { period } — day | week | month | year.
+  // ⚠️ Hisobot bilan BITTA dvigatel, faqat davr preseti va doirasi boshqa
+  // (rahbar — o'z bo'limi). Davr chegarasi serverda, Toshkent vaqtida.
+  getDashboard: (params) => http.get("/tasks/dashboard", { params }),
+
+  // Ijrochi tanlash ro'yxati — DOIRA bo'yicha (bo'lim rahbari uchun).
+  // ⚠️ `users.view` talab qilmaydi: javobda faqat ism va rol bor.
+  getAssignees: (params) => http.get("/tasks/assignees", { params }),
+
   // Topshiriq qoidalari
   getSettings: () => http.get("/tasks/settings"),
   updateSettings: (data) => http.put("/tasks/settings", data),

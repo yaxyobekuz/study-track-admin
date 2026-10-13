@@ -18,6 +18,8 @@ import {
   SORT_OPTIONS,
   TASKS_PAGE_LIMIT,
   DUE_FILTER_OPTIONS,
+  TASK_KIND_OPTIONS,
+  STATE_FILTER_OPTIONS,
   taskStatusOptions,
 } from "../data/tasks.data";
 
@@ -41,7 +43,7 @@ import { useRoles } from "@/features/roles/queries/roles.queries";
 import CreateTaskModal from "../components/CreateTaskModal";
 
 // Filtr parametrlari — hammasi URL'da, sahifani filtr bilan link qilib yuborish mumkin
-const FILTER_KEYS = ["status", "due", "assigneeId", "search", "sort"];
+const FILTER_KEYS = ["status", "state", "kind", "due", "assigneeId", "search", "sort"];
 
 /**
  * "Asosiy" tab: jonli hisoblagichlar + filtrlar + ro'yxat.
@@ -54,6 +56,9 @@ const TasksPage = () => {
 
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const status = searchParams.get("status") || "all";
+  // Vaqt kesimi — dashboarddan shu parametr bilan kelinadi
+  const state = searchParams.get("state") || "all";
+  const kind = searchParams.get("kind") || "all";
   const due = searchParams.get("due") || "all";
   const assigneeId = searchParams.get("assigneeId") || "";
   const sort = searchParams.get("sort") || "newest";
@@ -69,6 +74,8 @@ const TasksPage = () => {
       limit: TASKS_PAGE_LIMIT,
       sort,
       ...(status !== "all" && { status }),
+      ...(state !== "all" && { state }),
+      ...(kind !== "all" && { kind }),
       ...(due !== "all" && { due }),
       ...(assigneeId && { assigneeId }),
       ...(search && { search }),
@@ -115,8 +122,10 @@ const TasksPage = () => {
     Object.entries(card.filter).every(([k, v]) => searchParams.get(k) === v);
 
   const selectCard = (card) => {
-    if (isCardActive(card)) updateParams({ status: "", due: "" });
-    else updateParams({ status: "", due: "", ...card.filter });
+    // Bir karta bosilganda boshqa turdagi kesim tozalanadi — aks holda
+    // "Bajarilmadi" + "Yakunlangan" kabi har doim bo'sh kesim hosil bo'lardi
+    if (isCardActive(card)) updateParams({ status: "", due: "", state: "" });
+    else updateParams({ status: "", due: "", state: "", ...card.filter });
   };
 
   return (
@@ -131,6 +140,20 @@ const TasksPage = () => {
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Sarlavha yoki tavsif bo'yicha qidirish..."
             className="min-w-56 flex-1"
+          />
+
+          <Select
+            value={state}
+            options={STATE_FILTER_OPTIONS}
+            triggerClassName="w-52"
+            onChange={(v) => updateParams({ state: v })}
+          />
+
+          <Select
+            value={kind}
+            options={TASK_KIND_OPTIONS}
+            triggerClassName="w-40"
+            onChange={(v) => updateParams({ kind: v })}
           />
 
           <Select
@@ -187,7 +210,7 @@ const TasksPage = () => {
                 Tozalash
               </Button>
             )}
-            {can("tasks.create") && (
+            {(can("tasks.create") || can("tasks.team")) && (
               <Button onClick={() => openModal("createTask")}>
                 <Plus />
                 Topshiriq berish
@@ -228,7 +251,7 @@ const TasksPage = () => {
                   Filtrlarni tozalash
                 </Button>
               ) : (
-                can("tasks.create") && (
+                (can("tasks.create") || can("tasks.team")) && (
                   <Button onClick={() => openModal("createTask")}>
                     <Plus />
                     Topshiriq berish

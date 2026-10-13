@@ -64,10 +64,14 @@ export const navItems = [
         url: "/statistics",
       },
       {
-        // Topshiriqlar — bitta sahifa, ichida tablar (Asosiy / Hisobotlar /
-        // Sozlamalar), moliya bo'limi kabi. Tablar ruxsat bo'yicha
-        // `TasksLayout` ichida filtrlanadi.
-        title: "Topshiriqlar",
+        // LAVOZIMLAR MARKAZI — bitta sahifa, ichida tablar (Dashboard /
+        // Topshiriqlar / Hisobotlar / Sozlamalar), moliya bo'limi kabi.
+        // Tablar ruxsat bo'yicha `TasksLayout` ichida filtrlanadi.
+        //
+        // ⚠️ YO'L `/tasks` BO'LIB QOLADI: ruxsat kaliti (`tasks.*`), server
+        // yo'li va saqlangan havolalar o'shanga bog'langan — nomi
+        // o'zgargani bilan kalitlar o'zgarmaydi.
+        title: "Lavozimlar markazi",
         url: "/tasks",
       },
     ],

@@ -76,10 +76,14 @@ export const classesQueries = {
  * Shared classes list, available to every authenticated user.
  * Deduped/cached across all consumers.
  *
+ * `options.enabled` — katalog kerak bo'lmagan ekranda (masalan bo'lim
+ * rahbarining ijrochi tanlash oynasida) ortiqcha so'rov yuborilmasin.
+ *
  * @example
  * const { data: classes = [] } = useClasses();
  */
-export const useClasses = () => useQuery(classesQueries.list());
+export const useClasses = ({ enabled = true } = {}) =>
+  useQuery({ ...classesQueries.list(), enabled });
 
 /**
  * Students belonging to a single class (class detail roster).

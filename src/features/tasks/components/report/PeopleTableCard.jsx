@@ -86,7 +86,7 @@ const PeopleTableCard = ({ report, roles, className = "" }) => {
             {rows.map((p) => (
               <tr
                 key={p.userId}
-                onClick={() => navigate(`/tasks?assigneeId=${p.userId}`)}
+                onClick={() => navigate(`/tasks/list?assigneeId=${p.userId}`)}
                 className="cursor-pointer hover:bg-gray-50"
               >
                 <td className="px-2 py-2.5">

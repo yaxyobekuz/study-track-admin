@@ -12,11 +12,15 @@ import { Check, ChevronDown, ChevronUp, Loader2, Users, X } from "lucide-react";
 
 // Hooks
 import useDebounce from "@/shared/hooks/useDebounce";
+import usePermissions from "@/shared/hooks/usePermissions";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 import { useClasses } from "@/features/classes/queries/classes.queries";
 
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
+
 // Queries
-import { tasksQueries, useTaskAssignees } from "../queries/tasks.queries";
+import { tasksQueries } from "../queries/tasks.queries";
 
 // Data
 import {
@@ -61,8 +65,18 @@ const withoutOwner = (users = []) => users.filter((u) => u.role !== "owner");
  */
 const AssigneePicker = ({ value = [], onChange, disabled = false, single = false }) => {
   const queryClient = useQueryClient();
-  const { data: roles = [] } = useRoles();
-  const { data: classes = [] } = useClasses();
+  const { can } = usePermissions();
+
+  /**
+   * ⚠️ BO'LIM RAHBARI REJIMI. Xodimlar ro'yxati (`users.view`) va lavozim /
+   * sinf kataloglari undan tashqarida bo'lishi mumkin — ularsiz oyna bo'sh
+   * ochilardi. Bunday foydalanuvchiga topshiriqlar bo'limining O'Z yo'li
+   * xizmat qiladi: u faqat o'z bo'limidagi odamlarni qaytaradi.
+   */
+  const scoped = !can("users.view");
+
+  const { data: roles = [] } = useRoles({ enabled: !scoped });
+  const { data: classes = [] } = useClasses({ enabled: !scoped });
 
   const [group, setGroup] = useState(assigneeGroupTabs[0].value);
   const [role, setRole] = useState("");
@@ -79,7 +93,16 @@ const AssigneePicker = ({ value = [], onChange, disabled = false, single = false
     ...(group === "student" && classId && { classId }),
   };
 
-  const { data, isLoading, isFetching } = useTaskAssignees(filter);
+  // Doira rejimida sahifalash yo'q — bitta bo'lim bitta ro'yxatga sig'adi
+  const scopedQuery = useQuery({
+    ...tasksQueries.scopedAssignees({ search, limit: MAX_ASSIGNEES }),
+    enabled: scoped,
+  });
+  // ⚠️ Doira rejimida UMUMAN yuborilmaydi: `/users` o'sha foydalanuvchida
+  // 403 qaytarardi va konsol xato bilan to'lardi
+  const fullQuery = useQuery({ ...tasksQueries.assignees(filter), enabled: !scoped });
+
+  const { data, isLoading, isFetching } = scoped ? scopedQuery : fullQuery;
 
   const users = withoutOwner(data?.data);
   const total = data?.pagination?.total ?? users.length;
@@ -223,17 +246,19 @@ const AssigneePicker = ({ value = [], onChange, disabled = false, single = false
         </div>
       )}
 
-      {/* Guruh */}
-      <TabsButtons
-        items={assigneeGroupTabs}
-        value={group}
-        onChange={setGroup}
-        listClassName="w-full"
-        triggerClassName="flex-1"
-      />
+      {/* Guruh — doira rejimida faqat o'z bo'limi xodimlari bo'ladi */}
+      {!scoped && (
+        <TabsButtons
+          items={assigneeGroupTabs}
+          value={group}
+          onChange={setGroup}
+          listClassName="w-full"
+          triggerClassName="flex-1"
+        />
+      )}
 
       {/* Qidiruv + filtr */}
-      <div className="grid gap-2 sm:grid-cols-[1fr_200px]">
+      <div className={cn("grid gap-2", !scoped && "sm:grid-cols-[1fr_200px]")}>
         <div className="relative">
           <Input
             type="search"
@@ -247,12 +272,18 @@ const AssigneePicker = ({ value = [], onChange, disabled = false, single = false
           )}
         </div>
 
-        {group === "staff" ? (
+        {scoped ? null : group === "staff" ? (
           <Select value={role} options={roleOptions} onChange={setRole} disabled={disabled} />
         ) : (
           <Select value={classId} options={classOptions} onChange={setClassId} disabled={disabled} />
         )}
       </div>
+
+      {scoped && (
+        <p className="ml-1 text-xs text-gray-500">
+          Faqat o&apos;z bo&apos;limingizdagi xodimlar ko&apos;rinadi
+        </p>
+      )}
 
       {/* Ro'yxat */}
       <div className="overflow-hidden rounded-xl border border-gray-200">

@@ -26,24 +26,12 @@ import { DEFAULT_TASK_SETTINGS } from "../data/tasks.data";
 // Components
 import FileDropzone from "./FileDropzone";
 import AssigneePicker from "./AssigneePicker";
+import TaskKindPicker from "./form/TaskKindPicker";
+import TaskLinksField from "./form/TaskLinksField";
+import TaskScheduleField from "./form/TaskScheduleField";
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
-
-// Tezkor muddat tugmalari: hozirdan necha soat keyin
-const DUE_PRESETS = [
-  { label: "Bugun 18:00", build: () => atHour(0, 18) },
-  { label: "Ertaga", build: () => atHour(1, 18) },
-  { label: "3 kun", build: () => atHour(3, 18) },
-  { label: "1 hafta", build: () => atHour(7, 18) },
-];
-
-function atHour(daysAhead, hour) {
-  const d = new Date();
-  d.setDate(d.getDate() + daysAhead);
-  d.setHours(hour, 0, 0, 0);
-  return d;
-}
 
 const CreateTaskModal = () => (
   <ResponsiveModal
@@ -58,20 +46,31 @@ const CreateTaskModal = () => (
 
 const Content = ({ close, isLoading, setIsLoading }) => {
   const { mutate: createTask } = useCreateTask();
-  const { data: settings = DEFAULT_TASK_SETTINGS } = useQuery(
-    tasksQueries.settings(),
-  );
+  const { data: settings = DEFAULT_TASK_SETTINGS } = useQuery(tasksQueries.settings());
 
-  const { title, description, dueDate, penaltyPoints, setField } =
-    useObjectState({
-      title: "",
-      description: "",
-      dueDate: "",
-      penaltyPoints: "",
-    });
+  const {
+    title,
+    description,
+    startDate,
+    dueDate,
+    penaltyPoints,
+    kind,
+    timeMode,
+    setField,
+  } = useObjectState({
+    title: "",
+    description: "",
+    // "due" — faqat muddat, "range" — vaqt oralig'i
+    timeMode: "due",
+    startDate: "",
+    dueDate: "",
+    kind: "main",
+    penaltyPoints: "",
+  });
 
   const [assignees, setAssignees] = useState([]);
   const [files, setFiles] = useState([]);
+  const [links, setLinks] = useState([]);
   // Modal ochilgan lahza — minimal muddat shunga nisbatan
   const [openedAt] = useState(() => Date.now());
 
@@ -85,13 +84,15 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     new Date(openedAt + Math.max(settings.minLeadHours, 0) * 3600000),
   );
 
-  // Formadagi xatolar — tugma yonida ko'rinadi, server xatosini kutib o'tirmaslik uchun
+  // Formadagi xatolar — tugma yonida ko'rinadi, server xatosini kutib
+  // o'tirmaslik uchun. Server baribir hammasini qayta tekshiradi.
   const problems = [];
   if (assignees.length === 0) problems.push("Kamida bitta ijrochi tanlang");
   if (title.trim().length < settings.minTitleLength)
     problems.push(`Sarlavha kamida ${settings.minTitleLength} ta belgi`);
   if (description.trim().length < settings.minDescriptionLength)
     problems.push(`Tavsif kamida ${settings.minDescriptionLength} ta belgi`);
+  if (timeMode === "range" && !startDate) problems.push("Boshlanish vaqtini belgilang");
   if (!dueDate) problems.push("Ijro muddatini belgilang");
   else if (dueDate < minDue)
     problems.push(
@@ -99,6 +100,8 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         ? `Muddat kamida ${settings.minLeadHours} soatdan keyin bo'lsin`
         : "Muddat kelajakda bo'lsin",
     );
+  if (timeMode === "range" && startDate && dueDate && startDate >= dueDate)
+    problems.push("Boshlanish vaqti tugash vaqtidan oldin bo'lsin");
   const points = Number(penaltyPoints);
   if (!Number.isInteger(points) || points < 1 || points > settings.maxPenaltyPoints)
     problems.push(`Jarima bali 1–${settings.maxPenaltyPoints} oralig'ida`);
@@ -113,6 +116,14 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     formData.append("title", title.trim());
     formData.append("description", description.trim());
     formData.append("dueDate", new Date(dueDate).toISOString());
+    // ⚠️ Faqat "oraliq" rejimida yuboriladi: "faqat muddat" rejimida
+    // maydon bo'sh qolishi KERAK, aks holda ijrochi panelida ma'nosiz
+    // "hali boshlanmagan" holati paydo bo'lardi.
+    if (timeMode === "range" && startDate) {
+      formData.append("startDate", new Date(startDate).toISOString());
+    }
+    formData.append("kind", kind);
+    if (links.length) formData.append("links", JSON.stringify(links));
     formData.append("penaltyPoints", String(points));
     formData.append("assigneeIds", JSON.stringify(assignees.map((u) => u.id)));
     files.forEach((file) => formData.append("files", file));
@@ -124,8 +135,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         const count = res?.data?.length || 1;
         toast.success(`${count} ta topshiriq yaratildi`);
       },
-      onError: (err) =>
-        toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
+      onError: (err) => toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
       onSettled: () => setIsLoading(false),
     });
   };
@@ -133,6 +143,12 @@ const Content = ({ close, isLoading, setIsLoading }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <AssigneePicker value={assignees} disabled={isLoading} onChange={setAssignees} />
+
+      <TaskKindPicker
+        value={kind}
+        disabled={isLoading}
+        onChange={(value) => setField("kind", value)}
+      />
 
       <InputField
         required
@@ -160,46 +176,30 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
-        <div className="space-y-2">
-          <InputField
-            required
-            value={dueDate}
-            min={minDue}
-            label="Ijro muddati"
-            type="datetime-local"
-            onChange={(e) => setField("dueDate", e.target.value)}
-          />
-          <div className="flex flex-wrap gap-1.5">
-            {DUE_PRESETS.map((preset) => {
-              const value = toDateTimeInputValue(preset.build());
-              const disabled = value < minDue;
-              return (
-                <button
-                  key={preset.label}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => setField("dueDate", value)}
-                  className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-blue-100 hover:text-blue-700 disabled:opacity-40 disabled:hover:bg-gray-100"
-                >
-                  {preset.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      <TaskScheduleField
+        mode={timeMode}
+        minDue={minDue}
+        startDate={startDate}
+        dueDate={dueDate}
+        disabled={isLoading}
+        onModeChange={(mode) => {
+          setField("timeMode", mode);
+          if (mode === "due") setField("startDate", "");
+        }}
+        onChange={setField}
+      />
 
-        <InputField
-          required
-          min={1}
-          max={settings.maxPenaltyPoints}
-          type="number"
-          label="Jarima bali"
-          value={penaltyPoints}
-          onChange={(e) => setField("penaltyPoints", e.target.value)}
-          description={`Ko'pi bilan ${settings.maxPenaltyPoints}`}
-        />
-      </div>
+      <InputField
+        required
+        min={1}
+        max={settings.maxPenaltyPoints}
+        type="number"
+        label="Jarima bali"
+        value={penaltyPoints}
+        className="sm:max-w-44"
+        onChange={(e) => setField("penaltyPoints", e.target.value)}
+        description={`Muddat o'tsa yoziladi · ko'pi bilan ${settings.maxPenaltyPoints}`}
+      />
 
       <FileDropzone
         value={files}
@@ -211,6 +211,8 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         hint="Namuna, ko'rsatma yoki hujjat — rasm, video, PDF, Word, Excel"
       />
 
+      <TaskLinksField value={links} onChange={setLinks} disabled={isLoading} />
+
       <div className="flex items-start gap-2 rounded-xl bg-blue-50 px-3.5 py-2.5 text-xs text-blue-800">
         <Info className="mt-0.5 size-4 shrink-0" />
         <p>
@@ -218,16 +220,24 @@ const Content = ({ close, isLoading, setIsLoading }) => {
           <b>{Math.max(1, settings.minCompletionFiles)} ta fayl</b> yuklashi kerak.
           Muddat o'tsa{" "}
           {settings.autoPenaltyEnabled ? (
-            <>avtomatik ravishda <b>{points || "—"} ball</b> jarima yoziladi.</>
+            <>
+              avtomatik ravishda <b>{points || "—"} ball</b> jarima yoziladi va topshiriq
+              "Bajarilmadi" bo'lib ko'rinadi.
+            </>
           ) : (
-            <>avtomatik jarima yozilmaydi (sozlamada o'chirilgan).</>
+            <>
+              avtomatik jarima yozilmaydi (sozlamada o'chirilgan), lekin topshiriq
+              "Bajarilmadi" bo'lib ko'rinadi.
+            </>
           )}
         </p>
       </div>
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-gray-400">
-          {problems.length > 0 ? problems[0] : assignees.length > 1
+          {problems.length > 0
+            ? problems[0]
+            : assignees.length > 1
               ? `${assignees.length} kishining har biriga alohida topshiriq yaratiladi`
               : "1 kishiga topshiriq yaratiladi"}
         </p>

@@ -28,13 +28,17 @@ export const rolesQueries = {
  * TanStack dedupes this across every consumer, so calling it in many
  * components triggers a single request.
  *
+ * `options.enabled` — qo'shimcha shart (owner sharti BILAN BIRGA amal
+ * qiladi, uning o'rniga emas): katalog kerak bo'lmagan ekranda ortiqcha
+ * so'rov yuborilmasin.
+ *
  * @example
  * const { data: roles = [], isLoading } = useRoles();
  */
-export const useRoles = () => {
+export const useRoles = ({ enabled = true } = {}) => {
   const { user } = useAuth();
   return useQuery({
     ...rolesQueries.list(),
-    enabled: user?.role === "owner",
+    enabled: enabled && user?.role === "owner",
   });
 };

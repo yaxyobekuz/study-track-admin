@@ -24,10 +24,15 @@ import {
   WORKING_TASK_STATUSES,
 } from "../data/tasks.data";
 
+// Utils
+import { toDateTimeInputValue } from "@/shared/utils/date.utils";
+
 // Components
 import FileDropzone from "./FileDropzone";
 import AttachmentGrid from "./AttachmentGrid";
 import AssigneePicker from "./AssigneePicker";
+import TaskKindPicker from "./form/TaskKindPicker";
+import TaskLinksField from "./form/TaskLinksField";
 import Button from "@/shared/components/ui/button/Button";
 import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
@@ -54,15 +59,21 @@ const Content = ({ close, isLoading, setIsLoading, task }) => {
   const { mutate: updateTask } = useUpdateTask();
   const { data: settings = DEFAULT_TASK_SETTINGS } = useQuery(tasksQueries.settings());
 
-  const { title, description, penaltyPoints, setField } = useObjectState({
+  const { title, description, penaltyPoints, kind, startDate, setField } = useObjectState({
     title: task?.title || "",
     description: task?.description || "",
     penaltyPoints: String(task?.penaltyPoints ?? ""),
+    kind: task?.kind || "main",
+    // ⚠️ MUDDAT bu yerda tahrirlanmaydi: uni o'zgartirish sabab va tarix
+    // talab qiladi va "Muddatni uzaytirish" oynasining ishi. Bu yerda
+    // faqat BOSHLANISH vaqti (oraliq) to'g'rilanadi.
+    startDate: task?.startDate ? toDateTimeInputValue(new Date(task.startDate)) : "",
   });
 
   const [assignee, setAssignee] = useState(task?.assignee ? [task.assignee] : []);
   const [removedKeys, setRemovedKeys] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
+  const [links, setLinks] = useState(task?.links || []);
 
   if (!task) return null;
 
@@ -77,6 +88,12 @@ const Content = ({ close, isLoading, setIsLoading, task }) => {
   if (Number(penaltyPoints) !== task.penaltyPoints) changes.push("penaltyPoints");
   if (nextAssignee && nextAssignee.id !== task.assignee?.id) changes.push("assignee");
   if (removedKeys.length || newFiles.length) changes.push("attachments");
+  if (kind !== (task.kind || "main")) changes.push("kind");
+  const currentStart = task.startDate
+    ? toDateTimeInputValue(new Date(task.startDate))
+    : "";
+  if (startDate !== currentStart) changes.push("startDate");
+  if (JSON.stringify(links) !== JSON.stringify(task.links || [])) changes.push("links");
 
   const problems = [];
   if (title.trim().length < settings.minTitleLength)
@@ -88,6 +105,8 @@ const Content = ({ close, isLoading, setIsLoading, task }) => {
     problems.push(`Jarima bali 1–${settings.maxPenaltyPoints} oralig'ida`);
   if (!nextAssignee) problems.push("Ijrochini tanlang");
   if (currentFiles.length + newFiles.length > 10) problems.push("Ko'pi bilan 10 ta fayl");
+  if (startDate && startDate >= toDateTimeInputValue(new Date(task.dueDate)))
+    problems.push("Boshlanish vaqti ijro muddatidan oldin bo'lsin");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -99,6 +118,11 @@ const Content = ({ close, isLoading, setIsLoading, task }) => {
     if (changes.includes("description")) formData.append("description", description.trim());
     if (changes.includes("penaltyPoints")) formData.append("penaltyPoints", String(points));
     if (changes.includes("assignee")) formData.append("assigneeId", nextAssignee.id);
+    if (changes.includes("kind")) formData.append("kind", kind);
+    // Bo'sh satr — oraliqni olib tashlash ("shu vaqtgacha" rejimiga qaytish)
+    if (changes.includes("startDate"))
+      formData.append("startDate", startDate ? new Date(startDate).toISOString() : "");
+    if (changes.includes("links")) formData.append("links", JSON.stringify(links));
     if (removedKeys.length) formData.append("removeAttachmentKeys", JSON.stringify(removedKeys));
     newFiles.forEach((file) => formData.append("files", file));
 
@@ -137,16 +161,33 @@ const Content = ({ close, isLoading, setIsLoading, task }) => {
         description={`${description.trim().length}/5000`}
       />
 
-      <InputField
-        required
-        min={1}
-        max={settings.maxPenaltyPoints}
-        type="number"
-        label="Kechiksa jarima bali"
-        value={penaltyPoints}
-        className="sm:max-w-48"
-        onChange={(e) => setField("penaltyPoints", e.target.value)}
+      <TaskKindPicker
+        value={kind}
+        disabled={isLoading}
+        onChange={(value) => setField("kind", value)}
       />
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <InputField
+          type="datetime-local"
+          label="Boshlanish vaqti"
+          value={startDate}
+          disabled={isLoading}
+          max={toDateTimeInputValue(new Date(task.dueDate))}
+          onChange={(e) => setField("startDate", e.target.value)}
+          description="Bo'sh qoldirilsa — faqat muddat"
+        />
+
+        <InputField
+          required
+          min={1}
+          max={settings.maxPenaltyPoints}
+          type="number"
+          label="Kechiksa jarima bali"
+          value={penaltyPoints}
+          onChange={(e) => setField("penaltyPoints", e.target.value)}
+        />
+      </div>
 
       {canReassign ? (
         <div className="space-y-1.5">
@@ -206,6 +247,8 @@ const Content = ({ close, isLoading, setIsLoading, task }) => {
         disabled={isLoading}
         label="Yangi fayl qo'shish"
       />
+
+      <TaskLinksField value={links} onChange={setLinks} disabled={isLoading} />
 
       <div className="flex flex-col-reverse gap-2 border-t border-gray-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-gray-500">

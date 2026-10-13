@@ -3,6 +3,8 @@ import { Ban, CalendarClock, Check, RotateCcw, ShieldAlert, UserRound } from "lu
 
 // Components
 import DeadlineChip from "../DeadlineChip";
+import TaskKindBadge from "../TaskKindBadge";
+import TaskStateBadge from "../TaskStateBadge";
 import TaskStatusBadge from "../TaskStatusBadge";
 
 // Utils
@@ -10,7 +12,12 @@ import { cn } from "@/shared/utils/cn";
 import { formatDateTimeUz } from "@/shared/utils/date.utils";
 
 // Data
-import { TASK_STEPS, fullName, getStepIndex } from "../../data/tasks.data";
+import {
+  TASK_STEPS,
+  fullName,
+  getStepIndex,
+  formatTaskWindow,
+} from "../../data/tasks.data";
 
 /**
  * Topshiriq qadamlari: Berildi → Bajarilmoqda → Tekshiruvda → Yakunlandi.
@@ -83,7 +90,9 @@ const TaskHero = ({ task, dueSoonHours }) => {
     <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-gray-100">
       <div className="bg-gradient-to-br from-blue-50/80 via-white to-white p-4 xs:p-6">
         <div className="flex flex-wrap items-center gap-2">
+          <TaskStateBadge task={task} />
           <TaskStatusBadge status={task.status} size="md" />
+          <TaskKindBadge kind={task.kind} />
           <DeadlineChip dueDate={task.dueDate} status={task.status} dueSoonHours={dueSoonHours} />
         </div>
 
@@ -126,10 +135,10 @@ const TaskHero = ({ task, dueSoonHours }) => {
         <div className="px-4 py-3.5 xs:px-6">
           <p className="flex items-center gap-1.5 text-xs text-gray-500">
             <CalendarClock className="size-3.5" />
-            Ijro muddati
+            {task.startDate ? "Bajarish vaqti" : "Ijro muddati"}
           </p>
           <p className={cn("mt-1 font-semibold", isOverdue ? "text-rose-600" : "text-gray-900")}>
-            {formatDateTimeUz(task.dueDate)}
+            {formatTaskWindow(task).text}
           </p>
         </div>
         <div className="px-4 py-3.5 xs:px-6">
