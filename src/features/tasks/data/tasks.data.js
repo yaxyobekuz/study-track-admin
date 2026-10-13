@@ -30,10 +30,17 @@ import {
   Trophy,
   Clock,
   Plus,
+  CalendarRange,
+  CircleX,
+  Layers,
+  Link2,
+  PlayCircle,
+  Users,
+  Zap,
 } from "lucide-react";
 
 // Utils
-import { formatDurationUz } from "@/shared/utils/date.utils";
+import { formatDateTimeUz, formatDurationUz } from "@/shared/utils/date.utils";
 
 // ─────────────────────────────────────────────
 // TABLAR
@@ -46,10 +53,17 @@ import { formatDurationUz } from "@/shared/utils/date.utils";
 export const TASK_TABS = [
   {
     to: "/tasks",
-    label: "Asosiy",
+    label: "Dashboard",
+    title: "Lavozimlar markazi",
+    description: "Kunlik, haftalik, oylik va yillik natijalar — bir ekranda",
+    exact: true,
+  },
+  {
+    to: "/tasks/list",
+    label: "Topshiriqlar",
     title: "Topshiriqlar",
     description: "Kimga qanday ish berilgan va u qay holatda",
-    exact: true,
+    exact: false,
   },
   {
     to: "/tasks/reports",
@@ -110,6 +124,126 @@ export const taskStatusOptions = [
   { value: "stopped", label: "To'xtatilgan" },
 ];
 
+// ─────────────────────────────────────────────
+// TOPSHIRIQ TURI
+// ─────────────────────────────────────────────
+
+/**
+ * `main` — ASOSIY: lavozim bo'yicha doimiy ish ("har kuni jurnalni yuritish").
+ * `extra` — QO'SHIMCHA: bir martalik vazifa ("bayramga zal tayyorlash").
+ *
+ * Tur — KO'RSATKICH, to'siq emas: qoidalar (jarima, fayl, muddat) ikkalasida
+ * ham bir xil. U rahbarga "qo'shimcha ishlar asosiy ishni bosib
+ * ketmayaptimi" degan savolga javob beradi.
+ */
+export const TASK_KIND_META = {
+  main: {
+    label: "Asosiy",
+    hint: "Lavozim bo'yicha doimiy ish",
+    chip: "bg-indigo-50 text-indigo-700 ring-indigo-100",
+    dot: "bg-indigo-500",
+    color: "#4f46e5",
+    icon: Layers,
+  },
+  extra: {
+    label: "Qo'shimcha",
+    hint: "Bir martalik vazifa",
+    chip: "bg-teal-50 text-teal-700 ring-teal-100",
+    dot: "bg-teal-500",
+    color: "#0d9488",
+    icon: Zap,
+  },
+};
+
+export const TASK_KIND_OPTIONS = [
+  { value: "all", label: "Barcha turlar" },
+  { value: "main", label: "Asosiy" },
+  { value: "extra", label: "Qo'shimcha" },
+];
+
+export const kindLabel = (kind) => TASK_KIND_META[kind]?.label || TASK_KIND_META.main.label;
+
+// Bir topshiriqqa qo'shiladigan havolalar chegarasi — server bilan QO'LDA
+// sinxron (`taskWindow.helpers.js` → `LINKS_MAX`)
+export const LINKS_MAX = 10;
+
+// ─────────────────────────────────────────────
+// VAQT HOLATI (server: `taskWindow.helpers.js`)
+// ─────────────────────────────────────────────
+//
+// ⚠️ HOLAT SAQLANMAYDI, HISOBLANADI. "Bajarilmadi" (✗) — `status` emas,
+// hosila: muddat o'tdi-yu ish topshirilmadi. Shuning uchun muddat
+// uzaytirilishi bilan ✗ o'z-o'zidan yo'qoladi.
+//
+// Serverdan har topshiriqda `timeState` keladi; bu yerda faqat ko'rinish.
+
+export const TASK_STATE_META = {
+  done: {
+    label: "Bajarildi",
+    short: "Bajarildi",
+    icon: CircleCheckBig,
+    chip: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+    text: "text-emerald-600",
+  },
+  review: {
+    label: "Tekshiruvda",
+    short: "Tekshiruvda",
+    icon: Eye,
+    chip: "bg-amber-50 text-amber-700 ring-amber-100",
+    text: "text-amber-600",
+  },
+  missed: {
+    label: "Bajarilmadi",
+    short: "Bajarilmadi",
+    icon: CircleX,
+    chip: "bg-rose-50 text-rose-700 ring-rose-100",
+    text: "text-rose-600",
+  },
+  active: {
+    label: "Hozir bajarilish vaqti",
+    short: "Hozir vaqti",
+    icon: PlayCircle,
+    chip: "bg-rose-100 text-rose-700 ring-rose-200",
+    text: "text-rose-600",
+  },
+  upcoming: {
+    label: "Hali boshlanmagan",
+    short: "Boshlanmagan",
+    icon: CalendarClock,
+    chip: "bg-slate-100 text-slate-600 ring-slate-200",
+    text: "text-slate-500",
+  },
+  open: {
+    label: "Bajarilmoqda",
+    short: "Bajarilmoqda",
+    icon: Hourglass,
+    chip: "bg-blue-50 text-blue-700 ring-blue-100",
+    text: "text-blue-600",
+  },
+  stopped: {
+    label: "To'xtatilgan",
+    short: "To'xtatilgan",
+    icon: Ban,
+    chip: "bg-gray-100 text-gray-600 ring-gray-200",
+    text: "text-gray-500",
+  },
+};
+
+/**
+ * Ro'yxat va dashboard filtri. `in_progress` — "jarayonda": hali muddati
+ * kelmagan hamma ish (hozir vaqti kelganlar ham).
+ */
+export const STATE_FILTER_OPTIONS = [
+  { value: "all", label: "Barcha holatlar" },
+  { value: "done", label: "Bajarildi" },
+  { value: "missed", label: "Bajarilmadi" },
+  { value: "in_progress", label: "Jarayonda" },
+  { value: "active", label: "Hozir bajarilish vaqti" },
+  { value: "review", label: "Tekshiruvda" },
+  { value: "upcoming", label: "Hali boshlanmagan" },
+  { value: "stopped", label: "To'xtatilgan" },
+];
+
 export const ACTIVE_TASK_STATUSES = [
   "pending",
   "extended",
@@ -163,25 +297,32 @@ export const TASKS_PAGE_LIMIT = 20;
  */
 export const STAT_CARDS = [
   {
+    key: "activeNow",
+    label: "Hozir bajarilish vaqti",
+    icon: PlayCircle,
+    tone: "rose",
+    filter: { state: "active" },
+  },
+  {
     key: "inProgress",
     label: "Bajarilmoqda",
     icon: Hourglass,
     tone: "blue",
-    filter: { status: "pending" },
+    filter: { state: "in_progress" },
   },
   {
     key: "review",
     label: "Tekshiruvni kutyapti",
     icon: Eye,
     tone: "amber",
-    filter: { status: "pending_review" },
+    filter: { state: "review" },
   },
   {
-    key: "overdue",
-    label: "Muddati o'tgan",
-    icon: Flame,
+    key: "missed",
+    label: "Bajarilmadi",
+    icon: CircleX,
     tone: "rose",
-    filter: { due: "overdue" },
+    filter: { state: "missed" },
   },
   {
     key: "dueSoon",
@@ -192,10 +333,10 @@ export const STAT_CARDS = [
   },
   {
     key: "completed",
-    label: "Yakunlangan",
+    label: "Bajarildi",
     icon: CircleCheckBig,
     tone: "green",
-    filter: { status: "completed" },
+    filter: { state: "done" },
   },
 ];
 
@@ -336,6 +477,29 @@ export const WEEKDAY_FULL = [
 // HISOBOT DAVRI
 // ─────────────────────────────────────────────
 
+/**
+ * DASHBOARD DAVRLARI — server presetlari (`taskReport.service.js` →
+ * `_resolvePreset`).
+ *
+ * ⚠️ Kun chegarasi SERVERDA, Toshkent vaqti bo'yicha hisoblanadi: brauzer
+ * mintaqasi boshqa bo'lsa "bugun" bir kunga siljib ketardi (`dates.md`).
+ * Shuning uchun bu yerda faqat kalit va yorliq bor, sana hisoblanmaydi.
+ */
+export const DASHBOARD_PERIODS = [
+  { value: "day", label: "Kunlik", hint: "Bugun" },
+  { value: "week", label: "Haftalik", hint: "Dushanbadan bugungacha" },
+  { value: "month", label: "Oylik", hint: "Oy boshidan bugungacha" },
+  { value: "year", label: "Yillik", hint: "Yil boshidan bugungacha" },
+];
+
+export const DASHBOARD_PEOPLE_FILTERS = [
+  { value: "all", label: "Hammasi" },
+  { value: "completed", label: "Bajargan" },
+  { value: "missed", label: "Bajarmagan" },
+  { value: "inProgress", label: "Jarayonda" },
+  { value: "review", label: "Tekshiruvda" },
+];
+
 export const REPORT_PERIODS = [
   { value: "7d", label: "7 kun" },
   { value: "30d", label: "30 kun" },
@@ -423,6 +587,43 @@ export const durationText = (minutes) => {
     return hours ? `${days} kun ${hours} soat` : `${days} kun`;
   }
   return formatDurationUz(minutes);
+};
+
+/**
+ * VAQT ORALIG'I MATNI. Oraliq bo'lmasa — faqat muddat.
+ *
+ * ⚠️ Sana `formatDateTimeUz` orqali (`dates.md` §2): qo'lda yig'ilgan
+ * shablon bitta jadvalda ikki xil sana formatini hosil qilardi.
+ *
+ * @param {{ startDate?: string|null, dueDate: string }} task
+ * @returns {{ text: string, hasWindow: boolean }}
+ */
+export const formatTaskWindow = (task) => {
+  if (!task?.dueDate) return { text: "—", hasWindow: false };
+  const due = formatDateTimeUz(task.dueDate);
+  if (!task.startDate) return { text: due, hasWindow: false };
+  return { text: `${formatDateTimeUz(task.startDate)} — ${due}`, hasWindow: true };
+};
+
+/**
+ * Oraliqning jonli holati — serverdagi `timeState` bilan AYNI qoida
+ * (`taskWindow.helpers.js`). Server `timeState` ni allaqachon yuboradi;
+ * bu funksiya ekran OCHIQ turganda (minutlar o'tib ketganda) uni jonli
+ * ushlab turish uchun.
+ *
+ * @param {{ status: string, startDate?: string|null, dueDate: string, timeState?: string }} task
+ * @returns {string} `TASK_STATE_META` kaliti
+ */
+export const resolveTimeState = (task) => {
+  if (!task) return "open";
+  if (task.status === "completed") return "done";
+  if (task.status === "stopped") return "stopped";
+  if (task.status === "pending_review") return "review";
+
+  const now = Date.now();
+  if (new Date(task.dueDate).getTime() < now) return "missed";
+  if (!task.startDate) return "open";
+  return new Date(task.startDate).getTime() > now ? "upcoming" : "active";
 };
 
 /**
@@ -528,6 +729,109 @@ export const buildReportKpis = (report) => {
       hint: kpis.overdue > 0 ? "Muddati o'tgan, hali topshirilmagan" : "Kechikkan ish yo'q",
     },
   ];
+};
+
+/**
+ * DASHBOARD KARTALARI — "shu davrda nima bo'ldi" degan savolga olti raqam.
+ *
+ * ⚠️ Raqamlar SERVERDAN (`taskReport.service.js`), bu yerda hisoblanmaydi:
+ * dashboard va hisobot bitta dvigateldan o'qiydi, aks holda ikki ekran
+ * "bajarildi" uchun ikki xil son ko'rsatardi.
+ *
+ * `filter` — karta bosilganda topshiriqlar ro'yxati shu kesimga o'tadi.
+ *
+ * @param {object} report
+ */
+export const buildDashboardKpis = (report) => {
+  const { kpis } = report;
+
+  return [
+    {
+      key: "total",
+      label: "Berilgan topshiriqlar",
+      value: kpis.total,
+      icon: ClipboardList,
+      tone: "blue",
+      hint: `${kpis.assignees} xodimga`,
+      filter: {},
+    },
+    {
+      key: "completed",
+      label: "Bajarildi",
+      value: kpis.completed,
+      icon: CircleCheckBig,
+      tone: "green",
+      hint: percentText(kpis.completionRate),
+      filter: { state: "done" },
+    },
+    {
+      key: "overdue",
+      label: "Bajarilmadi",
+      value: kpis.overdue,
+      icon: CircleX,
+      tone: "rose",
+      hint: kpis.overdue > 0 ? "Muddat o'tdi, ish topshirilmadi" : "Kechikkan ish yo'q",
+      filter: { state: "missed" },
+    },
+    {
+      key: "inProgress",
+      label: "Jarayonda",
+      value: kpis.inProgress,
+      icon: Hourglass,
+      tone: "blue",
+      hint: "Muddati hali bor",
+      filter: { state: "in_progress" },
+    },
+    {
+      key: "review",
+      label: "Tekshiruvda",
+      value: kpis.review,
+      icon: Eye,
+      tone: "amber",
+      hint: "Ish topshirilgan, javob kutyapti",
+      filter: { state: "review" },
+    },
+    {
+      key: "onTimeRate",
+      label: "O'z vaqtida",
+      value: percentText(kpis.onTimeRate),
+      icon: Clock,
+      tone: "violet",
+      hint: "Bajarilganlar ichida",
+      filter: { state: "done" },
+    },
+  ];
+};
+
+/**
+ * Dashboarddagi xodimlar jadvali uchun saralash va kesim.
+ *
+ * ⚠️ Filtr RO'YXATNI TORAYTIRADI, raqamlarni o'zgartirmaydi: "Bajarmagan"
+ * tanlanganda ham xodim qatorida uning hamma soni turadi — aks holda
+ * "bajarmagan" bo'limida bajargan ishlari nolga tushib ko'rinardi.
+ *
+ * @param {Array} people - serverdagi `report.people`
+ * @param {string} filter - `DASHBOARD_PEOPLE_FILTERS` qiymati
+ * @param {string} search
+ */
+export const filterDashboardPeople = (people = [], filter = "all", search = "") => {
+  const query = search.trim().toLowerCase();
+
+  return people.filter((person) => {
+    if (query && !person.name.toLowerCase().includes(query)) return false;
+    switch (filter) {
+      case "completed":
+        return person.completed > 0;
+      case "missed":
+        return person.overdue > 0;
+      case "inProgress":
+        return person.inProgress > 0;
+      case "review":
+        return person.review > 0;
+      default:
+        return true;
+    }
+  });
 };
 
 /**

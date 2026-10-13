@@ -46,6 +46,7 @@ import EmptyState from "@/shared/components/ui/EmptyState";
 import ConfirmPopover from "@/shared/components/ui/ConfirmPopover";
 import TaskHero from "../components/detail/TaskHero";
 import AttachmentGrid from "../components/AttachmentGrid";
+import TaskLinksList from "../components/TaskLinksList";
 import TaskTimeline from "../components/detail/TaskTimeline";
 import AssigneeCard from "../components/detail/AssigneeCard";
 import DeadlineHistoryCard from "../components/detail/DeadlineHistoryCard";
@@ -99,7 +100,7 @@ const TaskDetailPage = () => {
           title="Topshiriq topilmadi"
           description="U o'chirilgan bo'lishi yoki sizda ko'rish huquqi bo'lmasligi mumkin."
           action={
-            <Button variant="outline" onClick={() => navigate("/tasks")}>
+            <Button variant="outline" onClick={() => navigate("/tasks/list")}>
               <ArrowLeft />
               Ro'yxatga qaytish
             </Button>
@@ -130,7 +131,7 @@ const TaskDetailPage = () => {
     deleteTask(task.id, {
       onSuccess: () => {
         toast.success("Topshiriq o'chirildi");
-        navigate("/tasks", { replace: true });
+        navigate("/tasks/list", { replace: true });
       },
       onError: (err) => toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
     });
@@ -142,13 +143,13 @@ const TaskDetailPage = () => {
         <div className="flex items-center gap-2 text-sm">
           <button
             type="button"
-            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/tasks"))}
+            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/tasks/list"))}
             className="rounded-lg p-2 text-gray-500 hover:bg-white hover:text-gray-900"
             aria-label="Orqaga"
           >
             <ArrowLeft className="size-4" />
           </button>
-          <Link to="/tasks" className="text-gray-500 hover:text-gray-900">
+          <Link to="/tasks/list" className="text-gray-500 hover:text-gray-900">
             Topshiriqlar
           </Link>
           <span className="text-gray-300">/</span>
@@ -289,6 +290,10 @@ const TaskDetailPage = () => {
                 </p>
                 <AttachmentGrid items={task.attachments} />
               </div>
+            )}
+
+            {task.links?.length > 0 && (
+              <TaskLinksList links={task.links} className="mt-4 border-t border-gray-100 pt-4" />
             )}
           </Section>
 

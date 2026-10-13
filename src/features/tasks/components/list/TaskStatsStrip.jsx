@@ -18,7 +18,7 @@ import { STAT_CARDS, TONES } from "../../data/tasks.data";
  * @param {(card: object) => void} props.onSelect
  */
 const TaskStatsStrip = ({ stats, isActive, onSelect }) => (
-  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
     {STAT_CARDS.map((card) => {
       const tone = TONES[card.tone];
       const Icon = card.icon;

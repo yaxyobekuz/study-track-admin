@@ -45,6 +45,37 @@ export const tasksQueries = {
       placeholderData: keepPreviousData,
     }),
 
+  /**
+   * Lavozimlar markazi dashboardi → the same payload as the report.
+   * @param {{ period: "day"|"week"|"month"|"year" }} params
+   */
+  dashboard: (params) =>
+    queryOptions({
+      queryKey: [...tasksKeys.all, "dashboard", params],
+      queryFn: () => tasksAPI.getDashboard(params).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+      // Jonli ro'yxatlar (muddati o'tganlar, tekshiruv navbati) bu
+      // payload ichida — uzoq kesh ularni eskirtirardi.
+      staleTime: 30 * 1000,
+    }),
+
+  /**
+   * Assignee options for a DEPARTMENT HEAD (`tasks.team`) — the normal users
+   * list sits behind `users.view`, which such a manager may not have.
+   *
+   * Response shape is flattened to `{ data }` (no pagination): one department
+   * fits in a single page, and the server caps the list anyway.
+   *
+   * @param {{ search?: string, group?: "staff"|"student", limit?: number }} params
+   */
+  scopedAssignees: (params = {}) =>
+    queryOptions({
+      queryKey: [...tasksKeys.all, "assignees", params],
+      queryFn: () => tasksAPI.getAssignees(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+      staleTime: 5 * 60 * 1000,
+    }),
+
   /** Task rules singleton (create/submit validation, penalties). */
   settings: () =>
     queryOptions({

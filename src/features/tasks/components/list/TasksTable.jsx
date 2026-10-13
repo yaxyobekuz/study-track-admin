@@ -2,19 +2,21 @@
 import { useNavigate } from "react-router-dom";
 
 // Icons
-import { ChevronRight, Paperclip, CalendarClock, FileCheck2 } from "lucide-react";
+import { ChevronRight, Paperclip, CalendarClock, FileCheck2, Link2 } from "lucide-react";
 
 // Components
 import UserAvatar from "../UserAvatar";
 import DeadlineChip from "../DeadlineChip";
+import TaskKindBadge from "../TaskKindBadge";
+import TaskStateBadge from "../TaskStateBadge";
 import TaskStatusBadge from "../TaskStatusBadge";
 
 // Helpers
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
-import { formatDateTimeUz, formatDateUz } from "@/shared/utils/date.utils";
+import { formatDateUz } from "@/shared/utils/date.utils";
 
 // Data
-import { fullName } from "../../data/tasks.data";
+import { fullName, formatTaskWindow } from "../../data/tasks.data";
 
 /** Sarlavha ostidagi kichik belgilar: fayllar, uzaytirishlar, topshirilgan natija. */
 const TaskMeta = ({ task }) => {
@@ -24,6 +26,9 @@ const TaskMeta = ({ task }) => {
   }
   if (task.completionAttachmentsCount > 0) {
     items.push({ key: "done", icon: FileCheck2, text: task.completionAttachmentsCount });
+  }
+  if (task.linksCount > 0) {
+    items.push({ key: "links", icon: Link2, text: task.linksCount });
   }
   if (task.extensionsCount > 0) {
     items.push({ key: "ext", icon: CalendarClock, text: `${task.extensionsCount}× uzaytirilgan` });
@@ -82,9 +87,12 @@ const TasksTable = ({ tasks, roles, dueSoonHours }) => {
                   className="group cursor-pointer text-sm transition-colors hover:bg-blue-50/40 focus:bg-blue-50/40 focus:outline-none"
                 >
                   <td className="max-w-80 px-4 py-3">
-                    <p className="truncate font-medium text-gray-900 group-hover:text-blue-700">
-                      {task.title}
-                    </p>
+                    <div className="flex items-start gap-2">
+                      <p className="truncate font-medium text-gray-900 group-hover:text-blue-700">
+                        {task.title}
+                      </p>
+                      <TaskKindBadge kind={task.kind} className="mt-0.5 shrink-0" />
+                    </div>
                     <p className="truncate text-xs text-gray-400">
                       {formatDateUz(task.createdAt)} · {fullName(task.createdBy)}
                     </p>
@@ -102,8 +110,9 @@ const TasksTable = ({ tasks, roles, dueSoonHours }) => {
                     </div>
                   </td>
                   <td className="px-4 py-3">
+                    {/* Oraliq berilgan bo'lsa ikkala vaqt ham ko'rinadi */}
                     <p className="whitespace-nowrap text-gray-700">
-                      {formatDateTimeUz(task.dueDate)}
+                      {formatTaskWindow(task).text}
                     </p>
                     <DeadlineChip
                       className="mt-1"
@@ -113,7 +122,10 @@ const TasksTable = ({ tasks, roles, dueSoonHours }) => {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <TaskStatusBadge status={task.status} />
+                    <div className="flex flex-col items-start gap-1">
+                      <TaskStateBadge task={task} size="sm" />
+                      <TaskStatusBadge status={task.status} />
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-600">
@@ -143,6 +155,10 @@ const TasksTable = ({ tasks, roles, dueSoonHours }) => {
             >
               <div className="flex items-start justify-between gap-2">
                 <p className="line-clamp-2 font-medium text-gray-900">{task.title}</p>
+                <TaskStateBadge task={task} size="sm" className="shrink-0" />
+              </div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <TaskKindBadge kind={task.kind} />
                 <TaskStatusBadge status={task.status} />
               </div>
               <div className="mt-3 flex items-center gap-2">
@@ -154,8 +170,8 @@ const TasksTable = ({ tasks, roles, dueSoonHours }) => {
                   dueSoonHours={dueSoonHours}
                 />
               </div>
-              <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
-                <span>Muddat: {formatDateTimeUz(task.dueDate)}</span>
+              <div className="mt-2 flex items-center justify-between gap-2 text-xs text-gray-400">
+                <span className="min-w-0 truncate">{formatTaskWindow(task).text}</span>
                 <span className="font-semibold text-rose-600">{task.penaltyPoints} ball</span>
               </div>
             </button>
