@@ -601,29 +601,39 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0, full = 
       <div ref={bodyRef} className={fits ? FILL_BODY : BODY}>
         <Enter delay={delay} className={fits ? FILL_LAYER : undefined}>
           <MiniTable
-            // Birinchi ustun — sinf nomi ("1-sinf ingliz"), qolgan uchtasi
-            // qisqa son: `table-fixed` da kenglik sarlavhadan olinadi.
-            // ⚠️ KARTADA TO'RT ustun, beshtasi EMAS: tor kartada
-            // (xl..2xl, ~301px) besh ustunda har biriga ~52px qolib,
-            // "O'QUVCHI" (≈55px) harfma-harf bo'linib sarlavhani
-            // o'stirardi va oxirgi qator yarim kesilardi ("Sinflar
-            // bo'yicha natija" dagi o'sha o'lchov). Dashboardda bandlik
-            // foizi shuning uchun ustun emas — u izohda (maktab bo'yicha)
-            // va rangda (bo'sh joy) ko'rinadi; BATAFSIL sahifada esa
-            // karta butun kenglikni egallaydi va ustun qaytadi.
-            className={cn(TABLE, "[&_th:nth-child(1)]:w-[31%]")}
+            // ⚠️ USTUN KENGLIKLARI O'LCHANGAN, taxmin emas (Chrome, Inter
+            // yuklangan, `table-fixed` — kenglik sarlavhadan olinadi).
+            // Tor kartada (xl..2xl) jadval ~301px, katak yon bo'shlig'i
+            // `px-1.5`, chekka ustunlarda bir tomoni nol — ya'ni matnga
+            // qoladigan joy: 72.3 / 39.2 / 39.2 / 42.2 / 60.2px.
+            // Sarlavhalar (10px, semibold, uppercase, `tracking-wide`):
+            // "SIG'IM" 33.5 · "SONI" 25.6 · "BO'SH" 32.8 (ikki qatorga
+            // o'raladi) · "BANDLIK" 45.9 — hammasi 5px dan ortiq zaxira
+            // bilan sig'adi, ya'ni `break-words` harfni BO'LMAYDI (aynan
+            // shu bo'linish sarlavhani o'stirib, oxirgi qatorni yarim
+            // kesardi — uch marta rad etilgan nuqson).
+            // Eng keng qiymatlar ham sig'adi: "104.5%" 48.3 ≤ 60.2,
+            // "562" 24.3 ≤ 39.2.
+            // ⚠️ "O'QUVCHI" (52.5) tor ustunga SIG'MAYDI — shuning uchun
+            // u yerda "SONI" turadi (`narrowLabel`); keng kartada (2xl,
+            // ~515px) va batafsil sahifada to'liq yorliq qaytadi.
+            className={cn(
+              TABLE,
+              "[&_th:nth-child(1)]:w-[26%] [&_th:nth-child(2)]:w-[17%]",
+              "[&_th:nth-child(3)]:w-[17%] [&_th:nth-child(4)]:w-[18%]",
+            )}
             columns={[
               { label: "Sinf" },
               { label: "Sig'im", align: "right" },
               {
                 key: "students",
-                label: narrowLabel("O'quvchilar soni", "O'quvchi"),
+                // Batafsil sahifada karta butun kenglikni egallaydi —
+                // u yerda qisqartirishning hojati yo'q
+                label: full ? "O'quvchilar soni" : narrowLabel("O'quvchi", "Soni"),
                 align: "right",
               },
               { label: "Bo'sh joy", align: "right" },
-              // ⚠️ Faqat batafsil sahifada: kartadagi tor ustunlarga
-              // beshinchi ustun sig'maydi (yuqoridagi o'lchov).
-              ...(full ? [{ key: "fill", label: "Bandlik", align: "right" }] : []),
+              { key: "fill", label: "Bandlik", align: "right" },
             ]}
           >
             {visible.map((row, index) => (
@@ -644,7 +654,7 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0, full = 
                 </MiniTd>
                 {/* ⚠️ Shkala `fillTone` — "katta foiz yaxshi" degan davomat
                     shkalasi (`percentTone`) bu yerda teskari ma'no berardi */}
-                {full && <PercentCell value={row.fillRate} delay={barDelay} tone={fillTone} />}
+                <PercentCell value={row.fillRate} delay={barDelay} tone={fillTone} />
               </MiniTr>
             ))}
 
@@ -668,11 +678,9 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0, full = 
                 <MiniTd align="right">
                   {measured ? formatByUnit(totals.freeSpots, "count") : "—"}
                 </MiniTd>
-                {full && (
-                  <MiniTd align="right">
-                    {measured ? formatByUnit(totals.fillRate, "percent") : "—"}
-                  </MiniTd>
-                )}
+                <MiniTd align="right">
+                  {measured ? formatByUnit(totals.fillRate, "percent") : "—"}
+                </MiniTd>
               </MiniTr>
             )}
           </MiniTable>
