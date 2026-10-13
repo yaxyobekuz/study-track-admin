@@ -48,6 +48,20 @@ export const ISSUE_TABS = [
     exact: false,
   },
   {
+    // GURUH SIGNALLARI — AI rasmiy guruhlarda topgan shikoyat/taklif.
+    //
+    // ⚠️ "Muammolar" dan OLDIN emas, KEYIN turadi: muammolar — odam
+    // yuborgan rasmiy murojaat, bu esa AI taxmini. Tartib shu farqni
+    // ko'rsatadi.
+    to: "/issues/signals",
+    label: "Guruh signallari",
+    title: "Guruh signallari",
+    description:
+      "Rasmiy guruhlardagi suhbatdan AI ajratgan shikoyat, taklif va savollar",
+    permission: "issues.signals",
+    exact: false,
+  },
+  {
     // BOT SOZLAMALARI — bot a'zo bo'lgan guruhlar reyestri.
     //
     // ⚠️ Bu tab PLATFORMA ma'lumotini ko'rsatadi (guruhlar barcha
@@ -434,4 +448,47 @@ export const GROUP_TYPE_LABELS = {
   group: "Guruh",
   supergroup: "Superguruh",
   channel: "Kanal",
+};
+
+// ─────────────────────────────────────────────
+// GURUH SIGNALLARI
+// ─────────────────────────────────────────────
+
+/**
+ * AI bergan toifa → yorliq.
+ *
+ * ⚠️ UCHALASI HAM KERAK: ma'muriyat uchun shikoyat va taklif bir xil
+ * og'irlikda emas — birinchisiga javob berish shart, ikkinchisi esa
+ * ixtiyoriy. Rang shu farqni ko'rsatadi.
+ */
+export const SIGNAL_KIND_META = {
+  complaint: { label: "Shikoyat", className: "bg-red-100 text-red-800" },
+  suggestion: { label: "Taklif", className: "bg-blue-100 text-blue-800" },
+  question: { label: "Savol", className: "bg-amber-100 text-amber-800" },
+};
+
+/** Jiddiylik — faqat "high" ko'zga tashlanadi, qolgani jim turadi. */
+export const SIGNAL_SEVERITY_META = {
+  high: { label: "Muhim", className: "bg-red-100 text-red-800" },
+  normal: null,
+  low: null,
+};
+
+/**
+ * Holat filtri.
+ *
+ * ⚠️ STANDART — "new": e'tiborsiz qoldirilgan va biriktirilgan signallar
+ * ishga xalaqit bermasligi kerak, lekin ularni ko'rish imkoni qolishi
+ * kerak (AI nimani noto'g'ri topganini tekshirish uchun).
+ */
+export const SIGNAL_STATUS_FILTERS = [
+  { value: "new", label: "Yangi" },
+  { value: "attached", label: "Biriktirilgan" },
+  { value: "dismissed", label: "E'tiborsiz" },
+];
+
+export const SIGNAL_STATUS_META = {
+  new: { label: "Yangi", className: "bg-indigo-100 text-indigo-800" },
+  attached: { label: "Muammolarga biriktirilgan", className: "bg-green-100 text-green-800" },
+  dismissed: { label: "E'tiborsiz qoldirilgan", className: "bg-gray-100 text-gray-700" },
 };

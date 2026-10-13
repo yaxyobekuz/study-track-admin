@@ -119,6 +119,7 @@ import IssuesPage from "@/features/issues/pages/IssuesPage";
 import IssueReportsPage from "@/features/issues/pages/IssueReportsPage";
 import IssueCategoriesPage from "@/features/issues/pages/IssueCategoriesPage";
 import BotSettingsPage from "@/features/issues/pages/BotSettingsPage";
+import GroupSignalsPage from "@/features/issues/pages/GroupSignalsPage";
 
 // Pages - Penalties
 import PenaltiesPage from "@/features/penalties/pages/PenaltiesPage";
@@ -488,6 +489,7 @@ const Routes = () => {
             <Route index element={<IssuesPage />} />
             <Route path="reports" element={<IssueReportsPage />} />
             <Route path="categories" element={<IssueCategoriesPage />} />
+            <Route path="signals" element={<GroupSignalsPage />} />
             <Route path="bot-settings" element={<BotSettingsPage />} />
           </Route>
 

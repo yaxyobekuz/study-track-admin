@@ -858,6 +858,12 @@ export const PERMISSION_SECTIONS = [
       // ⚠️ `categories` DAN ALOHIDA: kategoriya — botdagi TUGMA matni,
       // bu esa botning TASHQI ko'rinishi (maktab nomidan tanilgan guruh).
       { key: "botSettings", label: "Bot sozlamalari" },
+      // GURUH SIGNALLARI — AI rasmiy guruhlarda topgan shikoyat/taklif.
+      //
+      // ⚠️ `view` DAN ham, `botSettings` DAN ham ALOHIDA: bu yerda
+      // guruhdagi ODAMLARNING GAPLARI iqtibos bilan turadi. Kim shikoyat
+      // qilganini ko'rish alohida qaror bo'lishi kerak.
+      { key: "signals", label: "Guruh signallari" },
     ],
   },
   {
@@ -1090,6 +1096,8 @@ const ROUTE_PERMISSIONS = [
   // Bot guruhlari — chat ID lar va botning tashqi aloqalari manzarasi,
   // "muammolarni ko'rish" huquqidan kengroq.
   { prefix: "/issues/bot-settings", key: "issues.botSettings" },
+  // Guruh signallari — guruhdagi gaplar iqtibos bilan ko'rinadi.
+  { prefix: "/issues/signals", key: "issues.signals" },
   { prefix: "/premium", key: "premium.view" },
   { prefix: "/coin-distribution", key: "coins.view" },
   { prefix: "/coin-settings", key: "coins.view" },
