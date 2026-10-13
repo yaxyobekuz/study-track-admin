@@ -91,6 +91,25 @@ const TABLE = [
   "[&_tbody_tr]:h-[26px]",
   "[&_tbody_td]:h-[26px] [&_tbody_td]:py-0 [&_tbody_td]:leading-none [&_tbody_td]:truncate",
 
+  // ⚠️ JADVAL KARTANI TO'LDIRADI (`h-full`). Qator soni MA'LUMOTDAN
+  // kelib chiqadi va u ko'pincha maydonni to'ldirmaydi: bosqichlar
+  // jadvalida atigi 3-4 qator bo'ladi, qo'shni karta (200px diagramma)
+  // esa butun qatorni baland qilib qo'yadi — natijada JAMI qatorining
+  // ostida 50-70px bo'sh joy osilib turardi.
+  //
+  // O'LCHANGAN (Chrome, haqiqiy CSS): 190px li maydonda sarlavha qatori
+  // 34px da QOLADI, ortiqcha joy esa faqat tana qatorlariga bo'linadi
+  // (26 → 39px), pastdagi bo'shliq 0 ga tushadi. Qator balandligi
+  // `h-[26px]` bilan PASTDAN cheklangani uchun joy yetmaganda hech narsa
+  // siqilmaydi — `useFitRows` hisobi (27px) o'z kuchida qoladi.
+  //
+  // ⚠️ `h-full` ISHLASHI uchun ota zanjirning balandligi aniq bo'lishi
+  // shart (`Enter` ham `h-full` oladi): bir ekranli rejimda balandlikni
+  // to'r beradi, oddiy oqimda esa to'r qatori (`stretch`) — ya'ni ikkala
+  // rejimda ham aniq. Ota balandligi `auto` bo'lgan joyda (bir ustunli
+  // to'r) `h-full` hech narsani o'zgartirmaydi.
+  "h-full",
+
   // ⚠️ UCH USTUNLI TO'RDA (xl dan boshlab) katak yon bo'shlig'i 12 → 6px.
   // O'LCHANGAN: 1280px da (yon panel ochiq, karta ~325px, jadval ~301px)
   // `px-3` bilan besh ustunli jadvalda ustun ichiga 32px qolib,
@@ -252,9 +271,20 @@ const BODY = "h-full min-h-0 overflow-hidden";
  * Jadval tanasining KIRISHI — bitta `fade-up`, karta kechikishi + 140ms
  * (`contentDelay`). Faqat `opacity`/`transform`: layout va o'lchov
  * o'zgarmaydi.
+ *
+ * ⚠️ `className` — joylashuvni O'ZGARTIRISH uchun emas, QATLAM berish
+ * uchun (sig'im jadvali uni `absolute` qiladi, `FILL_BODY` izohi).
+ * Ikkinchi o'ram div qo'shilsa, `useFitRows` o'lchaydigan zanjirga yana
+ * bitta bo'g'in qo'shilardi.
  */
-const Enter = ({ delay, children }) => (
-  <div className={MOTION.enter} style={{ animationDelay: `${contentDelay(delay)}ms` }}>
+const Enter = ({ delay, className, children }) => (
+  <div
+    // ⚠️ `h-full` — jadvalning `h-full` i uchun ZANJIR: oraliqdagi bu div
+    // balandlikni o'tkazmasa, jadval `auto` bo'lib qolib, karta pastida
+    // bo'sh joy osilib turardi (`TABLE` izohi).
+    className={cn("h-full", MOTION.enter, className)}
+    style={{ animationDelay: `${contentDelay(delay)}ms` }}
+  >
     {children}
   </div>
 );
@@ -391,24 +421,48 @@ export const ClassesCard = ({ data, isLoading, isError, delay = 0 }) => {
 };
 
 /**
- * KARTADA ko'rsatiladigan ENG KO'P sinf (batafsil sahifada cheklov yo'q).
+ * SIG'IM JADVALI MAYDONI — O'LCHANADI va KARTANI TO'LDIRADI.
  *
- * ⚠️ QAT'IY CHEGARA `useFitRows` NING O'RNINI BOSMAYDI, u IKKINCHI
- * chegara — va aynan shu karta uchun MAJBURIY. O'lchov FAQAT bir ekranli
- * rejimda (`FIT_QUERY`, 1280×960) ishlaydi; undan tashqarida qolgan
- * jadvallar o'z ma'lumotining tabiiy kichikligi bilan qutuladi
- * (bosqichlar — 4 qator, top o'quvchilar — 5, serverdan ham shuncha
- * keladi). Sinflar esa maktab kattaligicha o'sadi: chegarasiz 26 ta
- * sinf to'liq chizilib, karta qo'shnilaridan uch barobar cho'zilib
- * ketardi va to'rning butun qatori buzilardi (foydalanuvchi ko'rgan
- * nuqson).
+ * ⚠️ Bu kartada o'lchov HAR QANDAY EKRANDA ishlaydi, faqat bir ekranli
+ * rejimda emas. Sabab — ikkita, va ikkalasi ham foydalanuvchi ko'rgan
+ * nuqson:
+ *   1. o'lchovsiz 26 ta sinf to'liq chizilib, karta qo'shnilaridan uch
+ *      barobar cho'zilib ketardi (to'rning qatori buzilardi);
+ *   2. o'lchov o'rniga qat'iy son (3 qator) qo'yilsa, qo'shnisi
+ *      balandroq bo'lgan qatorda kartaning pastida BO'SH JOY qolardi.
+ * Qator soni bor joydan kelib chiqsa, ikkala holat ham o'z-o'zidan
+ * yo'qoladi.
  *
- * Uchta — qo'shni "Sinflar bo'yicha natija" kartasi bilan BIR XIL
- * balandlik (3 qator + JAMI) va bir ekranli rejimda o'lchov beradigan
- * son ham aynan shu (`fitscreen.data.js`): karta har qanday ekranda
- * bir xil ko'rinadi. Qolgani pastdagi havolada ("yana N ta").
+ * ⚠️ JADVAL `absolute` QATLAMDA (`FILL_LAYER`) — AYNAN SHU teskari
+ * aloqani uzadi. Oddiy oqimda kartaning balandligi O'Z kontentidan
+ * kelib chiqadi: qator qo'shilsa karta o'sadi, o'lchov yana ko'proq
+ * qator beradi — yoki aksincha, qator kamaysa karta qisqarib, hisob
+ * `min` gacha o'z-o'zini yeb qo'yardi (`useFitRows` izohidagi aynan
+ * o'sha tuzoq). Qatlam oqimdan chiqarilgach, maydon balandligi FAQAT
+ * qo'shni kartalardan (to'r `stretch` qiladi) va quyidagi eng kam
+ * balandlikdan kelib chiqadi — ya'ni o'lchov barqaror.
+ *
+ * ⚠️ ENG KAM BALANDLIK 144px = 36 sarlavha + 27 JAMI + 3×27: karta
+ * yolg'iz turganda ham (bir ustunli to'r, telefon) uchta sinf
+ * ko'rinadi. Undan kichik qilinsa, `min-h` yo'qolib, karta faqat
+ * sarlavha va havoladan iborat bo'lib qolardi.
  */
-const CAPACITY_ROWS = 3;
+const FILL_BODY = "relative h-full overflow-hidden min-h-[144px]";
+const FILL_LAYER = "absolute inset-0";
+
+/**
+ * O'LCHOV MUMKINMI. `ResizeObserver` yo'q muhitda (juda eski brauzer,
+ * jsdom) hech narsa o'lchanmaydi — va o'sha yerda jadvalni `absolute`
+ * qatlamga qo'yish ENG YOMON yo'l bo'lardi: qatorlar kartadan chiqib,
+ * jimgina KESILIB qolardi. Shuning uchun u muhitda karta oddiy oqimga
+ * qaytadi: hamma qator chiziladi, sahifa odatdagidek suriladi — halol
+ * zaxira (`useFitRows` dagi bilan bir xil doktrina).
+ *
+ * ⚠️ Modul darajasida bir marta o'qiladi: render paytida tekshirilsa,
+ * server va mijoz tomoni boshqa natija berib, React gidratatsiyada
+ * ogohlantirardi.
+ */
+const CAN_MEASURE = typeof ResizeObserver !== "undefined";
 
 /**
  * Sinflar BANDLIK bo'yicha kamayish tartibida: eng to'lgani tepada.
@@ -507,19 +561,27 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0, full = 
   // Birorta sinfga sig'im qo'yilganmi — JAMI qatori shunga qarab o'qiladi
   const measured = (totals?.capacity ?? 0) > 0;
 
-  const isFit = useMediaQuery(FIT_QUERY) && !full;
+  // Jadval oqimdan chiqarilgan `absolute` qatlamda ishlaydimi
+  const fits = !full && CAN_MEASURE;
+
   const [bodyRef, fitRows] = useFitRows({
     rowHeight: ROW_H,
+    // JAMI qatorining joyi OLDINDAN ajratiladi — u har doim chiziladi
     headerHeight: HEAD_H + (hasTotal ? TOTAL_ROW_H : 0),
     min: MIN_ROWS,
-    max: NO_MAX,
+    // ⚠️ Yuqori chegara — MA'LUMOT UZUNLIGI, qat'iy son EMAS. O'LCHANGAN:
+    // sakkiztalik chegara bilan baland qatorda (420px) kartaning pastida
+    // 141px bo'sh joy qolardi — ya'ni qat'iy har qanday son ertami-kechmi
+    // o'sha "to'lmay turgan karta" nuqsonini qaytarardi. Ro'yxatdan
+    // ortig'ini baribir chizib bo'lmaydi.
+    max: Math.max(MIN_ROWS, rows.length),
   });
 
-  // ⚠️ IKKI CHEGARA: qat'iy (`CAPACITY_ROWS` — har qanday ekranda) va
-  // o'lchangan (`fitRows` — faqat bir ekranli rejimda, undan ham kamroq
-  // bo'lishi mumkin). Batafsil sahifada ikkalasi ham qo'llanmaydi.
-  const capped = rows.slice(0, CAPACITY_ROWS);
-  const visible = full ? rows : capped.slice(0, isFit ? fitRows : capped.length);
+  // ⚠️ Qator soni O'LCHOVDAN, qat'iy sondan EMAS (yuqoridagi `FILL_BODY`
+  // izohi): karta bor joyni to'ldiradi va undan oshmaydi. Batafsil
+  // sahifada va o'lchovsiz muhitda cheklov yo'q — u yerda sahifaning
+  // o'zi suriladi.
+  const visible = fits ? rows.slice(0, fitRows) : rows;
   // ⚠️ Yashiringanlar BUTUN ro'yxatdan sanaladi (`rows`), kesilganidan
   // emas: havoladagi "yana N ta" aks holda yolg'on son ko'rsatardi.
   const hidden = rows.length - visible.length;
@@ -558,32 +620,42 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0, full = 
         )
       }
     >
-      <div ref={bodyRef} className={BODY}>
-        <Enter delay={delay}>
+      <div ref={bodyRef} className={fits ? FILL_BODY : BODY}>
+        <Enter delay={delay} className={fits ? FILL_LAYER : undefined}>
           <MiniTable
-            // Birinchi ustun — sinf nomi ("1-sinf ingliz"), qolgan uchtasi
-            // qisqa son: `table-fixed` da kenglik sarlavhadan olinadi.
-            // ⚠️ KARTADA TO'RT ustun, beshtasi EMAS: tor kartada
-            // (xl..2xl, ~301px) besh ustunda har biriga ~52px qolib,
-            // "O'QUVCHI" (≈55px) harfma-harf bo'linib sarlavhani
-            // o'stirardi va oxirgi qator yarim kesilardi ("Sinflar
-            // bo'yicha natija" dagi o'sha o'lchov). Dashboardda bandlik
-            // foizi shuning uchun ustun emas — u izohda (maktab bo'yicha)
-            // va rangda (bo'sh joy) ko'rinadi; BATAFSIL sahifada esa
-            // karta butun kenglikni egallaydi va ustun qaytadi.
-            className={cn(TABLE, "[&_th:nth-child(1)]:w-[31%]")}
+            // ⚠️ USTUN KENGLIKLARI O'LCHANGAN, taxmin emas (Chrome, Inter
+            // yuklangan, `table-fixed` — kenglik sarlavhadan olinadi).
+            // Tor kartada (xl..2xl) jadval ~301px, katak yon bo'shlig'i
+            // `px-1.5`, chekka ustunlarda bir tomoni nol — ya'ni matnga
+            // qoladigan joy: 72.3 / 39.2 / 39.2 / 42.2 / 60.2px.
+            // Sarlavhalar (10px, semibold, uppercase, `tracking-wide`):
+            // "SIG'IM" 33.5 · "SONI" 25.6 · "BO'SH" 32.8 (ikki qatorga
+            // o'raladi) · "BANDLIK" 45.9 — hammasi 5px dan ortiq zaxira
+            // bilan sig'adi, ya'ni `break-words` harfni BO'LMAYDI (aynan
+            // shu bo'linish sarlavhani o'stirib, oxirgi qatorni yarim
+            // kesardi — uch marta rad etilgan nuqson).
+            // Eng keng qiymatlar ham sig'adi: "104.5%" 48.3 ≤ 60.2,
+            // "562" 24.3 ≤ 39.2.
+            // ⚠️ "O'QUVCHI" (52.5) tor ustunga SIG'MAYDI — shuning uchun
+            // u yerda "SONI" turadi (`narrowLabel`); keng kartada (2xl,
+            // ~515px) va batafsil sahifada to'liq yorliq qaytadi.
+            className={cn(
+              TABLE,
+              "[&_th:nth-child(1)]:w-[26%] [&_th:nth-child(2)]:w-[17%]",
+              "[&_th:nth-child(3)]:w-[17%] [&_th:nth-child(4)]:w-[18%]",
+            )}
             columns={[
               { label: "Sinf" },
               { label: "Sig'im", align: "right" },
               {
                 key: "students",
-                label: narrowLabel("O'quvchilar soni", "O'quvchi"),
+                // Batafsil sahifada karta butun kenglikni egallaydi —
+                // u yerda qisqartirishning hojati yo'q
+                label: full ? "O'quvchilar soni" : narrowLabel("O'quvchi", "Soni"),
                 align: "right",
               },
               { label: "Bo'sh joy", align: "right" },
-              // ⚠️ Faqat batafsil sahifada: kartadagi tor ustunlarga
-              // beshinchi ustun sig'maydi (yuqoridagi o'lchov).
-              ...(full ? [{ key: "fill", label: "Bandlik", align: "right" }] : []),
+              { key: "fill", label: "Bandlik", align: "right" },
             ]}
           >
             {visible.map((row, index) => (
@@ -604,7 +676,7 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0, full = 
                 </MiniTd>
                 {/* ⚠️ Shkala `fillTone` — "katta foiz yaxshi" degan davomat
                     shkalasi (`percentTone`) bu yerda teskari ma'no berardi */}
-                {full && <PercentCell value={row.fillRate} delay={barDelay} tone={fillTone} />}
+                <PercentCell value={row.fillRate} delay={barDelay} tone={fillTone} />
               </MiniTr>
             ))}
 
@@ -628,11 +700,9 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0, full = 
                 <MiniTd align="right">
                   {measured ? formatByUnit(totals.freeSpots, "count") : "—"}
                 </MiniTd>
-                {full && (
-                  <MiniTd align="right">
-                    {measured ? formatByUnit(totals.fillRate, "percent") : "—"}
-                  </MiniTd>
-                )}
+                <MiniTd align="right">
+                  {measured ? formatByUnit(totals.fillRate, "percent") : "—"}
+                </MiniTd>
               </MiniTr>
             )}
           </MiniTable>

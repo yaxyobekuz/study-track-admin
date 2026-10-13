@@ -71,6 +71,17 @@
  * O'lchangan talablar (yon panel ochiq, karta kengligi 314.7px):
  *
  *   Sinflar sig'imi           36.5 sarlavha + 26 JAMI + 3×26 = 140.5 (3 sinf)
+ *                             ⚠️ bu karta BOR JOYNI TO'LDIRADI, qator
+ *                             soni qat'iy emas (`TableCards.jsx` →
+ *                             `FILL_BODY`): bir ekranli rejimda 3 qator,
+ *                             oddiy oqimda esa qo'shnisiga qarab ko'proq.
+ *                             O'LCHANGAN (Chrome, haqiqiy CSS): 200px li
+ *                             diagramma yonida 5 qator (pastda 2px),
+ *                             kichik qo'shnilar yonida 3 (0px), yolg'iz
+ *                             turganda 3 (eng kam balandlik 144px),
+ *                             420px li qatorda 13 (6px). Bir ekranli
+ *                             rejimda maydon 157.4px → 3 qator va karta
+ *                             239px ga aynan sig'adi (sahifa surilmaydi).
  *   Sinflar bo'yicha natija   36.5 sarlavha + 26 JAMI + 3×26 = 140.5 (3 bosqich)
  *   Top 5 o'quvchi            36.5 sarlavha + 4×26           = 140.5 (4 qator)
  *   O'qituvchilar KPI         36.5 sarlavha + 4×26           = 140.5 (4 qator)
@@ -92,12 +103,14 @@
  * FAQAT so'zlar ustunga sig'sa: tor kartada (xl..2xl) katak bo'shlig'i
  * `px-1.5`, "A'lo va yaxshi" / "Topshiriq" ustunlari yashirin, aks holda
  * `break-words` sarlavhani 68-84px qilib, qatorni yarim kesardi
- * (`TableCards.jsx`). "Sinflar sig'imi" shu sababdan TO'RT ustunli
- * (31% nom + 3×23% ≈ 69px): "O'QUVCHI" (≈55px) va "BO'SH JOY" (eng uzun
- * so'zi ≈33px) ustunga sig'adi — ikkinchisi bo'shliqdan ikki qatorga
- * o'raladi, HARFMA-HARF bo'linmaydi. Beshinchi ustun (bandlik foizi)
- * aynan shu hisob tufayli qo'shilmagan: u har ustunni ~52px ga tushirib,
- * sarlavhani o'stirardi. Olimpiada plitkalari kattalashtirilsa, uning yangi
+ * (`TableCards.jsx`). "Sinflar sig'imi" BESH ustunli va kengliklari shu
+ * chekkaga qarab tanlangan (26/17/17/18/22%): tor kartada matnga
+ * 72.3 / 39.2 / 39.2 / 42.2 / 60.2px qoladi, sarlavhalar esa
+ * "SIG'IM" 33.5 · "SONI" 25.6 · "BO'SH" 32.8 · "BANDLIK" 45.9 — hammasi
+ * zaxira bilan sig'adi va HARFMA-HARF bo'linmaydi ("BO'SH JOY" faqat
+ * bo'shliqdan ikki qatorga o'raladi). "O'QUVCHI" (52.5) tor ustunga
+ * sig'maydi, shuning uchun u yerda "SONI" turadi (`narrowLabel`).
+ * O'LCHANGAN: Chrome, Inter yuklangan, `table-fixed`. Olimpiada plitkalari kattalashtirilsa, uning yangi
  * balandligi SHU jadvalga yozilishi va 148.3px ga sig'ishi shart. Yangi
  * karta yoki mavjud kartaga yangi qator qo'shilsa — xuddi shu qoida.
  *
