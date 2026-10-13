@@ -168,6 +168,29 @@ export const gradeTone = (value) => {
   return "text-red-600";
 };
 
+/**
+ * BO'SH JOY rangi (sinflar sig'imi jadvali).
+ *
+ * ⚠️ `percentTone` / `gradeTone` BU YERGA TO'G'RI KELMAYDI: u yerda "katta
+ * son — yaxshi", bu yerda esa shkala boshqa — bo'sh joyning MANFIYligi
+ * sinf sig'imdan oshib ketganini bildiradi (qizil), noli esa "to'ldi"
+ * (sariq). Musbat qiymat BO'YALMAYDI: har sinfni yashil qilib qo'ysak,
+ * jadval "hammasi joyida" degan ohangda o'qilib, haqiqiy ogohlantirish
+ * ko'rinmay qolardi.
+ *
+ * ⚠️ Shkala moliya dashboardidagi "Sinflar bo'yicha sig'im va qarz"
+ * jadvali bilan BIR XIL (`ClassBreakdownCard` → `freeSpotClass`): bitta
+ * tushuncha ikki ekranda ikki xil rangda turmasin.
+ */
+export const freeSpotTone = (value) => {
+  if (value == null) return "text-gray-400";
+
+  const number = Number(value);
+  if (number < 0) return "text-red-600";
+  if (number === 0) return "text-amber-700";
+  return "";
+};
+
 /** Foizli ko'rsatkich rangi (davomat, sifat, topshiriq). */
 export const percentTone = (value) => {
   if (value == null) return "text-gray-400";

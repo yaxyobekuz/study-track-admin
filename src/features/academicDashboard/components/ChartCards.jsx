@@ -1,13 +1,9 @@
 // Recharts
 import {
   Area,
-  Bar,
-  BarChart,
   CartesianGrid,
   Cell,
   ComposedChart,
-  LabelList,
-  Legend,
   Line,
   Pie,
   PieChart,
@@ -19,7 +15,6 @@ import {
 } from "recharts";
 
 // Hooks
-import useFitRows from "@/shared/hooks/useFitRows";
 import useCountUp from "@/shared/hooks/useCountUp";
 
 // Utils
@@ -38,31 +33,28 @@ import {
 import { MOTION, T, contentDelay } from "../data/dashboard.tokens";
 
 /**
- * Diagrammadagi IKKI OY ustunining rangi.
+ * Diagramma seriyasining rangi.
  *
- * ⚠️ Joriy oy to'q ko'k, taqqoslash oyi esa o'sha ko'kning ochiq soyasi:
- * ikkalasi bir xil rangning ikki darajasi bo'lishi shart, aks holda ular
- * "ikki xil ko'rsatkich" bo'lib o'qilardi.
+ * ⚠️ Rang TOIFADAN keladi (`CATEGORY_DOT.attendance` — emerald): ko'z
+ * kartani sarlavha nuqtasidan tanib oladi va diagramma o'sha rangda
+ * davom etadi. Yangi seriya qo'shilsa, rangi ham toifa bilan mos
+ * bo'lishi kerak, "bo'sh rang" tanlanmaydi.
  */
 const SERIES = {
-  current: "#2563eb",
-  previous: "#bfdbfe",
   attendance: "#10b981",
 };
 
 /**
  * SVG ICHIDAGI MATN RANGI — `dashboard.tokens.js` ning HEX ko'zgusi.
  *
- * ⚠️ Recharts o'q, legenda va yorliq matnini `<text fill>` bilan chizadi,
- * ya'ni Tailwind sinf satri u yerga o'tmaydi. Shu sababli tokenlardagi
- * ikki rang shu yerda hex ko'rinishida takrorlanadi va BOSHQA rang
- * qo'shilmaydi: `label` = `T.label` (slate-500), `num` = `T.tableNum`
- * (slate-900). O'lcham ham tokenga mos: o'q/legenda 10.5px (`T.valueMeta`
- * darajasi), ustun yorlig'i 10px (`T.label` darajasi).
+ * ⚠️ Recharts o'q va yorliq matnini `<text fill>` bilan chizadi, ya'ni
+ * Tailwind sinf satri u yerga o'tmaydi. Shu sababli tokendagi rang shu
+ * yerda hex ko'rinishida takrorlanadi va BOSHQA rang qo'shilmaydi:
+ * `label` = `T.label` (slate-500). O'lcham ham tokenga mos: o'q yorlig'i
+ * 10.5px (`T.valueMeta` darajasi).
  */
 const INK = {
   label: "#64748b",
-  num: "#0f172a",
 };
 const AXIS_FONT = 10.5;
 const AXIS_TICK = { ...AXIS, tick: { fontSize: AXIS_FONT, fill: INK.label } };
@@ -93,9 +85,8 @@ const AXIS_TICK = { ...AXIS, tick: { fontSize: AXIS_FONT, fill: INK.label } };
  */
 const ANIM = "auto";
 
-/** Diagramma harakat davomiyligi (ms) — uchala kartada bir tizim. */
+/** Diagramma harakat davomiyligi (ms) — ikkala kartada bir tizim. */
 const DURATION = {
-  bars: 800,
   line: 1400,
   ring: 900,
 };
@@ -117,26 +108,8 @@ const DURATION = {
  */
 const CHART_AREA = "h-[200px] w-full fitscreen:h-full";
 
-/**
- * Ustun ustidagi qiymat yorliqlari uchun ENG KAM balandlik.
- *
- * ⚠️ Yorliq o'q yorliqlaridan va ustun uchidan joy talab qiladi: maydon
- * 150px dan past bo'lganda "4.45" raqamlari ustunning o'zi va yuqoridagi
- * legenda bilan to'qnashardi. Shuning uchun kichik maydonda yorliq UMUMAN
- * chizilmaydi — qiymat tultipda qoladi (kesishgan matndan ko'ra yo'q matn
- * yaxshiroq).
- */
-const LABEL_MIN_HEIGHT = 150;
-
-/** Panjara va o'q uslubi — uchala diagrammada bir xil. */
+/** Panjara va o'q uslubi — ikkala diagrammada bir xil. */
 const GRID = { strokeDasharray: "3 3", stroke: "#f1f5f9" };
-
-/**
- * Legenda matni — recharts har elementni SERIYA rangida chizadi (ko'k
- * ustiga ko'k matn), bu esa o'qilmaydi va ierarxiyani buzadi: legenda
- * yorliq, ya'ni `T.label` rangida (slate-500) bo'lishi kerak.
- */
-const legendText = (value) => <span style={{ color: INK.label }}>{value}</span>;
 
 /**
  * Tultip qutisi — oq karta, `ring-slate-200`, yumshoq soya, 150ms fade.
@@ -201,173 +174,6 @@ const AcademicTooltip = ({
         ))}
       </ul>
     </div>
-  );
-};
-
-/**
- * BAHOLAR TAHLILI — fanlar bo'yicha o'rtacha baho.
- *
- * ⚠️ IKKI USTUN: joriy oy va o'tgan oy. Bittasi bilan "matematika 4.45"
- * degan raqam yaxshimi-yomonmi, aytib bo'lmaydi — javob faqat o'tgan oy
- * yonida turganda ko'rinadi.
- *
- * ⚠️ O'Q 0 DAN EMAS, ROSA SHKALADAN (1..5) boshlanadi: 4.45 va 4.05
- * orasidagi farq 0 dan boshlangan o'qda ko'zga umuman tashlanmasdi.
- * O'lchandi: 200px li maydonda chizish balandligi ~170px, ya'ni [0,5]
- * shkalada 0.4 balllik farq ~13px, [1,5] da esa ~17px — birinchisida
- * sakkizta ustun deyarli bir xil ko'rinardi, holbuki kartaning yagona
- * vazifasi aynan shu farqni ko'rsatish.
- *
- * ⚠️ Ustun ustidagi yorliq FAQAT joriy oyda: ikkala seriyada ham qo'yilsa,
- * sakkiz fanga o'n olti raqam tushib, ular bir-birining ustiga chiqib
- * ketardi.
- *
- * ⚠️ Fan nomlari `interval={0}` bilan MAJBURAN chizilmaydi. 1280–1366px
- * da bitta fanga ~47px slot qoladi, "Matematika" esa 11px shriftda ~58px
- * joy egallaydi — o'lchandi: sakkiz yorliqdan 4-5 tasi qo'shnisi bilan
- * kesishardi. Standart interval recharts ga to'qnashganini tashlab
- * yuborishga ruxsat beradi: kesishgan matndan ko'ra kamroq yorliq
- * o'qiladi (qolgani tultipda).
- *
- * ANIMATSIYA: ustunlar pastdan o'sib chiqadi (800ms, ease-out), kartadan
- * 140ms keyin; o'tgan oy seriyasi yana 120ms kechikib — ikki seriya
- * "birga sakramaydi", avval joriy, ortidan taqqoslash. Yorliqlar
- * ustunlar o'sib BO'LGACH (karta + 140 + 800) paydo bo'ladi.
- */
-export const SubjectChart = ({ data, isLoading, isError, delay = 0 }) => {
-  const rows = (data?.subjects ?? []).map((row) => ({
-    ...row,
-    current: row.average == null ? null : Number(row.average),
-    previous: row.previousAverage == null ? null : Number(row.previousAverage),
-  }));
-  const begin = contentDelay(delay);
-
-  /**
-   * Yorliq chizilsinmi — PIKSEL TAXMIN QILINMAYDI, O'LCHANADI.
-   *
-   * ⚠️ `useFitRows` bu yerda "qator soni" uchun emas, BITTA HA/YO'Q
-   * javobi uchun ishlatiladi: `rowHeight` — talab qilinadigan eng kam
-   * balandlik, `min: 0` / `max: 1` esa natijani "0 yoki 1" ga qisadi.
-   * Alohida `ResizeObserver` yozilmadi — ikkinchi o'lchov kodi bo'lsa,
-   * birinchisidagi tuzatish (0 balandlik, render tsikli, jsdom fallback)
-   * bu yerga ko'chmay qolardi.
-   *
-   * ⚠️ `ResizeObserver` yo'q muhitda `max` (=1) qaytadi → yorliqlar
-   * chiziladi. Bu to'g'ri zaxira: u muhitda maydon `h-[200px]`.
-   */
-  const [chartRef, labelFits] = useFitRows({
-    rowHeight: LABEL_MIN_HEIGHT,
-    min: 0,
-    max: 1,
-  });
-  const withLabels = labelFits > 0;
-
-  return (
-    <DashboardCard
-      // ⚠️ Qavs ichidagi izoh SARLAVHADAN IZOH SATRIGA ko'chirildi:
-      // bir ekranli rejimda sarlavha bir qatorda turadi (`dense`) va
-      // 45 belgilik nom kartaning kengligiga sig'may, kesilib qolardi.
-      // Matn yo'qolmadi — u pastdagi izoh satrida to'liq turibdi.
-      title="Baholar tahlili"
-      hint="Fanlar bo'yicha o'rtacha baho"
-      category="grades"
-      delay={delay}
-      dense
-      isLoading={isLoading}
-      isError={isError}
-      isEmpty={rows.length === 0}
-      emptyText="Bu oyda baho qo'yilmagan"
-      footer={<CardLink to="/grades">Barcha fanlar bo'yicha batafsil</CardLink>}
-    >
-      <div ref={chartRef} className={CHART_AREA}>
-        <ResponsiveContainer width="100%" height="100%">
-          {/* ⚠️ Yuqori chekka yorliqqa qarab o'zgaradi: yorliq yo'q bo'lsa
-              24px bo'sh joy chizish maydonidan behuda o'g'irlanardi — past
-              kartada aynan o'sha piksellar diagrammani tekislab qo'yardi. */}
-          <BarChart
-            data={rows}
-            margin={{ top: withLabels ? 24 : 8, right: 8, left: 0, bottom: 0 }}
-            barGap={2}
-          >
-            <CartesianGrid vertical={false} {...GRID} />
-            <XAxis dataKey="name" {...AXIS_TICK} tickMargin={6} />
-            <YAxis
-              {...AXIS_TICK}
-              domain={[1, 5]}
-              ticks={[1, 2, 3, 4, 5]}
-              width={28}
-            />
-            {/* Hover: fan ustunining orqasi och kulrang bilan yoritiladi —
-                ustunning o'zi esa `activeBar` bilan biroz ochlashadi */}
-            <Tooltip
-              content={<AcademicTooltip unit="grade" />}
-              cursor={{ fill: "#f1f5f9" }}
-            />
-            <Legend
-              verticalAlign="top"
-              align="left"
-              iconType="square"
-              iconSize={9}
-              formatter={legendText}
-              wrapperStyle={{ fontSize: AXIS_FONT, paddingBottom: 8 }}
-            />
-
-            <Bar
-              dataKey="current"
-              // Yorliqda oy nomi bor — legenda "qaysi ustun qaysi oy" degan
-              // savolga tultipsiz javob berishi kerak
-              name={
-                data?.monthLabel
-                  ? `O'rtacha baho (${data.monthLabel})`
-                  : "O'rtacha baho"
-              }
-              fill={SERIES.current}
-              radius={[4, 4, 0, 0]}
-              maxBarSize={18}
-              isAnimationActive={ANIM}
-              animationBegin={begin}
-              animationDuration={DURATION.bars}
-              animationEasing="ease-out"
-              activeBar={{ fillOpacity: 0.85 }}
-            >
-              {withLabels && (
-                <LabelList
-                  dataKey="current"
-                  position="top"
-                  fontSize={10}
-                  fontWeight={600}
-                  fill={INK.num}
-                  formatter={(value) =>
-                    value == null ? "" : Number(value).toFixed(2)
-                  }
-                  // ⚠️ Yorliq ustunlar o'sib bo'lgach ko'rinadi: recharts
-                  // `LabelList` ni animatsiya qilmaydi, shuning uchun CSS —
-                  // `className`/`style` har bir `<text>` ga o'tadi.
-                  // `fill-mode-both` MAJBURIY: usiz kechikish davomida
-                  // yorliq to'liq ko'rinib turib, keyin "qayta" paydo
-                  // bo'lardi. Reduced-motion'da `motion-safe:` tufayli
-                  // yorliq darhol ko'rinadi.
-                  className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-500 motion-safe:fill-mode-both"
-                  style={{ animationDelay: `${begin + DURATION.bars}ms` }}
-                />
-              )}
-            </Bar>
-            <Bar
-              dataKey="previous"
-              name={data?.compareMonthLabel ?? "O'tgan oy"}
-              fill={SERIES.previous}
-              radius={[4, 4, 0, 0]}
-              maxBarSize={18}
-              isAnimationActive={ANIM}
-              animationBegin={begin + 120}
-              animationDuration={DURATION.bars}
-              animationEasing="ease-out"
-              activeBar={{ fillOpacity: 0.85 }}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </DashboardCard>
   );
 };
 

@@ -13,12 +13,9 @@ import EmptyState from "@/shared/components/ui/EmptyState";
 import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import KpiCards from "../components/KpiCards";
+import { AttendanceTrendChart, DistributionCard } from "../components/ChartCards";
 import {
-  AttendanceTrendChart,
-  DistributionCard,
-  SubjectChart,
-} from "../components/ChartCards";
-import {
+  ClassCapacityCard,
   ClassesCard,
   TeachersCard,
   TopStudentsCard,
@@ -125,10 +122,19 @@ const LiveIndicator = ({ updatedAt }) => {
 /**
  * TA'LIM DASHBOARDI — o'quv bo'limining bosh ekrani.
  *
- * Sahifada: oltita KPI va uch qatorli uch ustunli to'r — fanlar,
- * sinflar, davomat dinamikasi, baholar taqsimoti, eng yaxshi o'quvchilar,
- * olimpiada yutuqlari, o'qituvchilar samaradorligi, to'garaklar va
- * avtomatik tahlil.
+ * Sahifada: oltita KPI va uch qatorli uch ustunli to'r — sinflar
+ * sig'imi, sinflar natijasi, davomat dinamikasi, baholar taqsimoti, eng
+ * yaxshi o'quvchilar, olimpiada yutuqlari, o'qituvchilar samaradorligi,
+ * to'garaklar va avtomatik tahlil.
+ *
+ * ⚠️ BIRINCHI KATAKDA SIG'IM TURADI, "Baholar tahlili" diagrammasi EMAS
+ * (biznes qarori, 2026-10-13): fanlar bo'yicha o'rtacha baho yonidagi
+ * ikki kartada (taqsimot, bosqichlar) allaqachon boshqa kesimda turardi,
+ * "sinfda nechta joy bor va nechtasi bo'sh" degan savolga esa butun
+ * panelda javob yo'q edi. Sig'imning MOLIYA tomonidagi jadvali
+ * (`/finance/main/classes-capacity`) qarz bilan birga keladi va u
+ * `finance.view` ortida — shuning uchun bu yerda PULSIZ nusxasi emas,
+ * O'Z manbasi bor (`academicDashboard.service.js` → `buildCapacity`).
  *
  * ⚠️ MOLIYA DASHBOARDI BILAN BIR XIL SHAKL: bir xil karta qobig'i
  * (`DashboardCard`), bir xil boshqaruv paneli (oy + taqqoslash oyi), bir
@@ -260,7 +266,7 @@ const CARD_DELAY = {
  * o'z kontentiga qarab o'sib, uchinchisi ekrandan chiqib ketardi.
  *
  * ⚠️ Kartalar TARTIBI maketdagidek va u shu yerdagi JOYLASHISH TARTIBI:
- *   1-qator  fanlar · sinflar · davomat
+ *   1-qator  sinflar sig'imi · sinflar natijasi · davomat
  *   2-qator  taqsimot · top 5 · olimpiada
  *   3-qator  o'qituvchilar · to'garaklar · AI tahlil
  *
@@ -422,8 +428,8 @@ const AcademicDashboardPage = () => {
           {/* Har kartaga TOIFA (sarlavha nuqtasi rangi, `CATEGORY_DOT`) va
               KECHIKISH (`gridDelay`) uzatiladi — karta ularni
               `DashboardCard` ga yetkazadi. */}
-          {/* ── 1-qator: fanlar · sinflar · davomat dinamikasi ─────────── */}
-          <SubjectChart {...state} category="grades" delay={CARD_DELAY.row0[0]} />
+          {/* ── 1-qator: sig'im · sinflar natijasi · davomat dinamikasi ── */}
+          <ClassCapacityCard {...state} category="classes" delay={CARD_DELAY.row0[0]} />
           <ClassesCard {...state} category="classes" delay={CARD_DELAY.row0[1]} />
           <AttendanceTrendChart {...state} category="attendance" delay={CARD_DELAY.row0[2]} />
 

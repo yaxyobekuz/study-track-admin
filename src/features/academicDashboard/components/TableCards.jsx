@@ -11,7 +11,13 @@ import useMediaQuery from "@/shared/hooks/useMediaQuery";
 import { cn } from "@/shared/utils/cn";
 
 // Data
-import { formatByUnit, gradeTone, linkLabel, percentTone } from "../data/academicDashboard.data";
+import {
+  formatByUnit,
+  freeSpotTone,
+  gradeTone,
+  linkLabel,
+  percentTone,
+} from "../data/academicDashboard.data";
 // ⚠️ Tipografiya, ton va harakat FAQAT dizayn tizimidan. Komponentda
 // qo'lda yozilgan "text-[11px] text-gray-400" QOLMAYDI — aks holda uchta
 // jadval bir-biridan va qolgan kartalardan jimgina ajralib ketadi.
@@ -368,6 +374,191 @@ export const ClassesCard = ({ data, isLoading, isError, delay = 0 }) => {
                 )}
                 <MiniTd align="right">
                   {formatByUnit(data.kpi.attendanceRate?.value, "percent")}
+                </MiniTd>
+              </MiniTr>
+            )}
+          </MiniTable>
+        </Enter>
+      </div>
+    </DashboardCard>
+  );
+};
+
+/**
+ * Sinflar BANDLIK bo'yicha kamayish tartibida: eng to'lgani tepada.
+ *
+ * ⚠️ Server bosqich bo'yicha (1-sinfdan 11-sinfgacha) saralab yuboradi va
+ * TO'LIQ ro'yxat uchun to'g'ri tartib ham shu. Karta esa bir ekranli
+ * rejimda ro'yxatning faqat bir necha qatorini chizadi — o'sha joyda
+ * alifbodagi birinchi sinf emas, SIG'IMDAN OSHIB KETGANI turishi kerak,
+ * aks holda kartaning yagona ogohlantiruvchi qatori ko'rinmay qolardi.
+ *
+ * Sig'imi belgilanmagan sinf (`fillRate = null`) oxirida: u haqida
+ * "to'ldimi" degan savolga javob yo'q. `Array.sort` BARQAROR — teng
+ * bandlikdagilar serverdagi bosqich tartibida qoladi.
+ */
+const byFillDesc = (a, b) => {
+  if (a.fillRate == null && b.fillRate == null) return 0;
+  if (a.fillRate == null) return 1;
+  if (b.fillRate == null) return -1;
+  return b.fillRate - a.fillRate;
+};
+
+/**
+ * Kartaning izoh satri: oy · jami joy · bandlik foizi.
+ *
+ * ⚠️ Maktab yig'indisi IZOHDA turadi, karta ichidagi alohida blokda EMAS:
+ * bir ekranli rejimda izoh ramkaning bir qismi (`fitscreen.data.js`), ya'ni
+ * u o'lchanadigan maydondan HECH NARSA olmaydi — yig'indi uchun ajratilgan
+ * blok esa jadvaldan to'liq bitta qator yeb qo'yardi.
+ *
+ * Sig'imi belgilanmagan sinflar soni faqat sig'im UMUMAN belgilangan
+ * bo'lsa aytiladi: aks holda bitta satrda bir narsa ikki marta yozilardi.
+ */
+const capacityHint = (totals, monthLabel) => {
+  const parts = [monthLabel].filter(Boolean);
+
+  if (totals && totals.capacity > 0) {
+    parts.push(`${formatByUnit(totals.capacity, "count")} joy`);
+    if (totals.fillRate != null) {
+      parts.push(`${formatByUnit(totals.fillRate, "percent")} band`);
+    }
+    if (totals.withoutCapacity > 0) {
+      parts.push(`${totals.withoutCapacity} ta sinfda sig'im yo'q`);
+    }
+  } else {
+    parts.push("sig'im belgilanmagan");
+  }
+
+  return parts.join(" · ");
+};
+
+/**
+ * SINFLAR SIG'IMI — har sinfda nechta joy bor, nechtasi band, nechtasi bo'sh.
+ *
+ * ⚠️ PUL YO'Q: moliya dashboardidagi o'sha jadvalda "Grant" va "Qarz"
+ * ustunlari ham bor, bu yerda esa ATAYLAB yo'q. Bu ekran `education.view`
+ * bilan ochiladi, qarzdorlik manzarasi esa `finance.view` ortida turadi
+ * (`finance.md` §11) — ikkalasi bir kartada bo'lsa, moliya ruxsatisiz odam
+ * qarzni shu karta orqali o'qib olardi. Server ham bu maydonlarni
+ * YUBORMAYDI (`academicDashboard.service.js` → `buildCapacity`).
+ *
+ * ⚠️ "O'quvchi" ustuni A'ZOLIK bo'yicha (sinflar ro'yxatidagi son bilan
+ * AYNI qoida): sig'im JOYNI o'lchaydi va ikki sinfga biriktirilgan
+ * o'quvchi ikkala sinfda ham parta egallaydi. Shu sababli bu ustunning
+ * yig'indisi KPI dagi "Jami o'quvchilar" bilan solishtirilmaydi — u
+ * "Sinflar bo'yicha natija" jadvalidagi boshqa qoida (har o'quvchi bitta
+ * sinfda) bilan hisoblangan.
+ *
+ * ⚠️ JAMI qatori FAQAT sig'imi belgilangan sinflarni yig'adi — shuning
+ * uchun uchala katak o'zaro mos keladi (sig'im − o'quvchi = bo'sh joy).
+ * Sig'imsiz sinflar soni izohda aytiladi, jim qoldirilmaydi. Yagona
+ * istisno — maktabda sig'im UMUMAN belgilanmagan holat: o'sha paytda
+ * JAMI o'quvchilari jadvaldagi HAMMA sinfdan yig'iladi, aks holda
+ * ro'yxatda o'quvchilar turib, yig'indi "0" bo'lib ko'rinardi.
+ *
+ * ⚠️ JAMI qatori HAR DOIM chiziladi va O'LCHOVDAN TASHQARIDA
+ * (`headerHeight` ga qo'shiladi): yig'indi birinchi bo'lib kesilib
+ * qolmasligi kerak ("Sinflar bo'yicha natija" bilan bir xil qaror).
+ *
+ * `delay` — kartaning to'rdagi kirish kechikishi (ms).
+ */
+export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0 }) => {
+  const totals = data?.capacity?.totals ?? null;
+  const rows = [...(data?.capacity?.rows ?? [])].sort(byFillDesc);
+  const hasTotal = Boolean(totals);
+  // Birorta sinfga sig'im qo'yilganmi — JAMI qatori shunga qarab o'qiladi
+  const measured = (totals?.capacity ?? 0) > 0;
+
+  const isFit = useMediaQuery(FIT_QUERY);
+  const [bodyRef, fitRows] = useFitRows({
+    rowHeight: ROW_H,
+    headerHeight: HEAD_H + (hasTotal ? TOTAL_ROW_H : 0),
+    min: MIN_ROWS,
+    max: NO_MAX,
+  });
+
+  const visible = rows.slice(0, isFit ? fitRows : rows.length);
+  const hidden = rows.length - visible.length;
+
+  return (
+    <DashboardCard
+      title="Sinflar sig'imi"
+      hint={capacityHint(totals, data?.monthLabel)}
+      category="classes"
+      delay={delay}
+      isLoading={isLoading}
+      isError={isError}
+      isEmpty={rows.length === 0}
+      emptyText="Sinf ma'lumoti yo'q"
+      dense
+      // ⚠️ Havola `/classes` ga — sig'im AYNAN O'SHA yerda belgilanadi.
+      // Moliyadagi to'liq jadval (`/finance/main/classes-capacity`)
+      // BERILMAYDI: u `finance.view` ortida va ta'lim xodimi bosganda
+      // "ruxsat yo'q" ekraniga tushardi.
+      footer={<CardLink to="/classes">{linkLabel("Barcha sinflar bo'yicha", hidden)}</CardLink>}
+    >
+      <div ref={bodyRef} className={BODY}>
+        <Enter delay={delay}>
+          <MiniTable
+            // Birinchi ustun — sinf nomi ("1-sinf ingliz"), qolgan uchtasi
+            // qisqa son: `table-fixed` da kenglik sarlavhadan olinadi.
+            // ⚠️ TO'RT ustun, beshtasi EMAS: tor kartada (xl..2xl, ~301px)
+            // besh ustunda har biriga ~52px qolib, "O'QUVCHI" (≈55px)
+            // harfma-harf bo'linib sarlavhani o'stirardi va oxirgi qator
+            // yarim kesilardi ("Sinflar bo'yicha natija" dagi o'sha
+            // o'lchov). Bandlik foizi shuning uchun ustun emas — u izohda
+            // (maktab bo'yicha) va rangda (bo'sh joy) ko'rinadi.
+            className={cn(TABLE, "[&_th:nth-child(1)]:w-[31%]")}
+            columns={[
+              { label: "Sinf" },
+              { label: "Sig'im", align: "right" },
+              {
+                key: "students",
+                label: narrowLabel("O'quvchilar soni", "O'quvchi"),
+                align: "right",
+              },
+              { label: "Bo'sh joy", align: "right" },
+            ]}
+          >
+            {visible.map((row, index) => (
+              <MiniTr key={row.classId} className={rowClass(index)}>
+                <MiniTd className={T.tableName} title={row.className}>
+                  {row.className}
+                </MiniTd>
+                {/* Sig'im belgilanmagan sinf — "—" (nol EMAS: "sig'im 0"
+                    "joy yo'q" degan boshqa fakt bo'lardi) */}
+                <MiniTd align="right">{formatByUnit(row.capacity, "count")}</MiniTd>
+                <MiniTd align="right" className={T.tableNum}>
+                  {formatByUnit(row.studentCount, "count")}
+                </MiniTd>
+                {/* Rang SHKALADAN (`freeSpotTone`): manfiy — sig'imdan
+                    oshgan (qizil), nol — to'lgan (sariq), musbat — neytral */}
+                <MiniTd align="right" className={cn(T.tableNum, freeSpotTone(row.freeSpots))}>
+                  {formatByUnit(row.freeSpots, "count")}
+                </MiniTd>
+              </MiniTr>
+            ))}
+
+            {hasTotal && (
+              <MiniTr className={TOTAL_ROW}>
+                <MiniTd
+                  title={
+                    totals.withoutCapacity > 0 && measured
+                      ? "Sig'imi belgilangan sinflar bo'yicha"
+                      : undefined
+                  }
+                >
+                  Jami
+                </MiniTd>
+                <MiniTd align="right">
+                  {measured ? formatByUnit(totals.capacity, "count") : "—"}
+                </MiniTd>
+                <MiniTd align="right">
+                  {formatByUnit(measured ? totals.occupied : totals.students, "count")}
+                </MiniTd>
+                <MiniTd align="right">
+                  {measured ? formatByUnit(totals.freeSpots, "count") : "—"}
                 </MiniTd>
               </MiniTr>
             )}

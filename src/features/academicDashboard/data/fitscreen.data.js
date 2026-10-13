@@ -70,6 +70,7 @@
  * talab qilib, 960-1044px oralig'ida jimgina kesib ko'rsatardi.
  * O'lchangan talablar (yon panel ochiq, karta kengligi 314.7px):
  *
+ *   Sinflar sig'imi           36.5 sarlavha + 26 JAMI + 3×26 = 140.5 (3 sinf)
  *   Sinflar bo'yicha natija   36.5 sarlavha + 26 JAMI + 3×26 = 140.5 (3 bosqich)
  *   Top 5 o'quvchi            36.5 sarlavha + 4×26           = 140.5 (4 qator)
  *   O'qituvchilar KPI         36.5 sarlavha + 4×26           = 140.5 (4 qator)
@@ -91,7 +92,12 @@
  * FAQAT so'zlar ustunga sig'sa: tor kartada (xl..2xl) katak bo'shlig'i
  * `px-1.5`, "A'lo va yaxshi" / "Topshiriq" ustunlari yashirin, aks holda
  * `break-words` sarlavhani 68-84px qilib, qatorni yarim kesardi
- * (`TableCards.jsx`). Olimpiada plitkalari kattalashtirilsa, uning yangi
+ * (`TableCards.jsx`). "Sinflar sig'imi" shu sababdan TO'RT ustunli
+ * (31% nom + 3×23% ≈ 69px): "O'QUVCHI" (≈55px) va "BO'SH JOY" (eng uzun
+ * so'zi ≈33px) ustunga sig'adi — ikkinchisi bo'shliqdan ikki qatorga
+ * o'raladi, HARFMA-HARF bo'linmaydi. Beshinchi ustun (bandlik foizi)
+ * aynan shu hisob tufayli qo'shilmagan: u har ustunni ~52px ga tushirib,
+ * sarlavhani o'stirardi. Olimpiada plitkalari kattalashtirilsa, uning yangi
  * balandligi SHU jadvalga yozilishi va 148.3px ga sig'ishi shart. Yangi
  * karta yoki mavjud kartaga yangi qator qo'shilsa — xuddi shu qoida.
  *
