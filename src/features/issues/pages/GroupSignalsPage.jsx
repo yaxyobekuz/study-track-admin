@@ -8,7 +8,13 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 // Icons
-import { ExternalLink, MessageSquareWarning, Plus, X } from "lucide-react";
+import {
+  ExternalLink,
+  MessageSquareWarning,
+  Plus,
+  RefreshCw,
+  X,
+} from "lucide-react";
 
 // Utils
 import { formatDateTimeUz } from "@/shared/utils/date.utils";
@@ -19,7 +25,10 @@ import usePermissions from "@/shared/hooks/usePermissions";
 
 // Queries
 import { groupSignalsQueries } from "../queries/group-signals.queries";
-import { useDismissGroupSignal } from "../queries/group-signals.mutations";
+import {
+  useDismissGroupSignal,
+  useRefreshGroupSignals,
+} from "../queries/group-signals.mutations";
 
 // Data
 import {
@@ -67,6 +76,7 @@ const GroupSignalsPage = () => {
   const { data: counts } = useQuery(groupSignalsQueries.counts());
 
   const dismissMutation = useDismissGroupSignal();
+  const refreshMutation = useRefreshGroupSignals();
 
   const canManage = can("issues.signals");
 
@@ -74,6 +84,46 @@ const GroupSignalsPage = () => {
     const params = new URLSearchParams(searchParams);
     params.set("status", value);
     setSearchParams(params);
+  };
+
+  /**
+   * HOZIR TEKSHIRISH.
+   *
+   * ⚠️ NATIJA ROSTINI AYTADI. "Yangilandi" deb qo'yish eng yomon
+   * variant bo'lardi: tugma bosilgan-u ro'yxat o'zgarmagan bo'lsa, odam
+   * tizim buzilgan deb o'ylardi. Shuning uchun uch xil javob bor —
+   * yangi gap yo'q edi, tahlil qilindi-yu signal chiqmadi, yoki
+   * signal topildi.
+   */
+  const handleRefresh = () => {
+    refreshMutation.mutate(undefined, {
+      onSuccess: (result) => {
+        if (result?.error) {
+          toast.error("Tekshirib bo'lmadi — birozdan keyin qayta urinib ko'ring");
+          return;
+        }
+        // AI sozlanmagan — bu xato emas, lekin jim qolish ham noto'g'ri.
+        if (result?.skipped) {
+          toast.info("AI sozlanmagan — tahlil ishlamayapti");
+          return;
+        }
+        if (!result?.analyzed) {
+          toast.info("Yangi xabar yo'q — tekshiradigan narsa topilmadi");
+          return;
+        }
+        if (!result.signals) {
+          toast.success(
+            `${result.analyzed} ta xabar ko'rildi — e'tibor talab qiladigan gap topilmadi`,
+          );
+          return;
+        }
+        toast.success(
+          `${result.analyzed} ta xabar ko'rildi — ${result.signals} ta signal topildi`,
+        );
+      },
+      onError: (error) =>
+        toast.error(error.response?.data?.message || "Tekshirib bo'lmadi"),
+    });
   };
 
   const handleDismiss = (signal) => {
@@ -96,6 +146,19 @@ const GroupSignalsPage = () => {
 
   return (
     <div className="space-y-4">
+      {/* Tekshirish — 30 daqiqalik aylanishni kutmasdan */}
+      {canManage && (
+        <div className="flex justify-end">
+          <Button onClick={handleRefresh} disabled={refreshMutation.isPending}>
+            <RefreshCw
+              strokeWidth={1.5}
+              className={refreshMutation.isPending ? "animate-spin" : undefined}
+            />
+            {refreshMutation.isPending ? "Tekshirilmoqda..." : "Hozir tekshirish"}
+          </Button>
+        </div>
+      )}
+
       <TabsButtons
         items={statusTabs}
         value={status}
@@ -115,7 +178,7 @@ const GroupSignalsPage = () => {
             title="Signal yo'q"
             description={
               status === "new"
-                ? "Rasmiy guruhlarda e'tibor talab qiladigan gap topilmadi. Tekshiruv har 30 daqiqada takrorlanadi."
+                ? "Rasmiy guruhlarda e'tibor talab qiladigan gap topilmadi. Tekshiruv har 30 daqiqada o'zi takrorlanadi — kutmaslik uchun \"Hozir tekshirish\" tugmasini bosing."
                 : "Bu ro'yxat bo'sh."
             }
           />

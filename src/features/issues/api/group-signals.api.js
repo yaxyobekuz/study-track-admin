@@ -13,6 +13,13 @@ export const groupSignalsAPI = {
 
   getCounts: () => http.get("/group-signals/counts"),
 
+  // HOZIR TEKSHIRISH — 30 daqiqalik aylanishni kutmaydi.
+  //
+  // ⚠️ YANGI XABAR OLIB KELMAYDI: xabarlarni bot guruhdan darhol yozib
+  // boradi, bu esa NAVBATDAGI xabarlarni tahlil qiladi. Guruhda yangi
+  // gap bo'lmasa natija nol bo'ladi.
+  refresh: () => http.post("/group-signals/refresh"),
+
   // TEZKOR BIRIKTIRISH — faqat kategoriya so'raladi, qolgani signaldan
   // ko'chiriladi (matn, iqtibos, guruh nomi, xabar havolasi).
   attach: (id, categoryId) =>

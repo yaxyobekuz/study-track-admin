@@ -9,6 +9,20 @@ import { groupSignalsKeys } from "./group-signals.queries";
 import { issuesKeys } from "./issues.queries";
 
 /**
+ * HOZIR TEKSHIRISH — navbatdagi xabarlarni darhol tahlil qiladi.
+ *
+ * ⚠️ UZOQ KETISHI MUMKIN: ichida AI chaqiruvi bor (har guruh uchun
+ * bittadan). Tugma shuning uchun `isPending` da bloklanadi.
+ */
+export const useRefreshGroupSignals = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => groupSignalsAPI.refresh().then((r) => r.data.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupSignalsKeys.all }),
+  });
+};
+
+/**
  * SIGNALNI MUAMMOLARGA BIRIKTIRISH — "tezkor" usul.
  *
  * ⚠️ IKKI KALIT HAM BEKOR QILINADI: signal holati o'zgaradi (platforma)
