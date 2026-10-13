@@ -71,6 +71,17 @@
  * O'lchangan talablar (yon panel ochiq, karta kengligi 314.7px):
  *
  *   Sinflar sig'imi           36.5 sarlavha + 26 JAMI + 3×26 = 140.5 (3 sinf)
+ *                             ⚠️ bu karta BOR JOYNI TO'LDIRADI, qator
+ *                             soni qat'iy emas (`TableCards.jsx` →
+ *                             `FILL_BODY`): bir ekranli rejimda 3 qator,
+ *                             oddiy oqimda esa qo'shnisiga qarab ko'proq.
+ *                             O'LCHANGAN (Chrome, haqiqiy CSS): 200px li
+ *                             diagramma yonida 5 qator (pastda 2px),
+ *                             kichik qo'shnilar yonida 3 (0px), yolg'iz
+ *                             turganda 3 (eng kam balandlik 144px),
+ *                             420px li qatorda 13 (6px). Bir ekranli
+ *                             rejimda maydon 157.4px → 3 qator va karta
+ *                             239px ga aynan sig'adi (sahifa surilmaydi).
  *   Sinflar bo'yicha natija   36.5 sarlavha + 26 JAMI + 3×26 = 140.5 (3 bosqich)
  *   Top 5 o'quvchi            36.5 sarlavha + 4×26           = 140.5 (4 qator)
  *   O'qituvchilar KPI         36.5 sarlavha + 4×26           = 140.5 (4 qator)
