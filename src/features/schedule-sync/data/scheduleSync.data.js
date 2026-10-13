@@ -77,11 +77,32 @@ export const REVISION_STATUS = {
 export const RESOLUTION_STATUS = {
   manual: { label: "Qo'lda", className: TONE.blue, selectable: true },
   auto: { label: "Avtomatik", className: TONE.emerald, selectable: true },
+  // ⚠️ `selectable: false` — e'tiborsizlik platformadagi yozuvga ishora
+  // QILMAYDI, ya'ni tanlagichda ko'rsatiladigan qiymat yo'q. Holat
+  // tanlagich YONIDAGI yorliqdan ko'rinadi.
+  ignored: { label: "E'tiborsiz", className: TONE.gray, selectable: false },
   suggested: { label: "Taklif", className: TONE.amber, selectable: false },
   ambiguous: { label: "Noaniq", className: TONE.orange, selectable: false },
   unresolved: { label: "Topilmadi", className: TONE.red, selectable: false },
   missing_target: { label: "O'chirilgan", className: TONE.red, selectable: false },
   archived_target: { label: "Arxivlangan", className: TONE.red, selectable: false },
+};
+
+/**
+ * E'TIBORSIZ QOLDIRISH — tanlagichdagi maxsus variant.
+ *
+ * ⚠️ QIYMAT SERVER BILAN BITTA (`scheduleSyncReview.service.js#IGNORED_TARGET`)
+ * va ikkalasi BIRGA o'zgaradi. Bu platformadagi yozuvning id si EMAS —
+ * "bu nom bizga tegishli emas" degan belgi: bitta Google Sheet bir nechta
+ * filialning jadvalini saqlaganda, boshqa filialning sinflarini moslashning
+ * iloji yo'q, lekin ular "hal qilinmagan" bo'lib ro'yxatni to'ldirib
+ * turardi va jadvalni qo'llashni bloklardi.
+ */
+export const IGNORED_TARGET = "000000000000000000000000";
+
+export const IGNORE_OPTION = {
+  value: IGNORED_TARGET,
+  label: "— Bu nom bizga tegishli emas (e'tiborsiz qoldirish)",
 };
 
 /** Odam aralashuvi kerak bo'lgan holatlar ("O'zgarishlar" tabida chiqadi). */

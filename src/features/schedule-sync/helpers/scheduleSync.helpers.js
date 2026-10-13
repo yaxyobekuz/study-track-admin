@@ -4,6 +4,8 @@ import { toast } from "sonner";
 // Data
 import {
   STALE_REASONS,
+  IGNORE_OPTION,
+  IGNORED_TARGET,
   NO_SUBJECT_LABEL,
   RESOLUTION_STATUS,
   NO_CHANGES_BLOCKER,
@@ -193,9 +195,18 @@ export const suggestionOf = (row) =>
     ? row.targetId || row.candidates?.[0]?.id || null
     : null;
 
-/** Tanlagichdagi joriy (saqlangan) qiymat. */
-export const baseTargetOf = (row) =>
-  RESOLUTION_STATUS[row.status]?.selectable ? row.targetId ?? "" : "";
+/**
+ * Tanlagichdagi joriy (saqlangan) qiymat.
+ *
+ * ⚠️ E'TIBORSIZ holatda server `targetId: null` qaytaradi (sentinel
+ * platformadagi yozuv emas), lekin tanlagichda tanlangan variant
+ * KO'RINISHI kerak — aks holda saqlangandan keyin maydon yana bo'sh
+ * bo'lib, odam saqlanmagan deb o'ylardi.
+ */
+export const baseTargetOf = (row) => {
+  if (row.status === "ignored") return IGNORED_TARGET;
+  return RESOLUTION_STATUS[row.status]?.selectable ? row.targetId ?? "" : "";
+};
 
 /**
  * O'qituvchi yorlig'i: "Ism (login) — fanlar".
@@ -222,14 +233,23 @@ const teacherLabel = (teacher, subjectNameById) => {
  */
 export const buildOptionList = (kind, options, subjects) => {
   const list = options ?? [];
+  // ⚠️ "E'TIBORSIZ QOLDIRISH" ENG BOSHIDA va har uch turda: begona sinf
+  // odatda begona fan va o'qituvchi bilan keladi. U ro'yxat ichida emas,
+  // boshida turadi — odam uni qidirib yurmasligi kerak.
   if (kind !== "teacher") {
-    return list.map((option) => ({ value: option.id, label: option.name }));
+    return [
+      IGNORE_OPTION,
+      ...list.map((option) => ({ value: option.id, label: option.name })),
+    ];
   }
   const subjectNameById = new Map((subjects ?? []).map((s) => [s.id, s.name]));
-  return list.map((teacher) => ({
-    value: teacher.id,
-    label: teacherLabel(teacher, subjectNameById),
-  }));
+  return [
+    IGNORE_OPTION,
+    ...list.map((teacher) => ({
+      value: teacher.id,
+      label: teacherLabel(teacher, subjectNameById),
+    })),
+  ];
 };
 
 /**

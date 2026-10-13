@@ -25,6 +25,7 @@ import {
 } from "../helpers/scheduleSync.helpers";
 import {
   EDITED_META,
+  IGNORED_TARGET,
   MAPPING_COLUMNS,
   RESOLUTION_STATUS,
 } from "../data/scheduleSync.data";
@@ -64,7 +65,14 @@ const hintOf = (row, edit, labelById) => {
             .join("; ")}`
         : "Bir nechta mos yozuv bor — to'g'risini tanlang";
     case "unresolved":
-      return "Platformada mos nom topilmadi — qo'lda tanlang";
+      return "Platformada mos nom topilmadi — qo'lda tanlang yoki e'tiborsiz qoldiring";
+    case "ignored":
+      // E'tiborsiz qator HAL QILINGAN hisoblanadi, lekin qaytarib olish
+      // mumkinligi ko'rinib tursin: ro'yxatdan boshqa yozuv tanlansa
+      // belgi o'rnini bo'shatadi.
+      return row.stored?.updatedBy
+        ? `Bu nom bizga tegishli emas — ${row.stored.updatedBy.name}, ${formatDateTimeUz(row.stored.updatedAt)}`
+        : "Bu nom bizga tegishli emas — darslari jadvalga yozilmaydi";
     case "missing_target":
       return `Biriktirilgan yozuv o'chirilgan${
         row.targetName ? ` (${row.targetName})` : ""
@@ -80,13 +88,21 @@ const hintOf = (row, edit, labelById) => {
   }
 };
 
-/** Noaniq qatorda nomzodlar ro'yxat BOSHIDA turadi. */
+/**
+ * Noaniq qatorda nomzodlar ro'yxat BOSHIDA turadi.
+ *
+ * ⚠️ "E'tiborsiz qoldirish" nomzodlardan ham OLDIN qoladi: u ro'yxatning
+ * doimiy birinchi bandi va qatordan qatorga joyini o'zgartirmasligi kerak,
+ * aks holda odam uni har safar qidirib yurardi.
+ */
 const optionsFor = (row, optionList) => {
   if (!row.candidates?.length) return optionList;
   const ids = new Set(row.candidates.map((c) => c.id));
+  const isIgnore = (o) => o.value === IGNORED_TARGET;
   return [
-    ...optionList.filter((o) => ids.has(o.value)),
-    ...optionList.filter((o) => !ids.has(o.value)),
+    ...optionList.filter(isIgnore),
+    ...optionList.filter((o) => !isIgnore(o) && ids.has(o.value)),
+    ...optionList.filter((o) => !isIgnore(o) && !ids.has(o.value)),
   ];
 };
 
