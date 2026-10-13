@@ -1083,7 +1083,11 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/diagnostics/topics", key: "diagnostics.analytics" },
   { prefix: "/diagnostics/students", key: "diagnostics.analytics" },
   { prefix: "/market", key: "market.view" },
-  { prefix: "/tasks", key: "tasks.view" },
+  // LAVOZIMLAR MARKAZI — bo'limga kirish butun filialni ko'rish
+  // (`tasks.view`) YOKI o'z bo'limi (`tasks.team`) bilan: rahbarda
+  // `tasks.view` bo'lmasligi mumkin, lekin o'z bo'limining topshiriqlari
+  // unga ochiq (server ham aynan shunday tekshiradi).
+  { prefix: "/tasks", key: ["tasks.view", "tasks.team"] },
   { prefix: "/tasks/reports", key: "tasks.reports" },
   { prefix: "/tasks/settings", key: "tasks.settings" },
   { prefix: "/penalties", key: "penalties.view" },

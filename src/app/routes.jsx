@@ -109,7 +109,9 @@ import ChangelogPage from "@/features/changelog/pages/ChangelogPage";
 import TasksLayout from "@/features/tasks/layouts/TasksLayout";
 import TasksPage from "@/features/tasks/pages/TasksPage";
 import TaskDashboardPage from "@/features/tasks/pages/TaskDashboardPage";
+import MyTasksPage from "@/features/myTasks/pages/MyTasksPage";
 import TaskReportsPage from "@/features/tasks/pages/TaskReportsPage";
+import TaskSchedulesPage from "@/features/tasks/pages/TaskSchedulesPage";
 import TaskSettingsPage from "@/features/tasks/pages/TaskSettingsPage";
 import TaskDetailPage from "@/features/tasks/pages/TaskDetailPage";
 
@@ -477,6 +479,7 @@ const Routes = () => {
           <Route path="/tasks" element={<TasksLayout />}>
             <Route index element={<TaskDashboardPage />} />
             <Route path="list" element={<TasksPage />} />
+            <Route path="schedules" element={<TaskSchedulesPage />} />
             <Route path="reports" element={<TaskReportsPage />} />
             <Route path="settings" element={<TaskSettingsPage />} />
           </Route>
@@ -521,6 +524,9 @@ const Routes = () => {
               xodimning o'z ishi. Admin panelga kiradigan rahbar/ma'mur
               ham xuddi o'qituvchi kabi ishga keladi va oylik oladi. */}
           <Route path="/my-attendance" element={<MyAttendancePage />} />
+          {/* Topshiriqlarim — RUXSATSIZ: topshiriq istalgan roldagi
+              odamga berilishi mumkin (`/my-attendance` bilan ayni qaror) */}
+          <Route path="/my-tasks" element={<MyTasksPage />} />
           <Route path="/my-salary" element={<MySalaryPage />} />
 
           {/* Davomat - yagona layout + route-darajali sahifalar */}

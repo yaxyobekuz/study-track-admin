@@ -125,6 +125,13 @@ export const navItems = [
         url: "/my-attendance",
       },
       {
+        // ⚠️ Ruxsat kaliti YO'Q: topshiriq istalgan roldagi xodimga
+        // berilishi mumkin (direktor, moliyachi, ma'mur) va u o'ziga
+        // berilgan ishni ko'ra olishi SHART.
+        title: "Topshiriqlarim",
+        url: "/my-tasks",
+      },
+      {
         title: "Mening oyligim",
         url: "/my-salary",
       },
