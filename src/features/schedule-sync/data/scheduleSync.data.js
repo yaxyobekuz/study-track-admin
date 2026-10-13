@@ -81,6 +81,10 @@ export const RESOLUTION_STATUS = {
   // QILMAYDI, ya'ni tanlagichda ko'rsatiladigan qiymat yo'q. Holat
   // tanlagich YONIDAGI yorliqdan ko'rinadi.
   ignored: { label: "E'tiborsiz", className: TONE.gray, selectable: false },
+  // BOSHQA FILIALNIKI — tizim o'zi aniqlagan: platformada mos yozuv
+  // umuman yo'q. `ignored` bilan bir xil ishlanadi, lekin yorlig'i
+  // boshqacha: odam tizim nimani o'zi hal qilganini ko'rishi kerak.
+  foreign: { label: "Boshqa filial", className: TONE.gray, selectable: false },
   suggested: { label: "Taklif", className: TONE.amber, selectable: false },
   ambiguous: { label: "Noaniq", className: TONE.orange, selectable: false },
   unresolved: { label: "Topilmadi", className: TONE.red, selectable: false },
@@ -106,6 +110,14 @@ export const IGNORE_OPTION = {
 };
 
 /** Odam aralashuvi kerak bo'lgan holatlar ("O'zgarishlar" tabida chiqadi). */
+// ⚠️ `foreign` va `ignored` BU RO'YXATDA YO'Q — ular hal qilingan
+// hisoblanadi. Birinchisini tizim o'zi aniqlaydi (platformada mos yozuv
+// yo'q = boshqa filialniki), ikkinchisini odam belgilagan.
+//
+// ⚠️ `unresolved` qoldirilgan: yangi tekshiruvlarda u endi kelmaydi
+// (server `foreign` beradi), lekin ESKI saqlangan tahrirlarning
+// `resolution` i bazada o'sha nom bilan yotibdi va ular ham to'g'ri
+// ko'rinishi kerak.
 export const PROBLEM_STATUSES = [
   "suggested",
   "ambiguous",

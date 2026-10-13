@@ -73,6 +73,11 @@ const hintOf = (row, edit, labelById) => {
       return row.stored?.updatedBy
         ? `Bu nom bizga tegishli emas — ${row.stored.updatedBy.name}, ${formatDateTimeUz(row.stored.updatedAt)}`
         : "Bu nom bizga tegishli emas — darslari jadvalga yozilmaydi";
+    case "foreign":
+      // Tizim o'zi hal qilgan — lekin QAYTARIB OLISH mumkinligi aytiladi:
+      // nom boshqacha yozilgani uchun topilmagan bo'lsa, odam ro'yxatdan
+      // to'g'risini tanlab, darsni jadvalga qaytaradi.
+      return "Bu filialda bunday yozuv yo'q — darslari o'tkazib yuboriladi. Bizniki bo'lsa, ro'yxatdan tanlang";
     case "missing_target":
       return `Biriktirilgan yozuv o'chirilgan${
         row.targetName ? ` (${row.targetName})` : ""
