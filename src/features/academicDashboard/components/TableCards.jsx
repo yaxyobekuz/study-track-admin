@@ -391,6 +391,26 @@ export const ClassesCard = ({ data, isLoading, isError, delay = 0 }) => {
 };
 
 /**
+ * KARTADA ko'rsatiladigan ENG KO'P sinf (batafsil sahifada cheklov yo'q).
+ *
+ * ⚠️ QAT'IY CHEGARA `useFitRows` NING O'RNINI BOSMAYDI, u IKKINCHI
+ * chegara — va aynan shu karta uchun MAJBURIY. O'lchov FAQAT bir ekranli
+ * rejimda (`FIT_QUERY`, 1280×960) ishlaydi; undan tashqarida qolgan
+ * jadvallar o'z ma'lumotining tabiiy kichikligi bilan qutuladi
+ * (bosqichlar — 4 qator, top o'quvchilar — 5, serverdan ham shuncha
+ * keladi). Sinflar esa maktab kattaligicha o'sadi: chegarasiz 26 ta
+ * sinf to'liq chizilib, karta qo'shnilaridan uch barobar cho'zilib
+ * ketardi va to'rning butun qatori buzilardi (foydalanuvchi ko'rgan
+ * nuqson).
+ *
+ * Uchta — qo'shni "Sinflar bo'yicha natija" kartasi bilan BIR XIL
+ * balandlik (3 qator + JAMI) va bir ekranli rejimda o'lchov beradigan
+ * son ham aynan shu (`fitscreen.data.js`): karta har qanday ekranda
+ * bir xil ko'rinadi. Qolgani pastdagi havolada ("yana N ta").
+ */
+const CAPACITY_ROWS = 3;
+
+/**
  * Sinflar BANDLIK bo'yicha kamayish tartibida: eng to'lgani tepada.
  *
  * ⚠️ Server bosqich bo'yicha (1-sinfdan 11-sinfgacha) saralab yuboradi va
@@ -495,7 +515,13 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0, full = 
     max: NO_MAX,
   });
 
-  const visible = full ? rows : rows.slice(0, isFit ? fitRows : rows.length);
+  // ⚠️ IKKI CHEGARA: qat'iy (`CAPACITY_ROWS` — har qanday ekranda) va
+  // o'lchangan (`fitRows` — faqat bir ekranli rejimda, undan ham kamroq
+  // bo'lishi mumkin). Batafsil sahifada ikkalasi ham qo'llanmaydi.
+  const capped = rows.slice(0, CAPACITY_ROWS);
+  const visible = full ? rows : capped.slice(0, isFit ? fitRows : capped.length);
+  // ⚠️ Yashiringanlar BUTUN ro'yxatdan sanaladi (`rows`), kesilganidan
+  // emas: havoladagi "yana N ta" aks holda yolg'on son ko'rsatardi.
   const hidden = rows.length - visible.length;
   const barDelay = contentDelay(delay);
 
