@@ -55,10 +55,15 @@ import AttachSignalForm from "../components/AttachSignalForm";
  * KO'RIB CHIQILADIGAN ro'yxat: odam o'qiydi, kerak bo'lsa kategoriya
  * tanlab muammolarga biriktiradi, kerak bo'lmasa e'tiborsiz qoldiradi.
  *
- * ⚠️ IQTIBOS — HAQIQIY MATN. Server modeldan kelgan iqtibosni xabar
- * matnida borligini tekshiradi va topilmasa xabarning o'z boshini qo'yadi
- * (`groupSignalAi.service.js#_pickQuote`). Ya'ni bu yerda hech kim
- * yozmagan gap turmaydi.
+ * ⚠️ KARTADA FAQAT MUAMMONING O'ZI: sarlavha, ostida ism, vaqt va
+ * havola. Iqtibos bu yerda KO'RSATILMAYDI — u sarlavhani deyarli
+ * takrorlaydi va ro'yxatni uzaytirardi. Xabarning aynan matni ikki
+ * joyda qoladi: "Xabarni ochish" havolasida va biriktirish oynasida
+ * (u yerda odam nimani muammoga aylantirayotganini ko'rishi kerak).
+ *
+ * ⚠️ SARLAVHA — MUAMMONING O'ZI, "...aytilgan" kabi o'ramsiz: shikoyat
+ * mazmunidan tushuniladi va qo'shimcha izoh ortiqcha (prompt qoidasi
+ * `groupSignalAi.service.js` da).
  *
  * ⚠️ HAVOLA GURUH A'ZOSIGA ochiladi. Yopiq guruhda `t.me/c/...` havolasi
  * faqat o'sha guruhdagi odamga ishlaydi — bu kamchilik emas.
@@ -241,13 +246,6 @@ const GroupSignalsPage = () => {
 
                 {/* AI xulosasi */}
                 <p className="font-medium text-gray-900">{signal.summary}</p>
-
-                {/* Xabarning O'Z matni — xulosa to'g'rimi, shundan ko'rinadi */}
-                {signal.quote && (
-                  <p className="border-l-2 border-gray-200 pl-3 text-sm italic text-gray-600">
-                    "{signal.quote}"
-                  </p>
-                )}
 
                 {/* Manba: kim, qachon, qayerda */}
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
