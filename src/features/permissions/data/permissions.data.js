@@ -567,7 +567,6 @@ export const PERMISSION_SECTIONS = [
       A.create,
       { key: "void", label: "Bekor qilish" },
       { key: "categories", label: "Kategoriyalarni boshqarish" },
-      { key: "limitReview", label: "Limit so'rovini ko'rib chiqish" },
     ],
   },
   {
@@ -658,6 +657,8 @@ export const PERMISSION_SECTIONS = [
       A.create,
       { key: "void", label: "Bekor qilish" },
       { key: "categories", label: "Kategoriyalarni boshqarish" },
+      // Limit oshirish so'rovini ko'rib chiqish (tasdiqlash -> limit oshadi)
+      { key: "limitReview", label: "Limit so'rovini ko'rib chiqish" },
     ],
   },
   {
