@@ -61,9 +61,6 @@ const AttachSignalForm = ({ close, ...signal }) => {
       {/* Nima biriktirilayotgani — odam ko'r-ko'rona tasdiqlamasligi uchun */}
       <div className="space-y-1 rounded-lg bg-gray-50 p-3">
         <p className="text-sm font-medium text-gray-900">{signal.summary}</p>
-        {signal.quote && (
-          <p className="text-sm text-gray-600 italic">"{signal.quote}"</p>
-        )}
         <p className="text-xs text-gray-500">
           {signal.group?.title}
           {signal.senderName ? ` · ${signal.senderName}` : ""}
