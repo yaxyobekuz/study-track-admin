@@ -191,6 +191,24 @@ export const freeSpotTone = (value) => {
   return "";
 };
 
+/**
+ * BANDLIK foizining rangi (sinflar sig'imi).
+ *
+ * ⚠️ `percentTone` NING TESKARISI va shuning uchun alohida: u yerda katta
+ * foiz — yaxshi natija (yashil), bu yerda esa sinfning to'lib ketgani.
+ * 100% dan oshgani qizil (joy qolmadi, ustiga bola qo'shilgan), aniq
+ * 100% sariq (to'ldi), qolgani neytral — bo'sh joyi bor sinfni
+ * bo'yashning ma'nosi yo'q.
+ */
+export const fillTone = (value) => {
+  if (value == null) return "text-gray-400";
+
+  const number = Number(value);
+  if (number > 100) return "text-red-600";
+  if (number >= 100) return "text-amber-700";
+  return "";
+};
+
 /** Foizli ko'rsatkich rangi (davomat, sifat, topshiriq). */
 export const percentTone = (value) => {
   if (value == null) return "text-gray-400";

@@ -12,6 +12,7 @@ import { cn } from "@/shared/utils/cn";
 
 // Data
 import {
+  fillTone,
   formatByUnit,
   freeSpotTone,
   gradeTone,
@@ -193,17 +194,22 @@ const TOTAL_ROW = cn(T.tableTotal, "[&>td]:bg-slate-50");
  * rangi bilan almashtiradi, `font-semibold tabular-nums` qoladi. Bu
  * ikkinchi rang xaritasi EMAS: raqam ham, chiziqcha ham bitta manbadan.
  *
+ * ⚠️ `tone` — SHKALANI almashtirish uchun, rangni emas: sig'im jadvalida
+ * "katta foiz" yomon (`fillTone`), davomat va sifatda esa yaxshi
+ * (`percentTone`). Ikkinchi katak komponenti yozilsa, chiziqcha, kenglik
+ * va kechikish hisobi ikki joyda ajralib ketardi.
+ *
  * `null` qiymatda chiziqcha chizilmaydi — "—" ostida bo'sh chiziq
  * "0%" deb o'qilardi.
  *
  * `delay` — kartadan keyingi kontent kechikishi (ms): chiziqcha tana
  * kirganidan keyin o'sadi (`grow-x`).
  */
-const PercentCell = ({ value, delay = 0 }) => {
+const PercentCell = ({ value, delay = 0, tone = percentTone }) => {
   const number = value == null ? null : Math.max(0, Math.min(100, Number(value)));
 
   return (
-    <MiniTd align="right" className={cn(T.tableNum, percentTone(value))}>
+    <MiniTd align="right" className={cn(T.tableNum, tone(value))}>
       <span className="relative inline-block">
         {formatByUnit(value, "percent")}
         {number != null && (
@@ -461,16 +467,27 @@ const capacityHint = (totals, monthLabel) => {
  * (`headerHeight` ga qo'shiladi): yig'indi birinchi bo'lib kesilib
  * qolmasligi kerak ("Sinflar bo'yicha natija" bilan bir xil qaror).
  *
+ * ⚠️ `full` — BATAFSIL SAHIFA rejimi (`ClassCapacityPage`): ro'yxat
+ * kesilmaydi, pastki havola chizilmaydi va "Bandlik" ustuni qo'shiladi
+ * (keng sahifada joy bor). Batafsil ko'rinish uchun IKKINCHI jadval
+ * yozilmadi: ustunlar, tartib, rang shkalasi va JAMI qatori bitta
+ * manbadan chiqishi shart — aks holda karta bir raqamni, batafsil sahifa
+ * boshqasini ko'rsatadigan holat bir kun kelib tug'ilardi.
+ *
+ * ⚠️ `full` da bir ekranli rejim O'LCHOVI ham o'chadi: media so'rovi
+ * (1280×960) batafsil sahifada ham rost bo'ladi va jadval o'sha yerda
+ * ham uch qatorga qisqarib qolardi.
+ *
  * `delay` — kartaning to'rdagi kirish kechikishi (ms).
  */
-export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0 }) => {
+export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0, full = false }) => {
   const totals = data?.capacity?.totals ?? null;
   const rows = [...(data?.capacity?.rows ?? [])].sort(byFillDesc);
   const hasTotal = Boolean(totals);
   // Birorta sinfga sig'im qo'yilganmi — JAMI qatori shunga qarab o'qiladi
   const measured = (totals?.capacity ?? 0) > 0;
 
-  const isFit = useMediaQuery(FIT_QUERY);
+  const isFit = useMediaQuery(FIT_QUERY) && !full;
   const [bodyRef, fitRows] = useFitRows({
     rowHeight: ROW_H,
     headerHeight: HEAD_H + (hasTotal ? TOTAL_ROW_H : 0),
@@ -478,12 +495,22 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0 }) => {
     max: NO_MAX,
   });
 
-  const visible = rows.slice(0, isFit ? fitRows : rows.length);
+  const visible = full ? rows : rows.slice(0, isFit ? fitRows : rows.length);
   const hidden = rows.length - visible.length;
+  const barDelay = contentDelay(delay);
+
+  // ⚠️ Havola TANLANGAN OY bilan boradi: batafsil sahifa AYNI so'rov
+  // kalitidan o'qiydi (`month` + `compareMonth`), ya'ni ro'yxat keshdan
+  // DARHOL ochiladi va ikki ekranda bitta raqam turadi. Oy hali kelmagan
+  // bo'lsa parametrsiz — sahifa joriy oyni o'zi oladi.
+  const detailTo =
+    data?.month && data?.compareMonth
+      ? `/education/classes-capacity?month=${data.month}&compareMonth=${data.compareMonth}`
+      : "/education/classes-capacity";
 
   return (
     <DashboardCard
-      title="Sinflar sig'imi"
+      title={full ? "Barcha sinflar" : "Sinflar sig'imi"}
       hint={capacityHint(totals, data?.monthLabel)}
       category="classes"
       delay={delay}
@@ -492,23 +519,32 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0 }) => {
       isEmpty={rows.length === 0}
       emptyText="Sinf ma'lumoti yo'q"
       dense
-      // ⚠️ Havola `/classes` ga — sig'im AYNAN O'SHA yerda belgilanadi.
-      // Moliyadagi to'liq jadval (`/finance/main/classes-capacity`)
-      // BERILMAYDI: u `finance.view` ortida va ta'lim xodimi bosganda
-      // "ruxsat yo'q" ekraniga tushardi.
-      footer={<CardLink to="/classes">{linkLabel("Barcha sinflar bo'yicha", hidden)}</CardLink>}
+      // ⚠️ Havola SHU JADVALNING to'liq ro'yxatiga olib boradi, "Sinflar"
+      // bo'limiga EMAS: foydalanuvchi sig'im manzarasini ko'rib turib
+      // bosadi va sinflar ro'yxatiga otilib ketish "davom etish" emas,
+      // mavzuni almashtirish bo'lardi. Moliyadagi to'liq jadval
+      // (`/finance/main/classes-capacity`) ham berilmaydi: u qarz bilan
+      // keladi va `finance.view` ortida turadi.
+      // Batafsil sahifaning O'ZIDA havola yo'q — u allaqachon shu ro'yxat.
+      footer={
+        full ? null : (
+          <CardLink to={detailTo}>{linkLabel("Barcha sinflar bo'yicha", hidden)}</CardLink>
+        )
+      }
     >
       <div ref={bodyRef} className={BODY}>
         <Enter delay={delay}>
           <MiniTable
             // Birinchi ustun — sinf nomi ("1-sinf ingliz"), qolgan uchtasi
             // qisqa son: `table-fixed` da kenglik sarlavhadan olinadi.
-            // ⚠️ TO'RT ustun, beshtasi EMAS: tor kartada (xl..2xl, ~301px)
-            // besh ustunda har biriga ~52px qolib, "O'QUVCHI" (≈55px)
-            // harfma-harf bo'linib sarlavhani o'stirardi va oxirgi qator
-            // yarim kesilardi ("Sinflar bo'yicha natija" dagi o'sha
-            // o'lchov). Bandlik foizi shuning uchun ustun emas — u izohda
-            // (maktab bo'yicha) va rangda (bo'sh joy) ko'rinadi.
+            // ⚠️ KARTADA TO'RT ustun, beshtasi EMAS: tor kartada
+            // (xl..2xl, ~301px) besh ustunda har biriga ~52px qolib,
+            // "O'QUVCHI" (≈55px) harfma-harf bo'linib sarlavhani
+            // o'stirardi va oxirgi qator yarim kesilardi ("Sinflar
+            // bo'yicha natija" dagi o'sha o'lchov). Dashboardda bandlik
+            // foizi shuning uchun ustun emas — u izohda (maktab bo'yicha)
+            // va rangda (bo'sh joy) ko'rinadi; BATAFSIL sahifada esa
+            // karta butun kenglikni egallaydi va ustun qaytadi.
             className={cn(TABLE, "[&_th:nth-child(1)]:w-[31%]")}
             columns={[
               { label: "Sinf" },
@@ -519,6 +555,9 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0 }) => {
                 align: "right",
               },
               { label: "Bo'sh joy", align: "right" },
+              // ⚠️ Faqat batafsil sahifada: kartadagi tor ustunlarga
+              // beshinchi ustun sig'maydi (yuqoridagi o'lchov).
+              ...(full ? [{ key: "fill", label: "Bandlik", align: "right" }] : []),
             ]}
           >
             {visible.map((row, index) => (
@@ -537,6 +576,9 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0 }) => {
                 <MiniTd align="right" className={cn(T.tableNum, freeSpotTone(row.freeSpots))}>
                   {formatByUnit(row.freeSpots, "count")}
                 </MiniTd>
+                {/* ⚠️ Shkala `fillTone` — "katta foiz yaxshi" degan davomat
+                    shkalasi (`percentTone`) bu yerda teskari ma'no berardi */}
+                {full && <PercentCell value={row.fillRate} delay={barDelay} tone={fillTone} />}
               </MiniTr>
             ))}
 
@@ -560,6 +602,11 @@ export const ClassCapacityCard = ({ data, isLoading, isError, delay = 0 }) => {
                 <MiniTd align="right">
                   {measured ? formatByUnit(totals.freeSpots, "count") : "—"}
                 </MiniTd>
+                {full && (
+                  <MiniTd align="right">
+                    {measured ? formatByUnit(totals.fillRate, "percent") : "—"}
+                  </MiniTd>
+                )}
               </MiniTr>
             )}
           </MiniTable>

@@ -160,6 +160,7 @@ import FinanceMainLayout from "@/features/finance/layouts/FinanceMainLayout";
 import FinanceIndex from "@/features/finance/layouts/FinanceIndex";
 import FinanceDashboardPage from "@/features/financeDashboard/pages/FinanceDashboardPage";
 import AcademicDashboardPage from "@/features/academicDashboard/pages/AcademicDashboardPage";
+import ClassCapacityPage from "@/features/academicDashboard/pages/ClassCapacityPage";
 import GradeAnalysisPage from "@/features/gradeAnalysis/pages/GradeAnalysisPage";
 import InventoryDashboardPage from "@/features/inventoryDashboard/pages/InventoryDashboardPage";
 
@@ -275,6 +276,15 @@ const Routes = () => {
             {/* Bosh sahifadagi "Ta'lim" tabi — o'quv bo'limining
                 dashboardi. Moliya tabi bilan bir xil shakl. */}
             <Route path="/education" element={<AcademicDashboardPage />} />
+            {/* "Sinflar sig'imi" kartasining to'liq ro'yxati — kartadagi
+                havoladan ochiladi va AYNI so'rovdan o'qiydi (oy havolada
+                uzatiladi, ya'ni keshdan darhol chiqadi).
+
+                ⚠️ `HomeLayout` ICHIDA: "Ta'lim" tabi `exact: false` bilan
+                yoqilgan, ya'ni bu sahifada ham faol qoladi — foydalanuvchi
+                qaysi bo'limda turganini yo'qotmaydi (moliyadagi
+                `/finance/main/classes-capacity` bilan ayni naqsh). */}
+            <Route path="/education/classes-capacity" element={<ClassCapacityPage />} />
             {/* "Inventar" tabi — moddiy-texnik baza. Inventar
                 bo'limidagi "Dashboard" tabi bilan AYNI sahifa: ikki
                 kirish nuqtasi, bitta ekran (moliya bilan bir xil naqsh).
