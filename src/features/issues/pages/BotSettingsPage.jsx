@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 // Icons
-import { RefreshCw, Users, BadgeCheck, Info } from "lucide-react";
+import { RefreshCw, Users, BadgeCheck } from "lucide-react";
 
 // Queries
 import { telegramGroupsQueries } from "../queries/telegram-groups.queries";
@@ -32,16 +32,13 @@ import {
 /**
  * "Bot sozlamalari" tabi — bot ko'rgan guruhlar va "rasmiy guruh" belgisi.
  *
- * ⚠️ RO'YXAT TO'LIQ BO'LMASLIGI MUMKIN va buni foydalanuvchiga AYTISH
- * kerak: Telegram Bot API'da "men qaysi guruhlarda adminman" degan savolga
- * javob beradigan metod yo'q, shuning uchun reyestr botga kelgan
- * hodisadan to'planadi (`bot/src/services/group.service.js`) va o'tmishga
- * qaramaydi. Shu sababli sahifada tushuntirish bloki bor — aks holda
- * "guruhim ko'rinmayapti, demak buzilgan" degan xulosa chiqarilardi.
+ * ⚠️ RO'YXAT TO'LIQ BO'LMASLIGI MUMKIN: Telegram Bot API'da "men qaysi
+ * guruhlarda adminman" degan savolga javob beradigan metod yo'q, shuning
+ * uchun reyestr botga kelgan hodisadan to'planadi
+ * (`bot/src/services/group.service.js`) va o'tmishga qaramaydi — eski guruh
+ * botni qayta admin qilmaguncha yoki unda xabar yozilmaguncha ko'rinmaydi.
  *
- * ⚠️ "RASMIY" HOZIRCHA FAQAT BELGI: tizim bu guruhga hech narsa
- * yubormaydi. Yorliq shuni ochiq aytadi, aks holda admin "e'lon shu
- * guruhga ketadi" deb o'ylab qolardi.
+ * ⚠️ "RASMIY" HOZIRCHA FAQAT BELGI: tizim bu guruhga hech narsa yubormaydi.
  *
  * ⚠️ CHIQIB KETGAN GURUH HAM RO'YXATDA (server o'chirmaydi): "bot bu
  * guruhdan chiqarilgan" — ko'rinishi kerak bo'lgan fakt.
@@ -91,30 +88,6 @@ const BotSettingsPage = () => {
 
   return (
     <div className="space-y-4">
-      {/* Tushuntirish — ro'yxat nimadan to'planadi */}
-      <Card className="flex gap-3 bg-blue-50/60 p-3">
-        <Info
-          className="mt-0.5 size-4 shrink-0 text-blue-600"
-          strokeWidth={1.5}
-        />
-        <div className="space-y-1 text-sm text-gray-600">
-          <p>
-            Ro'yxat bot guruhga qo'shilgan yoki admin qilingan paytda
-            to'ladi. Telegram botga o'zi a'zo bo'lgan guruhlar ro'yxatini
-            bermaydi, shuning uchun{" "}
-            <span className="font-medium text-gray-800">
-              eski guruhlar darhol ko'rinmasligi mumkin
-            </span>{" "}
-            — bunday guruhda botni bir marta qayta admin qiling yoki
-            guruhga biror xabar yozilishini kutib turing.
-          </p>
-          <p>
-            <span className="font-medium text-gray-800">Rasmiy guruh</span> —
-            hozircha belgi: tizim unga xabar yubormaydi.
-          </p>
-        </div>
-      </Card>
-
       {/* Top */}
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-gray-500">
