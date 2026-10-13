@@ -91,6 +91,25 @@ const TABLE = [
   "[&_tbody_tr]:h-[26px]",
   "[&_tbody_td]:h-[26px] [&_tbody_td]:py-0 [&_tbody_td]:leading-none [&_tbody_td]:truncate",
 
+  // ⚠️ JADVAL KARTANI TO'LDIRADI (`h-full`). Qator soni MA'LUMOTDAN
+  // kelib chiqadi va u ko'pincha maydonni to'ldirmaydi: bosqichlar
+  // jadvalida atigi 3-4 qator bo'ladi, qo'shni karta (200px diagramma)
+  // esa butun qatorni baland qilib qo'yadi — natijada JAMI qatorining
+  // ostida 50-70px bo'sh joy osilib turardi.
+  //
+  // O'LCHANGAN (Chrome, haqiqiy CSS): 190px li maydonda sarlavha qatori
+  // 34px da QOLADI, ortiqcha joy esa faqat tana qatorlariga bo'linadi
+  // (26 → 39px), pastdagi bo'shliq 0 ga tushadi. Qator balandligi
+  // `h-[26px]` bilan PASTDAN cheklangani uchun joy yetmaganda hech narsa
+  // siqilmaydi — `useFitRows` hisobi (27px) o'z kuchida qoladi.
+  //
+  // ⚠️ `h-full` ISHLASHI uchun ota zanjirning balandligi aniq bo'lishi
+  // shart (`Enter` ham `h-full` oladi): bir ekranli rejimda balandlikni
+  // to'r beradi, oddiy oqimda esa to'r qatori (`stretch`) — ya'ni ikkala
+  // rejimda ham aniq. Ota balandligi `auto` bo'lgan joyda (bir ustunli
+  // to'r) `h-full` hech narsani o'zgartirmaydi.
+  "h-full",
+
   // ⚠️ UCH USTUNLI TO'RDA (xl dan boshlab) katak yon bo'shlig'i 12 → 6px.
   // O'LCHANGAN: 1280px da (yon panel ochiq, karta ~325px, jadval ~301px)
   // `px-3` bilan besh ustunli jadvalda ustun ichiga 32px qolib,
@@ -260,7 +279,10 @@ const BODY = "h-full min-h-0 overflow-hidden";
  */
 const Enter = ({ delay, className, children }) => (
   <div
-    className={cn(MOTION.enter, className)}
+    // ⚠️ `h-full` — jadvalning `h-full` i uchun ZANJIR: oraliqdagi bu div
+    // balandlikni o'tkazmasa, jadval `auto` bo'lib qolib, karta pastida
+    // bo'sh joy osilib turardi (`TABLE` izohi).
+    className={cn("h-full", MOTION.enter, className)}
     style={{ animationDelay: `${contentDelay(delay)}ms` }}
   >
     {children}
