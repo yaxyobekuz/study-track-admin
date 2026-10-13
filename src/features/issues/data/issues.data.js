@@ -47,6 +47,20 @@ export const ISSUE_TABS = [
     permission: "issues.categories",
     exact: false,
   },
+  {
+    // BOT SOZLAMALARI — bot a'zo bo'lgan guruhlar reyestri.
+    //
+    // ⚠️ Bu tab PLATFORMA ma'lumotini ko'rsatadi (guruhlar barcha
+    // filiallarga umumiy), qolgan tablar esa filialning muammolarini.
+    // Bo'lim ichida turishi mantiqiy — ikkisi ham "botdan keladigan
+    // narsa" — lekin ma'lumot boshqa qatlamdan keladi.
+    to: "/issues/bot-settings",
+    label: "Bot sozlamalari",
+    title: "Bot sozlamalari",
+    description: "Bot a'zo bo'lgan guruhlar va rasmiy guruh belgisi",
+    permission: "issues.botSettings",
+    exact: false,
+  },
 ];
 
 // ─────────────────────────────────────────────
@@ -385,3 +399,39 @@ export const resolveReportPeriod = (value) => {
   }
 };
 
+
+// ─────────────────────────────────────────────
+// BOT GURUHLARI
+// ─────────────────────────────────────────────
+
+/**
+ * Botning guruhdagi holati → yorliq va rang.
+ *
+ * ⚠️ Qiymatlar Telegram'ning `ChatMember.status` idan keladi, ya'ni
+ * ro'yxatni biz TO'LIQ nazorat qilmaymiz: kutilmagan qiymat uchun
+ * `GROUP_STATUS_FALLBACK` bor va u holat satrining O'ZINI ko'rsatadi —
+ * jim "—" ga aylantirish nimadan buzilganini yashirardi.
+ *
+ * `migrated` — guruh supergruppaga o'tgan: Telegram YANGI chat ID beradi,
+ * eski qator esa tarix sifatida qoladi.
+ */
+export const GROUP_STATUS_META = {
+  administrator: { label: "Admin", className: "bg-green-100 text-green-800" },
+  creator: { label: "Yaratuvchi", className: "bg-green-100 text-green-800" },
+  member: { label: "Oddiy a'zo", className: "bg-blue-100 text-blue-800" },
+  restricted: { label: "Cheklangan", className: "bg-amber-100 text-amber-800" },
+  left: { label: "Chiqib ketgan", className: "bg-gray-100 text-gray-700" },
+  kicked: { label: "Chiqarilgan", className: "bg-red-100 text-red-800" },
+  migrated: { label: "Ko'chirilgan", className: "bg-gray-100 text-gray-700" },
+};
+
+export const GROUP_STATUS_FALLBACK = {
+  className: "bg-gray-100 text-gray-700",
+};
+
+/** Chat turi → o'zbekcha yorliq. */
+export const GROUP_TYPE_LABELS = {
+  group: "Guruh",
+  supergroup: "Superguruh",
+  channel: "Kanal",
+};

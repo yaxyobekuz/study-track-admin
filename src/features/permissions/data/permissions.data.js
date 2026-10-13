@@ -845,6 +845,11 @@ export const PERMISSION_SECTIONS = [
       A.delete,
       { key: "categories", label: "Kategoriyalarni boshqarish" },
       { key: "reports", label: "Hisobotlar" },
+      // BOT SOZLAMALARI — botning guruhlari va "rasmiy guruh" belgisi.
+      //
+      // ⚠️ `categories` DAN ALOHIDA: kategoriya — botdagi TUGMA matni,
+      // bu esa botning TASHQI ko'rinishi (maktab nomidan tanilgan guruh).
+      { key: "botSettings", label: "Bot sozlamalari" },
     ],
   },
   {
@@ -1074,6 +1079,9 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/issues", key: "issues.view" },
   { prefix: "/issues/reports", key: "issues.reports" },
   { prefix: "/issues/categories", key: "issues.categories" },
+  // Bot guruhlari — chat ID lar va botning tashqi aloqalari manzarasi,
+  // "muammolarni ko'rish" huquqidan kengroq.
+  { prefix: "/issues/bot-settings", key: "issues.botSettings" },
   { prefix: "/premium", key: "premium.view" },
   { prefix: "/coin-distribution", key: "coins.view" },
   { prefix: "/coin-settings", key: "coins.view" },

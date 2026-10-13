@@ -117,6 +117,7 @@ import IssuesLayout from "@/features/issues/layouts/IssuesLayout";
 import IssuesPage from "@/features/issues/pages/IssuesPage";
 import IssueReportsPage from "@/features/issues/pages/IssueReportsPage";
 import IssueCategoriesPage from "@/features/issues/pages/IssueCategoriesPage";
+import BotSettingsPage from "@/features/issues/pages/BotSettingsPage";
 
 // Pages - Penalties
 import PenaltiesPage from "@/features/penalties/pages/PenaltiesPage";
@@ -477,12 +478,13 @@ const Routes = () => {
           <Route path="/tasks/:taskId" element={<TaskDetailPage />} />
 
           {/* Muammolar */}
-          {/* Muammolar / Hisobotlar / Kategoriyalar — bitta layout ostida
-              (topshiriqlar bo'limi bilan ayni naqsh). */}
+          {/* Muammolar / Hisobotlar / Kategoriyalar / Bot sozlamalari —
+              bitta layout ostida (topshiriqlar bo'limi bilan ayni naqsh). */}
           <Route path="/issues" element={<IssuesLayout />}>
             <Route index element={<IssuesPage />} />
             <Route path="reports" element={<IssueReportsPage />} />
             <Route path="categories" element={<IssueCategoriesPage />} />
+            <Route path="bot-settings" element={<BotSettingsPage />} />
           </Route>
 
           {/* Penalties */}
