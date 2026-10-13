@@ -8,10 +8,12 @@ import { toast } from "sonner";
 import {
   Ban,
   Coins,
+  Loader2,
   Pencil,
   Plus,
   Archive,
   ArchiveRestore,
+  Sheet,
   Trash2,
 } from "lucide-react";
 
@@ -51,6 +53,7 @@ import usePermissions from "@/shared/hooks/usePermissions";
 import { cn } from "@/shared/utils/cn";
 import { formatMoney } from "@/shared/utils/formatMoney";
 import { formatDateUz } from "@/shared/utils/date.utils";
+import { downloadBlob, readBlobErrorMessage } from "@/shared/utils/download.utils";
 
 // Data & queries
 import {
@@ -62,6 +65,7 @@ import {
   getCategoryStatus,
 } from "../data/expenses.data";
 import { expenseQueries } from "../queries/expenses.queries";
+import { expensesAPI } from "../api/expenses.api";
 import {
   useArchiveCategory,
   useDeleteCategory,
@@ -118,15 +122,40 @@ const ExpenseList = () => {
   const [page, setPage] = useState(1);
   const [categoryId, setCategoryId] = useState("");
   const [accountId, setAccountId] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
+
+  // ⚠️ FILTRLAR BITTA JOYDA — ro'yxat ham, Excel ham SHU obyektni oladi.
+  // Ikki joyda yig'ilsa, biri o'zgarib ikkinchisi eskirardi va fayl
+  // ekrandagidan boshqa ro'yxat qaytarardi.
+  const filters = {
+    ...(categoryId ? { categoryId } : {}),
+    ...(accountId ? { accountId } : {}),
+  };
 
   const { data, isLoading } = useQuery(
-    expenseQueries.list({
-      page,
-      limit: 20,
-      ...(categoryId ? { categoryId } : {}),
-      ...(accountId ? { accountId } : {}),
-    }),
+    expenseQueries.list({ page, limit: 20, ...filters }),
   );
+
+  /**
+   * ⚠️ XATO XABARI BLOB'DAN O'QILADI. So'rov `responseType: "blob"` bilan
+   * ketgani uchun server qaytargan JSON xato ham Blob bo'lib keladi va
+   * `error.response.data.message` HAR DOIM `undefined` bo'lardi — ya'ni
+   * foydalanuvchi haqiqiy sababni hech qachon ko'rmasdi.
+   *
+   * ⚠️ SAHIFA RAQAMI YUBORILMAYDI: faylda filtrga tushgan HAMMA yozuv
+   * bo'ladi, ko'rinib turgan 20 tasi emas.
+   */
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const response = await expensesAPI.export(filters);
+      downloadBlob(response, "chiqimlar.xlsx");
+    } catch (error) {
+      toast.error(await readBlobErrorMessage(error, "Faylni yuklab bo'lmadi"));
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const { data: categories = [] } = useQuery(expenseQueries.activeCategories());
   const { data: accounts = [] } = useQuery(financeQueries.activeAccounts());
@@ -166,6 +195,23 @@ const ExpenseList = () => {
               ...accounts.map((a) => ({ label: a.name, value: a.id })),
             ]}
           />
+
+          {/* Excel — filtrlar YONIDA va bu ataylab: fayl ekrandagi
+              ro'yxatning nusxasi, ya'ni u filtr qarorining davomi.
+              Ro'yxat bo'sh bo'lsa tugma o'chiriladi. */}
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            disabled={isExporting || isLoading || !items.length}
+            title="Chiqimlarni Excel'ga yuklab olish"
+          >
+            {isExporting ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Sheet className="text-green-600" />
+            )}
+            {isExporting ? "Tayyorlanmoqda…" : "Excel"}
+          </Button>
         </div>
 
         <Can do="expenses.limitReview">

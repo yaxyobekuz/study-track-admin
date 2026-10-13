@@ -23,6 +23,21 @@ export const expenseCategoriesAPI = {
  */
 export const expensesAPI = {
   getAll: (params) => http.get("/expenses", { params }),
+
+  /**
+   * Registrni Excel'ga yuklab olish.
+   *
+   * ⚠️ `responseType: "blob"` MAJBURIY: aks holda axios ikkilik faylni
+   * matn deb o'qib buzib yuboradi.
+   *
+   * ⚠️ Parametrlar EKRANDAGI filtrlar bilan AYNI yuboriladi — fayl
+   * ko'rinib turgan ro'yxatning nusxasi bo'lishi kerak. Sahifa raqami
+   * esa YUBORILMAYDI: foydalanuvchi 20 qatorlik sahifani emas, filtrga
+   * tushgan HAMMA yozuvni kutadi (serverda ham shunday).
+   */
+  export: (params) =>
+    http.get("/expenses/export", { params, responseType: "blob" }),
+
   create: (data) => http.post("/expenses", data),
   void: (id, reason) => http.post(`/expenses/${id}/void`, { reason }),
   replace: (id, data) => http.post(`/expenses/${id}/replace`, data),
