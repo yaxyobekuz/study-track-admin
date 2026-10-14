@@ -13,7 +13,14 @@ const SliceTooltip = ({ active, payload }) => {
   const s = payload[0].payload;
   return (
     <ChartTooltip
-      rows={[{ key: s.key, color: s.color, name: s.label, value: `${s.value} ta · ${percentText(s.percent)}` }]}
+      rows={[
+        {
+          key: s.key,
+          color: s.color,
+          name: s.label,
+          value: `${s.value} ta · ${percentText(s.percent)}`,
+        },
+      ]}
     />
   );
 };
@@ -25,21 +32,34 @@ const SliceTooltip = ({ active, payload }) => {
  *
  * @param {{ report: object }} props
  */
-const StatusDonutCard = ({ report }) => {
+// `self` — xodimlar O'ZIGA belgilagan topshiriqlar kesimi (faqat izoh matni)
+const StatusDonutCard = ({ report, self = false }) => {
   const total = report.kpis.total;
-  const slices = report.breakdown.map((b) => ({
-    ...b,
-    ...BREAKDOWN_META[b.key],
-    percent: total ? Math.round((b.value / total) * 1000) / 10 : null,
-  }));
+  const slices = report.breakdown
+    // ⚠️ SHAXSIY OQIMDA "Tekshiruvda" BO'LAGI UMUMAN YO'Q: bu holat
+    // strukturaviy mavjud emas (xodim topshirgani darhol yakunlanadi).
+    // Afsonada 0 bo'lib turganda u "hali hech kim topshirmagan" degan
+    // noto'g'ri ma'noni berardi.
+    .filter((b) => !(self && b.key === "review"))
+    .map((b) => ({
+      ...b,
+      ...BREAKDOWN_META[b.key],
+      percent: total ? Math.round((b.value / total) * 1000) / 10 : null,
+    }));
   const visible = slices.filter((s) => s.value > 0);
 
   return (
     <ReportPanelCard
       title="Topshiriqlar qayerda?"
-      hint="Berilgan har bir topshiriq hozir qaysi holatda"
+      hint={
+        self
+          ? "O'ziga belgilangan har bir ish hozir qaysi holatda"
+          : "Berilgan har bir topshiriq hozir qaysi holatda"
+      }
       isEmpty={total === 0}
-      emptyText="Bu davrda topshiriq berilmagan"
+      emptyText={
+        self ? "Bu davrda hech kim o'ziga ish belgilamagan" : "Bu davrda topshiriq berilmagan"
+      }
     >
       <div className="flex flex-col items-center gap-4 sm:flex-row lg:flex-col xl:flex-row">
         <div className="relative size-44 shrink-0">
@@ -71,7 +91,10 @@ const StatusDonutCard = ({ report }) => {
         <div className="w-full space-y-2">
           {slices.map((s) => (
             <div key={s.key} className="flex items-center gap-2.5">
-              <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
+              <span
+                className="size-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: s.color }}
+              />
               <div className="min-w-0 flex-1">
                 <p className="text-sm leading-tight text-gray-700">{s.label}</p>
                 <p className="text-[11px] leading-tight text-gray-400">{s.hint}</p>

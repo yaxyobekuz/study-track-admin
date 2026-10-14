@@ -16,17 +16,24 @@ import { TASK_KIND_META, getRateBarClass, percentText } from "../../data/tasks.d
  *
  * @param {{ report: object, className?: string }} props
  */
-const KindSplitCard = ({ report, className = "" }) => {
+// `self` — xodimlar O'ZIGA belgilagan topshiriqlar kesimi (faqat izoh matni)
+const KindSplitCard = ({ report, self = false, className = "" }) => {
   const rows = report.kinds || [];
   const total = rows.reduce((sum, r) => sum + r.total, 0);
 
   return (
     <ReportPanelCard
       title="Ish turlari"
-      hint="Asosiy — lavozim bo'yicha doimiy ish, qo'shimcha — bir martalik"
+      hint={
+        self
+          ? "Asosiy — o'ziga qo'ygan doimiy ish, qo'shimcha — bir martalik"
+          : "Asosiy — lavozim bo'yicha doimiy ish, qo'shimcha — bir martalik"
+      }
       className={className}
       isEmpty={total === 0}
-      emptyText="Bu davrda topshiriq berilmagan"
+      emptyText={
+        self ? "Bu davrda hech kim o'ziga ish belgilamagan" : "Bu davrda topshiriq berilmagan"
+      }
     >
       <div className="space-y-4">
         {rows.map((row) => {
@@ -50,9 +57,7 @@ const KindSplitCard = ({ report, className = "" }) => {
                   <p className="text-xs text-gray-500">{meta.hint}</p>
                 </div>
                 <p className="shrink-0 text-right">
-                  <span className="text-lg font-bold tabular-nums text-gray-900">
-                    {row.total}
-                  </span>
+                  <span className="text-lg font-bold tabular-nums text-gray-900">{row.total}</span>
                   <span className="ml-1 text-xs text-gray-400">ta · {share}%</span>
                 </p>
               </div>
@@ -77,7 +82,9 @@ const KindSplitCard = ({ report, className = "" }) => {
                   Bajarilmadi: {row.overdue}
                 </span>
                 <span>Jarayonda: {row.inProgress}</span>
-                <span>Tekshiruvda: {row.review}</span>
+                {/* ⚠️ Shaxsiy oqimda tasdiqlash bosqichi yo'q — qator
+                    har doim "0" ko'rsatib turardi */}
+                {!self && <span>Tekshiruvda: {row.review}</span>}
               </div>
             </div>
           );

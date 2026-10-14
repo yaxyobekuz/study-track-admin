@@ -3,6 +3,7 @@ import { Ban, CalendarClock, Check, RotateCcw, ShieldAlert, UserRound } from "lu
 
 // Components
 import DeadlineChip from "../DeadlineChip";
+import TaskKindBadge from "../TaskKindBadge";
 import TaskKindSwitch from "../TaskKindSwitch";
 import TaskStateBadge from "../TaskStateBadge";
 import TaskStatusBadge from "../TaskStatusBadge";
@@ -14,8 +15,10 @@ import { formatDateTimeUz } from "@/shared/utils/date.utils";
 // Data
 import {
   TASK_STEPS,
+  SELF_TASK_STEPS,
   fullName,
   getStepIndex,
+  getSelfStepIndex,
   formatTaskWindow,
 } from "../../data/tasks.data";
 
@@ -23,17 +26,20 @@ import {
  * Topshiriq qadamlari: Berildi → Bajarilmoqda → Tekshiruvda → Yakunlandi.
  * To'xtatilgan topshiriqda chiziq kulrang va o'rniga izoh chiqadi.
  */
-const Stepper = ({ status }) => {
-  const current = getStepIndex(status);
+const Stepper = ({ status, self = false }) => {
+  // ⚠️ Shaxsiy oqimda qadam UCHTA: "Tekshiruvda" bosqichi strukturaviy
+  // yo'q (`SELF_TASK_STEPS` izohi)
+  const steps = self ? SELF_TASK_STEPS : TASK_STEPS;
+  const current = self ? getSelfStepIndex(status) : getStepIndex(status);
   const stopped = status === "stopped";
 
   return (
     <ol className="flex items-center">
-      {TASK_STEPS.map((step, i) => {
+      {steps.map((step, i) => {
         const done = !stopped && (i < current || (i === current && status === "completed"));
         const active = !stopped && i === current && status !== "completed";
         return (
-          <li key={step.key} className={cn("flex items-center", i < TASK_STEPS.length - 1 && "flex-1")}>
+          <li key={step.key} className={cn("flex items-center", i < steps.length - 1 && "flex-1")}>
             <div className="flex flex-col items-center gap-1.5">
               <span
                 className={cn(
@@ -54,7 +60,7 @@ const Stepper = ({ status }) => {
                 {step.label}
               </span>
             </div>
-            {i < TASK_STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <span
                 className={cn(
                   "mx-2 mb-5 h-0.5 flex-1 rounded-full",
@@ -77,7 +83,14 @@ const Stepper = ({ status }) => {
  *
  * @param {{ task: object, dueSoonHours?: number }} props
  */
-const TaskHero = ({ task, dueSoonHours }) => {
+/**
+ * @param {{ task: object, dueSoonHours?: number, self?: boolean }} props
+ *   `self` — xodim O'ZIGA belgilagan ish: qadamlar uchta, "kim berdi"
+ *   o'rniga "o'zi belgiladi", jarima katagi o'rniga "jarimasiz" izohi va
+ *   tur almashtirgichi o'rniga oddiy yorliq (bu oqimda `tasks.update`
+ *   kaliti ishlatilmaydi).
+ */
+const TaskHero = ({ task, dueSoonHours, self = false }) => {
   const lastReason = [...(task.statusHistory || [])]
     .reverse()
     .find((h) => (h.kind || "status") === "status" && h.status === task.status)?.reason;
@@ -93,7 +106,7 @@ const TaskHero = ({ task, dueSoonHours }) => {
           <TaskStateBadge task={task} />
           <TaskStatusBadge status={task.status} size="md" />
           {/* Turi — shu yerdan o'zgartiriladi (ruxsati borlarda) */}
-          <TaskKindSwitch task={task} />
+          {self ? <TaskKindBadge kind={task.kind} /> : <TaskKindSwitch task={task} />}
           <DeadlineChip dueDate={task.dueDate} status={task.status} dueSoonHours={dueSoonHours} />
         </div>
 
@@ -104,13 +117,13 @@ const TaskHero = ({ task, dueSoonHours }) => {
         <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
           <span className="inline-flex items-center gap-1">
             <UserRound className="size-3.5" />
-            {fullName(task.createdBy)} berdi
+            {self ? "O'ziga belgilagan ish" : `${fullName(task.createdBy)} berdi`}
           </span>
           <span>{formatDateTimeUz(task.createdAt)}</span>
         </p>
 
         <div className="mt-6 max-w-xl">
-          <Stepper status={task.status} />
+          <Stepper status={task.status} self={self} />
         </div>
       </div>
 
@@ -145,16 +158,23 @@ const TaskHero = ({ task, dueSoonHours }) => {
         <div className="px-4 py-3.5 xs:px-6">
           <p className="flex items-center gap-1.5 text-xs text-gray-500">
             <ShieldAlert className="size-3.5" />
-            Kechiksa jarima
+            {self ? "Jarima" : "Kechiksa jarima"}
           </p>
-          <p className="mt-1 font-semibold text-gray-900">
-            {task.penaltyPoints} ball
-            {task.penaltyRef && (
-              <span className="ml-2 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-600">
-                {task.penaltyRef.points} ball yozilgan
-              </span>
-            )}
-          </p>
+          {/* ⚠️ Shaxsiy ishda jarima YO'Q (biznes qarori) — "0 ball" deb
+              ko'rsatish "kechiksam nol ball jarima" degan noto'g'ri
+              ma'noni berardi */}
+          {self ? (
+            <p className="mt-1 font-semibold text-emerald-700">Yo'q</p>
+          ) : (
+            <p className="mt-1 font-semibold text-gray-900">
+              {task.penaltyPoints} ball
+              {task.penaltyRef && (
+                <span className="ml-2 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-600">
+                  {task.penaltyRef.points} ball yozilgan
+                </span>
+              )}
+            </p>
+          )}
         </div>
         <div className="px-4 py-3.5 xs:px-6">
           <p className="flex items-center gap-1.5 text-xs text-gray-500">

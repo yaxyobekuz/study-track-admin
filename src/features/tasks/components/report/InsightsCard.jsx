@@ -11,10 +11,12 @@ import { TONES, buildInsights } from "../../data/tasks.data";
  * "Qisqacha xulosa" — raqamlarni oddiy gaplarga aylantiradi. Grafik o'qishni
  * bilmaydigan odam ham shu kartaning o'zidan holatni tushunishi kerak.
  *
- * @param {{ report: object, className?: string }} props
+ * @param {{ report: object, self?: boolean, className?: string }} props
+ *   `self` — xodimlar o'ziga belgilagan topshiriqlar kesimi: matn
+ *   "berilgan ish" emas, "o'ziga qo'ygan reja" tilida yoziladi.
  */
-const InsightsCard = ({ report, className = "" }) => {
-  const items = buildInsights(report);
+const InsightsCard = ({ report, self = false, className = "" }) => {
+  const items = buildInsights(report, { self });
 
   return (
     <div

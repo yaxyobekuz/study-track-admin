@@ -53,11 +53,27 @@ const TaskMeta = ({ task }) => {
  * telefonda gorizontal scroll bo'lib, eng muhim ustun (holat) ko'rinmay qolardi.
  * Qator butunlay bosiladi: "Batafsil" havolasini qidirish shart emas.
  *
- * @param {{ tasks: Array<object>, roles: Array<object>, dueSoonHours?: number }} props
+ * @param {{ tasks: Array<object>, roles: Array<object>, dueSoonHours?: number,
+ *   detailPath?: string, readOnly?: boolean, showPenalty?: boolean }} props
+ *   `detailPath` — qator bosilganda ochiladigan yo'l prefiksi.
+ *   `readOnly` — tur almashtirgichi ko'rsatilmaydi.
+ *   `showPenalty` — jarima ustuni.
+ *
+ * ⚠️ XODIM O'ZIGA BELGILAGAN TOPSHIRIQLAR uchun uchalasi ham boshqa:
+ * jarima ustuni YO'Q (bu oqimda ball har doim 0 — ustun faqat "0 ball"
+ * degan ma'nosiz qator bo'lardi) va boshqaruvchi birovning shaxsiy
+ * rejasini TAHRIRLAMAYDI, faqat ko'radi (server ham rad etadi).
  */
-const TasksTable = ({ tasks, roles, dueSoonHours }) => {
+const TasksTable = ({
+  tasks,
+  roles,
+  dueSoonHours,
+  detailPath = "/tasks",
+  readOnly = false,
+  showPenalty = true,
+}) => {
   const navigate = useNavigate();
-  const open = (task) => navigate(`/tasks/${task.id}`);
+  const open = (task) => navigate(`${detailPath}/${task.id}`);
 
   return (
     <>
@@ -72,7 +88,7 @@ const TasksTable = ({ tasks, roles, dueSoonHours }) => {
               <th className="!text-left">Ijrochi</th>
               <th className="!text-left">Muddat</th>
               <th className="!text-left">Holat</th>
-              <th>Jarima</th>
+              {showPenalty && <th>Jarima</th>}
               <th>Turi</th>
               <th className="w-8 !px-2" />
             </tr>
@@ -129,13 +145,19 @@ const TasksTable = ({ tasks, roles, dueSoonHours }) => {
                       <TaskStatusBadge status={task.status} />
                     </div>
                   </td>
+                  {showPenalty && (
+                    <td className="px-4 py-3 text-center">
+                      <span className="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-600">
+                        {task.penaltyPoints} ball
+                      </span>
+                    </td>
+                  )}
                   <td className="px-4 py-3 text-center">
-                    <span className="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-600">
-                      {task.penaltyPoints} ball
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <TaskKindSwitch task={task} size="sm" />
+                    {readOnly ? (
+                      <TaskKindBadge kind={task.kind} />
+                    ) : (
+                      <TaskKindSwitch task={task} size="sm" />
+                    )}
                   </td>
                   <td className="pr-3">
                     <ChevronRight className="size-4 text-gray-300 group-hover:text-blue-500" />
@@ -181,7 +203,9 @@ const TasksTable = ({ tasks, roles, dueSoonHours }) => {
               </div>
               <div className="mt-2 flex items-center justify-between gap-2 text-xs text-gray-400">
                 <span className="min-w-0 truncate">{formatTaskWindow(task).text}</span>
-                <span className="font-semibold text-rose-600">{task.penaltyPoints} ball</span>
+                {showPenalty && (
+                  <span className="font-semibold text-rose-600">{task.penaltyPoints} ball</span>
+                )}
               </div>
             </button>
           );

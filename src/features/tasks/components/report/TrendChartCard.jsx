@@ -59,14 +59,15 @@ const TrendTooltip = ({ active, payload, granularity }) => {
  *
  * @param {{ report: object, className?: string }} props
  */
-const TrendChartCard = ({ report, className = "" }) => {
+// `self` — xodimlar O'ZIGA belgilagan topshiriqlar kesimi (faqat sarlavha matni)
+const TrendChartCard = ({ report, self = false, className = "" }) => {
   const { trend, period } = report;
   const hasData = trend.some((r) => r.created > 0 || r.completed > 0);
   const totals = SERIES.map((s) => ({ ...s, sum: trend.reduce((a, r) => a + r[s.key], 0) }));
 
   return (
     <ReportPanelCard
-      title="Berilgan va bajarilgan ishlar"
+      title={self ? "Belgilangan va bajarilgan ishlar" : "Berilgan va bajarilgan ishlar"}
       hint={`Davr ichida, ${GRANULARITY_HINT[period.granularity]}`}
       className={className}
       action={

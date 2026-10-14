@@ -417,6 +417,19 @@ export const PERMISSION_SECTIONS = [
       { key: "review", label: "Tasdiqlash / rad etish" },
       { key: "stop", label: "To'xtatish" },
       { key: "extend", label: "Muddatni uzaytirish" },
+      // XODIMLAR O'ZIGA BELGILAGAN TOPSHIRIQLAR — ALOHIDA kalit va u
+      // `view` ichidagi amal EMAS.
+      //
+      // ⚠️ Sabab: topshiriq registrini ko'rish huquqi xodimlarning o'zlariga
+      // yozgan SHAXSIY rejasini ochib bermasligi kerak — bu boshqa qaror
+      // (`tasks.reports` va `scheduleSync` bilan AYNI mulohaza).
+      //
+      // ⚠️ Kalitning O'ZI butun filialni beradi; `tasks.team` bilan birga
+      // berilsa kesim o'z bo'limiga torayadi (`resolveSelfViewScope`).
+      //
+      // ⚠️ Xodimning O'Z shaxsiy topshiriqlari uchun kalit KERAK EMAS —
+      // id tokendan olinadi (`/payroll/my`, `/devices/me/*` doktrinasi).
+      { key: "self", label: "Xodimlar o'ziga belgilagan topshiriqlari" },
       // Hisobotlar — butun jamoaning intizomi (kim orqada qolyapti),
       // ro'yxatni ko'rish huquqidan kengroq kesim
       { key: "reports", label: "Hisobotlar" },
@@ -1088,6 +1101,11 @@ const ROUTE_PERMISSIONS = [
   // `tasks.view` bo'lmasligi mumkin, lekin o'z bo'limining topshiriqlari
   // unga ochiq (server ham aynan shunday tekshiradi).
   { prefix: "/tasks", key: ["tasks.view", "tasks.team"] },
+  // ⚠️ XODIMLAR O'ZIGA BELGILAGANLARI — ALOHIDA KALIT va u `tasks.view`
+  // ichidagi amal EMAS (eng UZUN mos prefiks yutadi): topshiriq registrini
+  // ko'rish huquqi xodimlarning shaxsiy rejasini ochib bermasligi kerak.
+  // ⚠️ Xodimning O'Z shaxsiy ishlari `/my-tasks` da va u RUXSATSIZ.
+  { prefix: "/tasks/self", key: "tasks.self" },
   { prefix: "/tasks/reports", key: "tasks.reports" },
   { prefix: "/tasks/settings", key: "tasks.settings" },
   { prefix: "/penalties", key: "penalties.view" },

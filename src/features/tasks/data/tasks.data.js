@@ -67,6 +67,22 @@ export const TASK_TABS = [
     exact: false,
   },
   {
+    // XODIMLAR O'ZIGA BELGILAGAN TOPSHIRIQLAR — alohida kalit
+    // (`tasks.self`): topshiriq registrini ko'rish huquqi xodimlarning
+    // shaxsiy rejasini ochib bermasligi kerak.
+    //
+    // ⚠️ DASHBOARD VA RO'YXAT BITTA SAHIFADA: kesim bosilganda ro'yxat
+    // SHU YERDA filtrlanadi, chunki bu bo'limda ish taqsimlanmaydi —
+    // u faqat "kim o'zini qanday rejalashtirmoqda" degan savolga javob
+    // beradi va ikkinchi tab ortiqcha bo'lardi.
+    to: "/tasks/self",
+    label: "O'ziga belgilagan",
+    title: "Xodimlar o'ziga belgilagan topshiriqlar",
+    description: "Kim o'ziga qanday reja qo'ydi va qanchasini bajardi — jarimasiz oqim",
+    permission: "tasks.self",
+    exact: false,
+  },
+  {
     to: "/tasks/schedules",
     label: "Doimiy topshiriqlar",
     title: "Doimiy topshiriqlar",
@@ -383,11 +399,29 @@ export const TASK_STEPS = [
   { key: "completed", label: "Yakunlandi" },
 ];
 
+/**
+ * XODIM O'ZIGA BELGILAGAN ISH — UCH QADAM.
+ *
+ * ⚠️ "Tekshiruvda" qadami OLIB TASHLANADI, chunki bu oqimda u STRUKTURAVIY
+ * yo'q: ikkinchi tomon bo'lmagani uchun xodim topshirgani darhol
+ * "Yakunlangan" bo'ladi (server `submitTaskCompletion`). Qadam qoldirilsa,
+ * u hech qachon yonmaydigan bosqich bo'lib turardi va foydalanuvchi
+ * "nimani kutyapman" deb o'ylardi.
+ */
+export const SELF_TASK_STEPS = [
+  { key: "created", label: "Belgilandi" },
+  { key: "working", label: "Bajarilmoqda" },
+  { key: "completed", label: "Yakunlandi" },
+];
+
 export const getStepIndex = (status) => {
   if (status === "completed") return 3;
   if (status === "pending_review") return 2;
   return 1;
 };
+
+/** Shaxsiy oqim uchun qadam indeksi (uch qadamli chiziq). */
+export const getSelfStepIndex = (status) => (status === "completed" ? 2 : 1);
 
 // ─────────────────────────────────────────────
 // RO'YXAT FILTRLARI
@@ -863,17 +897,42 @@ export const buildReportKpis = (report) => {
  *
  * @param {object} report
  */
-export const buildDashboardKpis = (report) => {
+export const buildDashboardKpis = (report, { self = false } = {}) => {
   const { kpis } = report;
+
+  // ⚠️ SHAXSIY OQIMDA "TEKSHIRUVDA" KARTASI YO'Q va bu bo'shliq emas,
+  // STRUKTURA: shaxsiy topshiriqda tasdiqlash bosqichi umuman yo'q
+  // (xodim topshirgani darhol yakunlanadi), ya'ni karta har doim 0
+  // ko'rsatib turardi. O'rniga "reja qo'ygan xodimlar" — rahbar uchun
+  // asosiy savol aynan shu: kim o'zini o'zi rejalashtirmoqda.
+  const review = self
+    ? {
+        key: "assignees",
+        label: "Reja qo'ygan xodimlar",
+        value: kpis.assignees,
+        icon: Users,
+        tone: "amber",
+        hint: "O'ziga ish belgilaganlar",
+        filter: {},
+      }
+    : {
+        key: "review",
+        label: "Tekshiruvda",
+        value: kpis.review,
+        icon: Eye,
+        tone: "amber",
+        hint: "Ish topshirilgan, javob kutyapti",
+        filter: { state: "review" },
+      };
 
   return [
     {
       key: "total",
-      label: "Berilgan topshiriqlar",
+      label: self ? "O'ziga belgilagan ishlar" : "Berilgan topshiriqlar",
       value: kpis.total,
       icon: ClipboardList,
       tone: "blue",
-      hint: `${kpis.assignees} xodimga`,
+      hint: self ? `${kpis.assignees} xodim` : `${kpis.assignees} xodimga`,
       filter: {},
     },
     {
@@ -891,7 +950,12 @@ export const buildDashboardKpis = (report) => {
       value: kpis.overdue,
       icon: CircleX,
       tone: "rose",
-      hint: kpis.overdue > 0 ? "Muddat o'tdi, ish topshirilmadi" : "Kechikkan ish yo'q",
+      hint:
+        kpis.overdue > 0
+          ? self
+            ? "Muddat o'tdi, reja bajarilmadi"
+            : "Muddat o'tdi, ish topshirilmadi"
+          : "Kechikkan ish yo'q",
       filter: { state: "missed" },
     },
     {
@@ -903,15 +967,7 @@ export const buildDashboardKpis = (report) => {
       hint: "Muddati hali bor",
       filter: { state: "in_progress" },
     },
-    {
-      key: "review",
-      label: "Tekshiruvda",
-      value: kpis.review,
-      icon: Eye,
-      tone: "amber",
-      hint: "Ish topshirilgan, javob kutyapti",
-      filter: { state: "review" },
-    },
+    review,
     {
       key: "onTimeRate",
       label: "O'z vaqtida",
@@ -961,7 +1017,7 @@ export const filterDashboardPeople = (people = [], filter = "all", search = "") 
  * @param {object} report
  * @returns {Array<{ key: string, icon: object, tone: string, text: string }>}
  */
-export const buildInsights = (report) => {
+export const buildInsights = (report, { self = false } = {}) => {
   const { kpis, previous, leaders, attention, live, weekday, timing } = report;
   const items = [];
 
@@ -971,7 +1027,9 @@ export const buildInsights = (report) => {
         key: "empty",
         icon: Sparkles,
         tone: "slate",
-        text: "Bu davrda hech kimga topshiriq berilmagan.",
+        text: self
+          ? "Bu davrda hech kim o'ziga ish belgilamagan."
+          : "Bu davrda hech kimga topshiriq berilmagan.",
       },
     ];
   }
@@ -986,7 +1044,9 @@ export const buildInsights = (report) => {
       key: "rate",
       icon: rate >= 80 ? ThumbsUp : rate >= 50 ? ListChecks : ShieldAlert,
       tone: rate >= 80 ? "green" : rate >= 50 ? "amber" : "rose",
-      text: `Har 10 ta topshiriqdan ${per10} tasi bajarildi. ${mood}`,
+      text: self
+        ? `Xodimlar o'zlariga qo'ygan har 10 ta rejadan ${per10} tasi bajarildi. ${mood}`
+        : `Har 10 ta topshiriqdan ${per10} tasi bajarildi. ${mood}`,
     });
   }
 
@@ -1012,7 +1072,9 @@ export const buildInsights = (report) => {
       key: "overdue",
       icon: Flame,
       tone: "rose",
-      text: `Hozir ${live.counts.overdue} ta topshiriqning muddati o'tib ketgan — ularni tezroq ko'rib chiqing.`,
+      text: self
+        ? `Hozir ${live.counts.overdue} ta shaxsiy rejaning muddati o'tib ketgan.`
+        : `Hozir ${live.counts.overdue} ta topshiriqning muddati o'tib ketgan — ularni tezroq ko'rib chiqing.`,
     });
   }
 
@@ -1053,7 +1115,9 @@ export const buildInsights = (report) => {
       key: "attention",
       icon: TriangleAlert,
       tone: "rose",
-      text: `${attention[0].name}da ${attention[0].overdue} ta kechikkan topshiriq bor — gaplashib ko'ring.`,
+      text: self
+        ? `${attention[0].name} o'ziga qo'ygan ${attention[0].overdue} ta rejani bajarmagan.`
+        : `${attention[0].name}da ${attention[0].overdue} ta kechikkan topshiriq bor — gaplashib ko'ring.`,
     });
   }
 

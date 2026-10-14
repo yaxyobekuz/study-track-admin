@@ -55,9 +55,20 @@ const COUNTERS = [
  * "Batafsil" — o'sha odamning topshiriqlari ro'yxati, tanlangan kesim
  * bilan (`/tasks/list?assigneeId=...&state=...`).
  *
- * @param {{ report: object, roles: Array<object>, className?: string }} props
+ * @param {{ report: object, roles: Array<object>, self?: boolean,
+ *   listPath?: string, className?: string }} props
+ *   `self` — xodimlar O'ZIGA belgilagan topshiriqlar kesimi: "Tekshiruvda"
+ *   ustuni olib tashlanadi (bu oqimda tasdiqlash bosqichi umuman yo'q,
+ *   ya'ni ustun har doim 0 ko'rsatib turardi) va matn "berilgan ish" emas,
+ *   "o'ziga qo'ygan reja" tilida.
  */
-const StaffBoardCard = ({ report, roles, className = "" }) => {
+const StaffBoardCard = ({
+  report,
+  roles,
+  self = false,
+  listPath = "/tasks/list",
+  className = "",
+}) => {
   // Davr — ro'yxatga ham o'tadi (raqam va ro'yxat bir xil kesimni ko'rsatsin)
   const periodQuery = report.period?.from
     ? `&startDate=${report.period.from}&endDate=${report.period.to}`
@@ -73,14 +84,30 @@ const StaffBoardCard = ({ report, roles, className = "" }) => {
 
   const rows = expanded ? people : people.slice(0, INITIAL_ROWS);
   const stateParam = FILTER_TO_STATE[filter];
+  const counters = self ? COUNTERS.filter((c) => c.key !== "review") : COUNTERS;
+  // ⚠️ "Tekshiruvda" KESIMI HAM OLIB TASHLANADI: shaxsiy oqimda bu holat
+  // strukturaviy yo'q, ya'ni kesim har doim BO'SH ro'yxat qaytarardi va
+  // foydalanuvchi buni tizim nosozligi deb o'ylardi (`devices.md` §10 —
+  // bir-birini inkor qiladigan ikki filtr bilan AYNI mulohaza).
+  const peopleFilters = self
+    ? DASHBOARD_PEOPLE_FILTERS.filter((f) => f.value !== "review")
+    : DASHBOARD_PEOPLE_FILTERS;
 
   return (
     <ReportPanelCard
       title="Xodimlar bo'yicha"
-      hint="Kim nechta ishni bajardi, qaysinisini bajarmadi"
+      hint={
+        self
+          ? "Kim o'ziga qancha reja qo'ydi va qanchasini bajardi"
+          : "Kim nechta ishni bajardi, qaysinisini bajarmadi"
+      }
       className={className}
       isEmpty={report.people.length === 0}
-      emptyText="Bu davrda hech kimga topshiriq berilmagan"
+      emptyText={
+        self
+          ? "Bu davrda hech kim o'ziga ish belgilamagan"
+          : "Bu davrda hech kimga topshiriq berilmagan"
+      }
       action={
         <div className="flex flex-wrap items-center gap-2">
           <InputSearch
@@ -90,7 +117,7 @@ const StaffBoardCard = ({ report, roles, className = "" }) => {
             className="w-44"
           />
           <div className="flex gap-1 rounded-full bg-gray-100 p-0.5">
-            {DASHBOARD_PEOPLE_FILTERS.map((f) => (
+            {peopleFilters.map((f) => (
               <button
                 key={f.value}
                 type="button"
@@ -115,23 +142,21 @@ const StaffBoardCard = ({ report, roles, className = "" }) => {
       ) : (
         <ul className="divide-y divide-gray-50">
           {rows.map((person) => (
-            <li
-              key={person.userId}
-              className="flex flex-wrap items-center gap-3 py-3 first:pt-0"
-            >
+            <li key={person.userId} className="flex flex-wrap items-center gap-3 py-3 first:pt-0">
               <div className="flex min-w-48 flex-1 items-center gap-2.5">
                 <UserAvatar name={person.name} size="sm" />
                 <div className="min-w-0">
                   <p className="truncate font-medium text-gray-900">{person.name}</p>
                   <p className="truncate text-xs text-gray-400">
-                    {getRoleLabel(person.role, roles)} · {person.assigned} ta ish
+                    {getRoleLabel(person.role, roles)} · {person.assigned} ta{" "}
+                    {self ? "reja" : "ish"}
                   </p>
                 </div>
               </div>
 
               {/* Sanoqlar — har biri o'z rangida, nol kulrang */}
               <div className="flex items-center gap-3 xs:gap-4">
-                {COUNTERS.map(({ key, label, icon: Icon, tone }) => (
+                {counters.map(({ key, label, icon: Icon, tone }) => (
                   <div key={key} className="w-16 text-center" title={label}>
                     <p
                       className={cn(
@@ -163,7 +188,7 @@ const StaffBoardCard = ({ report, roles, className = "" }) => {
               </div>
 
               <Link
-                to={`/tasks/list?assigneeId=${person.userId}${stateParam ? `&state=${stateParam}` : ""}${periodQuery}`}
+                to={`${listPath}?assigneeId=${person.userId}${stateParam ? `&state=${stateParam}` : ""}${periodQuery}`}
                 className="flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50"
               >
                 Batafsil

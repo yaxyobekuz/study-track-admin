@@ -18,11 +18,16 @@ import { TONES, buildDashboardKpis } from "../../data/tasks.data";
  * Tarkibi `buildDashboardKpis` da; bu komponent faqat ko'rinish bilan
  * shug'ullanadi va hech bir raqamni o'zi hisoblamaydi.
  *
- * @param {{ report: object }} props
+ * @param {{ report: object, self?: boolean, listPath?: string }} props
+ *   `self` — xodimlar O'ZIGA belgilagan topshiriqlar kesimi: kartalar
+ *   matni va "Tekshiruvda" o'rniga "Reja qo'ygan xodimlar"
+ *   (`buildDashboardKpis`). `listPath` — karta bosilganda ochiladigan
+ *   ro'yxat yo'li; shaxsiy oqimda ro'yxat AYNI SAHIFADA, shuning uchun u
+ *   `/tasks/self` bo'ladi va filtr shu sahifaning o'ziga tushadi.
  */
-const DashboardKpiRow = ({ report }) => (
+const DashboardKpiRow = ({ report, self = false, listPath = "/tasks/list" }) => (
   <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-    {buildDashboardKpis(report).map(({ key, label, value, icon: Icon, tone, hint, filter }) => {
+    {buildDashboardKpis(report, { self }).map(({ key, label, value, icon: Icon, tone, hint, filter }) => {
       const t = TONES[tone];
       // ⚠️ DAVR HAM UZATILADI: aks holda "Bajarilmadi: 2" raqamini bosgan
       // odam butun tarixdagi bajarilmaganlar ro'yxatiga tushardi va
@@ -35,7 +40,7 @@ const DashboardKpiRow = ({ report }) => (
       return (
         <Link
           key={key}
-          to={`/tasks/list${params.toString() ? `?${params}` : ""}`}
+          to={`${listPath}${params.toString() ? `?${params}` : ""}`}
           className={cn(
             "rounded-2xl bg-gradient-to-b to-white p-4 ring-1 transition-shadow hover:shadow-md",
             t.card,

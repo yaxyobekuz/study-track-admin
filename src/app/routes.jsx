@@ -110,6 +110,8 @@ import TasksLayout from "@/features/tasks/layouts/TasksLayout";
 import TasksPage from "@/features/tasks/pages/TasksPage";
 import TaskDashboardPage from "@/features/tasks/pages/TaskDashboardPage";
 import MyTasksPage from "@/features/myTasks/pages/MyTasksPage";
+import SelfTasksPage from "@/features/tasks/pages/SelfTasksPage";
+import SelfTaskDetailPage from "@/features/selfTasks/pages/SelfTaskDetailPage";
 import TaskReportsPage from "@/features/tasks/pages/TaskReportsPage";
 import TaskSchedulesPage from "@/features/tasks/pages/TaskSchedulesPage";
 import TaskSettingsPage from "@/features/tasks/pages/TaskSettingsPage";
@@ -479,10 +481,18 @@ const Routes = () => {
           <Route path="/tasks" element={<TasksLayout />}>
             <Route index element={<TaskDashboardPage />} />
             <Route path="list" element={<TasksPage />} />
+            {/* Xodimlar o'ziga belgilagan topshiriqlar — dashboard + ro'yxat
+                bitta sahifada (`tasks.self`) */}
+            <Route path="self" element={<SelfTasksPage />} />
             <Route path="schedules" element={<TaskSchedulesPage />} />
             <Route path="reports" element={<TaskReportsPage />} />
             <Route path="settings" element={<TaskSettingsPage />} />
           </Route>
+          {/* ⚠️ `/tasks/self/:taskId` — `/tasks/:taskId` DAN OLDIN: aks
+              holda "self" ning o'zi id deb o'qilib, boshqaruvchi ro'yxatdagi
+              qatorni ochganda "topshiriq topilmadi" chiqardi. Rejim FAQAT
+              KO'RISH: birovning shaxsiy rejasini rahbar tahrirlamaydi. */}
+          <Route path="/tasks/self/:taskId" element={<SelfTaskDetailPage readOnly />} />
           <Route path="/tasks/:taskId" element={<TaskDetailPage />} />
 
           {/* Muammolar */}
@@ -532,6 +542,11 @@ const Routes = () => {
               talab qiladi, ya'ni oddiy xodim o'ziga berilgan ishning
               tavsifi, fayllari va havolalarini umuman ocha olmasdi.
               Server baribir faqat ijrochi yoki boshqaruvchini o'tkazadi. */}
+          {/* ⚠️ `/my-tasks/self/:taskId` — `/my-tasks/:taskId` DAN OLDIN
+              (yuqoridagi bilan ayni sabab). Bu yerda xodim O'Z shaxsiy
+              ishining hamma amalini bajaradi: yakunlash, tahrirlash,
+              muddatni surish, to'xtatish, o'chirish. */}
+          <Route path="/my-tasks/self/:taskId" element={<SelfTaskDetailPage />} />
           <Route path="/my-tasks/:taskId" element={<TaskDetailPage />} />
           <Route path="/my-salary" element={<MySalaryPage />} />
 
