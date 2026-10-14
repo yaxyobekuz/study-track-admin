@@ -1,5 +1,5 @@
 // Icons
-import { BellRing, Repeat } from "lucide-react";
+import { BellRing, Plus, Repeat, X } from "lucide-react";
 
 // Components
 import InputField from "@/shared/components/ui/input/InputField";
@@ -9,8 +9,10 @@ import { cn } from "@/shared/utils/cn";
 
 // Data
 import {
+  EMPTY_SLOT,
   MAX_DUE_OFFSET_DAYS,
   MAX_LEAD_DAYS,
+  MAX_SLOTS,
   TASK_FREQUENCIES,
   WEEKDAY_OPTIONS,
   describeRecurrence,
@@ -33,6 +35,10 @@ const toggle = (list, value) =>
  * hodisadan `leadDays` kun OLDIN yoziladi — va aynan shu yozilish xodim
  * uchun eslatma bo'ladi.
  *
+ * ⚠️ BIR KUNDA BIR NECHTA VAQT bo'lishi mumkin ("ertalab 09:00 va tushdan
+ * keyin 15:00") — har biri O'Z topshirig'ini beradi. Bir xil tugash vaqti
+ * ikki marta berilmaydi: topshiriqlarning yagonalik kaliti aynan shu vaqt.
+ *
  * @param {object} props
  * @param {object} props.value - takrorlanish maydonlari
  * @param {(field: string, value: unknown) => void} props.onChange
@@ -40,6 +46,12 @@ const toggle = (list, value) =>
  */
 const TaskRecurrenceField = ({ value, onChange, disabled = false }) => {
   const { frequency } = value;
+
+  const setSlot = (index, field, next) =>
+    onChange(
+      "slots",
+      value.slots.map((slot, i) => (i === index ? { ...slot, [field]: next } : slot)),
+    );
 
   return (
     <div className="space-y-3 rounded-xl bg-indigo-50/40 p-3 ring-1 ring-indigo-100">
@@ -162,35 +174,85 @@ const TaskRecurrenceField = ({ value, onChange, disabled = false }) => {
         </div>
       )}
 
-      {/* Vaqt */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <InputField
-          type="time"
-          label="Boshlanish vaqti"
-          value={value.startTime}
-          disabled={disabled}
-          onChange={(e) => onChange("startTime", e.target.value)}
-          description="Ixtiyoriy"
-        />
-        <InputField
-          required
-          type="time"
-          label="Tugash vaqti"
-          value={value.dueTime}
-          disabled={disabled}
-          onChange={(e) => onChange("dueTime", e.target.value)}
-          description="Muddat"
-        />
-        <InputField
-          min={0}
-          max={MAX_DUE_OFFSET_DAYS}
-          type="number"
-          label="Muddat +kun"
-          value={value.dueOffsetDays}
-          disabled={disabled}
-          onChange={(e) => onChange("dueOffsetDays", e.target.value)}
-          description="0 — o'sha kuni"
-        />
+      {/* Vaqtlar — bir kunda bir nechta bo'lishi mumkin */}
+      <div>
+        <div className="mb-1.5 flex items-center justify-between">
+          <p className="text-xs font-medium text-gray-600">
+            Vaqtlar <span className="text-primary">*</span>
+          </p>
+          <span className="text-[11px] text-gray-400">
+            {value.slots.length}/{MAX_SLOTS}
+          </span>
+        </div>
+
+        <div className="space-y-2">
+          {value.slots.map((slot, index) => (
+            <div
+              key={index}
+              className="grid items-start gap-2 rounded-xl bg-white p-2 ring-1 ring-gray-100 sm:grid-cols-[1fr_1fr_110px_auto]"
+            >
+              <InputField
+                type="time"
+                label={index === 0 ? "Boshlanish" : ""}
+                value={slot.start}
+                disabled={disabled}
+                onChange={(e) => setSlot(index, "start", e.target.value)}
+                description={index === 0 ? "Ixtiyoriy" : ""}
+              />
+              <InputField
+                required
+                type="time"
+                label={index === 0 ? "Tugash (muddat)" : ""}
+                value={slot.due}
+                disabled={disabled}
+                onChange={(e) => setSlot(index, "due", e.target.value)}
+              />
+              <InputField
+                min={0}
+                max={MAX_DUE_OFFSET_DAYS}
+                type="number"
+                label={index === 0 ? "+kun" : ""}
+                value={slot.offsetDays}
+                disabled={disabled}
+                onChange={(e) => setSlot(index, "offsetDays", e.target.value)}
+              />
+              <button
+                type="button"
+                disabled={disabled || value.slots.length === 1}
+                aria-label="Vaqtni olib tashlash"
+                onClick={() =>
+                  onChange(
+                    "slots",
+                    value.slots.filter((_, i) => i !== index),
+                  )
+                }
+                className={cn(
+                  "rounded-lg p-2 text-gray-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-400",
+                  index === 0 && "sm:mt-6",
+                )}
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {value.slots.length < MAX_SLOTS && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange("slots", [...value.slots, { ...EMPTY_SLOT }])}
+            className="mt-2 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-primary hover:bg-primary/5"
+          >
+            <Plus className="size-3.5" />
+            Yana vaqt qo&apos;shish
+          </button>
+        )}
+
+        <p className="mt-1 text-[11px] text-gray-500">
+          Bir kunda bir nechta vaqt bo&apos;lishi mumkin — har biriga alohida topshiriq
+          yoziladi. &quot;+kun&quot; muddatni keyingi kunlarga suradi (0 — o&apos;sha kuni).
+        </p>
       </div>
 
       {/* Eslatma */}

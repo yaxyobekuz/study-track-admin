@@ -110,15 +110,23 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     problems.push(`Tavsif kamida ${settings.minDescriptionLength} ta belgi`);
   if (isRecurring) {
     // Doimiy ish — sana emas, QOIDA tekshiriladi
-    if (!recurrence.dueTime) problems.push("Tugash vaqtini belgilang");
     if (recurrence.frequency === "weekly" && recurrence.weekdays.length === 0)
       problems.push("Kamida bitta hafta kunini tanlang");
     if (recurrence.frequency === "months" && recurrence.monthDays.length === 0)
       problems.push("Oyning kamida bitta kunini tanlang");
+
+    const filled = recurrence.slots.filter((slot) => slot.due);
+    if (filled.length === 0) problems.push("Kamida bitta tugash vaqtini belgilang");
+    if (recurrence.slots.some((slot) => !slot.due))
+      problems.push("Har bir qatorda tugash vaqti bo'lishi kerak");
+    // ⚠️ Takror vaqt — serverda ham rad etiladi: topshiriqlarning yagonalik
+    // kaliti aynan tugash vaqti
+    if (new Set(filled.map((slot) => slot.due)).size !== filled.length)
+      problems.push("Bir xil tugash vaqti ikki marta berilgan");
     if (
-      recurrence.startTime &&
-      Number(recurrence.dueOffsetDays) === 0 &&
-      recurrence.startTime >= recurrence.dueTime
+      recurrence.slots.some(
+        (slot) => slot.start && Number(slot.offsetDays) === 0 && slot.start >= slot.due,
+      )
     )
       problems.push("Boshlanish vaqti tugash vaqtidan oldin bo'lsin");
   } else {
@@ -166,9 +174,18 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         formData.append("intervalMonths", String(recurrence.intervalMonths));
         formData.append("monthDays", JSON.stringify(recurrence.monthDays));
       }
-      if (recurrence.startTime) formData.append("startTime", recurrence.startTime);
-      formData.append("dueTime", recurrence.dueTime);
-      formData.append("dueOffsetDays", String(recurrence.dueOffsetDays || 0));
+      formData.append(
+        "slots",
+        JSON.stringify(
+          recurrence.slots
+            .filter((slot) => slot.due)
+            .map((slot) => ({
+              start: slot.start || null,
+              due: slot.due,
+              offsetDays: Number(slot.offsetDays) || 0,
+            })),
+        ),
+      );
       formData.append("leadDays", String(recurrence.leadDays ?? 1));
 
       setIsLoading(true);

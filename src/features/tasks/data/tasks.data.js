@@ -209,18 +209,28 @@ export const WEEKDAY_OPTIONS = [
   { value: 0, label: "Ya", full: "Yakshanba" },
 ];
 
-/** Yangi doimiy topshiriq formasining boshlang'ich qiymatlari. */
+/**
+ * Yangi doimiy topshiriq formasining boshlang'ich qiymatlari.
+ *
+ * ⚠️ `slots` — MASSIV: bir kunda bir nechta takrorlanish bo'lishi mumkin
+ * ("ertalab 09:00 va tushdan keyin 15:00"), har biri o'z topshirig'ini
+ * beradi. `start` bo'sh bo'lsa oyna emas, faqat muddat.
+ */
 export const DEFAULT_RECURRENCE = {
   frequency: "weekly",
   weekdays: [1],
   intervalDays: 7,
   intervalMonths: 1,
   monthDays: [1],
-  startTime: "",
-  dueTime: "18:00",
-  dueOffsetDays: 0,
+  slots: [{ start: "", due: "18:00", offsetDays: 0 }],
   leadDays: 1,
 };
+
+// Bir kundagi vaqtlar soni — server bilan QO'LDA sinxron
+// (`taskSchedule.helpers.js` → `MAX_SLOTS`)
+export const MAX_SLOTS = 12;
+
+export const EMPTY_SLOT = { start: "", due: "", offsetDays: 0 };
 
 export const SCHEDULE_STATUS_OPTIONS = [
   { value: "all", label: "Barchasi" },
@@ -242,7 +252,16 @@ export const MAX_DUE_OFFSET_DAYS = 30;
  */
 export const describeRecurrence = (rule) => {
   if (!rule) return "—";
-  const time = rule.startTime ? `${rule.startTime}–${rule.dueTime}` : rule.dueTime;
+
+  const slots = (rule.slots || []).filter((slot) => slot.due);
+  const time =
+    slots.length === 0
+      ? "—"
+      : slots
+          .slice()
+          .sort((a, b) => a.due.localeCompare(b.due))
+          .map((slot) => (slot.start ? `${slot.start}–${slot.due}` : slot.due))
+          .join(", ");
 
   let text;
   if (rule.frequency === "weekly") {
@@ -260,7 +279,8 @@ export const describeRecurrence = (rule) => {
     text = days ? `${period}ning ${days}-kuni` : period;
   }
 
-  const tail = rule.dueOffsetDays > 0 ? ` (+${rule.dueOffsetDays} kun)` : "";
+  const maxOffset = slots.reduce((max, slot) => Math.max(max, Number(slot.offsetDays) || 0), 0);
+  const tail = maxOffset > 0 ? ` (+${maxOffset} kun)` : "";
   return `${text} · ${time}${tail}`;
 };
 
