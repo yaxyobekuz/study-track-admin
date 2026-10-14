@@ -58,6 +58,10 @@ const COUNTERS = [
  * @param {{ report: object, roles: Array<object>, className?: string }} props
  */
 const StaffBoardCard = ({ report, roles, className = "" }) => {
+  // Davr — ro'yxatga ham o'tadi (raqam va ro'yxat bir xil kesimni ko'rsatsin)
+  const periodQuery = report.period?.from
+    ? `&startDate=${report.period.from}&endDate=${report.period.to}`
+    : "";
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState(false);
@@ -159,7 +163,7 @@ const StaffBoardCard = ({ report, roles, className = "" }) => {
               </div>
 
               <Link
-                to={`/tasks/list?assigneeId=${person.userId}${stateParam ? `&state=${stateParam}` : ""}`}
+                to={`/tasks/list?assigneeId=${person.userId}${stateParam ? `&state=${stateParam}` : ""}${periodQuery}`}
                 className="flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50"
               >
                 Batafsil

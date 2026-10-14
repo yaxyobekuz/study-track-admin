@@ -1,3 +1,6 @@
+// Toast
+import { toast } from "sonner";
+
 // React
 import { useRef, useState } from "react";
 
@@ -33,6 +36,12 @@ const FileDropzone = ({
   value = [],
   onChange,
   max = 10,
+  // ⚠️ HAJM CHEGARASI — serverdan keladi. Usiz katta fayl YUBORILIB,
+  // oldingi qavat (proksi) uni rad etardi va brauzer buni "CORS xatosi"
+  // deb ko'rsatardi: rad etilgan javobda CORS sarlavhalari bo'lmaydi,
+  // ya'ni foydalanuvchi haqiqiy sababni ("fayl juda katta") umuman
+  // ko'rmasdi.
+  maxSizeMb,
   accept,
   label = "Fayllar",
   hint = "",
@@ -43,7 +52,26 @@ const FileDropzone = ({
   const [isOver, setIsOver] = useState(false);
 
   const add = (list) => {
-    onChange([...value, ...Array.from(list || [])].slice(0, max));
+    const picked = Array.from(list || []);
+
+    // Hajmi oshib ketganlar YUBORILMAYDI — sababi darhol aytiladi
+    if (maxSizeMb) {
+      const limit = maxSizeMb * 1024 * 1024;
+      const tooBig = picked.filter((file) => file.size > limit);
+      if (tooBig.length > 0) {
+        toast.error(
+          tooBig.length === 1
+            ? `"${tooBig[0].name}" juda katta (${(tooBig[0].size / 1024 / 1024).toFixed(1)} MB). Maksimal hajm — ${maxSizeMb} MB.`
+            : `${tooBig.length} ta fayl ${maxSizeMb} MB dan katta va qo'shilmadi.`,
+        );
+      }
+      const fits = picked.filter((file) => file.size <= limit);
+      if (fits.length === 0) return;
+      onChange([...value, ...fits].slice(0, max));
+      return;
+    }
+
+    onChange([...value, ...picked].slice(0, max));
   };
 
   const remove = (index) => onChange(value.filter((_, i) => i !== index));

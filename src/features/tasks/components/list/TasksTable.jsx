@@ -8,6 +8,7 @@ import { ChevronRight, Paperclip, CalendarClock, FileCheck2, Link2 } from "lucid
 import UserAvatar from "../UserAvatar";
 import DeadlineChip from "../DeadlineChip";
 import TaskKindBadge from "../TaskKindBadge";
+import TaskKindSwitch from "../TaskKindSwitch";
 import TaskStateBadge from "../TaskStateBadge";
 import TaskStatusBadge from "../TaskStatusBadge";
 
@@ -72,6 +73,7 @@ const TasksTable = ({ tasks, roles, dueSoonHours }) => {
               <th className="!text-left">Muddat</th>
               <th className="!text-left">Holat</th>
               <th>Jarima</th>
+              <th>Turi</th>
               <th className="w-8 !px-2" />
             </tr>
           </thead>
@@ -132,6 +134,9 @@ const TasksTable = ({ tasks, roles, dueSoonHours }) => {
                       {task.penaltyPoints} ball
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-center">
+                    <TaskKindSwitch task={task} size="sm" />
+                  </td>
                   <td className="pr-3">
                     <ChevronRight className="size-4 text-gray-300 group-hover:text-blue-500" />
                   </td>
@@ -157,6 +162,10 @@ const TasksTable = ({ tasks, roles, dueSoonHours }) => {
                 <p className="line-clamp-2 font-medium text-gray-900">{task.title}</p>
                 <TaskStateBadge task={task} size="sm" className="shrink-0" />
               </div>
+              {/* ⚠️ Telefonda tur FAQAT KO'RSATILADI: butun karta bosiladigan
+                  tugma, uning ichiga yana tugma qo'yish yaroqsiz HTML va
+                  tasodifiy bosishga olib kelardi. Turni almashtirish
+                  topshiriqni ochib amalga oshiriladi. */}
               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                 <TaskKindBadge kind={task.kind} />
                 <TaskStatusBadge status={task.status} />

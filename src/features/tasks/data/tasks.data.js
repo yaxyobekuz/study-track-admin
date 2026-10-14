@@ -34,6 +34,7 @@ import {
   CircleX,
   Layers,
   Link2,
+  Repeat,
   PlayCircle,
   Users,
   Zap,
@@ -63,6 +64,13 @@ export const TASK_TABS = [
     label: "Topshiriqlar",
     title: "Topshiriqlar",
     description: "Kimga qanday ish berilgan va u qay holatda",
+    exact: false,
+  },
+  {
+    to: "/tasks/schedules",
+    label: "Doimiy topshiriqlar",
+    title: "Doimiy topshiriqlar",
+    description: "Takrorlanadigan ishlar — topshiriqlar ulardan avtomatik yoziladi",
     exact: false,
   },
   {
@@ -139,15 +147,15 @@ export const taskStatusOptions = [
 export const TASK_KIND_META = {
   main: {
     label: "Asosiy",
-    hint: "Lavozim bo'yicha doimiy ish",
+    hint: "Doimiy ish — belgilangan jadval bo'yicha takrorlanadi",
     chip: "bg-indigo-50 text-indigo-700 ring-indigo-100",
     dot: "bg-indigo-500",
     color: "#4f46e5",
-    icon: Layers,
+    icon: Repeat,
   },
   extra: {
     label: "Qo'shimcha",
-    hint: "Bir martalik vazifa",
+    hint: "Bir martalik vazifa — aniq sanaga",
     chip: "bg-teal-50 text-teal-700 ring-teal-100",
     dot: "bg-teal-500",
     color: "#0d9488",
@@ -166,6 +174,115 @@ export const kindLabel = (kind) => TASK_KIND_META[kind]?.label || TASK_KIND_META
 // Bir topshiriqqa qo'shiladigan havolalar chegarasi — server bilan QO'LDA
 // sinxron (`taskWindow.helpers.js` → `LINKS_MAX`)
 export const LINKS_MAX = 10;
+
+// ─────────────────────────────────────────────
+// DOIMIY (TAKRORLANUVCHI) TOPSHIRIQ
+// ─────────────────────────────────────────────
+
+/**
+ * ⚠️ "ASOSIY" = DOIMIY (takrorlanadi), "QO'SHIMCHA" = BIR MARTALIK
+ * (biznes qarori). Shuning uchun tur tanlovi formaning shaklini
+ * o'zgartiradi: asosiyda takrorlanish qoidasi so'raladi, qo'shimchada —
+ * aniq sana.
+ */
+export const TASK_FREQUENCIES = [
+  { value: "weekly", label: "Haftalik", hint: "Haftaning tanlangan kunlari" },
+  { value: "days", label: "Kun oralig'ida", hint: "Har N kunda bir" },
+  { value: "months", label: "Oylik", hint: "Har N oyda, oyning tanlangan kunlari" },
+];
+
+/**
+ * Hafta kunlari — `value` JS `getDay()` konvensiyasida (0 = yakshanba).
+ *
+ * ⚠️ `WEEKDAY_SHORT` / `WEEKDAY_FULL` BILAN CHALKASHTIRMANG: ular HISOBOT
+ * indeksida (0 = dushanba, server shunday yuboradi). Ikkalasi bir faylda
+ * turgani uchun tuzoq aynan shu yerda — qoida kunlari serverdagi
+ * `taskSchedule.helpers.js` bilan AYNI konvensiyada bo'lishi SHART.
+ */
+export const WEEKDAY_OPTIONS = [
+  { value: 1, label: "Du", full: "Dushanba" },
+  { value: 2, label: "Se", full: "Seshanba" },
+  { value: 3, label: "Ch", full: "Chorshanba" },
+  { value: 4, label: "Pa", full: "Payshanba" },
+  { value: 5, label: "Ju", full: "Juma" },
+  { value: 6, label: "Sh", full: "Shanba" },
+  { value: 0, label: "Ya", full: "Yakshanba" },
+];
+
+/**
+ * Yangi doimiy topshiriq formasining boshlang'ich qiymatlari.
+ *
+ * ⚠️ `slots` — MASSIV: bir kunda bir nechta takrorlanish bo'lishi mumkin
+ * ("ertalab 09:00 va tushdan keyin 15:00"), har biri o'z topshirig'ini
+ * beradi. `start` bo'sh bo'lsa oyna emas, faqat muddat.
+ */
+export const DEFAULT_RECURRENCE = {
+  frequency: "weekly",
+  weekdays: [1],
+  intervalDays: 7,
+  intervalMonths: 1,
+  monthDays: [1],
+  slots: [{ start: "", due: "18:00", offsetDays: 0 }],
+  leadDays: 1,
+};
+
+// Bir kundagi vaqtlar soni — server bilan QO'LDA sinxron
+// (`taskSchedule.helpers.js` → `MAX_SLOTS`)
+export const MAX_SLOTS = 12;
+
+export const EMPTY_SLOT = { start: "", due: "", offsetDays: 0 };
+
+export const SCHEDULE_STATUS_OPTIONS = [
+  { value: "all", label: "Barchasi" },
+  { value: "active", label: "Faol" },
+  { value: "stopped", label: "To'xtatilgan" },
+];
+
+// Server bilan QO'LDA sinxron (`taskSchedule.helpers.js`)
+export const MAX_LEAD_DAYS = 30;
+export const MAX_DUE_OFFSET_DAYS = 30;
+
+/**
+ * Takrorlanish qoidasining qisqa matni. Server ham AYNI matnni quradi
+ * (`describeSchedule`) — bu yerdagisi faqat forma hali saqlanmaganda,
+ * "nima yoziladi" ni oldindan ko'rsatish uchun.
+ *
+ * @param {object} rule
+ * @returns {string}
+ */
+export const describeRecurrence = (rule) => {
+  if (!rule) return "—";
+
+  const slots = (rule.slots || []).filter((slot) => slot.due);
+  const time =
+    slots.length === 0
+      ? "—"
+      : slots
+          .slice()
+          .sort((a, b) => a.due.localeCompare(b.due))
+          .map((slot) => (slot.start ? `${slot.start}–${slot.due}` : slot.due))
+          .join(", ");
+
+  let text;
+  if (rule.frequency === "weekly") {
+    const days = WEEKDAY_OPTIONS.filter((d) => (rule.weekdays || []).includes(d.value))
+      .map((d) => d.full.toLowerCase())
+      .join(", ");
+    text = days ? `Har ${days}` : "Har hafta";
+  } else if (rule.frequency === "days") {
+    const step = Number(rule.intervalDays) || 1;
+    text = step === 1 ? "Har kuni" : `Har ${step} kunda`;
+  } else {
+    const step = Number(rule.intervalMonths) || 1;
+    const days = [...(rule.monthDays || [])].sort((a, b) => a - b).join(", ");
+    const period = step === 1 ? "Har oy" : `Har ${step} oyda`;
+    text = days ? `${period}ning ${days}-kuni` : period;
+  }
+
+  const maxOffset = slots.reduce((max, slot) => Math.max(max, Number(slot.offsetDays) || 0), 0);
+  const tail = maxOffset > 0 ? ` (+${maxOffset} kun)` : "";
+  return `${text} · ${time}${tail}`;
+};
 
 // ─────────────────────────────────────────────
 // VAQT HOLATI (server: `taskWindow.helpers.js`)
@@ -611,19 +728,23 @@ export const formatTaskWindow = (task) => {
  * bu funksiya ekran OCHIQ turganda (minutlar o'tib ketganda) uni jonli
  * ushlab turish uchun.
  *
+ * ⚠️ `nowMs` — chaqiruvchining jonli hisoblagichi (`useNow`). Qolgan to'rt
+ * panelda ham AYNI imzo: bu yerda uni tushirib qoldirish bitta panelda
+ * holat boshqacha hisoblanishi xavfini tug'dirardi.
+ *
  * @param {{ status: string, startDate?: string|null, dueDate: string, timeState?: string }} task
+ * @param {number} [nowMs]
  * @returns {string} `TASK_STATE_META` kaliti
  */
-export const resolveTimeState = (task) => {
+export const resolveTimeState = (task, nowMs = Date.now()) => {
   if (!task) return "open";
   if (task.status === "completed") return "done";
   if (task.status === "stopped") return "stopped";
   if (task.status === "pending_review") return "review";
 
-  const now = Date.now();
-  if (new Date(task.dueDate).getTime() < now) return "missed";
+  if (new Date(task.dueDate).getTime() < nowMs) return "missed";
   if (!task.startDate) return "open";
-  return new Date(task.startDate).getTime() > now ? "upcoming" : "active";
+  return new Date(task.startDate).getTime() > nowMs ? "upcoming" : "active";
 };
 
 /**
@@ -999,6 +1120,9 @@ export const DEFAULT_TASK_SETTINGS = {
   requireApproveReason: false,
   autoPenaltyEnabled: true,
   dueSoonHours: 24,
+  // Serverdan keladi (`MAX_UPLOAD_FILE_SIZE_MB`) — forma katta faylni
+  // yuborishdan oldin rad etishi uchun
+  maxFileSizeMb: 30,
 };
 
 /**
