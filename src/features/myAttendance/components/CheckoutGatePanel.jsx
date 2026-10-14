@@ -121,10 +121,32 @@ const CheckoutGatePanel = ({ loading, onConfirm, onCancel }) => {
     );
   }
 
-  // Darvoza bu xodimga qo'llanmaydi — oddiy tasdiq
+  // Darvoza bu xodimga qo'llanmaydi — oddiy tasdiq.
+  //
+  // ⚠️ LEKIN BAJARILMAGAN TOPSHIRIQ BO'LSA — AYTILADI (`advisory`).
+  // Qat'iy to'siq faqat o'qituvchida (`education.md` §12): unda ketish
+  // bugungi darsga baho qo'yishni yopadi va dars oylikdan tushadi.
+  // Boshqa xodimda bunday zanjir yo'q, shuning uchun ro'yxat KO'RSATILADI,
+  // ketish esa to'silmaydi — odam o'zi qaror qiladi.
   if (!readiness.applies) {
+    const pending = readiness.tasks?.items ?? [];
+
     return (
       <PanelShell>
+        {pending.length > 0 && (
+          <>
+            <Notice tone="red" icon={AlertTriangle}>
+              <p className="font-medium">
+                Sizda {pending.filter((t) => !t.locked).length} ta bajarilmagan topshiriq bor
+              </p>
+              <p className="text-xs">
+                Ketishingiz mumkin, lekin ular yopilmaguncha ochiq qolaveradi.
+              </p>
+            </Notice>
+            <TasksSection tasks={{ items: pending }} />
+          </>
+        )}
+
         <p className="text-sm font-medium text-red-800">
           Haqiqatan ham ketmoqchimisiz?
         </p>
