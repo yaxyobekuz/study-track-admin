@@ -244,6 +244,7 @@ const Content = ({ close, isLoading, setIsLoading, task }) => {
         value={newFiles}
         onChange={setNewFiles}
         max={Math.max(0, 10 - currentFiles.length)}
+        maxSizeMb={settings.maxFileSizeMb}
         disabled={isLoading}
         label="Yangi fayl qo'shish"
       />

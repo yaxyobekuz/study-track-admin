@@ -1120,6 +1120,9 @@ export const DEFAULT_TASK_SETTINGS = {
   requireApproveReason: false,
   autoPenaltyEnabled: true,
   dueSoonHours: 24,
+  // Serverdan keladi (`MAX_UPLOAD_FILE_SIZE_MB`) — forma katta faylni
+  // yuborishdan oldin rad etishi uchun
+  maxFileSizeMb: 30,
 };
 
 /**

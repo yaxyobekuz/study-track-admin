@@ -295,6 +295,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         value={files}
         onChange={setFiles}
         max={10}
+        maxSizeMb={settings.maxFileSizeMb}
         disabled={isLoading}
         required={settings.requireCreateAttachments}
         label={settings.requireCreateAttachments ? "Fayllar" : "Fayllar (ixtiyoriy)"}
