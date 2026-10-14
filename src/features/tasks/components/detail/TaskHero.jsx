@@ -3,7 +3,7 @@ import { Ban, CalendarClock, Check, RotateCcw, ShieldAlert, UserRound } from "lu
 
 // Components
 import DeadlineChip from "../DeadlineChip";
-import TaskKindBadge from "../TaskKindBadge";
+import TaskKindSwitch from "../TaskKindSwitch";
 import TaskStateBadge from "../TaskStateBadge";
 import TaskStatusBadge from "../TaskStatusBadge";
 
@@ -92,7 +92,8 @@ const TaskHero = ({ task, dueSoonHours }) => {
         <div className="flex flex-wrap items-center gap-2">
           <TaskStateBadge task={task} />
           <TaskStatusBadge status={task.status} size="md" />
-          <TaskKindBadge kind={task.kind} />
+          {/* Turi — shu yerdan o'zgartiriladi (ruxsati borlarda) */}
+          <TaskKindSwitch task={task} />
           <DeadlineChip dueDate={task.dueDate} status={task.status} dueSoonHours={dueSoonHours} />
         </div>
 
