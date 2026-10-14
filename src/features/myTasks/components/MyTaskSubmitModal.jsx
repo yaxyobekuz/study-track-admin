@@ -115,6 +115,7 @@ const Content = ({ close, isLoading, setIsLoading, task, rules: incoming }) => {
         value={files}
         onChange={setFiles}
         max={rules.maxFiles}
+        maxSizeMb={rules.maxFileSizeMb}
         disabled={isLoading}
         label="Bajarilgan ish fayllari"
         hint="Rasm, video yoki hujjat — bajarilganini ko'rsatadigan isbot"
