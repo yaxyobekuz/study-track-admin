@@ -8,7 +8,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 
 // Icons
-import { ClipboardList, FilterX, Plus, X } from "lucide-react";
+import { CalendarRange, ClipboardList, FilterX, Plus, X } from "lucide-react";
+
+// Utils
+import { formatDateRangeUz } from "@/shared/utils/date.utils";
 
 // Queries
 import { tasksQueries } from "../queries/tasks.queries";
@@ -43,7 +46,18 @@ import { useRoles } from "@/features/roles/queries/roles.queries";
 import CreateTaskModal from "../components/CreateTaskModal";
 
 // Filtr parametrlari — hammasi URL'da, sahifani filtr bilan link qilib yuborish mumkin
-const FILTER_KEYS = ["status", "state", "kind", "due", "assigneeId", "search", "sort"];
+const FILTER_KEYS = [
+  "status",
+  "state",
+  "kind",
+  "due",
+  "assigneeId",
+  "search",
+  "sort",
+  // Dashboarddan kelgan davr (yaratilgan sana kesimi)
+  "startDate",
+  "endDate",
+];
 
 /**
  * "Asosiy" tab: jonli hisoblagichlar + filtrlar + ro'yxat.
@@ -60,6 +74,10 @@ const TasksPage = () => {
   const state = searchParams.get("state") || "all";
   const kind = searchParams.get("kind") || "all";
   const due = searchParams.get("due") || "all";
+  // ⚠️ Dashboarddan o'tilganda davr saqlanadi: raqamni bosgan odam o'sha
+  // davrning ro'yxatini ko'rishi kerak, butun tarixni emas.
+  const startDate = searchParams.get("startDate") || "";
+  const endDate = searchParams.get("endDate") || "";
   const assigneeId = searchParams.get("assigneeId") || "";
   const sort = searchParams.get("sort") || "newest";
 
@@ -77,6 +95,8 @@ const TasksPage = () => {
       ...(state !== "all" && { state }),
       ...(kind !== "all" && { kind }),
       ...(due !== "all" && { due }),
+      ...(startDate && { startDate }),
+      ...(endDate && { endDate }),
       ...(assigneeId && { assigneeId }),
       ...(search && { search }),
     }),
@@ -218,6 +238,25 @@ const TasksPage = () => {
             )}
           </div>
         </div>
+
+        {/* Dashboarddan kelgan davr — KO'RINIB tursin: aks holda ro'yxat
+            sababsiz qisqargandek tuyulardi */}
+        {startDate && endDate && (
+          <div className="mt-2.5 flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
+              <CalendarRange className="size-3.5" />
+              {formatDateRangeUz(startDate, endDate)}
+              <button
+                type="button"
+                aria-label="Davr filtrini olib tashlash"
+                onClick={() => updateParams({ startDate: "", endDate: "" })}
+                className="text-blue-400 hover:text-blue-700"
+              >
+                <X className="size-3.5" />
+              </button>
+            </span>
+          </div>
+        )}
 
         {pagination && (
           <p className="mt-2.5 px-1 text-xs text-gray-400">

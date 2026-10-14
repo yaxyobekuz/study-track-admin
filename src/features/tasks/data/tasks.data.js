@@ -708,19 +708,23 @@ export const formatTaskWindow = (task) => {
  * bu funksiya ekran OCHIQ turganda (minutlar o'tib ketganda) uni jonli
  * ushlab turish uchun.
  *
+ * ⚠️ `nowMs` — chaqiruvchining jonli hisoblagichi (`useNow`). Qolgan to'rt
+ * panelda ham AYNI imzo: bu yerda uni tushirib qoldirish bitta panelda
+ * holat boshqacha hisoblanishi xavfini tug'dirardi.
+ *
  * @param {{ status: string, startDate?: string|null, dueDate: string, timeState?: string }} task
+ * @param {number} [nowMs]
  * @returns {string} `TASK_STATE_META` kaliti
  */
-export const resolveTimeState = (task) => {
+export const resolveTimeState = (task, nowMs = Date.now()) => {
   if (!task) return "open";
   if (task.status === "completed") return "done";
   if (task.status === "stopped") return "stopped";
   if (task.status === "pending_review") return "review";
 
-  const now = Date.now();
-  if (new Date(task.dueDate).getTime() < now) return "missed";
+  if (new Date(task.dueDate).getTime() < nowMs) return "missed";
   if (!task.startDate) return "open";
-  return new Date(task.startDate).getTime() > now ? "upcoming" : "active";
+  return new Date(task.startDate).getTime() > nowMs ? "upcoming" : "active";
 };
 
 /**

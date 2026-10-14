@@ -89,7 +89,7 @@ const MyTaskCard = ({ task, now, onSubmit }) => {
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <Link
-              to={`/tasks/${task.id}`}
+              to={`/my-tasks/${task.id}`}
               className="min-w-0 font-medium leading-snug text-gray-900 hover:text-primary"
             >
               {task.title}
@@ -163,7 +163,7 @@ const MyTaskCard = ({ task, now, onSubmit }) => {
             )}
 
             <Link
-              to={`/tasks/${task.id}`}
+              to={`/my-tasks/${task.id}`}
               className="inline-flex items-center gap-0.5 text-xs text-gray-500 hover:text-primary"
             >
               Batafsil

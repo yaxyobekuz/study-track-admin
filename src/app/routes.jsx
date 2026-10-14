@@ -527,6 +527,12 @@ const Routes = () => {
           {/* Topshiriqlarim — RUXSATSIZ: topshiriq istalgan roldagi
               odamga berilishi mumkin (`/my-attendance` bilan ayni qaror) */}
           <Route path="/my-tasks" element={<MyTasksPage />} />
+          {/* ⚠️ O'Z topshirig'ining tafsiloti SHU yo'ldan ochiladi:
+              `/tasks/:taskId` bo'lim prefiksiga tushadi va `tasks.view`
+              talab qiladi, ya'ni oddiy xodim o'ziga berilgan ishning
+              tavsifi, fayllari va havolalarini umuman ocha olmasdi.
+              Server baribir faqat ijrochi yoki boshqaruvchini o'tkazadi. */}
+          <Route path="/my-tasks/:taskId" element={<TaskDetailPage />} />
           <Route path="/my-salary" element={<MySalaryPage />} />
 
           {/* Davomat - yagona layout + route-darajali sahifalar */}

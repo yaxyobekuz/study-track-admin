@@ -85,6 +85,8 @@ const TaskDetailPage = () => {
   const navigate = useNavigate();
   const { openModal } = useModal();
   const { can } = usePermissions();
+  // Boshqaruvchimi yoki o'z topshirig'ini ochgan ijrochimi
+  const canManage = can("tasks.view") || can("tasks.team");
   const { data: roles = [] } = useRoles();
   const { mutate: deleteTask, isPending: isDeleting } = useDeleteTask();
 
@@ -100,7 +102,10 @@ const TaskDetailPage = () => {
           title="Topshiriq topilmadi"
           description="U o'chirilgan bo'lishi yoki sizda ko'rish huquqi bo'lmasligi mumkin."
           action={
-            <Button variant="outline" onClick={() => navigate("/tasks/list")}>
+            <Button
+              variant="outline"
+              onClick={() => navigate(canManage ? "/tasks/list" : "/my-tasks")}
+            >
               <ArrowLeft />
               Ro'yxatga qaytish
             </Button>
@@ -109,6 +114,11 @@ const TaskDetailPage = () => {
       </div>
     );
   }
+
+  // ⚠️ QAYERGA QAYTADI — huquqqa bog'liq. Boshqaruv ro'yxati (`/tasks/list`)
+  // `tasks.view`/`tasks.team` ortida: o'z topshirig'ini ochgan oddiy xodimni
+  // u yerga qaytarish uni darhol "ruxsat yo'q" ekraniga olib borardi.
+  const listPath = canManage ? "/tasks/list" : "/my-tasks";
 
   const isActive = ACTIVE_TASK_STATUSES.includes(task.status);
   const isTerminal = ["completed", "stopped"].includes(task.status);
@@ -131,7 +141,7 @@ const TaskDetailPage = () => {
     deleteTask(task.id, {
       onSuccess: () => {
         toast.success("Topshiriq o'chirildi");
-        navigate("/tasks/list", { replace: true });
+        navigate(listPath, { replace: true });
       },
       onError: (err) => toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
     });
@@ -143,14 +153,14 @@ const TaskDetailPage = () => {
         <div className="flex items-center gap-2 text-sm">
           <button
             type="button"
-            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/tasks/list"))}
+            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate(listPath))}
             className="rounded-lg p-2 text-gray-500 hover:bg-white hover:text-gray-900"
             aria-label="Orqaga"
           >
             <ArrowLeft className="size-4" />
           </button>
-          <Link to="/tasks/list" className="text-gray-500 hover:text-gray-900">
-            Topshiriqlar
+          <Link to={listPath} className="text-gray-500 hover:text-gray-900">
+            {canManage ? "Topshiriqlar" : "Topshiriqlarim"}
           </Link>
           <span className="text-gray-300">/</span>
           <span className="max-w-48 truncate font-medium text-gray-900 sm:max-w-80">{task.title}</span>

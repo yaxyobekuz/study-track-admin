@@ -24,7 +24,14 @@ const DashboardKpiRow = ({ report }) => (
   <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
     {buildDashboardKpis(report).map(({ key, label, value, icon: Icon, tone, hint, filter }) => {
       const t = TONES[tone];
-      const params = new URLSearchParams(filter);
+      // ⚠️ DAVR HAM UZATILADI: aks holda "Bajarilmadi: 2" raqamini bosgan
+      // odam butun tarixdagi bajarilmaganlar ro'yxatiga tushardi va
+      // ekrandagi raqam bilan ro'yxat bir-biriga mos kelmasdi.
+      const params = new URLSearchParams({
+        ...filter,
+        ...(report.period?.from && { startDate: report.period.from }),
+        ...(report.period?.to && { endDate: report.period.to }),
+      });
       return (
         <Link
           key={key}
