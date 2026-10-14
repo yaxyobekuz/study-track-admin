@@ -33,6 +33,15 @@ export const usersAPI = {
   // Xodim qaysi filiallarda ishlaydi — har birida o'z roli va ruxsatlari bilan
   getBranches: (id) => http.get(`/users/${id}/branches`),
   attachBranch: (id, data) => http.post(`/users/${id}/branches`, data),
-  detachBranch: (id, branchId) =>
-    http.delete(`/users/${id}/branches/${branchId}`),
+
+  // Asosiy (uy) filialni almashtirish — login shu filialga tushadi
+  setHomeBranch: (id, branchId) =>
+    http.patch(`/users/${id}/branches/${branchId}/home`),
+
+  // Filialdan chiqarish. Asosiy filialdan chiqarilsa login qaysi filialga
+  // tushishi `nextHomeBranchId` da ketadi (bitta filial qolsa — shart emas).
+  detachBranch: (id, branchId, nextHomeBranchId) =>
+    http.delete(`/users/${id}/branches/${branchId}`, {
+      params: nextHomeBranchId ? { nextHomeBranchId } : undefined,
+    }),
 };

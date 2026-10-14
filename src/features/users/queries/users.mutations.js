@@ -136,12 +136,34 @@ export const useAttachUserBranch = () => {
   });
 };
 
-/** Xodimni filialdan chiqarish (asosiy filialdan chiqarib bo'lmaydi). */
-export const useDetachUserBranch = () => {
+/**
+ * ASOSIY (UY) FILIALNI ALMASHTIRISH — login shu filialga tushadi.
+ *
+ * `usersKeys.all` yangilanadi: "Asosiy" yorlig'i filiallar kartasida ham,
+ * ruxsatlar tabida ham turadi va ikkisi bir xil javobdan chiziladi.
+ */
+export const useSetUserHomeBranch = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, branchId }) =>
-      usersAPI.detachBranch(id, branchId).then((r) => r.data),
+      usersAPI.setHomeBranch(id, branchId).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
+  });
+};
+
+/**
+ * Xodimni filialdan chiqarish — ISTALGAN filialdan.
+ *
+ * Asosiy filialdan chiqarilganda login boshqa filialga ko'chadi:
+ * `nextHomeBranchId` shuni aytadi. Bitta filial qolsa server o'zi tanlaydi,
+ * bir nechta bo'lsa 400 qaytaradi (`details.reason = "next_home_required"`)
+ * — chaqiruvchi avval so'rab olishi kerak.
+ */
+export const useDetachUserBranch = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, branchId, nextHomeBranchId }) =>
+      usersAPI.detachBranch(id, branchId, nextHomeBranchId).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: usersKeys.all }),
   });
 };
