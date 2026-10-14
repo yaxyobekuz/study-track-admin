@@ -5,12 +5,13 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 // Icons
-import { Building2, LogOut, TriangleAlert } from "lucide-react";
+import { Building2, LogOut, Star, TriangleAlert } from "lucide-react";
 
 // Hooks
+import useModal from "@/shared/hooks/useModal";
 import usePermissions from "@/shared/hooks/usePermissions";
 import { useUpdateUserPermissions } from "@/features/permissions/queries/permissions.mutations";
-import { useDetachUserBranch } from "@/features/users/queries/users.mutations";
+import { useSetUserHomeBranch } from "@/features/users/queries/users.mutations";
 
 // Components
 import Can from "@/shared/components/guards/Can";
@@ -31,12 +32,14 @@ import { toPermissionSet } from "@/features/permissions/data/permissions.data";
  * @param {object} props
  * @param {object} props.user
  * @param {object} props.row - `getUserBranches` qatori
+ * @param {object[]} props.rows - barcha qatorlar (login qayerga ko'chishi uchun)
  * @param {string} props.roleLabel
  */
-const BranchPermissionsPanel = ({ user, row, roleLabel }) => {
+const BranchPermissionsPanel = ({ user, row, rows = [], roleLabel }) => {
   const { can } = usePermissions();
+  const { openModal } = useModal();
   const { mutate: updatePermissions, isPending } = useUpdateUserPermissions();
-  const { mutate: detach, isPending: isDetaching } = useDetachUserBranch();
+  const { mutate: setHome, isPending: isSettingHome } = useSetUserHomeBranch();
 
   const [selected, setSelected] = useState(() => toPermissionSet(row.permissions));
 
@@ -63,12 +66,17 @@ const BranchPermissionsPanel = ({ user, row, roleLabel }) => {
       },
     );
 
+  // Chiqarish MODAL orqali: asosiy filialdan chiqarilsa "login endi qayerga
+  // tushadi" degan savolga javob kerak, va bu savol jim hal qilinmaydi.
   const handleDetach = () =>
-    detach(
+    openModal("detachUserBranch", { user, row, rows });
+
+  const handleSetHome = () =>
+    setHome(
       { id: user.id, branchId: row.branch.id },
       {
         onSuccess: () =>
-          toast.success(`"${row.branch.name}" filialidan chiqarildi`),
+          toast.success(`Login endi "${row.branch.name}" filialiga tushadi`),
         onError: (err) =>
           toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
       },
@@ -112,19 +120,28 @@ const BranchPermissionsPanel = ({ user, row, roleLabel }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Asosiy filialdan chiqarib bo'lmaydi — login o'sha yerga tushadi */}
-          {!row.isHome && (
-            <Can do="branches.assign">
+          <Can do="branches.assign">
+            {/* Asosiy qilish — login shu filialga ko'chadi. Asosiy filialda
+                tugma ko'rsatilmaydi: bosishning ma'nosi yo'q. */}
+            {!row.isHome && (
               <Button
                 variant="secondary"
-                disabled={isDetaching}
-                onClick={handleDetach}
+                disabled={isSettingHome}
+                onClick={handleSetHome}
+                title="Xodim tizimga shu filial orqali kirsin"
               >
-                <LogOut strokeWidth={1.5} />
-                Chiqarish
+                <Star strokeWidth={1.5} />
+                Asosiy qilish
               </Button>
-            </Can>
-          )}
+            )}
+
+            {/* Chiqarish — ISTALGAN filialdan, asosiysi ham. Asosiy bo'lsa
+                modal login qaysi filialga tushishini so'raydi. */}
+            <Button variant="secondary" onClick={handleDetach}>
+              <LogOut strokeWidth={1.5} />
+              Chiqarish
+            </Button>
+          </Can>
 
           {canEdit && (
             <Button disabled={!isDirty || isPending} onClick={handleSave}>

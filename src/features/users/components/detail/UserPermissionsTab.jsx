@@ -20,6 +20,7 @@ import EmptyState from "@/shared/components/ui/EmptyState";
 import LoaderCard from "@/shared/components/ui/LoaderCard";
 import BranchPermissionsPanel from "./BranchPermissionsPanel";
 import AttachUserBranchModal from "../AttachUserBranchModal";
+import DetachUserBranchModal from "../DetachUserBranchModal";
 
 /**
  * Xodimning "Ruxsatlar" tabi.
@@ -129,6 +130,7 @@ const UserPermissionsTab = ({ user }) => {
           key={active.branch.id}
           user={user}
           row={active}
+          rows={rows}
           roleLabel={getRoleLabel(active.role, roles)}
         />
       ) : (
@@ -140,6 +142,7 @@ const UserPermissionsTab = ({ user }) => {
       )}
 
       <AttachUserBranchModal />
+      <DetachUserBranchModal />
     </div>
   );
 };

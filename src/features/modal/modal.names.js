@@ -37,6 +37,11 @@ export const MODAL_NAMES = [
   "attendanceDay",
   "editStudentAttendance",
   "editUserPhone",
+
+  // Xodimning filiallari: biriktirish, asosiy filialni almashtirish va
+  // chiqarish (asosiy filialdan chiqarilsa login qayerga tushishi so'raladi)
+  "attachUserBranch",
+  "detachUserBranch",
   "tutorGroup",
   "removeTutorGroup",
   "deleteUser",
