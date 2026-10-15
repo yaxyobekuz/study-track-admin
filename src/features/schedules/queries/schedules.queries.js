@@ -22,6 +22,32 @@ export const schedulesQueries = {
       enabled: Boolean(classId),
     }),
 
+  /**
+   * SINFNING BIR HAFTALIK JADVALI — har bir darsda mavzusi bilan.
+   *
+   * ⚠️ `week` kalitda turishi SHART: mavzu haftadan haftaga o'zgaradi va
+   * kalitsiz oldingi haftaning javobi yangisining o'rniga ko'rinib qolardi.
+   *
+   * @param {string} classId
+   * @param {string} [week] - haftaning istalgan kuni ("YYYY-MM-DD")
+   */
+  weekTopics: (classId, week) =>
+    queryOptions({
+      queryKey: [...schedulesKeys.all, "class", classId, "topics", week ?? "current"],
+      queryFn: () =>
+        schedulesAPI.getWeekTopics(classId, week).then((r) => r.data.data),
+      enabled: Boolean(classId),
+    }),
+
+  /** Sinfdagi mavzu biriktirishlari tarixi (oxirgilari birinchi). */
+  topicBindings: (classId, params = {}) =>
+    queryOptions({
+      queryKey: [...schedulesKeys.all, "class", classId, "topic-bindings", params],
+      queryFn: () =>
+        schedulesAPI.getTopicBindings(classId, params).then((r) => r.data.data),
+      enabled: Boolean(classId),
+    }),
+
   /** A single class' schedule for one day → the day's `{ day, subjects }`. */
   byDay: (classId, day) =>
     queryOptions({
@@ -130,3 +156,12 @@ export const useScheduleDraft = (classId, { enabled = true } = {}) =>
     ...schedulesQueries.draft(classId),
     enabled: Boolean(classId) && enabled,
   });
+
+/**
+ * Sinfning bir haftalik jadvali — mavzulari bilan.
+ *
+ * @example
+ * const { data } = useWeekTopics(classId, "2026-10-19");
+ */
+export const useWeekTopics = (classId, week) =>
+  useQuery(schedulesQueries.weekTopics(classId, week));

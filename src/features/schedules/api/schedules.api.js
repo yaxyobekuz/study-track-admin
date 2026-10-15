@@ -28,6 +28,22 @@ export const schedulesAPI = {
     }),
   delete: (id) => http.delete(`/schedules/${id}`),
 
+  // ── DARS JADVALI MAVZULARI ──
+  //
+  // Jadval haftalik SHABLON (sanasiz), mavzu esa sanaga bog'liq — shuning
+  // uchun so'rovda hafta bor. `week` — haftaning istalgan kuni ("YYYY-MM-DD",
+  // mashina qiymati: `dates.md` §3 dagi istisno), bo'sh bo'lsa joriy hafta.
+  getWeekTopics: (classId, week) =>
+    http.get(`/schedules/class/${classId}/topics`, { params: week ? { week } : {} }),
+  // payload: { subjectId, date, lessonOrder, topicOrder, note? }
+  bindTopic: (classId, payload) =>
+    http.post(`/schedules/class/${classId}/topics`, payload),
+  // O'chirilmaydi — bekor qilinadi (tarixda qoladi)
+  unbindTopic: (bindingId) =>
+    http.delete(`/schedules/topics/bindings/${bindingId}`),
+  getTopicBindings: (classId, params = {}) =>
+    http.get(`/schedules/class/${classId}/topics/bindings`, { params }),
+
   // QORALAMA — tugallanmagan tahrirning zaxirasi. Faqat uni yozgan odam
   // ko'radi; o'quvchi, o'qituvchi va hisobotlarga chiqmaydi.
   getDraft: (classId) => http.get(`/schedules/class/${classId}/draft`),

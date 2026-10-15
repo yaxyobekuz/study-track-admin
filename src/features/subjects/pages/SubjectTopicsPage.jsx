@@ -15,6 +15,9 @@ import {
 // Components
 import Card from "@/shared/components/ui/Card";
 
+// Hooks
+import usePermissions from "@/shared/hooks/usePermissions";
+
 // Icons
 import { ArrowLeft, Edit2, Check, X } from "lucide-react";
 
@@ -22,6 +25,11 @@ const SubjectTopics = () => {
   const { subjectId } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { can } = usePermissions();
+
+  // Mavzu biriktirish — alohida ruxsat (`topics.assign`). Tugma yashirilmasa,
+  // ruxsatsiz odam har bosganda 403 xatosini ko'rardi.
+  const canAssign = can("topics.assign");
 
   // Topics come from the shared subjects-feature cache.
   const { data: topics = [], isLoading: topicsLoading } =
@@ -47,14 +55,18 @@ const SubjectTopics = () => {
   const [editValue, setEditValue] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // ⚠️ Mavzu raqami `null` BO'LISHI MUMKIN: mavzular yuklanmagan, yaqin
+  // kunlarda bu fandan dars yo'q yoki mavzular tugagan. Server sababni
+  // `reason` da aytadi — ekranda "null-mavzu" chiqib qolmasligi kerak.
   const getTopicName = (topicNumber) => {
+    if (topicNumber == null) return null;
     const topic = topics.find((t) => t.order === topicNumber);
     return topic?.name || `${topicNumber}-mavzu`;
   };
 
   const handleEditClick = (item) => {
     setEditingClassId(item.class.id);
-    setEditValue(String(item.currentTopicNumber));
+    setEditValue(item.currentTopicNumber != null ? String(item.currentTopicNumber) : "");
   };
 
   const handleCancel = () => {
@@ -83,19 +95,11 @@ const SubjectTopics = () => {
         newNumber,
       );
 
-      // Patch the cached classes for this subject with the new topic number.
-      qc.setQueryData(schedulesKey, (prev) =>
-        prev
-          ? {
-              ...prev,
-              data: prev.data.map((c) =>
-                c.class.id === item.class.id
-                  ? { ...c, currentTopicNumber: newNumber }
-                  : c,
-              ),
-            }
-          : prev,
-      );
+      // ⚠️ Cache QAYTA O'QILADI, qo'lda yamalmaydi: server mavzuni sinfning
+      // KEYINGI darsiga biriktiradi va javobda sana, sabab hamda ankor ham
+      // o'zgaradi. Faqat raqamni yamash ekranda eski sabab ("Mavzu
+      // biriktirilmagan") ni qoldirib ketardi.
+      qc.invalidateQueries({ queryKey: topicsKeys.all });
 
       toast.success("Mavzu raqami yangilandi");
       setEditingClassId(null);
@@ -189,21 +193,31 @@ const SubjectTopics = () => {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-2xl font-bold text-blue-600">
-                            {item.currentTopicNumber}
+                            {item.currentTopicNumber ?? "—"}
                           </span>
                           <span className="text-gray-400">
                             / {topics.length}
                           </span>
-                          <button
-                            onClick={() => handleEditClick(item)}
-                            className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
-                          >
-                            <Edit2 className="size-4" />
-                          </button>
+                          {canAssign && (
+                            <button
+                              onClick={() => handleEditClick(item)}
+                              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
+                            >
+                              <Edit2 className="size-4" />
+                            </button>
+                          )}
                         </div>
                         <p className="text-sm text-gray-600">
-                          {getTopicName(item.currentTopicNumber)}
+                          {getTopicName(item.currentTopicNumber) ||
+                            item.reason ||
+                            "Mavzu aniqlanmadi"}
                         </p>
+                        {item.nextLesson && (
+                          <p className="mt-0.5 text-xs text-gray-400">
+                            Keyingi dars: {item.nextLesson.dateLabel},{" "}
+                            {item.nextLesson.lessonOrder}-dars
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -215,7 +229,7 @@ const SubjectTopics = () => {
                     <div
                       className="bg-blue-600 h-2 rounded-full transition-all"
                       style={{
-                        width: `${topics.length > 0 ? (item.currentTopicNumber / topics.length) * 100 : 0}%`,
+                        width: `${topics.length > 0 && item.currentTopicNumber != null ? (item.currentTopicNumber / topics.length) * 100 : 0}%`,
                       }}
                     />
                   </div>

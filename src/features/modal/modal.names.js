@@ -278,6 +278,9 @@ export const MODAL_NAMES = [
   // Dars jadvalini rejalashtirish
   "plannerSubjectSplit",
 
+  // Dars jadvali — darsga mavzu biriktirish
+  "bindLessonTopic",
+
   // Dars jadvali — Google Sheets orqali boshqarish
   "scheduleSyncConfig",
   "scheduleSyncSwitch",

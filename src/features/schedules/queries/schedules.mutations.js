@@ -6,6 +6,7 @@ import { schedulesAPI } from "../api/schedules.api";
 
 // Keys
 import { schedulesKeys } from "./schedules.queries";
+import { topicsKeys } from "@/features/subjects/queries/topics.queries";
 import { scheduleSyncKeys } from "@/features/schedule-sync/queries/scheduleSync.queries";
 
 // Helpers
@@ -103,5 +104,47 @@ export const useDeleteSchedule = () => {
     mutationFn: (id) => schedulesAPI.delete(id).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: schedulesKeys.all }),
     onError: refreshMode,
+  });
+};
+
+/**
+ * MAVZUNI BIRIKTIRISH ustidan keyin nimani qayta o'qish kerak.
+ *
+ * Ikkala kesim ham: jadvaldagi mavzular VA "Dars mavzulari → Sinflar"
+ * ekranidagi joriy mavzu. Ular bitta serverdagi hisobdan o'qiydi, shuning
+ * uchun biri yangilanib, ikkinchisi eski qolsa — foydalanuvchi ikki xil
+ * raqam ko'rardi.
+ */
+const useInvalidateTopics = () => {
+  const qc = useQueryClient();
+
+  return () => {
+    qc.invalidateQueries({ queryKey: schedulesKeys.all });
+    qc.invalidateQueries({ queryKey: topicsKeys.all });
+  };
+};
+
+/**
+ * Darsga mavzu biriktirish — keyingi darslar o'zidan davom etadi.
+ *
+ * payload: `{ classId, subjectId, date, lessonOrder, topicOrder, note? }`
+ */
+export const useBindLessonTopic = () => {
+  const invalidate = useInvalidateTopics();
+
+  return useMutation({
+    mutationFn: ({ classId, ...payload }) =>
+      schedulesAPI.bindTopic(classId, payload).then((r) => r.data),
+    onSuccess: invalidate,
+  });
+};
+
+/** Biriktirishni bekor qilish — mavzu oldingi ankordan sanaladi. */
+export const useUnbindLessonTopic = () => {
+  const invalidate = useInvalidateTopics();
+
+  return useMutation({
+    mutationFn: (bindingId) => schedulesAPI.unbindTopic(bindingId).then((r) => r.data),
+    onSuccess: invalidate,
   });
 };
