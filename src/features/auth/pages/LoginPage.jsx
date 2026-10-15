@@ -37,6 +37,7 @@ import Button from "@/shared/components/ui/button/Button";
 import InputGroup from "@/shared/components/ui/input/InputGroup";
 import InputField from "@/shared/components/ui/input/InputField";
 import MainBackgroundPatterns from "@/shared/components/bg/MainBackgroundPatterns";
+import BranchSelectForm from "@/features/auth/components/BranchSelectForm";
 
 const LoginPage = () => {
   const { setField, showLoginForm, currentPlatform } = useObjectState({
@@ -153,28 +154,57 @@ const PlatformSelectForm = ({
 const LoginForm = ({ onShowLoginForm }) => {
   const navigate = useNavigate();
 
-  const { username, password, setField, isLoading, step } = useObjectState({
+  const {
+    username,
+    password,
+    setField,
+    setFields,
+    isLoading,
+    branchSelection,
+    pendingBranchId,
+  } = useObjectState({
     step: 1,
     username: "",
     password: "",
     isLoading: false,
+    // Ikki yoki undan ortiq filialli xodim uchun server qaytargan tanlov
+    // javobi: `{ selectionToken, branches, homeBranchId, user }`.
+    //
+    // ⚠️ XOTIRADA, `localStorage` da EMAS: sahifa yangilansa oqim parol
+    // qadamidan boshlanadi. Tanlov tokeni 5 daqiqa yashaydi va u access
+    // token EMAS — u bilan API'ga kirib bo'lmaydi.
+    branchSelection: null,
+    pendingBranchId: null,
   });
+
+  /** Tokenni saqlab panelga kiritadi — ikkala qadam ham shu yerda tugaydi. */
+  const enterPanel = (token) => {
+    localStorage.setItem("authToken", token);
+    navigate("/dashboard");
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setField("isLoading", true);
 
-    const data = { username, password: password?.trim() };
+    // ⚠️ `branchSelect: true` — "men filial tanlash oynasini ko'rsata
+    // olaman". Bayroqsiz so'rov avvalgidek UY filialiga token oladi, ya'ni
+    // eski mijozlar (mobil ilova) buzilmaydi.
+    const data = { username, password: password?.trim(), branchSelect: true };
 
     authAPI
       .login(data)
       .then((response) => {
-        // Save token to localStorage
-        const { token } = response.data.data;
-        localStorage.setItem("authToken", token);
+        const result = response.data.data;
 
-        // Navigate to dashboard
-        navigate("/dashboard");
+        // Ko'p filialli xodim: token hali BERILMAGAN va seans ochilmagan —
+        // avval qaysi filialda ishlashini aytadi
+        if (result.branchSelectionRequired) {
+          setField("branchSelection", result);
+          return;
+        }
+
+        enterPanel(result.token);
       })
       .catch((error) => {
         toast.error(
@@ -183,6 +213,47 @@ const LoginForm = ({ onShowLoginForm }) => {
       })
       .finally(() => setField("isLoading", false));
   };
+
+  /** Filial tanlandi — seans AYNAN shu filialda ochiladi. */
+  const handleBranchSelect = (branch) => {
+    setFields({ isLoading: true, pendingBranchId: branch.id });
+
+    authAPI
+      .selectLoginBranch({
+        selectionToken: branchSelection.selectionToken,
+        branchId: branch.id,
+      })
+      .then((response) => enterPanel(response.data.data.token))
+      .catch((error) => {
+        const details = error.response?.data?.details;
+
+        // Tanlov tokeni 5 daqiqa yashaydi: muddati tugasa parolni qaytadan
+        // kiritish kerak — oynada qolib, har bosishda xato olmasin
+        if (details?.reason === "selection_expired") {
+          setFields({ branchSelection: null, password: "" });
+        }
+
+        toast.error(
+          error.response?.data?.message || "Filialga kirishda xatolik",
+        );
+      })
+      .finally(() => setFields({ isLoading: false, pendingBranchId: null }));
+  };
+
+  // Filialni tanlash qadami — parol allaqachon tekshirilgan
+  if (branchSelection) {
+    return (
+      <BranchSelectForm
+        isLoading={isLoading}
+        pendingId={pendingBranchId}
+        branches={branchSelection.branches}
+        fullName={branchSelection.user?.firstName}
+        homeBranchId={branchSelection.homeBranchId}
+        onSelect={handleBranchSelect}
+        onBack={() => setFields({ branchSelection: null, password: "" })}
+      />
+    );
+  }
 
   return (
     <div className="max-w-md w-full animate__animated animate__fadeIn">
