@@ -41,6 +41,23 @@ export const EXPORT_ROLE_OPTIONS = [
   { value: "student", label: "Faqat o'quvchilar", fileName: "students" },
 ];
 
+/**
+ * O'quvchilar eksportidagi ARXIV tanlovi (faqat o'quvchilarda — boshqa
+ * rollar eksportiga arxivlangan xodim umuman tushmaydi).
+ *
+ * `all` — ikkalasi bitta faylda, qatorni ajratish uchun "Holat" ustuni bilan.
+ * `suffix` — fayl nomiga qo'shiladi, server bergan nom bilan AYNI.
+ */
+export const STUDENT_ARCHIVE_OPTIONS = [
+  { value: "all", label: "Joriy va arxivlangan (hammasi)", suffix: "" },
+  { value: "false", label: "Faqat joriy o'quvchilar", suffix: "_active" },
+  {
+    value: "true",
+    label: "Faqat arxivlangan o'quvchilar",
+    suffix: "_archived",
+  },
+];
+
 /** Rol badge'i uchun rang — o'qituvchi ajralib tursin. */
 export const getRoleBadgeClass = (role) => {
   if (role === "owner") return "bg-purple-100 text-purple-700";

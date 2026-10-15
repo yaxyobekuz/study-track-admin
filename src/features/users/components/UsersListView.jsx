@@ -154,7 +154,15 @@ const UsersListView = ({
   // ma'lumotsiz `openModal` avvalgi holatni saqlaydi va Xodimlar sahifasida
   // o'quvchilar sahifasining sinfi qolib ketardi.
   const exportDefaults = isStudentList
-    ? { defaultRole: "student", defaultClassId: classFilter || "all" }
+    ? {
+        defaultRole: "student",
+        defaultClassId: classFilter || "all",
+        // Arxivlangan tabida eksport ham arxivdan boshlanadi — fayl ekrandagi
+        // ro'yxatning nusxasi. Asosiy tabda sukut "hammasi" bo'lib qoladi:
+        // moliyaviy eksport arxivlangan qarzdorni ko'rsatishda davom etadi
+        // (`education.md` §4 "Istisno — moliya"), tanlov esa oynada.
+        defaultArchived: isArchived ? "true" : "all",
+      }
     : { defaultRole: "all" };
 
   const goToPage = (next) =>

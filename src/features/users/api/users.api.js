@@ -17,10 +17,16 @@ export const usersAPI = {
   restore: (id) => http.put(`/users/${id}/restore`),
   resetPassword: (id, data) => http.put(`/users/${id}/reset-password`, data),
   getPassword: (id) => http.get(`/users/${id}/password`),
-  // `classId` — faqat `role: "student"` bilan (server boshqa rolda rad etadi)
-  exportUsers: (role, { classId } = {}) =>
+  // `classId` va `archived` — faqat `role: "student"` bilan (server boshqa
+  // rolda rad etadi). `archived`: "all" | "true" | "false" — ro'yxat
+  // endpointidagi bilan AYNI so'z boyligi, ustiga "hammasi" qiymati.
+  exportUsers: (role, { classId, archived } = {}) =>
     http.get("/users/export", {
-      params: { role, ...(classId ? { classId } : {}) },
+      params: {
+        role,
+        ...(classId ? { classId } : {}),
+        ...(archived ? { archived } : {}),
+      },
       responseType: "blob",
     }),
 
