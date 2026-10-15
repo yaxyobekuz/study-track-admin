@@ -67,6 +67,9 @@ const SelectSearch = ({
   isLoading = false,
   inline = false,
   idValues = false,
+  // Ro'yxat qatlami uchun qo'shimcha class — uzun ro'yxatda balandlikni
+  // o'zgartirish va aylantirgichni KO'RSATISH uchun (`show-scrollbar`).
+  listClassName = "",
   playClickSound = true,
   triggerClassName = "",
   searchPlaceholder = "Qidirish...",
@@ -134,7 +137,7 @@ const SelectSearch = ({
   const list = (
     <Command filter={idValues ? filterByLabel : undefined}>
       <CommandInput placeholder={searchPlaceholder} />
-      <CommandList>
+      <CommandList className={listClassName}>
         <CommandEmpty>{emptyText}</CommandEmpty>
         <CommandGroup>
           {options.map((option) => (

@@ -149,10 +149,20 @@ const BindForm = ({
         </p>
       </div>
 
-      {/* Mavzu */}
-      <label className="block">
+      {/* Mavzu — ⚠️ `<label>` EMAS, `<div>`: ro'yxat oqim ichida ochiladi va
+          `<label>` ichidagi bosish brauzer tomonidan qidiruv maydoniga
+          yo'naltirilib, tanlovni yutib yuborishi mumkin (loyihadagi boshqa
+          modal tanlagichlari ham shu shaklda). */}
+      <div className="block">
         <span className="mb-1.5 block text-sm font-medium text-gray-700">Mavzu</span>
+        {/* ⚠️ `inline` — modal ichidagi shakl (portalsiz, oqim ichida).
+            Portal versiyasi oyna ustidan chiqib ketadi va ro'yxat
+            aylantirilmay qoladi; loyihadagi barcha modal tanlagichlari
+            shu sababdan `inline`.
+            ⚠️ `show-scrollbar` — fanda yuzlab mavzu bo'ladi, yashirin
+            aylantirgich "ro'yxat aylanmaydi" degan taassurot qoldirardi. */}
         <SelectSearch
+          inline
           value={topicOrder}
           options={options}
           isLoading={topicsLoading}
@@ -161,8 +171,9 @@ const BindForm = ({
           searchPlaceholder="Mavzu raqami yoki nomi..."
           emptyText="Mavzu topilmadi"
           triggerClassName="w-full"
+          listClassName="max-h-[280px] show-scrollbar"
         />
-      </label>
+      </div>
 
       {/* Izoh — ixtiyoriy */}
       <label className="block">

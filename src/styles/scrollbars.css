@@ -6,3 +6,27 @@
 .hidden-scrollbar::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
 }
+
+/* UZUN RO'YXAT UCHUN KO'RINADIGAN AYLANTIRGICH.
+   ⚠️ `.hidden-scrollbar` DAN KEYIN turishi shart: ikkalasi ham bitta class
+   selektori, ya'ni ustunlikni fayldagi TARTIB hal qiladi. Yuzlab qatorli
+   ro'yxatda (masalan dars mavzulari) yashirin aylantirgich "bu ro'yxat
+   aylanmaydi" degan taassurot qoldirardi. */
+.show-scrollbar {
+  scrollbar-width: thin;
+  -ms-overflow-style: auto;
+}
+
+.show-scrollbar::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+.show-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgb(203 213 225); /* slate-300 */
+  border-radius: 9999px;
+}
+
+.show-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
