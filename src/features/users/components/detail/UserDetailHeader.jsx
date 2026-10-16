@@ -15,6 +15,9 @@ import { formatDateTimeUz } from "@/shared/utils/date.utils";
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
 import { getInitials, getRoleBadgeClass } from "../../data/users.data";
 
+// Umumiy ko'rinishdagi filial belgisi
+import BranchBadge from "@/shared/components/ui/BranchBadge";
+
 /**
  * Detal sahifaning sarlavhasi: kim ekani, qayerdan kelingani va harakatlar.
  *
@@ -84,6 +87,11 @@ const UserDetailHeader = ({ user, backTo, backLabel }) => {
                   Nofaol
                 </span>
               )}
+
+              {/* UMUMIY KO'RINISHDA: bu profil qaysi filialga tegishli.
+                  Belgi serverdan keladi (`_branch`) va faqat umumiy rejimda
+                  bo'ladi — bitta filial rejimida hech narsa chizilmaydi. */}
+              <BranchBadge branch={user._branch} />
             </div>
           </div>
         </div>

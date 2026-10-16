@@ -1,3 +1,17 @@
+/**
+ * UMUMIY KO'RINISH — "barcha filiallar birga" rejimi (faqat tizim egasi).
+ *
+ * ⚠️ Qiymat SERVER bilan bir xil bo'lishi SHART (`utils/constants.js` dagi
+ * `ALL_BRANCHES_ID`): almashtirgich shu id ni yuboradi, `/auth/me` esa shu
+ * id bilan qaytadi. 24-hex EMAS, ya'ni haqiqiy filial id si bilan hech
+ * qachon to'qnashmaydi.
+ */
+export const ALL_BRANCHES_ID = "__all__";
+
+/** Joriy filial umumiy ko'rinishmi? */
+export const isAggregateBranch = (branch) =>
+  Boolean(branch) && (branch.id === ALL_BRANCHES_ID || branch.isAggregate === true);
+
 // Filial bazasining holati — server `Branch.status` enumi bilan bir xil.
 export const BRANCH_STATUSES = {
   provisioning: {

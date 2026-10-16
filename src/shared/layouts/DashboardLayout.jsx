@@ -42,6 +42,7 @@ import CreateBranchModal from "@/features/branches/components/CreateBranchModal"
 import EditBranchModal from "@/features/branches/components/EditBranchModal";
 import ArchiveBranchModal from "@/features/branches/components/ArchiveBranchModal";
 import GlobalSearchModal from "@/features/globalSearch/components/GlobalSearchModal";
+import AggregateNotice from "@/features/branches/components/AggregateNotice";
 import BugReport from "../components/layout/BugReport";
 
 /**
@@ -63,6 +64,10 @@ const DashboardLayout = () => {
         <SidebarInset>
           <AppHeader />
           <div className="flex flex-1 flex-col gap-4 p-4 md:py-2">
+            {/* Umumiy ko'rinish (barcha filiallar) eslatmasi — faqat o'sha
+                rejimda chiziladi */}
+            <AggregateNotice />
+
             <PermissionGuard>
               <Outlet />
             </PermissionGuard>

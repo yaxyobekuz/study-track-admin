@@ -20,7 +20,11 @@ import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import useBranch from "@/shared/hooks/useBranch";
 import usePermissions from "@/shared/hooks/usePermissions";
+
+// Umumiy ko'rinishdagi filial belgisi
+import BranchBadge from "@/shared/components/ui/BranchBadge";
 
 // Data & queries
 import { ARCHIVE_TABS, resolveTab } from "../data/usersTabs.data";
@@ -72,7 +76,17 @@ const UsersListView = ({
   const navigate = useNavigate();
   const { openModal } = useModal();
   const { can } = usePermissions();
+  const { isAggregate } = useBranch();
   const isStudentList = variant === "student";
+
+  // UMUMIY KO'RINISHDA QO'SHIMCHA "FILIAL" USTUNI.
+  //
+  // ⚠️ Ustun shu QOBIQDA qo'shiladi, sahifalarda emas: `columns` va
+  // `renderRow` ikkala sahifada ham (Xodimlar, O'quvchilar) alohida
+  // yozilgan va ustunni ikki joyga qo'shish "biri qo'shilib, ikkinchisi
+  // unutilgan" holatiga olib kelardi. Qobiq esa qatorni `<tr>` ga o'zi
+  // o'rab berayotgani uchun oxiriga bitta katak qo'shishi tabiiy.
+  const tableColumns = isAggregate ? [...columns, "Filial"] : columns;
 
   // Ruxsati bo'lmagan tab umuman ko'rinmaydi — `StaffDetail` bilan bir xil
   // qoida. URL'da o'sha tab qolsa `resolveTab` uni birinchisiga qaytaradi.
@@ -241,7 +255,7 @@ const UsersListView = ({
               <table className="min-w-full text-sm">
                 <thead>
                   <tr>
-                    {columns.map((column, index) => (
+                    {tableColumns.map((column, index) => (
                       <th
                         key={column || index}
                         className="px-4 py-3 text-left text-white font-medium whitespace-nowrap"
@@ -260,6 +274,12 @@ const UsersListView = ({
                       className="border-t border-gray-100 cursor-pointer hover:bg-gray-50"
                     >
                       {renderRow(user, { isArchived })}
+
+                      {isAggregate && (
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <BranchBadge branch={user._branch} />
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

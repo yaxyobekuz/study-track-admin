@@ -4,6 +4,12 @@ import axios from "axios";
 // Utils
 import { saveLogoutReason } from "@/shared/utils/logoutReason.utils";
 
+// Umumiy ko'rinish: "bu id — shu filialda" belgilari
+import {
+  rememberBranchHints,
+  resolveRequestBranch,
+} from "@/shared/api/branchHints";
+
 // API URL
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4040";
 
@@ -32,12 +38,27 @@ const http = axios.create({
 });
 
 // Request interceptor
+const MUTATIONS = new Set(["post", "put", "patch", "delete"]);
+
 http.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("authToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // UMUMIY KO'RINISHDA YOZUV — qator o'z filialiga ketadi.
+    //
+    // ⚠️ Sarlavha faqat YOZUV amallariga va faqat id tanilgan bo'lsa
+    // qo'yiladi; bitta filial rejimida xarita bo'sh bo'lgani uchun bu blok
+    // amalda hech narsa qilmaydi (server ham bu sarlavhani faqat umumiy
+    // tokende o'qiydi). Oyna o'zi aniq filial bergan bo'lsa — tegilmaydi.
+    const method = String(config.method || "get").toLowerCase();
+    if (MUTATIONS.has(method) && !config.headers["X-Branch-Id"]) {
+      const branchId = resolveRequestBranch(config);
+      if (branchId) config.headers["X-Branch-Id"] = branchId;
+    }
+
     return config;
   },
   (error) => {
@@ -47,7 +68,12 @@ http.interceptors.request.use(
 
 // Response interceptor
 http.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Umumiy ko'rinishda har qator `_branch` bilan keladi — keyingi yozuv
+    // amali uchun eslab qolinadi (`branchHints.js`).
+    if (response?.data) rememberBranchHints(response.data);
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       // Sabab login sahifasida ko'rsatiladi — qayta yuklashda yo'qolmasin
