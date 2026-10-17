@@ -59,7 +59,17 @@ export const stockAPI = {
   getAll: (params) => http.get("/inventory/stocks", { params }),
   getByLocation: (locationId, params) =>
     http.get(`/inventory/stocks/location/${locationId}`, { params }),
-  add: (data) => http.post("/inventory/stocks", data),
+  // ⚠️ RASM BILAN kiritishda `multipart/form-data` sarlavhasi MAJBURIY:
+  // http mijozining standarti `application/json` va u bilan axios
+  // FormData'ni JSON'ga aylantirib yuboradi — rasmlar jimgina yo'qoladi
+  // (`checksAPI.attachFiles` va `damagesAPI.create` bilan AYNI qoida).
+  // Rasmsiz yuborishda oddiy JSON qoladi: server ikkalasini ham o'qiydi.
+  add: (data) =>
+    data instanceof FormData
+      ? http.post("/inventory/stocks", data, {
+          headers: { "Content-Type": "multipart/form-data" },
+        })
+      : http.post("/inventory/stocks", data),
   repair: (data) => http.post("/inventory/stocks/repair", data),
   writeOff: (data) => http.post("/inventory/stocks/write-off", data),
   adjust: (data) => http.post("/inventory/stocks/adjust", data),

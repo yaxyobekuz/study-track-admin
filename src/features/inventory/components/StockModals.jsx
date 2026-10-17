@@ -1,11 +1,11 @@
 // React
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // Toast
 import { toast } from "sonner";
 
 // Icons
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { ImagePlus, Pencil, Plus, Trash2, X } from "lucide-react";
 
 // TanStack Query
 import { useQuery } from "@tanstack/react-query";
@@ -43,6 +43,13 @@ import { usersQueries } from "@/features/users/queries/users.queries";
 const showError = (err) =>
   toast.error(err.response?.data?.message || "Xatolik yuz berdi");
 
+// ⚠️ SERVER BILAN AYNI CHEGARALAR (`helpers/inventory.helpers.js`).
+// Mos kelmasa, oyna ruxsat bergan rasm serverda rad etilib, xodim
+// sababini tushunmasdi.
+const MAX_LINES = 30;
+const MAX_PHOTOS_PER_LINE = 3;
+const MAX_PHOTOS_TOTAL = 15;
+
 /** Bugungi sana — `<input type="date">` qiymati (ISO, ko'rsatish uchun emas). */
 const todayInputValue = () => {
   const now = new Date();
@@ -78,21 +85,69 @@ const AddStockForm = ({ close, isLoading, setIsLoading }) => {
     note: "",
   });
 
-  const [lines, setLines] = useState([{ itemId: "", quantity: "", brokenQuantity: "" }]);
+  const [lines, setLines] = useState([emptyLine()]);
 
   const setLine = (index, key, value) =>
     setLines((prev) => prev.map((l, i) => (i === index ? { ...l, [key]: value } : l)));
 
   const addLine = () =>
-    setLines((prev) => [...prev, { itemId: "", quantity: "", brokenQuantity: "" }]);
+    setLines((prev) => (prev.length >= MAX_LINES ? prev : [...prev, emptyLine()]));
 
   const removeLine = (index) =>
     setLines((prev) => (prev.length === 1 ? prev : prev.filter((_, i) => i !== index)));
 
   const filled = lines.filter((l) => l.itemId && Number(l.quantity) > 0);
+  const totalPhotos = lines.reduce((sum, l) => sum + l.photos.length, 0);
+
+  // Rasm biriktirilgan-u, jihozi yoki soni to'ldirilmagan qator: u
+  // yuborilmaydi, ya'ni rasm ham jim yo'qolardi
+  const hasOrphanPhotos = lines.some(
+    (l) => l.photos.length > 0 && !(l.itemId && Number(l.quantity) > 0),
+  );
+
+  /**
+   * RASM — QATORGA biriktiriladi, butun amalga emas: "bu qaysi jihozning
+   * rasmi" degan savol keyin javobsiz qolmasin. Chegaradan oshgani
+   * KESILADI va sababi aytiladi (jim tashlansa, xodim rasm biriktirdim
+   * deb o'ylab qolardi).
+   */
+  const addPhotos = (index, picked) => {
+    const chosen = [...picked].filter((file) => file.type?.startsWith("image/"));
+    if (chosen.length === 0) return;
+
+    const freeInLine = MAX_PHOTOS_PER_LINE - lines[index].photos.length;
+    const freeTotal = MAX_PHOTOS_TOTAL - totalPhotos;
+    const allowed = chosen.slice(0, Math.max(0, Math.min(freeInLine, freeTotal)));
+
+    if (allowed.length < chosen.length) {
+      toast.error(
+        freeInLine <= freeTotal
+          ? `Bitta jihozga ko'pi bilan ${MAX_PHOTOS_PER_LINE} ta rasm biriktiriladi`
+          : `Bir amalda ko'pi bilan ${MAX_PHOTOS_TOTAL} ta rasm yuklanadi`,
+      );
+    }
+    if (allowed.length === 0) return;
+
+    setLines((prev) =>
+      prev.map((l, i) => (i === index ? { ...l, photos: [...l.photos, ...allowed] } : l)),
+    );
+  };
+
+  const removePhoto = (index, photoIndex) =>
+    setLines((prev) =>
+      prev.map((l, i) =>
+        i === index ? { ...l, photos: l.photos.filter((_, p) => p !== photoIndex) } : l,
+      ),
+    );
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (hasOrphanPhotos) {
+      toast.error("Rasm biriktirilgan qatorning jihozi va soni to'ldirilmagan");
+      return;
+    }
+
     setIsLoading(true);
 
     addStock(
@@ -101,16 +156,24 @@ const AddStockForm = ({ close, isLoading, setIsLoading }) => {
         type,
         occurredAt,
         note,
+        // ⚠️ Rasm AYNAN shu ro'yxatdagi o'rin bo'yicha biriktiriladi
+        // (`useAddStock`), shuning uchun bo'sh qatorlar shu yerda — bir
+        // marta — chiqarib tashlanadi
         lines: filled.map((l) => ({
           itemId: l.itemId,
           quantity: Number(l.quantity),
           brokenQuantity: Number(l.brokenQuantity) || 0,
+          photos: l.photos,
         })),
       },
       {
         onSuccess: (result) => {
           close();
-          toast.success(`${result.lines.length} ta qator kiritildi`);
+          toast.success(
+            result.photoCount > 0
+              ? `${result.lines.length} ta qator · ${result.photoCount} ta rasm kiritildi`
+              : `${result.lines.length} ta qator kiritildi`,
+          );
         },
         onError: showError,
         onSettled: () => setIsLoading(false),
@@ -149,54 +212,76 @@ const AddStockForm = ({ close, isLoading, setIsLoading }) => {
 
       {/* ── Qatorlar ── */}
       <div className="space-y-2">
-        <p className="text-sm font-medium text-gray-700">Jihozlar</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-medium text-gray-700">Jihozlar</p>
+          <p className="text-xs text-gray-400">
+            Rasm ixtiyoriy — har jihozga {MAX_PHOTOS_PER_LINE} tagacha
+          </p>
+        </div>
 
         {lines.map((line, index) => (
-          <div key={index} className="flex items-start gap-2">
-            <div className="min-w-0 flex-1">
-              <Select
-                value={line.itemId}
-                placeholder="Jihozni tanlang"
-                triggerClassName="w-full"
-                onChange={(v) => setLine(index, "itemId", v)}
-                options={items.map((i) => ({ label: i.name, value: i.id }))}
+          <div key={index} className="space-y-2 rounded-xl border border-gray-100 p-2">
+            <div className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <Select
+                  value={line.itemId}
+                  placeholder="Jihozni tanlang"
+                  triggerClassName="w-full"
+                  onChange={(v) => setLine(index, "itemId", v)}
+                  options={items.map((i) => ({ label: i.name, value: i.id }))}
+                />
+              </div>
+
+              <input
+                min="1"
+                type="number"
+                placeholder="Soni"
+                value={line.quantity}
+                onChange={(e) => setLine(index, "quantity", e.target.value)}
+                className="w-20 rounded-xl border border-gray-200 px-2 py-2 text-sm"
               />
+
+              {type === "initial" && (
+                <input
+                  min="0"
+                  type="number"
+                  title="Yaroqsizlari"
+                  placeholder="Yaroqsiz"
+                  value={line.brokenQuantity}
+                  onChange={(e) => setLine(index, "brokenQuantity", e.target.value)}
+                  className="w-24 rounded-xl border border-gray-200 px-2 py-2 text-sm"
+                />
+              )}
+
+              <button
+                type="button"
+                title="Qatorni olib tashlash"
+                onClick={() => removeLine(index)}
+                disabled={lines.length === 1}
+                className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-30"
+              >
+                <X className="size-4" />
+              </button>
             </div>
 
-            <input
-              min="1"
-              type="number"
-              placeholder="Soni"
-              value={line.quantity}
-              onChange={(e) => setLine(index, "quantity", e.target.value)}
-              className="w-20 rounded-xl border border-gray-200 px-2 py-2 text-sm"
+            {/* RASM — ALOHIDA QATORDA: jihoz qatori telefonda allaqachon
+                to'rtta boshqaruvdan iborat va beshinchisi tanlagichni
+                o'qib bo'lmas holga keltirardi */}
+            <LinePhotos
+              photos={line.photos}
+              onAdd={(picked) => addPhotos(index, picked)}
+              onRemove={(photoIndex) => removePhoto(index, photoIndex)}
             />
-
-            {type === "initial" && (
-              <input
-                min="0"
-                type="number"
-                title="Yaroqsizlari"
-                placeholder="Yaroqsiz"
-                value={line.brokenQuantity}
-                onChange={(e) => setLine(index, "brokenQuantity", e.target.value)}
-                className="w-24 rounded-xl border border-gray-200 px-2 py-2 text-sm"
-              />
-            )}
-
-            <button
-              type="button"
-              title="Qatorni olib tashlash"
-              onClick={() => removeLine(index)}
-              disabled={lines.length === 1}
-              className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-30"
-            >
-              <X className="size-4" />
-            </button>
           </div>
         ))}
 
-        <Button type="button" variant="outline" size="sm" onClick={addLine}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={addLine}
+          disabled={lines.length >= MAX_LINES}
+        >
           <Plus />
           Qator qo'shish
         </Button>
@@ -223,6 +308,69 @@ const AddStockForm = ({ close, isLoading, setIsLoading }) => {
         {filled.length > 0 ? `${filled.length} ta qatorni kiritish` : "Kiritish"}
       </Button>
     </InputGroup>
+  );
+};
+
+/** Bo'sh qator — rasm ro'yxati HAR DOIM massiv bo'lsin. */
+const emptyLine = () => ({ itemId: "", quantity: "", brokenQuantity: "", photos: [] });
+
+/**
+ * QATORNING RASMLARI — tanlash tugmasi va tanlanganlari yonma-yon.
+ *
+ * ⚠️ FAQAT RASM (`accept="image/*"`) — server ham shunday qabul qiladi:
+ * bu jihozning dalili, skaner qilingan hujjat emas.
+ *
+ * ⚠️ `URL.createObjectURL` ochgan havolani brauzer O'ZI bo'shatmaydi:
+ * rasm qo'shilgan/olib tashlangan sari ular xotirada yig'ilib borardi.
+ */
+const LinePhotos = ({ photos, onAdd, onRemove }) => {
+  const urls = useMemo(() => photos.map((file) => URL.createObjectURL(file)), [photos]);
+
+  useEffect(() => () => urls.forEach((url) => URL.revokeObjectURL(url)), [urls]);
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <label
+        title="Jihoz rasmini biriktirish"
+        className={cn(
+          "flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed px-2 py-1.5 text-xs",
+          photos.length > 0
+            ? "border-primary/40 text-primary"
+            : "border-gray-300 text-gray-500 hover:border-gray-400",
+        )}
+      >
+        <ImagePlus className="size-3.5" />
+        {photos.length > 0 ? `Rasm (${photos.length})` : "Rasm"}
+        <input
+          multiple
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            onAdd(e.target.files ?? []);
+            // Bir xil faylni qayta tanlash mumkin bo'lsin
+            e.target.value = "";
+          }}
+        />
+      </label>
+
+      {urls.map((url, index) => (
+        <div
+          key={url}
+          className="relative size-12 overflow-hidden rounded-lg border border-gray-200"
+        >
+          <img src={url} alt="" className="size-full object-cover" />
+          <button
+            type="button"
+            title="Rasmni olib tashlash"
+            onClick={() => onRemove(index)}
+            className="absolute right-0 top-0 rounded-bl-lg bg-black/50 p-0.5 text-white hover:bg-black/70"
+          >
+            <X className="size-3" />
+          </button>
+        </div>
+      ))}
+    </div>
   );
 };
 

@@ -275,6 +275,10 @@ export const MOVEMENT_COLUMNS = [
   "Harakat",
   { label: "O'zgarish", align: "right" },
   { label: "Qoldiq", align: "right" },
+  // DALIL rasmi — xatlovga kiritishda qatorga biriktiriladi
+  // (`StockModals.jsx`), daftarda esa ko'rinadi: yozuv append-only,
+  // ya'ni rasm ham o'sha qatorda abadiy qoladi.
+  { label: "Rasm", align: "center" },
   "Izoh",
 ];
 

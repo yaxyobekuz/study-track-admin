@@ -28,6 +28,9 @@ import Button from "@/shared/components/ui/button/Button";
 import Select from "@/shared/components/ui/select/Select";
 import Pagination from "@/shared/components/ui/Pagination";
 import EmptyState from "@/shared/components/ui/EmptyState";
+// Rasmni modalda ochish (to'liq ekran, yuklab olish) — payroll
+// so'rovlaridagi bilan AYNI komponent
+import FilePreviewOverlay from "@/shared/components/ui/FilePreviewOverlay";
 import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 
 // Hooks
@@ -440,6 +443,7 @@ const TransferList = () => {
 const MovementList = () => {
   const [page, setPage] = useState(1);
   const [locationId, setLocationId] = useState("");
+  const [preview, setPreview] = useState(null);
 
   const { data, isLoading } = useQuery(
     inventoryQueries.movements({
@@ -507,6 +511,13 @@ const MovementList = () => {
                   )}
                 </Td>
 
+                <Td align="center">
+                  <MovementPhotos
+                    attachments={movement.attachments}
+                    onOpen={setPreview}
+                  />
+                </Td>
+
                 <Td nowrap={false} className="max-w-xs text-xs text-gray-400">
                   {movement.note || "—"}
                 </Td>
@@ -528,6 +539,42 @@ const MovementList = () => {
           )}
         </>
       )}
+
+      {preview && (
+        <FilePreviewOverlay file={preview} onClose={() => setPreview(null)} />
+      )}
+    </div>
+  );
+};
+
+/**
+ * Daftar qatoridagi DALIL rasmlari.
+ *
+ * Hammasi ko'rsatiladi (qatorga ko'pi bilan uchta), chunki "yana ikkita
+ * bor" degan belgi bosiladigan joy bermasdi — rasm ko'rib bo'lmasa, uning
+ * dalil bo'lishi ham to'xtaydi.
+ */
+const MovementPhotos = ({ attachments = [], onOpen }) => {
+  if (attachments.length === 0) return <span className="text-gray-300">—</span>;
+
+  return (
+    <div className="flex items-center justify-center gap-1">
+      {attachments.map((file, index) => (
+        <button
+          key={file.key || file.url || index}
+          type="button"
+          title="Rasmni ochish"
+          onClick={() => onOpen(file)}
+          className="size-9 overflow-hidden rounded-lg border border-gray-200 hover:border-gray-300"
+        >
+          <img
+            src={file.url}
+            loading="lazy"
+            alt={file.originalName || "Jihoz rasmi"}
+            className="size-full object-cover"
+          />
+        </button>
+      ))}
     </div>
   );
 };

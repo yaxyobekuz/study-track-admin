@@ -139,10 +139,47 @@ export const useArchiveLocation = () => {
 // Xatlov
 // ─────────────────────────────────────────────
 
+/**
+ * XATLOVGA KIRITISH — rasm bilan yoki rasmsiz.
+ *
+ * ⚠️ Har qatorning rasmi O'Z MAYDONIDA ketadi (`linePhotos_<index>`),
+ * bitta umumiy massivda emas: server ham qatorni shu nom bo'yicha
+ * topadi. Indeks — YUBORILAYOTGAN `lines` massividagi o'rin (bo'sh
+ * qatorlar oynada allaqachon chiqarib tashlangan); shu kelishuv
+ * buzilsa, rasm boshqa jihozga biriktirilib ketardi.
+ *
+ * Rasm yo'q bo'lsa oddiy JSON yuboriladi — ortiqcha multipart yo'q.
+ */
 export const useAddStock = () => {
   const invalidate = useInvalidate();
+
   return useMutation({
-    mutationFn: (data) => stockAPI.add(data).then((r) => r.data.data),
+    mutationFn: ({ lines = [], ...rest }) => {
+      // Rasm MA'LUMOT emas — u fayl bo'lib ketadi, qator ichida emas
+      const payloadLines = lines.map(({ photos, ...line }) => line);
+
+      if (!lines.some((line) => line.photos?.length > 0)) {
+        return stockAPI
+          .add({ ...rest, lines: payloadLines })
+          .then((r) => r.data.data);
+      }
+
+      const formData = new FormData();
+      for (const [key, value] of Object.entries(rest)) {
+        if (value !== undefined && value !== null && value !== "") {
+          formData.append(key, value);
+        }
+      }
+      formData.append("lines", JSON.stringify(payloadLines));
+
+      lines.forEach((line, index) => {
+        for (const photo of line.photos ?? []) {
+          formData.append(`linePhotos_${index}`, photo);
+        }
+      });
+
+      return stockAPI.add(formData).then((r) => r.data.data);
+    },
     onSuccess: invalidate,
   });
 };
