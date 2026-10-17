@@ -21,6 +21,7 @@ import {
   FileCheck2,
   CalendarPlus,
   SearchX,
+  UserPlus,
   MessageSquareWarning,
 } from "lucide-react";
 
@@ -57,6 +58,7 @@ import StopTaskModal from "../components/StopTaskModal";
 import ReviewTaskModal from "../components/ReviewTaskModal";
 import ReopenTaskModal from "../components/ReopenTaskModal";
 import ExtendDeadlineModal from "../components/ExtendDeadlineModal";
+import DelegateTaskModal from "@/features/myTasks/components/DelegateTaskModal";
 
 const Section = ({ icon: Icon, title, extra, children }) => (
   <div className="rounded-2xl bg-white p-4 ring-1 ring-gray-100 xs:p-5">
@@ -122,6 +124,9 @@ const TaskDetailPage = () => {
 
   const isActive = ACTIVE_TASK_STATUSES.includes(task.status);
   const isTerminal = ["completed", "stopped"].includes(task.status);
+  // Biriktirish: faol topshiriqda va serverdagi `assertCanDelegate` bilan
+  // AYNI kalitlar bo'yicha (butun filial yoki o'z bo'limi)
+  const canDelegate = isActive && canManage && !task.selfAssigned;
   const isReview = task.status === "pending_review";
   const rules = task.reviewRules || {};
   const completionFiles = task.completionAttachments || [];
@@ -167,6 +172,17 @@ const TaskDetailPage = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* BIRIKTIRISH — ishni boshqa xodimga yo'naltirish.
+              ⚠️ `tasks.create` TALAB QILINMAYDI va bu ataylab: huquq
+              topshiriqning o'ziga berilganidan keladi (serverda
+              `assertCanDelegate`). Faol topshiriqda ko'rinadi — yopilganini
+              "boshqasiga o'tkazish" ma'nosiz. */}
+          {canDelegate && (
+            <Button variant="outline" onClick={() => openModal("delegateTask", { task })}>
+              <UserPlus />
+              Biriktirish
+            </Button>
+          )}
           {can("tasks.update") && task.status !== "completed" && (
             <Button variant="outline" onClick={() => openModal("editTask", { task })}>
               <PencilLine />
@@ -378,6 +394,11 @@ const TaskDetailPage = () => {
       <ReopenTaskModal />
       <ExtendDeadlineModal />
       <StopTaskModal />
+      {/* ⚠️ "Topshiriqlarim" bo'limidan import qilinadi, nusxa olinmaydi:
+          biriktirish oynasi ikki joydan ochiladi (bu sahifa va o'z
+          topshiriqlari ro'yxati), lekin forma, qoidalar va matni BITTA
+          bo'lib qolishi kerak. */}
+      <DelegateTaskModal />
     </div>
   );
 };

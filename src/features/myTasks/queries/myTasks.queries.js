@@ -45,3 +45,21 @@ export const useSubmitMyTask = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: tasksKeys.all }),
   });
 };
+
+/**
+ * TOPSHIRIQNI BOSHQA XODIMGA BIRIKTIRISH — ro'yxatdan chiqmasdan.
+ *
+ * ⚠️ MANBA RO'YXATDAN YO'QOLMAYDI: server YANGI topshiriq yaratadi,
+ * ijrochini ko'chirmaydi — biriktirgan odam baribir javobgar. Shuning
+ * uchun ro'yxat qayta o'qilganda topshiriq o'z joyida turadi, faqat
+ * vaqt chizig'ida "kimga biriktirildi" degan iz paydo bo'ladi.
+ */
+export const useDelegateMyTask = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => tasksAPI.delegate(id, data).then((r) => r.data),
+    // Yangi topshiriq boshqaruv ro'yxatiga, hisoblagichlarga va
+    // hisobotga ham tushadi — hammasi bitta namespace ostida
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: tasksKeys.all }),
+  });
+};

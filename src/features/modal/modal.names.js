@@ -154,6 +154,10 @@ export const MODAL_NAMES = [
   "reviewTask",
   "createTask",
   "extendDeadline",
+  // Topshiriqni boshqa xodimga biriktirish ("Topshiriqlarim" ekranidan ham,
+  // boshqaruv ro'yxatidan ham — ruxsat kaliti talab qilmaydi, huquq
+  // topshiriqning O'ZIGA berilganidan keladi)
+  "delegateTask",
 
   // Attendance
   "reviewExcuse",

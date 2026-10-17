@@ -23,6 +23,7 @@ import Pagination from "@/shared/components/ui/Pagination";
 import EmptyState from "@/shared/components/ui/EmptyState";
 import MyTaskCard from "../components/MyTaskCard";
 import MyTaskSubmitModal from "../components/MyTaskSubmitModal";
+import DelegateTaskModal from "../components/DelegateTaskModal";
 import MySelfTasks from "@/features/selfTasks/components/MySelfTasks";
 
 // Data
@@ -93,6 +94,8 @@ const MyTasksPage = () => {
   const activeCount = tasks.filter((t) => resolveTimeState(t, now) === "active").length;
 
   const openSubmit = (task) => openModal("submitMyTask", { task, rules });
+  // Biriktirish oynasi: manba topshiriqning matni shundan oldindan to'ladi
+  const openDelegate = (task) => openModal("delegateTask", { task });
 
   const selectTab = (value) => {
     const params = new URLSearchParams(searchParams);
@@ -187,7 +190,13 @@ const MyTasksPage = () => {
           ) : (
             <div className="space-y-2.5">
               {tasks.map((task) => (
-                <MyTaskCard key={task.id} task={task} now={now} onSubmit={openSubmit} />
+                <MyTaskCard
+                  key={task.id}
+                  task={task}
+                  now={now}
+                  onSubmit={openSubmit}
+                  onDelegate={openDelegate}
+                />
               ))}
             </div>
           )}
@@ -203,6 +212,11 @@ const MyTasksPage = () => {
       )}
 
       <MyTaskSubmitModal />
+      {/* ⚠️ TABDAN TASHQARIDA: "O'zim belgilagan" tabida biriktirish yo'q
+          (shaxsiy reja birovga o'tmaydi), lekin oyna sahifa darajasida
+          render qilinadi — tab almashganda ochiq oyna yopilib ketmasligi
+          uchun (`MyTaskSubmitModal` bilan AYNI qator). */}
+      <DelegateTaskModal />
     </div>
   );
 };

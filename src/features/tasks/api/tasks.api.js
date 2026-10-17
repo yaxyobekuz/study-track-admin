@@ -56,4 +56,9 @@ export const tasksAPI = {
 
   // Yakunlangan / to'xtatilgan topshiriqni qayta ochish
   reopen: (id, data) => http.put(`/tasks/${id}/reopen`, data),
+
+  // BIRIKTIRISH — o'ziga berilgan ishni boshqa xodimga yo'naltirish.
+  // ⚠️ Multipart EMAS: fayl yuborilmaydi, manba topshiriqning fayllari
+  // serverda havolasi bilan ko'chadi.
+  delegate: (id, data) => http.put(`/tasks/${id}/delegate`, data),
 };

@@ -2,7 +2,10 @@
 import { Link } from "react-router-dom";
 
 // Icons
-import { ArrowUpRight, Check, Link2, Paperclip, X } from "lucide-react";
+import { ArrowUpRight, Check, Link2, Paperclip, UserPlus, X } from "lucide-react";
+
+// Hooks
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Components
 import TaskKindBadge from "@/features/tasks/components/TaskKindBadge";
@@ -64,9 +67,12 @@ const CheckBox = ({ state, disabled, onClick }) => {
  * kartasi bilan ajralib turadi, chunki xodim ro'yxatga qarab "hozir nima
  * qilishim kerak" degan savolga bir qarashda javob olishi kerak.
  *
- * @param {{ task: object, now: number, onSubmit: (task: object) => void }} props
+ * @param {{ task: object, now: number, onSubmit: (task: object) => void,
+ *   onDelegate: (task: object) => void }} props
  */
-const MyTaskCard = ({ task, now, onSubmit }) => {
+const MyTaskCard = ({ task, now, onSubmit, onDelegate }) => {
+  const { can } = usePermissions();
+
   // `now` — jonli hisoblagich: holat ekran ochiq turganda ham yangilanadi
   const state = resolveTimeState(task, now);
   const meta = TASK_STATE_META[state] || TASK_STATE_META.open;
@@ -74,6 +80,20 @@ const MyTaskCard = ({ task, now, onSubmit }) => {
   const canSubmit = SUBMITTABLE.includes(task.status);
   const isActive = state === "active";
   const deadline = getDeadlineInfo(task.dueDate, task.status);
+
+  /**
+   * BIRIKTIRISH TUGMASI — kimda ko'rinadi.
+   *
+   * ⚠️ KALITLAR SERVERDAGI `assertCanDelegate` BILAN AYNI: butun filial
+   * (`tasks.view`) yoki o'z bo'limi (`tasks.team`). Oddiy xodimga tugma
+   * ko'rsatilsa, u oynani to'ldirib chiqib, oxirida "ruxsatingiz yo'q"
+   * xatosini olardi.
+   *
+   * ⚠️ YOPILGAN TOPSHIRIQDA YO'Q (`canSubmit` bilan AYNI shart): server
+   * yakunlangan va to'xtatilgan ishni biriktirmaydi — ish allaqachon
+   * tugagan, uni "boshqasiga o'tkazish" ma'nosiz.
+   */
+  const canDelegate = canSubmit && can(["tasks.view", "tasks.team"]);
 
   return (
     <div
@@ -139,28 +159,44 @@ const MyTaskCard = ({ task, now, onSubmit }) => {
           )}
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            {canSubmit ? (
-              <button
-                type="button"
-                onClick={() => onSubmit(task)}
-                className={cn(
-                  "rounded-xl px-3 py-1.5 text-xs font-medium text-white transition-colors",
-                  isActive || state === "missed"
-                    ? "bg-rose-600 hover:bg-rose-700"
-                    : "bg-primary hover:opacity-90",
-                )}
-              >
-                Bajardim — isbot yuborish
-              </button>
-            ) : (
-              <span className="text-xs text-gray-400">
-                {state === "review"
-                  ? "Tekshiruv javobini kutyapsiz"
-                  : state === "done"
-                    ? "Ish qabul qilindi"
-                    : "Topshiriq yopilgan"}
-              </span>
-            )}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {canSubmit ? (
+                <button
+                  type="button"
+                  onClick={() => onSubmit(task)}
+                  className={cn(
+                    "rounded-xl px-3 py-1.5 text-xs font-medium text-white transition-colors",
+                    isActive || state === "missed"
+                      ? "bg-rose-600 hover:bg-rose-700"
+                      : "bg-primary hover:opacity-90",
+                  )}
+                >
+                  Bajardim — isbot yuborish
+                </button>
+              ) : (
+                <span className="text-xs text-gray-400">
+                  {state === "review"
+                    ? "Tekshiruv javobini kutyapsiz"
+                    : state === "done"
+                      ? "Ish qabul qilindi"
+                      : "Topshiriq yopilgan"}
+                </span>
+              )}
+
+              {/* ⚠️ ISHNI TOPSHIRISHNING O'RNIGA EMAS, YONIDA: topshiriqni
+                  biriktirgan odam baribir javobgar (manba o'zida qoladi),
+                  shuning uchun "Bajardim" tugmasi ham joyida turadi. */}
+              {canDelegate && (
+                <button
+                  type="button"
+                  onClick={() => onDelegate(task)}
+                  className="inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-medium text-gray-700 ring-1 ring-gray-200 transition-colors hover:bg-gray-50 hover:text-primary"
+                >
+                  <UserPlus className="size-3.5" />
+                  Biriktirish
+                </button>
+              )}
+            </div>
 
             <Link
               to={`/my-tasks/${task.id}`}
