@@ -30,6 +30,40 @@ export const STUDENT_TABLE_COLUMNS = [
 ];
 
 /**
+ * TANGA USTUNINING KESIMI.
+ *
+ * `total` — hozirgi QOLDIQ (`coinBalance`, sarflangani ayrilgan), `week` —
+ * TANLANGAN haftada (dushanbadan yakshanbagacha) TOPILGAN tanga; qaysi
+ * hafta ekanini `coinWeek` langari aytadi, bo'lmasa joriy hafta. Kalitlar
+ * serverning `coinPeriod` so'rov parametri bilan AYNI
+ * (`coin.service.js` → `resolveCoinPeriod`).
+ *
+ * ⚠️ Ikkalasi boshqa savolga javob beradi va bir-birini almashtirmaydi:
+ * qoldiq — do'kon uchun, haftalik — faollik uchun.
+ */
+export const COIN_PERIOD_TOTAL = "total";
+export const COIN_PERIOD_WEEK = "week";
+
+export const COIN_PERIOD_OPTIONS = [
+  { value: COIN_PERIOD_TOTAL, label: "Tangalar: umumiy" },
+  { value: COIN_PERIOD_WEEK, label: "Tangalar: haftalik" },
+];
+
+/**
+ * O'quvchilar jadvalining ustunlari — tanga kesimiga qarab sarlavha
+ * o'zgaradi: "Tangalar" ustunida boshqa raqam turgani ekranning o'zidan
+ * ko'rinib tursin.
+ *
+ * @param {string} [coinPeriod]
+ */
+export const getStudentTableColumns = (coinPeriod = COIN_PERIOD_TOTAL) =>
+  STUDENT_TABLE_COLUMNS.map((column) =>
+    column === "Tangalar" && coinPeriod === COIN_PERIOD_WEEK
+      ? "Tangalar (hafta)"
+      : column,
+  );
+
+/**
  * Excel eksport turlari.
  * `fileName` — yuklab olinadigan faylning nomi (sanasiz).
  * "staff" — rol emas, guruh: o'quvchilardan boshqa hamma.

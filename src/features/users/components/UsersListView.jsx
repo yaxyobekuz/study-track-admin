@@ -56,6 +56,16 @@ const PAGE_SIZE = 32;
  * @param {string[]} props.columns - jadval sarlavhalari
  * @param {(user: object, ctx: {isArchived: boolean}) => React.ReactNode} props.renderRow
  * @param {React.ReactNode} [props.filters] - qo'shimcha filtr elementlari
+ * @param {React.ReactNode|((data: object) => React.ReactNode)} [props.subToolbar] -
+ *   toolbar ostidagi qo'shimcha qator. Funksiya bo'lsa unga ro'yxat JAVOBI
+ *   beriladi: javobdagi qo'shimcha ma'lumotni (masalan tanga haftasining
+ *   chegaralari) sahifa shu yo'l bilan oladi va uni ikkinchi marta
+ *   hisoblamaydi.
+ * @param {object} [props.queryParams] - sahifaga xos qo'shimcha so'rov
+ *   parametrlari (masalan o'quvchilarda `coinPeriod`). Qobiq o'zi o'qiydigan
+ *   filtrlar (sahifa, qidiruv, sinf) bilan ARALASHTIRILMAYDI: ular URL'dan
+ *   bu yerda, sahifaga xoslari esa sahifada o'qiladi va so'rov kalitiga ham
+ *   shu yo'l bilan tushadi.
  * @param {{value: string, label: string, permission?: string}[]} [props.tabs]
  * @param {Record<string, React.ReactNode>} [props.tabPanels] - ro'yxat o'rniga chiziladigan tablar
  * @param {string} [props.emptyText]
@@ -68,6 +78,8 @@ const UsersListView = ({
   columns,
   renderRow,
   filters = null,
+  subToolbar = null,
+  queryParams = {},
   tabs = ARCHIVE_TABS,
   tabPanels = {},
   emptyText = "Foydalanuvchilar topilmadi",
@@ -155,6 +167,7 @@ const UsersListView = ({
       // Sinf filtri faqat o'quvchilarga tegishli
       ...(isStudentList && classFilter && { class: classFilter }),
       ...(isArchived && { archived: true }),
+      ...queryParams,
     }),
     // Panel ochiq bo'lsa ro'yxat ko'rinmaydi — so'rov ham yuborilmaydi
     enabled: !activePanel,
@@ -240,6 +253,9 @@ const UsersListView = ({
               </Can>
             </div>
           </div>
+
+          {/* Toolbar ostidagi qator (masalan tanga haftasining navigatori) */}
+          {typeof subToolbar === "function" ? subToolbar(data) : subToolbar}
 
           {/* Jadval */}
           {isLoading ? (
