@@ -27,7 +27,13 @@ const NO_SUBJECT = "none";
  * bog'lanmaganda esa ekranda OCHIQ "mavzu ro'yxati bog'lanmagan" deb
  * turadi — IELTS ning maktab mavzulari yo'q va soxta foiz chiqarilmaydi.
  *
- * `openModal("certificateTrack")` / `openModal("certificateTrack", { track })`
+ * ⚠️ YANGI YO'NALISH `openModal("certificateTrack", { track: null })` BILAN
+ * ochiladi, ma'lumotsiz EMAS: modal holati `openModal(name)` ni
+ * ma'lumotsiz chaqirganda AVVALGISINI saqlaydi (`ModalProvider` izohi) va
+ * "Yo'nalish qo'shish" oynasi eski yo'nalish bilan ochilib, saqlash uni
+ * ustiga yozardi.
+ *
+ * `openModal("certificateTrack", { track })` — tahrirlash.
  */
 const CertificateTrackModal = () => (
   <ResponsiveModal

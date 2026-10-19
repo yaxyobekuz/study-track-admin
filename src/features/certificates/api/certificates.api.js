@@ -19,6 +19,10 @@ export const certificatesAPI = {
   getStudentPlans: (studentId, params) =>
     http.get(`/certificates/student/${studentId}`, { params }),
 
+  // "Nega bu foiz" — fanlar va ularning o'tilgan / qolgan mavzulari
+  getStudentProgress: (studentId) =>
+    http.get(`/certificates/student/${studentId}/progress`),
+
   createPlan: (payload) => http.post("/certificates", payload),
   updatePlan: (id, payload) => http.patch(`/certificates/${id}`, payload),
   cancelPlan: (id, payload) => http.post(`/certificates/${id}/cancel`, payload),

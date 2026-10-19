@@ -53,6 +53,21 @@ export const certificatesQueries = {
       staleTime: 60 * 1000,
     }),
 
+  /**
+   * O'QUVCHINING MAVZULAR MANZARASI — "nega bu foiz".
+   *
+   * Har sertifikat fani uchun o'tilgan va qolgan mavzular ro'yxati.
+   * Faqat oyna ochilganda so'raladi (`enabled`): mavzular ro'yxati uzun
+   * bo'lishi mumkin va uni ro'yxat bilan birga tortib kelish ortiqcha.
+   */
+  studentProgress: (studentId) =>
+    queryOptions({
+      queryKey: [...certificatesKeys.detail(studentId), "progress"],
+      queryFn: () =>
+        certificatesAPI.getStudentProgress(studentId).then((r) => r.data.data),
+      enabled: Boolean(studentId),
+    }),
+
   /** Bitta o'quvchining rejalari (o'quvchi kartasi). */
   student: (studentId, params) =>
     queryOptions({

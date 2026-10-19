@@ -29,6 +29,7 @@ export const MODAL_NAMES = [
 
   // Sertifikat rejalari
   "certificatePlan",
+  "certificateStudent",
   "cancelCertificatePlan",
   "certificateTrack",
   "importCertificates",

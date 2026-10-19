@@ -34,7 +34,7 @@ import LoaderCard from "@/shared/components/ui/LoaderCard";
 import Table, { Td, Tr } from "@/shared/components/ui/Table";
 import TopicProgress from "../components/TopicProgress";
 import CertificateStatsTab from "../components/CertificateStatsTab";
-import CertificateTracksTab from "../components/CertificateTracksTab";
+import StudentProgressModal from "../components/StudentProgressModal";
 import CertificatePlanModal from "../components/CertificatePlanModal";
 import CertificateTrackModal from "../components/CertificateTrackModal";
 import ImportCertificatesModal from "../components/ImportCertificatesModal";
@@ -62,7 +62,13 @@ import {
   statusOptions,
 } from "../data/certificates.data";
 
-const TABS = Object.freeze({ PLANS: "plans", STATS: "stats", TRACKS: "tracks" });
+/**
+ * ⚠️ "YO'NALISHLAR" ALOHIDA TAB EMAS (biznes qarori, 2026-10-19): umumiy
+ * jadval uni ortiqcha qildi va katalog shu jadvalning o'zidan boshqariladi
+ * (maktab faniga bog'lash, arxivlash). Alohida ekran qaytarilsa, bitta
+ * narsa ikki joydan boshqariladigan bo'lib qolardi.
+ */
+const TABS = Object.freeze({ PLANS: "plans", STATS: "stats" });
 
 /**
  * SERTIFIKAT REJALARI — "kim qaysi sertifikatni qachon topshirmoqchi".
@@ -183,7 +189,7 @@ const CertificatesPage = () => {
           )}
 
           {canManage && (
-            <Button size="sm" onClick={() => openModal("certificatePlan")}>
+            <Button size="sm" onClick={() => openModal("certificatePlan", { plan: null })}>
               <Plus className="size-4" strokeWidth={2} />
               Reja qo'shish
             </Button>
@@ -197,18 +203,16 @@ const CertificatesPage = () => {
         items={[
           { value: TABS.PLANS, label: "Rejalar" },
           { value: TABS.STATS, label: "Statistika" },
-          { value: TABS.TRACKS, label: "Yo'nalishlar" },
         ]}
       />
 
       {tab === TABS.STATS && (
         <CertificateStatsTab
           classId={classId}
+          canManage={canManage}
           onClassChange={(value) => setParam("class", value)}
         />
       )}
-
-      {tab === TABS.TRACKS && <CertificateTracksTab canManage={canManage} />}
 
       {tab === TABS.PLANS && (
         <>
@@ -287,7 +291,23 @@ const CertificatesPage = () => {
                   {plans.map((plan) => (
                     <Tr key={plan.id}>
                       <Td className="font-medium text-gray-900">
-                        {plan.student?.fullName || "—"}
+                        {plan.student ? (
+                          <button
+                            type="button"
+                            title="Qaysi mavzular o'tilgani"
+                            onClick={() =>
+                              openModal("certificateStudent", {
+                                studentId: plan.student.id,
+                                studentName: plan.student.fullName,
+                              })
+                            }
+                            className="text-left hover:text-primary hover:underline"
+                          >
+                            {plan.student.fullName}
+                          </button>
+                        ) : (
+                          "—"
+                        )}
                         {plan.status !== PLAN_STATUS.PLANNED && (
                           <Badge
                             variant={PLAN_STATUS_VARIANTS[plan.status]}
@@ -381,6 +401,8 @@ const CertificatesPage = () => {
           )}
         </>
       )}
+
+      <StudentProgressModal />
 
       {canManage && <CertificatePlanModal />}
       {canManage && <CancelCertificatePlanModal />}

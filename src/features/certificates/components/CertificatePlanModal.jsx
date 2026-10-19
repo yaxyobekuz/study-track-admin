@@ -33,7 +33,12 @@ import { dueToInputValue } from "../data/certificates.data";
  * rejalashtirgan edi" degan fakt yo'qolmaydi va ayni faylni qayta yuklash
  * tuzatilgan yo'nalishni qayta tiklamaydi. Oyna buni oldindan aytadi.
  *
- * `openModal("certificatePlan")` — yangi reja,
+ * ⚠️ YANGI REJA `openModal("certificatePlan", { plan: null })` BILAN
+ * ochiladi, ma'lumotsiz EMAS. Modal holati `openModal(name)` ni
+ * ma'lumotsiz chaqirganda AVVALGISINI saqlaydi (`ModalProvider` izohi):
+ * tahrirdan keyin "Reja qo'shish" bosilsa, oyna eski o'quvchi va yo'nalish
+ * bilan, tahrirlab bo'lmaydigan holatda ochilardi.
+ *
  * `openModal("certificatePlan", { plan })` — tahrirlash.
  */
 const CertificatePlanModal = () => (
