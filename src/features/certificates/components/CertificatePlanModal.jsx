@@ -25,10 +25,13 @@ import { dueToInputValue } from "../data/certificates.data";
 /**
  * REJA QO'SHISH / TAHRIRLASH.
  *
- * ⚠️ TAHRIRLASHDA YO'NALISH O'ZGARMAYDI (server ham rad etadi): boshqa
- * yo'nalish — BOSHQA reja. Uni o'zgartirish "o'quvchi IELTS ni
- * rejalashtirgan edi" degan faktni izsiz yo'q qilardi. Xato kiritilgan
- * reja BEKOR QILINADI (sabab bilan) va yangisi yoziladi.
+ * Muddat surilishi ham, yo'nalishning o'zgarishi ham ODATIY hol: o'quvchi
+ * formani to'ldirgandan keyin fikri aniqlashadi.
+ *
+ * ⚠️ YO'NALISH O'ZGARTIRILSA SERVER YANGI QATOR yozadi, eskisi esa
+ * "almashtirilgan" bo'lib registrda QOLADI — "o'quvchi IELTS ni
+ * rejalashtirgan edi" degan fakt yo'qolmaydi va ayni faylni qayta yuklash
+ * tuzatilgan yo'nalishni qayta tiklamaydi. Oyna buni oldindan aytadi.
  *
  * `openModal("certificatePlan")` — yangi reja,
  * `openModal("certificatePlan", { plan })` — tahrirlash.
@@ -56,6 +59,8 @@ const Content = ({ close, isLoading, setIsLoading, plan = null }) => {
   const [dueDate, setDueDate] = useState(dueToInputValue(plan?.dueDate));
   const [note, setNote] = useState(plan?.note ?? "");
 
+  const trackChanged = isEdit && trackId !== plan.track?.id;
+
   const trackOptions = tracks.map((track) => ({
     value: track.id,
     label: track.subject ? `${track.name} · ${track.subject.name}` : track.name,
@@ -65,11 +70,12 @@ const Content = ({ close, isLoading, setIsLoading, plan = null }) => {
     event.preventDefault();
 
     if (!isEdit && !student) return toast.error("O'quvchini tanlang");
-    if (!isEdit && !trackId) return toast.error("Yo'nalishni tanlang");
+    if (!trackId) return toast.error("Yo'nalishni tanlang");
 
     setIsLoading(true);
     try {
       const payload = {
+        trackId,
         // Muddat bo'sh qoldirilsa — "aniq sanani bilmayman" holati
         dueDate: dueDate || null,
         note: note.trim() || null,
@@ -77,9 +83,9 @@ const Content = ({ close, isLoading, setIsLoading, plan = null }) => {
 
       if (isEdit) {
         await updatePlan({ id: plan.id, ...payload });
-        toast.success("Reja yangilandi");
+        toast.success(trackChanged ? "Yo'nalish almashtirildi" : "Reja yangilandi");
       } else {
-        await createPlan({ studentId: student.id, trackId, ...payload });
+        await createPlan({ studentId: student.id, ...payload });
         toast.success("Reja qo'shildi");
       }
 
@@ -112,24 +118,18 @@ const Content = ({ close, isLoading, setIsLoading, plan = null }) => {
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-gray-700">Yo'nalish</label>
-        {isEdit ? (
-          <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-sm text-gray-900">
-            {plan.track?.name || "—"}
-          </p>
-        ) : (
-          <Select
-            name="trackId"
-            value={trackId}
-            onChange={setTrackId}
-            options={trackOptions}
-            placeholder="Sertifikat yo'nalishi"
-            triggerClassName="w-full"
-          />
-        )}
-        {isEdit && (
-          <p className="text-xs text-gray-500">
-            Yo'nalish o'zgartirilmaydi — xato bo'lsa rejani bekor qilib
-            yangisini qo'shing.
+        <Select
+          name="trackId"
+          value={trackId}
+          onChange={setTrackId}
+          options={trackOptions}
+          placeholder="Sertifikat yo'nalishi"
+          triggerClassName="w-full"
+        />
+        {trackChanged && (
+          <p className="text-xs text-amber-700">
+            Yo'nalish o'zgardi: yangi reja yoziladi, "{plan.track?.name}"
+            esa registrda almashtirilgan bo'lib qoladi.
           </p>
         )}
       </div>
