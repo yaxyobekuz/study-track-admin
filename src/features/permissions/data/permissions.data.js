@@ -26,6 +26,7 @@ export const SECTIONS = {
   SUBSTITUTIONS: "substitutions",
   TUTORS: "tutors",
   TOPICS: "topics",
+  CERTIFICATES: "certificates",
   CLASSES: "classes",
   STUDENT_SYSTEMS: "studentSystems",
   SUBJECTS: "subjects",
@@ -314,6 +315,25 @@ export const PERMISSION_SECTIONS = [
       { key: "import", label: "Fayldan yuklash" },
       { key: "assign", label: "Darsga mavzu biriktirish" },
       A.delete,
+    ],
+  },
+  {
+    // SERTIFIKAT REJALARI — "kim qaysi sertifikatni qachon topshirmoqchi".
+    //
+    // ⚠️ ALOHIDA BO'LIM, `topics` yoki `statistics` ichidagi amal EMAS: eski
+    // bare kalitlar bo'limning HAMMA amalini beradi va butun maktabning
+    // sertifikat rejasini ommaviy yuklash huquqi jimgina tarqalib ketardi.
+    //
+    // `import` — `manage` dan ALOHIDA: bitta fayl bir necha yuz rejani
+    // almashtiradi, bitta o'quvchining muddatini to'g'rilash esa boshqa
+    // qaror (`topics.import` / `topics.assign` bilan AYNI mulohaza).
+    key: SECTIONS.CERTIFICATES,
+    label: "Sertifikat rejalari",
+    group: "Ta'lim",
+    actions: [
+      A.view,
+      { key: "manage", label: "Reja va yo'nalishlarni boshqarish" },
+      { key: "import", label: "Fayldan ommaviy yuklash" },
     ],
   },
   {
@@ -1091,6 +1111,7 @@ const ROUTE_PERMISSIONS = [
   // ko'chirish SABABLARI sinf ro'yxatini ko'rish huquqi bilan ochilmasin
   { prefix: "/classes/changes", key: "classes.history" },
   { prefix: "/student-systems", key: "studentSystems.view" },
+  { prefix: "/certificates", key: "certificates.view" },
   { prefix: "/subjects", key: "subjects.view" },
   { prefix: "/test-seasons", key: "tests.view" },
   { prefix: "/test-settings", key: "tests.view" },

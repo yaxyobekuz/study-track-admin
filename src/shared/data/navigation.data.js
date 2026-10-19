@@ -194,6 +194,12 @@ export const navItems = [
         url: "/student-systems",
       },
       {
+        // Kim qaysi sertifikatni qachon topshirmoqchi — reja, muddat,
+        // mavzu progressi va statistika. Alohida ruxsat (`certificates.*`)
+        title: "Sertifikat rejalari",
+        url: "/certificates",
+      },
+      {
         title: "Fanlar",
         url: "/subjects",
       },

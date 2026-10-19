@@ -27,6 +27,12 @@ export const MODAL_NAMES = [
   // ERP va Kundalik.com
   "exportStudentSystems",
 
+  // Sertifikat rejalari
+  "certificatePlan",
+  "cancelCertificatePlan",
+  "certificateTrack",
+  "importCertificates",
+
   // User
   "profile",
   "editUserBasic",

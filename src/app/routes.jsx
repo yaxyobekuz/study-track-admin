@@ -42,6 +42,9 @@ import ClassChangesPage from "@/features/classes/pages/ClassChangesPage";
 
 // Pages - ERP va Kundalik.com (o'quvchi tashqi tizimlarda bormi)
 import StudentSystemsPage from "@/features/studentSystems/pages/StudentSystemsPage";
+
+// SERTIFIKAT REJALARI — kim qaysi sertifikatni qachon topshirmoqchi
+import CertificatesPage from "@/features/certificates/pages/CertificatesPage";
 import TutorGroupPage from "@/features/tutorGroups/pages/TutorGroupPage";
 
 // Pages - Subjects
@@ -409,6 +412,10 @@ const Routes = () => {
 
           {/* ERP va Kundalik.com (`studentSystems.view`) */}
           <Route path="/student-systems" element={<StudentSystemsPage />} />
+
+          {/* SERTIFIKAT REJALARI (`certificates.view`) — ro'yxat, statistika,
+              yo'nalishlar katalogi va fayldan ommaviy yuklash */}
+          <Route path="/certificates" element={<CertificatesPage />} />
 
           {/* Subjects & Topics */}
           <Route path="/subjects" element={<SubjectsPage />} />
