@@ -289,25 +289,24 @@ const CertificatesPage = () => {
                   ]}
                 >
                   {plans.map((plan) => (
-                    <Tr key={plan.id}>
-                      <Td className="font-medium text-gray-900">
-                        {plan.student ? (
-                          <button
-                            type="button"
-                            title="Qaysi mavzular o'tilgani"
-                            onClick={() =>
+                    <Tr
+                      key={plan.id}
+                      title={plan.student ? "Qaysi mavzular o'tilgani" : undefined}
+                      className={
+                        plan.student ? "cursor-pointer hover:bg-gray-50" : undefined
+                      }
+                      onClick={
+                        plan.student
+                          ? () =>
                               openModal("certificateStudent", {
                                 studentId: plan.student.id,
                                 studentName: plan.student.fullName,
                               })
-                            }
-                            className="text-left hover:text-primary hover:underline"
-                          >
-                            {plan.student.fullName}
-                          </button>
-                        ) : (
-                          "—"
-                        )}
+                          : undefined
+                      }
+                    >
+                      <Td className="font-medium text-gray-900">
+                        {plan.student?.fullName || "—"}
                         {plan.status !== PLAN_STATUS.PLANNED && (
                           <Badge
                             variant={PLAN_STATUS_VARIANTS[plan.status]}
@@ -350,7 +349,10 @@ const CertificatesPage = () => {
                       </Td>
 
                       {canManage && (
-                        <Td align="right">
+                        // ⚠️ Amallar qator bosilishini TO'XTATADI: tahrirlash
+                        // yoki bekor qilish bosilganda o'quvchi oynasi ham
+                        // ochilib ketardi
+                        <Td align="right" onClick={(event) => event.stopPropagation()}>
                           {plan.status === PLAN_STATUS.PLANNED && (
                             <div className="flex justify-end gap-1">
                               <Button

@@ -83,9 +83,19 @@ const CertificateStatsTab = ({ classId, onClassChange, canManage }) => {
     ...classes.map((cls) => ({ value: cls.id, label: cls.name })),
   ];
 
+  /**
+   * ⚠️ HAR BIR KESIM `?? []` BILAN O'QILADI.
+   *
+   * Panel serverdan oldinda bo'lishi mumkin (panel yangilangan, server hali
+   * eski) va o'shanda javobda yangi kesim UMUMAN bo'lmaydi. Himoyasiz
+   * `rows.length` butun sahifani oq ekranga aylantirardi — ya'ni bitta
+   * yangi maydon tufayli ishlayotgan statistikalar ham yo'qolardi.
+   */
   const tracks = stats?.byTrack ?? [];
-  const activeTracks = tracks.filter((track) => track.isActive);
-  const archivedTracks = tracks.filter((track) => !track.isActive);
+  // `isActive` eski javobda bo'lmaydi — bunday qator FAOL deb olinadi,
+  // aks holda hamma yo'nalish "arxivda" bo'lib yashirinib qolardi
+  const activeTracks = tracks.filter((track) => track.isActive !== false);
+  const archivedTracks = tracks.filter((track) => track.isActive === false);
 
   return (
     <div className="space-y-4">
@@ -132,24 +142,24 @@ const CertificateStatsTab = ({ classId, onClassChange, canManage }) => {
             archived={archivedTracks}
             showArchived={showArchived}
             onToggleArchived={() => setShowArchived((prev) => !prev)}
-            totalStudents={stats.totals.students}
+            totalStudents={stats.totals?.students ?? 0}
             canManage={canManage}
           />
 
-          <ClassTrackTable rows={stats.byClassTrack} />
+          <ClassTrackTable rows={stats.byClassTrack ?? []} />
 
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <BreakdownCard
               title="Sinflar bo'yicha"
-              rows={stats.byClass}
-              total={stats.totals.students}
+              rows={stats.byClass ?? []}
+              total={stats.totals?.students ?? 0}
               nameLabel="Sinf"
             />
 
             <BreakdownCard
               title="Muddat oylari bo'yicha"
-              rows={stats.byMonth.map((row) => ({ ...row, name: row.label }))}
-              total={stats.totals.plans}
+              rows={(stats.byMonth ?? []).map((row) => ({ ...row, name: row.label }))}
+              total={stats.totals?.plans ?? 0}
               nameLabel="Oy"
               countBy="plans"
             />
@@ -169,8 +179,8 @@ const CertificateStatsTab = ({ classId, onClassChange, canManage }) => {
  * progressining manbai va uni bog'lamasdan IELTS/CEFR da foiz chiqmaydi.
  */
 const TrackTable = ({
-  rows,
-  archived,
+  rows = [],
+  archived = [],
   showArchived,
   onToggleArchived,
   totalStudents,
@@ -314,10 +324,12 @@ const TrackTable = ({
  * Bu hisobotning asosiy jadvali: "IT 1 da CEFR ni kim topshiradi" degan
  * savolga sanoq bilan emas, ISM bilan javob beradi.
  */
-const ClassTrackTable = ({ rows }) => (
+const ClassTrackTable = ({ rows = [] }) => (
   <Card
     title="Guruhlar va fanlar bo'yicha"
-    icon={Users}
+    // ⚠️ `Card` ikonkani JSX ELEMENT deb chizadi (`{icon && icon}`),
+    // komponent sifatida berilsa React uni bola sifatida chiza olmaydi
+    icon={<Users className="size-5 text-gray-400" strokeWidth={1.75} />}
     className="overflow-hidden"
   >
     {rows.length === 0 ? (
@@ -340,7 +352,7 @@ const ClassTrackTable = ({ rows }) => (
               {row.students}
             </Td>
             <Td nowrap={false} className="min-w-72 text-gray-600">
-              {row.studentNames.join(", ")}
+              {(row.studentNames ?? []).join(", ")}
             </Td>
           </Tr>
         ))}
@@ -351,7 +363,7 @@ const ClassTrackTable = ({ rows }) => (
 
 /* ─────────────────── oddiy kesimlar ─────────────────── */
 
-const BreakdownCard = ({ title, rows, total, nameLabel, countBy = "students" }) => (
+const BreakdownCard = ({ title, rows = [], total = 0, nameLabel, countBy = "students" }) => (
   <Card title={title} className="overflow-hidden">
     {rows.length === 0 ? (
       <p className="px-1 py-6 text-center text-sm text-gray-500">Ma'lumot yo'q</p>
