@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 import usePermissions from "@/shared/hooks/usePermissions";
-import { useRoles } from "@/features/roles/queries/roles.queries";
+import { useRoleOptions } from "@/features/roles/queries/roles.queries";
 import { useClasses } from "@/features/classes/queries/classes.queries";
 import { useCreateUser } from "@/features/users/queries/users.mutations";
 import { financeQueries } from "@/features/finance/queries/finance.queries";
@@ -56,7 +56,7 @@ const UserForm = ({ defaultRole = "student" }) => {
   const navigate = useNavigate();
   const { can } = usePermissions();
   const { data: classes = [] } = useClasses();
-  const { data: rolesData = [] } = useRoles();
+  const { data: rolesData = [] } = useRoleOptions();
   const roles = rolesData.filter((r) => r.value !== "owner");
   const { data: tariffs = [] } = useQuery(financeQueries.assignableTariffs());
 

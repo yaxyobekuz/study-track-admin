@@ -4,6 +4,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 // Shared
 import { createQueryKeys } from "@/shared/lib/query";
 import useAuth from "@/shared/hooks/useAuth";
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // API
 import { rolesAPI } from "../api/roles.api";
@@ -18,6 +19,13 @@ export const rolesQueries = {
     queryOptions({
       queryKey: rolesKeys.lists(),
       queryFn: () => rolesAPI.getAll().then((r) => r.data.data),
+      staleTime: REFERENCE_STALE_TIME,
+    }),
+  /** Yengil ro'yxat (nom + qiymat) — dropdown'lar uchun, `/roles/options`. */
+  options: () =>
+    queryOptions({
+      queryKey: rolesKeys.list("options"),
+      queryFn: () => rolesAPI.getOptions().then((r) => r.data.data),
       staleTime: REFERENCE_STALE_TIME,
     }),
 };
@@ -40,5 +48,25 @@ export const useRoles = ({ enabled = true } = {}) => {
   return useQuery({
     ...rolesQueries.list(),
     enabled: enabled && user?.role === "owner",
+  });
+};
+
+/**
+ * Dropdown uchun yengil rollar ro'yxati (`/roles/options`, nom + qiymat).
+ *
+ * ⚠️ `useRoles` dan farqi RUXSATDA: to'liq ro'yxat (ruxsatlar matritsasi)
+ * faqat owner uchun, bu yengil ro'yxat esa XODIM QO'SHISH huquqi bo'lgan
+ * har kim uchun — "Yangi xodim" formasidagi "Rol" ro'yxati chiqishi uchun.
+ * Server tomoni ham AYNI shart (`authorizePermission(users.create)`).
+ * `can("users.create")` owner uchun ham `true` qaytaradi.
+ *
+ * @example
+ * const { data: roles = [] } = useRoleOptions();
+ */
+export const useRoleOptions = ({ enabled = true } = {}) => {
+  const { can } = usePermissions();
+  return useQuery({
+    ...rolesQueries.options(),
+    enabled: enabled && can("users.create"),
   });
 };
