@@ -83,7 +83,6 @@ const PenaltySettingsPage = () => {
   const [gradeForm, setGradeForm] = useState({
     isEnabled: GRADE_PENALTY_DEFAULTS.isEnabled,
     penaltyPoints: GRADE_PENALTY_DEFAULTS.penaltyPoints,
-    missingThresholdPercent: GRADE_PENALTY_DEFAULTS.missingThresholdPercent,
   });
 
   useEffect(() => {
@@ -91,9 +90,6 @@ const PenaltySettingsPage = () => {
     setGradeForm({
       isEnabled: gradeSettings.isEnabled ?? GRADE_PENALTY_DEFAULTS.isEnabled,
       penaltyPoints: gradeSettings.penaltyPoints ?? GRADE_PENALTY_DEFAULTS.penaltyPoints,
-      missingThresholdPercent:
-        gradeSettings.missingThresholdPercent ??
-        GRADE_PENALTY_DEFAULTS.missingThresholdPercent,
     });
   }, [gradeSettings]);
 
@@ -202,42 +198,24 @@ const PenaltySettingsPage = () => {
             />
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Har kuni soat 23:55 da ishga tushadi va foiz chegarasidan oshgan
-            ustozlarga jarima beradi
+            Har kuni soat 22:00 da ishga tushadi va bitta ham baho qo'yilmagan
+            darsga jarima beradi. Ustoz darsda bitta o'quvchiga ham baho
+            qo'ygan bo'lsa — jarima yozilmaydi.
           </p>
         </Field>
 
-        <InputGroup className="md:grid-cols-2">
+        <InputGroup>
           <InputField
             min="1"
             required
             type="number"
             label="Jarima bali"
-            description="Har bir qo'yilmagan dars uchun"
+            description="Bitta ham baho qo'yilmagan har bir dars uchun"
             value={gradeForm.penaltyPoints}
             onChange={(e) =>
               setGradeForm((prev) => ({
                 ...prev,
                 penaltyPoints: Math.max(1, Number(e.target.value)),
-              }))
-            }
-          />
-
-          <InputField
-            min="0"
-            max="100"
-            required
-            type="number"
-            label="Baho qo'yilmagan o'quvchilar foizi (%)"
-            description="Shu foizdan oshsa jarima beriladi"
-            value={gradeForm.missingThresholdPercent}
-            onChange={(e) =>
-              setGradeForm((prev) => ({
-                ...prev,
-                missingThresholdPercent: Math.min(
-                  100,
-                  Math.max(0, Number(e.target.value)),
-                ),
               }))
             }
           />
