@@ -26,6 +26,7 @@ import WeeklyScheduleEditor from "./WeeklyScheduleEditor";
 // Data
 import {
   genderOptions,
+  getGradeOptions,
   getPhoneLabels,
   maskedPhoneOrNull,
 } from "../data/users.data";
@@ -77,8 +78,8 @@ const UserForm = ({ defaultRole = "student" }) => {
     phone: "",
     parentPhone: "",
     classes: [],
-    // Haqiqiy sinf — bo'sh bo'lsa server birinchi tanlangan sinfni qo'yadi
-    actualClassId: "",
+    // Asl sinf (daraja) — bo'sh bo'lsa server uni sinf NOMIDAN chiqaradi
+    actualGrade: "",
     workStartTime: "",
     workEndTime: "",
     workDays: [1, 2, 3, 4, 5],
@@ -139,10 +140,10 @@ const UserForm = ({ defaultRole = "student" }) => {
       classes: state.role === "student" ? state.classes : undefined,
       // Moliya — faqat o'quvchi uchun (kirgan sana, to'lov oyi, birinchi oy, tarif)
       ...(state.role === "student" && {
-        // Bo'sh qoldirilsa YUBORILMAYDI: server birinchi tanlangan sinfni
-        // haqiqiy sinf qilib qo'yadi ("hozirgi sinfi haqiqiy sinfi ham
-        // bo'lsin"). Faqat FARQ QILSA qo'lda tanlanadi.
-        actualClassId: state.actualClassId || undefined,
+        // Bo'sh qoldirilsa YUBORILMAYDI: server darajani tanlangan birinchi
+        // sinf NOMIDAN chiqaradi ("5-A" → 5-sinf), nomi daraja bilan
+        // boshlanmasa ("IT 1") bo'sh qoladi va qo'lda belgilanadi.
+        actualGrade: state.actualGrade || undefined,
         enrollmentDate: state.enrollmentDate || undefined,
         firstMonthKey: state.firstMonthKey || undefined,
         firstMonthAmount: state.firstMonthAmount || undefined,
@@ -241,18 +242,18 @@ const UserForm = ({ defaultRole = "student" }) => {
             options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
           />
 
-          {/* HAQIQIY SINF — o'quvchining O'Z sinfi. Odatda u o'qiydigan
-              guruh bilan bir xil (shuning uchun bo'sh qoldirilsa server
-              o'zi qo'yadi), lekin kuchli o'quvchi katta guruhda o'qiyotgan
-              bo'lsa shu yerda farqi ko'rsatiladi. */}
+          {/* ASL SINF — o'quvchi nechanchi sinf o'quvchisi (1-sinf …
+              11-sinf). Odatda sinf nomidan o'zi chiqadi ("5-A" → 5-sinf),
+              lekin guruh nomi darajani aytmasa ("IT 1") yoki kuchli
+              o'quvchi katta guruhda o'qisa — shu yerda tanlanadi. */}
           <SelectField
             searchable
-            label="Haqiqiy sinfi"
-            value={state.actualClassId}
-            placeholder="Tanlangan birinchi sinf bilan bir xil"
-            description="O'quvchi o'z sinfidan boshqa guruhda o'qiyotgan bo'lsa tanlang"
-            onChange={(v) => setField("actualClassId", v)}
-            options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
+            label="Asl sinfi"
+            value={state.actualGrade}
+            placeholder="Sinf nomidan aniqlanadi"
+            description="Guruh nomi darajani aytmasa yoki undan farq qilsa tanlang"
+            onChange={(v) => setField("actualGrade", v)}
+            options={getGradeOptions()}
           />
 
           {/* ── Moliya: kirgan sana + to'lov oyi + birinchi oy summasi + tarif ── */}

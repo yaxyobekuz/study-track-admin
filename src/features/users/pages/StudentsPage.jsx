@@ -7,8 +7,8 @@ import CallButton from "@/shared/components/ui/CallButton";
 import UsersListView from "../components/UsersListView";
 import UserRowActions from "../components/UserRowActions";
 import StudentCoinCell from "../components/StudentCoinCell";
-import StudentActualClassCell from "../components/StudentActualClassCell";
-import EditStudentActualClassModal from "../components/EditStudentActualClassModal";
+import StudentActualGradeCell from "../components/StudentActualGradeCell";
+import EditStudentActualGradeModal from "../components/EditStudentActualGradeModal";
 import CoinWeekNav from "../components/CoinWeekNav";
 
 // Hooks
@@ -19,7 +19,7 @@ import {
   COIN_PERIOD_OPTIONS,
   COIN_PERIOD_TOTAL,
   COIN_PERIOD_WEEK,
-  getActualClassFilterOptions,
+  getActualGradeFilterOptions,
   getInitials,
   getStudentTableColumns,
 } from "../data/users.data";
@@ -39,9 +39,10 @@ import {
  * holatini link qilsa bo'ladi va "orqaga" qaytganda yo'qolmaydi. Hafta
  * kaliti ISO ko'rinishida — bu FORMAT emas, so'rov parametri (`dates.md`).
  *
- * "HAQIQIY SINF" USTUNI — o'quvchining O'Z sinfi (u o'qiyotgan guruhdan
- * farq qilishi mumkin). Katakdan turib o'zgartiriladi va o'z filtri bor
- * (`?actualClass=`), shu jumladan "belgilanmagan" kesimi.
+ * "ASL SINFI" USTUNI — o'quvchi nechanchi sinf o'quvchisi (1-sinf …
+ * 11-sinf). U o'qiyotgan guruhdan farq qilishi mumkin, katakdan turib
+ * o'zgartiriladi va o'z filtri bor (`?actualGrade=`), shu jumladan
+ * "belgilanmagan" kesimi.
  */
 const StudentsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -58,9 +59,9 @@ const StudentsPage = () => {
   // qotib qolgan sanani yozmaydi (ertaga ham joriy hafta bo'lib qolsin).
   const coinWeek = isWeeklyCoins ? searchParams.get("coinWeek") : null;
 
-  // Haqiqiy sinf filtri — bo'sh satr "filtr yo'q" degani (`Select` ham
-  // shu qiymatni shunday o'qiydi), `none` esa "belgilanmaganlar".
-  const actualClassFilter = searchParams.get("actualClass") || "";
+  // Asl sinf filtri — bo'sh satr "filtr yo'q" degani (`Select` ham shu
+  // qiymatni shunday o'qiydi), `none` esa "belgilanmaganlar".
+  const actualGradeFilter = searchParams.get("actualGrade") || "";
 
   const classOptions = [
     { value: "all", label: "Barcha sinflar" },
@@ -70,10 +71,10 @@ const StudentsPage = () => {
   // Sinf filtri bilan AYNI qoida: ro'yxat TARKIBI o'zgaradi, demak
   // birinchi sahifaga qaytiladi (5-sahifada turib filtrlagan odam bo'sh
   // ro'yxatni tizim nosozligi deb o'ylamasin).
-  const handleActualClassChange = (value) =>
+  const handleActualGradeChange = (value) =>
     setSearchParams((prev) => {
-      if (value) prev.set("actualClass", value);
-      else prev.delete("actualClass");
+      if (value) prev.set("actualGrade", value);
+      else prev.delete("actualGrade");
       prev.delete("page");
       return prev;
     });
@@ -124,7 +125,7 @@ const StudentsPage = () => {
             coinPeriod: COIN_PERIOD_WEEK,
             ...(coinWeek && { coinWeek }),
           }),
-          ...(actualClassFilter && { actualClass: actualClassFilter }),
+          ...(actualGradeFilter && { actualGrade: actualGradeFilter }),
         }}
         subToolbar={
           isWeeklyCoins
@@ -147,10 +148,10 @@ const StudentsPage = () => {
             />
 
             <Select
-              value={actualClassFilter}
-              options={getActualClassFilterOptions(classes)}
-              placeholder="Haqiqiy sinf"
-              onChange={handleActualClassChange}
+              value={actualGradeFilter}
+              options={getActualGradeFilterOptions()}
+              placeholder="Asl sinf"
+              onChange={handleActualGradeChange}
               triggerClassName="w-full sm:w-52 sm:shrink-0"
             />
 
@@ -188,9 +189,9 @@ const StudentsPage = () => {
                 : "—"}
             </td>
 
-            {/* Haqiqiy sinfi — katakdan turib tahrirlanadi */}
+            {/* Asl sinfi — katakdan turib tahrirlanadi */}
             <td className="px-4 py-3">
-              <StudentActualClassCell user={user} />
+              <StudentActualGradeCell user={user} />
             </td>
 
             {/* Qo'ng'iroq tugmasi qator bosilishiga tarqalmasin — aks holda
@@ -219,7 +220,7 @@ const StudentsPage = () => {
       />
 
       {/* Katakdagi tahrirlash oynasi shu sahifada ulanadi */}
-      <EditStudentActualClassModal />
+      <EditStudentActualGradeModal />
     </>
   );
 };

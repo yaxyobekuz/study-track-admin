@@ -70,21 +70,22 @@ export const useUpdateStudentClasses = () => {
 };
 
 /**
- * HAQIQIY SINF — o'quvchining O'Z sinfi (`PUT /users/:id` → `actualClassId`).
+ * ASL SINF — o'quvchining maktab darajasi (`PUT /users/:id` → `actualGrade`).
  *
- * `null` yuborilsa belgi olib tashlanadi. Sinf A'ZOLIGIGA TEGMAYDI va sabab
- * talab qilmaydi: bu guruh almashtirish emas, o'quvchining qaysi sinfniki
- * ekanini aytadigan belgi.
+ * Bo'sh yuborilsa belgi olib tashlanadi. Sinf A'ZOLIGIGA TEGMAYDI va sabab
+ * talab qilmaydi: bu guruh almashtirish emas, o'quvchi nechanchi sinf
+ * o'quvchisi ekanini aytadigan belgi.
  *
  * `classesKeys.all` ham eskiradi — sinf sahifasidagi o'quvchilar ro'yxatida
- * ham shu ustun bor, biri yangilanib ikkinchisi eski qolmasin.
+ * ham shu ustun bor; `usersKeys.all` esa daraja kesimidagi sanoqni ham
+ * yangilaydi (u ham `users` kaliti ostida).
  */
-export const useUpdateStudentActualClass = () => {
+export const useUpdateStudentActualGrade = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, actualClassId }) =>
+    mutationFn: ({ id, actualGrade }) =>
       usersAPI
-        .update(id, { actualClassId: actualClassId || null })
+        .update(id, { actualGrade: actualGrade === "" ? null : actualGrade })
         .then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: usersKeys.all });

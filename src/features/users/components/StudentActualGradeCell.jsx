@@ -6,8 +6,11 @@ import useModal from "@/shared/hooks/useModal";
 import usePermissions from "@/shared/hooks/usePermissions";
 import useCanManageUser from "../hooks/useCanManageUser";
 
+// Data
+import { formatGrade } from "../data/users.data";
+
 /**
- * "Haqiqiy sinfi" katagi — o'quvchining O'Z sinfi.
+ * "Asl sinfi" katagi — o'quvchining maktab darajasi (1-sinf … 11-sinf).
  *
  * Bitta komponent, chunki u IKKI JADVALDA bor (O'quvchilar ro'yxati va
  * sinf sahifasidagi o'quvchilar ro'yxati): ikki nusxa bo'lsa, biriga
@@ -21,16 +24,16 @@ import useCanManageUser from "../hooks/useCanManageUser";
  * ⚠️ Qator bosilishiga TARQALMAYDI — aks holda tahrirlash oynasi o'rniga
  * o'quvchi sahifasi ochilib ketardi.
  */
-const StudentActualClassCell = ({ user }) => {
+const StudentActualGradeCell = ({ user }) => {
   const { openModal } = useModal();
   const { can } = usePermissions();
   const canManage = useCanManageUser(user);
 
-  const name = user?.actualClass?.name ?? null;
+  const label = formatGrade(user?.actualGrade);
   const canEdit = canManage && can("users.update");
 
   if (!canEdit) {
-    return <span className="text-gray-500">{name ?? "—"}</span>;
+    return <span className="text-gray-500">{label ?? "—"}</span>;
   }
 
   return (
@@ -38,15 +41,15 @@ const StudentActualClassCell = ({ user }) => {
       type="button"
       onClick={(e) => {
         e.stopPropagation();
-        openModal("editStudentActualClass", user);
+        openModal("editStudentActualGrade", user);
       }}
       className={`group inline-flex max-w-full items-center gap-1.5 rounded-lg px-2 py-1 text-sm transition hover:bg-gray-100 ${
-        name
+        label
           ? "font-medium text-gray-900"
           : "border border-dashed border-gray-300 text-gray-400"
       }`}
     >
-      <span className="line-clamp-1">{name ?? "Belgilash"}</span>
+      <span className="line-clamp-1">{label ?? "Belgilash"}</span>
       <Pencil
         strokeWidth={1.5}
         className="size-3.5 shrink-0 text-gray-400 opacity-40 transition group-hover:opacity-100"
@@ -55,4 +58,4 @@ const StudentActualClassCell = ({ user }) => {
   );
 };
 
-export default StudentActualClassCell;
+export default StudentActualGradeCell;

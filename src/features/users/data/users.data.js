@@ -23,40 +23,71 @@ export const STAFF_TABLE_COLUMNS = [
 export const STUDENT_TABLE_COLUMNS = [
   "O'quvchi",
   "Sinflar",
-  // O'quvchining O'Z sinfi — u o'qiyotgan guruhdan farq qilishi mumkin
-  "Haqiqiy sinfi",
+  // O'quvchining maktab darajasi — u o'qiydigan guruhdan farq qilishi mumkin
+  "Asl sinfi",
   "Telefon",
   "Tangalar",
   "Jarimalar",
   "",
 ];
 
-// ── HAQIQIY SINF ────────────────────────────
+// ── ASL SINF (daraja) ────────────────────────────
 //
 // O'quvchi bilimi yaxshi bo'lgani uchun katta guruhda o'qishi mumkin:
-// "Sinflar" — u HOZIR O'QIYOTGAN guruh(lar), "Haqiqiy sinfi" — uning O'Z
-// sinfi. Ikkalasi ham AYNI katalogdan (`useClasses`) tanlanadi — ikkinchi
-// sinflar ro'yxati yo'q.
+// "Sinflar" — u HOZIR O'QIYOTGAN guruh(lar), "Asl sinfi" — u NECHANCHI
+// SINF o'quvchisi (1-sinf … 11-sinf).
 //
-// ⚠️ Bu A'ZOLIK EMAS, BELGI: bu yerda sinf almashtirilsa o'quvchi o'sha
-// sinfga qo'shilmaydi, jurnalga ham yozilmaydi va shuning uchun SABAB
-// SO'RALMAYDI (sinf a'zoligidan farqi aynan shu).
+// ⚠️ SINFLAR KATALOGI EMAS: katalogda "IT 1", "Union 2", "Bog'cha — katta
+// guruh" bor va ulardagi raqam guruh tartibi, daraja emas. Shuning uchun
+// ro'yxat katalogdan EMAS, shu yerdagi doimiy darajalardan quriladi.
+//
+// ⚠️ Bu A'ZOLIK EMAS, BELGI: bu yerda daraja almashtirilsa o'quvchi hech
+// qaysi sinfga qo'shilmaydi, jurnalga ham yozilmaydi va shuning uchun
+// SABAB SO'RALMAYDI (sinf a'zoligidan farqi aynan shu).
+//
+// ⚠️ Serverdagi `helpers/grade.helpers.js` bilan QO'LDA SINXRON (ikki
+// alohida repo): chegara ham, "N-sinf" shakli ham o'sha yerda.
 
-/** Server bilan AYNI so'z: "haqiqiy sinfi belgilanmaganlar" filtri. */
-export const ACTUAL_CLASS_NONE = "none";
+export const MIN_GRADE = 1;
+export const MAX_GRADE = 11;
+
+/** [1 … 11] */
+export const GRADES = Array.from(
+  { length: MAX_GRADE - MIN_GRADE + 1 },
+  (_, i) => MIN_GRADE + i,
+);
+
+/** Server bilan AYNI so'z: "asl sinfi belgilanmaganlar". */
+export const ACTUAL_GRADE_NONE = "none";
+
+/** Darajaning YAGONA matn ko'rinishi — "5-sinf". */
+export const formatGrade = (grade) =>
+  GRADES.includes(Number(grade)) ? `${Number(grade)}-sinf` : null;
+
+/** Tahrirlash oynasi va yaratish formasi uchun — "1-sinf" … "11-sinf". */
+export const getGradeOptions = () =>
+  GRADES.map((grade) => ({ value: String(grade), label: formatGrade(grade) }));
 
 /**
- * O'quvchilar ro'yxatidagi "Haqiqiy sinf" filtrining variantlari.
+ * O'quvchilar ro'yxatidagi "Asl sinf" filtrining variantlari.
  *
- * Yorliqlarda "Haqiqiy:" prefiksi bor — yonida turgan oddiy sinf filtri
- * bilan bir xil nomni ko'rsatib, qaysi biri tanlanganini noaniq qoldirmasin.
- *
- * @param {{id: string, name: string}[]} classes
+ * Yorliqlarda "Asl:" prefiksi bor — yonida turgan sinf filtri bilan
+ * chalkashmasin (ikkalasi ham sinf haqida).
  */
-export const getActualClassFilterOptions = (classes = []) => [
-  { value: "", label: "Haqiqiy sinf: barchasi" },
-  ...classes.map((cls) => ({ value: cls.id, label: `Haqiqiy: ${cls.name}` })),
-  { value: ACTUAL_CLASS_NONE, label: "Haqiqiy: belgilanmagan" },
+export const getActualGradeFilterOptions = () => [
+  { value: "", label: "Asl sinf: barchasi" },
+  ...GRADES.map((grade) => ({
+    value: String(grade),
+    label: `Asl: ${formatGrade(grade)}`,
+  })),
+  { value: ACTUAL_GRADE_NONE, label: "Asl: belgilanmagan" },
+];
+
+/** Eksport oynasidagi tanlagich — "barchasi" va "belgilanmagan" bilan. */
+export const getActualGradeExportOptions = () => [
+  { value: "", label: "Barcha asl sinflar" },
+  ...getGradeOptions(),
+  { value: ACTUAL_GRADE_NONE, label: "Belgilanmagan" },
 ];
 
 /**
@@ -92,44 +123,6 @@ export const getStudentTableColumns = (coinPeriod = COIN_PERIOD_TOTAL) =>
       ? "Tangalar (hafta)"
       : column,
   );
-
-/**
- * EKSPORT KESIMI — tanlangan sinf QAYSI MA'NODA olinadi.
- *
- * "Sinf" — o'quvchi QAYERDA o'qiydi, "Haqiqiy sinf" — u ASLIDA kimniki,
- * "Ikkalasi" — shu sinfga ALOQADOR HAMMA (birlashma).
- *
- * ⚠️ SINF BITTA, MA'NO BITTA: ikkinchi sinf tanlagichi yo'q, shuning uchun
- * "A da o'qiydigan, aslida B niki" degan hech kim so'ramagan kesim paydo
- * bo'la olmaydi. "Ikkalasi" da ikkala shartga tushgan o'quvchi faylga BIR
- * MARTA tushadi — bu birlashma, qo'shish emas.
- */
-export const STUDENT_EXPORT_SCOPE_CLASS = "class";
-export const STUDENT_EXPORT_SCOPE_ACTUAL = "actual";
-export const STUDENT_EXPORT_SCOPE_BOTH = "both";
-
-/** Segment tugmalari — yorliqlar QISQA (uchtasi bir qatorga sig'sin). */
-export const STUDENT_EXPORT_SCOPE_OPTIONS = [
-  { value: STUDENT_EXPORT_SCOPE_CLASS, label: "Sinf" },
-  { value: STUDENT_EXPORT_SCOPE_ACTUAL, label: "Haqiqiy sinf" },
-  { value: STUDENT_EXPORT_SCOPE_BOTH, label: "Ikkalasi" },
-];
-
-/** Tanlangan kesim nima qilishini odam tilida aytadi (tugmalar ostida). */
-export const STUDENT_EXPORT_SCOPE_HINTS = {
-  [STUDENT_EXPORT_SCOPE_CLASS]: "Tanlangan sinfda o'qiyotgan o'quvchilar.",
-  [STUDENT_EXPORT_SCOPE_ACTUAL]:
-    "Haqiqiy sinfi tanlangan sinf bo'lgan o'quvchilar.",
-  [STUDENT_EXPORT_SCOPE_BOTH]:
-    "Ikkalasi ham: shu sinfda o'qiyotganlar va haqiqiy sinfi shu bo'lganlar — bitta ro'yxatda, takrorlanmasdan.",
-};
-
-/** Fayl nomidagi kesim belgisi ("students_haqiqiy_IT_1_...") */
-export const STUDENT_EXPORT_SCOPE_FILE_PART = {
-  [STUDENT_EXPORT_SCOPE_CLASS]: "",
-  [STUDENT_EXPORT_SCOPE_ACTUAL]: "haqiqiy_",
-  [STUDENT_EXPORT_SCOPE_BOTH]: "umumiy_",
-};
 
 /**
  * Excel eksport turlari.

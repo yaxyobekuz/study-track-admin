@@ -10,34 +10,36 @@ import SelectField from "@/shared/components/ui/select/SelectField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
-import { useClasses } from "@/features/classes/queries/classes.queries";
-import { useUpdateStudentActualClass } from "@/features/users/queries/users.mutations";
+import { useUpdateStudentActualGrade } from "@/features/users/queries/users.mutations";
+
+// Data
+import { formatGrade, getGradeOptions } from "../data/users.data";
 
 /**
- * O'QUVCHINING HAQIQIY SINFI.
+ * O'QUVCHINING ASL SINFI — maktab darajasi (1-sinf … 11-sinf).
  *
- * "Sinflar" — o'quvchi HOZIR O'QIYOTGAN guruh(lar), bu yerdagi sinf esa
- * uning O'Z sinfi: bilimi yaxshi bola IT 2 dan IT 1 ga o'tqazilsa, guruhi
- * IT 1, haqiqiy sinfi IT 2 bo'lib qoladi.
+ * "Sinflar" — o'quvchi HOZIR O'QIYOTGAN guruh(lar), bu yerdagi daraja esa
+ * u NECHANCHI SINF o'quvchisi: bilimi yaxshi 5-sinf o'quvchisi 6-sinflar
+ * guruhida o'qiyotgan bo'lishi mumkin.
  *
+ * ⚠️ Ro'yxat SINFLAR KATALOGIDAN EMAS — daraja katalogga bog'liq emas.
  * ⚠️ SABAB SO'RALMAYDI va jurnalga YOZILMAYDI (`EditStudentClassesModal`
  * dan farqi): bu a'zolik emas, belgi — hech kim sinfidan chiqarilmaydi.
  */
-const EditStudentActualClassModal = () => (
-  <ResponsiveModal name="editStudentActualClass" title="Haqiqiy sinfi">
+const EditStudentActualGradeModal = () => (
+  <ResponsiveModal name="editStudentActualGrade" title="Asl sinfi">
     <Content />
   </ResponsiveModal>
 );
 
 const Content = ({ close, isLoading, setIsLoading, ...user }) => {
-  const { data: classes = [] } = useClasses();
-  const { mutate: updateActualClass } = useUpdateStudentActualClass();
+  const { mutate: updateActualGrade } = useUpdateStudentActualGrade();
 
-  const currentId = user.actualClass?.id ?? "";
-  const [selected, setSelected] = useState(currentId);
+  const currentValue =
+    user.actualGrade == null ? "" : String(user.actualGrade);
+  const [selected, setSelected] = useState(currentValue);
 
-  const options = classes.map((cls) => ({ label: cls.name, value: cls.id }));
-  const hasChanges = selected !== currentId;
+  const hasChanges = selected !== currentValue;
 
   // Hozirgi guruh(lar)i — admin farqni ko'rib turib tanlasin
   const studyingIn =
@@ -52,15 +54,15 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
 
     setIsLoading(true);
 
-    updateActualClass(
-      { id: user.id, actualClassId: selected },
+    updateActualGrade(
+      { id: user.id, actualGrade: selected },
       {
         onSuccess: () => {
           close();
           toast.success(
             selected
-              ? "Haqiqiy sinfi saqlandi"
-              : "Haqiqiy sinfi olib tashlandi",
+              ? `Asl sinfi: ${formatGrade(selected)}`
+              : "Asl sinfi olib tashlandi",
           );
         },
         onError: (err) =>
@@ -75,8 +77,8 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
       <p className="rounded-xl bg-gray-50 p-3 text-sm text-gray-600">
         Hozir o'qiyotgan guruhi: <b className="text-gray-900">{studyingIn}</b>
         <span className="mt-1 block text-xs text-gray-500">
-          Haqiqiy sinf o'quvchini sinfga qo'shmaydi — u faqat o'quvchi aslida
-          qaysi sinfniki ekanini ko'rsatadi.
+          Asl sinf o'quvchini guruhga qo'shmaydi — u faqat o'quvchi nechanchi
+          sinf o'quvchisi ekanini ko'rsatadi.
         </span>
       </p>
 
@@ -85,8 +87,8 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
         <SelectField
           searchable
           inline
-          label="Haqiqiy sinfi"
-          options={options}
+          label="Asl sinfi"
+          options={getGradeOptions()}
           value={selected}
           placeholder="Sinfni tanlang"
           onChange={(v) => setSelected(v)}
@@ -98,7 +100,7 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
             onClick={() => setSelected("")}
             className="text-sm font-medium text-red-600 hover:text-red-700"
           >
-            Haqiqiy sinfni olib tashlash
+            Asl sinfni olib tashlash
           </button>
         )}
       </div>
@@ -122,4 +124,4 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
   );
 };
 
-export default EditStudentActualClassModal;
+export default EditStudentActualGradeModal;
