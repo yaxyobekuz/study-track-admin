@@ -153,15 +153,19 @@ const Topics = () => {
           {!loading && topics.length > 0 && (
             <div className="rounded-lg overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
+                {/* ⚠️ Sarlavha `text-left`: global uslub `th` ni markazga
+                    tekislaydi, katakdagi matn esa chapda turadi — keng
+                    ustunda sarlavha ma'lumotdan "siljib" ko'rinardi.
+                    Kenglik — Daraja/Kitob qisqa, Mavzu va mazmun keng. */}
                 <thead>
                   <tr>
                     {/* Platforma bergan mavzu raqami (jadvaldagi "N-mavzu"),
                         fayldagi T/R EMAS — u yuklashda o'qilmaydi */}
-                    <th>№</th>
-                    {hasLevel && <th>Daraja</th>}
-                    {hasBook && <th>Kitob</th>}
-                    <th>Mavzu</th>
-                    <th>Nimalar o'rgatiladi</th>
+                    <th className="w-16 text-left whitespace-nowrap">№</th>
+                    {hasLevel && <th className="w-40 text-left">Daraja</th>}
+                    {hasBook && <th className="w-56 text-left">Kitob</th>}
+                    <th className="min-w-[260px] text-left">Mavzu</th>
+                    <th className="min-w-[300px] text-left">Nimalar o'rgatiladi</th>
                   </tr>
                 </thead>
 
