@@ -35,6 +35,12 @@ const Topics = () => {
 
   const { mutate: deleteSubjectTopics } = useDeleteSubjectTopics();
 
+  // Daraja va Kitob ustunlari faqat fanning faylida bo'lsa chiqadi: eski
+  // shablon (Mavzu nomi, Tavsif) bilan yuklangan fanda ular har qatorda
+  // "—" bo'lib, jadvalni bo'sh ustunlarga to'ldirardi.
+  const hasLevel = topics.some((topic) => topic.level);
+  const hasBook = topics.some((topic) => topic.book);
+
   useEffect(() => {
     if (selectedSubject) {
       localStorage.setItem("topics_selectedSubject", selectedSubject);
@@ -149,9 +155,13 @@ const Topics = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr>
-                    <th>T/R</th>
-                    <th>Mavzu nomi</th>
-                    <th>Tavsif</th>
+                    {/* Platforma bergan mavzu raqami (jadvaldagi "N-mavzu"),
+                        fayldagi T/R EMAS — u yuklashda o'qilmaydi */}
+                    <th>№</th>
+                    {hasLevel && <th>Daraja</th>}
+                    {hasBook && <th>Kitob</th>}
+                    <th>Mavzu</th>
+                    <th>Nimalar o'rgatiladi</th>
                   </tr>
                 </thead>
 
@@ -161,11 +171,21 @@ const Topics = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {topic.order}
                       </td>
+                      {hasLevel && (
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {topic.level || "—"}
+                        </td>
+                      )}
+                      {hasBook && (
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {topic.book || "—"}
+                        </td>
+                      )}
                       <td className="px-6 py-4 text-sm text-gray-900">
                         {topic.name}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {topic.description || "-"}
+                        {topic.description || "—"}
                       </td>
                     </tr>
                   ))}

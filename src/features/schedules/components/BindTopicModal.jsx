@@ -11,6 +11,7 @@ import { Link2, Link2Off, TriangleAlert } from "lucide-react";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import Button from "@/shared/components/ui/button/Button";
 import SelectSearch from "@/shared/components/ui/select/SelectSearch";
+import TopicMeta from "@/features/subjects/components/TopicMeta";
 
 // Queries
 import { useSubjectTopics } from "@/features/subjects/queries/topics.queries";
@@ -138,7 +139,9 @@ const BindForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    // `min-w-0`: forma — `DialogContent` gridining elementi; usiz uzun mavzu
+    // nomi gridni o'z kengligigacha cho'zib, oynaning o'ng tomonini kesardi
+    <form onSubmit={handleSubmit} className="min-w-0 space-y-4">
       {/* Qaysi dars */}
       <div className="rounded-xl bg-slate-50 p-3">
         <p className="text-sm font-medium text-gray-900">
@@ -173,6 +176,21 @@ const BindForm = ({
           triggerClassName="w-full"
           listClassName="max-h-[280px] show-scrollbar"
         />
+
+        {/* Tanlangan mavzu — to'liq ko'rinishda. Ro'yxatdagi yorliq bir
+            qatorga sig'maydi, daraja, kitob va mazmun esa unda yo'q. */}
+        {selected && (
+          <div className="mt-2 space-y-1 rounded-lg border border-gray-100 bg-gray-50 p-2.5">
+            <TopicMeta level={selected.level} book={selected.book} />
+            <p className="text-xs text-gray-800 break-words">{selected.name}</p>
+            {selected.description && (
+              <p className="text-[11px] leading-snug text-gray-500 break-words">
+                <span className="font-medium text-gray-600">Nimalar o'rgatiladi:</span>{" "}
+                {selected.description}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Izoh — ixtiyoriy */}

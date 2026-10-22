@@ -23,6 +23,7 @@ import { schedulesAPI } from "@/features/schedules/api/schedules.api";
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
 import SelectSearch from "@/shared/components/ui/select/SelectSearch";
+import TopicMeta from "@/features/subjects/components/TopicMeta";
 
 // Queries
 import {
@@ -435,9 +436,36 @@ const Schedules = () => {
                                   <span className="block text-xs font-medium text-gray-900">
                                     {topicInfo.topic.order}-mavzu
                                   </span>
-                                  <span className="block truncate text-xs text-gray-600">
+                                  {/* Daraja va kitob — ixtiyoriy, bo'lmasa chizilmaydi */}
+                                  <TopicMeta
+                                    level={topicInfo.topic.level}
+                                    book={topicInfo.topic.book}
+                                    className="mt-1"
+                                  />
+                                  {/* ⚠️ `line-clamp`, `truncate` EMAS: ba'zi mavzu nomi
+                                      bir necha jumla (mazmun nomning o'zida yozilgan)
+                                      va bitta qatorda kesilsa ma'nosi yo'qolardi.
+                                      To'liq matn `title` da va biriktirish oynasida.
+                                      ⚠️ `block` QO'SHILMAYDI: u `line-clamp` ning
+                                      `display: -webkit-box` ini bosib, cheklovni
+                                      jimgina o'chirib qo'yadi. */}
+                                  <span
+                                    title={topicInfo.topic.name}
+                                    className="mt-1 text-xs text-gray-700 line-clamp-4 break-words"
+                                  >
                                     {topicInfo.topic.name}
                                   </span>
+                                  {topicInfo.topic.description && (
+                                    <span
+                                      title={topicInfo.topic.description}
+                                      className="mt-1 text-[11px] leading-snug text-gray-500 line-clamp-3 break-words"
+                                    >
+                                      <span className="font-medium text-gray-600">
+                                        Nimalar o'rgatiladi:
+                                      </span>{" "}
+                                      {topicInfo.topic.description}
+                                    </span>
+                                  )}
                                 </>
                               ) : (
                                 <span className="block text-xs text-gray-400">

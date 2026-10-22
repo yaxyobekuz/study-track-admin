@@ -10,15 +10,38 @@ import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Icons
-import { X, FileSpreadsheet } from "lucide-react";
+import {
+  X,
+  Info,
+  XCircle,
+  CheckCircle2,
+  TriangleAlert,
+  FileSpreadsheet,
+} from "lucide-react";
 
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 import { useUploadTopics } from "@/features/subjects/queries/topics.mutations";
 
+// Server hisobotidagi ustun kalitlari → shablondagi nomi (tartib bilan).
+// T/R yo'q: u platforma uchun o'qilmaydi va server uni qaytarmaydi.
+const COLUMN_LABELS = [
+  ["level", "Daraja"],
+  ["book", "Kitob"],
+  ["name", "Mavzu"],
+  ["description", "Nimalar o'rgatiladi"],
+];
+
+// Bitta varaqda ko'rsatiladigan eng ko'p ogohlantirish (qolgani soni bilan)
+const MAX_WARNINGS = 50;
+
 const UploadTopicsModal = () => (
-  <ResponsiveModal name="uploadTopics" title="Mavzular yuklash">
+  <ResponsiveModal
+    name="uploadTopics"
+    title="Mavzular yuklash"
+    className="max-w-lg"
+  >
     <Content />
   </ResponsiveModal>
 );
@@ -35,6 +58,12 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     uploadMode: "all",
     subjectId: "",
   });
+
+  // Yuklash natijasi — har varaq bo'yicha. ⚠️ Oyna darhol YOPILMAYDI, agar
+  // aytadigan gap bo'lsa (bo'sh ixtiyoriy ustun, yuklanmagan qator yoki
+  // varaq): ilgari faqat birinchi 3 xabar toast bo'lib bir necha soniyada
+  // yo'qolardi va admin nima yuklanmaganini bilmay qolardi.
+  const [report, setReport] = useState(null);
 
   // Upload mode options
   const uploadModeOptions = [
@@ -129,31 +158,46 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         onSuccess: (data) => {
           toast.success(data.message);
 
-          // Show warnings if any (only first 3)
-          if (data.data?.errors?.length > 0) {
-            data.data.errors.slice(0, 3).forEach((error) => {
-              toast.warning(error);
-            });
-          }
-
-          close();
-        },
-        onError: (error) => {
-          toast.error(
-            error.response?.data?.message || "Mavzularni yuklashda xatolik",
+          const sheets = data.data?.sheets ?? [];
+          const hasDetails = sheets.some(
+            (sheet) =>
+              sheet.status !== "loaded" ||
+              sheet.notes?.length > 0 ||
+              sheet.warnings?.length > 0,
           );
 
-          // Show detailed errors if available (only first 3)
-          if (error.response?.data?.errors) {
-            error.response.data.errors.slice(0, 3).forEach((err) => {
-              toast.error(err);
-            });
+          if (hasDetails) {
+            setReport({ ok: true, message: data.message, sheets });
+          } else {
+            close();
           }
+        },
+        onError: (error) => {
+          const body = error.response?.data;
+          const message = body?.message || "Mavzularni yuklashda xatolik";
+          toast.error(message);
+
+          // Server sababni varaqlar kesimida `details` da qaytaradi
+          const sheets = body?.details?.sheets ?? [];
+          if (sheets.length > 0) setReport({ ok: false, message, sheets });
         },
         onSettled: () => setIsLoading(false),
       },
     );
   };
+
+  if (report) {
+    return (
+      <UploadReport
+        report={report}
+        onClose={close}
+        onRetry={() => {
+          setReport(null);
+          handleRemoveFile();
+        }}
+      />
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -261,16 +305,33 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         <ul className="text-xs text-blue-800 space-y-1">
           {state.uploadMode === "all" ? (
             <>
-              <li>• Har bir sahifa (sheet) - bitta fan</li>
-              <li>• Sahifa nomi - fan nomi bilan bir xil bo'lishi kerak</li>
-              <li>• Ustunlar: T/R, Mavzu nomi, Tavsif</li>
+              <li>• Har bir varaq (sheet) — bitta fan</li>
+              <li>• Varaq nomi fan nomi bilan bir xil bo'lishi kerak</li>
             </>
           ) : (
-            <>
-              <li>• Faqat birinchi sahifa (sheet) o'qiladi</li>
-              <li>• Ustunlar: T/R, Mavzu nomi, Tavsif</li>
-            </>
+            <li>• Faqat birinchi varaq (sheet) o'qiladi</li>
           )}
+          <li>
+            • 1-qatorda ustun nomlari: <b>Daraja, Kitob, Mavzu, Nimalar
+            o'rgatiladi</b>
+          </li>
+          <li>
+            • Faqat <b>Mavzu</b> majburiy. Daraja, Kitob va Nimalar
+            o'rgatiladi — ixtiyoriy: ustun yo'q yoki katak bo'sh bo'lsa ham
+            mavzu yuklanadi
+          </li>
+          <li>
+            • Ustunlar nomi bo'yicha topiladi, tartibi muhim emas. Boshqa
+            ustunlar (masalan T/R) e'tiborga olinmaydi. Eski shablon (Mavzu
+            nomi, Tavsif) ham qabul qilinadi
+          </li>
+          <li>
+            • Mavzu raqamini platforma o'zi beradi — fayldagi qatorlar
+            tartibida
+          </li>
+          <li>
+            • Yuklash shu fanning mavjud mavzular ro'yxatini almashtiradi
+          </li>
         </ul>
       </div>
 
@@ -296,6 +357,133 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         </Button>
       </div>
     </form>
+  );
+};
+
+/**
+ * YUKLASH NATIJASI — har varaq bo'yicha: qaysi fanga, nechta mavzu, qaysi
+ * ustunlar o'qildi, nima bo'sh (ixtiyoriy — xato emas) va nima yuklanmadi
+ * (sababi bilan). Matnlarni server yozadi — ikki joyda ikki xil sabab
+ * turmasin.
+ */
+const UploadReport = ({ report, onClose, onRetry }) => (
+  <div className="space-y-4">
+    <div
+      className={`flex items-start gap-2.5 rounded-lg border p-3 ${
+        report.ok
+          ? "border-green-200 bg-green-50 text-green-900"
+          : "border-red-200 bg-red-50 text-red-900"
+      }`}
+    >
+      {report.ok ? (
+        <CheckCircle2 className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
+      ) : (
+        <XCircle className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
+      )}
+      <p className="text-sm font-medium">{report.message}</p>
+    </div>
+
+    <div className="max-h-[55vh] space-y-3 overflow-y-auto pr-1 show-scrollbar">
+      {report.sheets.map((sheet) => (
+        <SheetReport key={sheet.sheet} sheet={sheet} />
+      ))}
+    </div>
+
+    <div className="flex flex-col-reverse gap-3.5 w-full xs:flex-row xs:justify-end">
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={onRetry}
+        className="w-full xs:w-auto xs:px-4"
+      >
+        Boshqa fayl yuklash
+      </Button>
+      <Button type="button" onClick={onClose} className="w-full xs:w-32">
+        Yopish
+      </Button>
+    </div>
+  </div>
+);
+
+const SheetReport = ({ sheet }) => {
+  const loaded = sheet.status === "loaded";
+  const notes = sheet.notes ?? [];
+  const warnings = sheet.warnings ?? [];
+  const columns = COLUMN_LABELS.filter(([key]) => sheet.columns?.[key]).map(
+    ([key, label]) => `${label} (${sheet.columns[key]})`,
+  );
+
+  return (
+    <div className="rounded-lg border border-gray-200 p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-gray-900 break-words">
+            Varaq: {sheet.sheet}
+          </p>
+          {sheet.subject && (
+            <p className="text-xs text-gray-500">Fan: {sheet.subject.name}</p>
+          )}
+        </div>
+
+        <span
+          className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-medium ${
+            loaded ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+          }`}
+        >
+          {loaded ? `${sheet.topicCount} ta mavzu yuklandi` : "Yuklanmadi"}
+        </span>
+      </div>
+
+      {/* Nega yuklanmadi */}
+      {sheet.reason && (
+        <p className="mt-2 text-xs text-red-700 break-words">{sheet.reason}</p>
+      )}
+      {!loaded && sheet.subject && (
+        <p className="mt-1 text-xs text-gray-500">
+          Bu fanning mavjud mavzulari o'zgarmadi
+        </p>
+      )}
+
+      {columns.length > 0 && (
+        <p className="mt-2 text-[11px] text-gray-500">
+          O'qilgan ustunlar: {columns.join(", ")}
+        </p>
+      )}
+
+      {/* Ixtiyoriy ma'lumot bo'shligi — xato EMAS */}
+      {notes.length > 0 && (
+        <ul className="mt-2 space-y-1">
+          {notes.map((note) => (
+            <li key={note} className="flex items-start gap-1.5 text-xs text-blue-800">
+              <Info className="mt-0.5 size-3.5 shrink-0" strokeWidth={1.5} />
+              <span>{note}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* Yuklanmay qolgan qatorlar */}
+      {warnings.length > 0 && (
+        <div className="mt-2 rounded-md bg-amber-50 p-2">
+          <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-amber-800">
+            <TriangleAlert className="size-3.5 shrink-0" strokeWidth={1.5} />
+            Diqqat ({warnings.length})
+          </p>
+          <ul className="space-y-0.5">
+            {warnings.slice(0, MAX_WARNINGS).map((warning, index) => (
+              <li key={index} className="text-xs text-amber-900 break-words">
+                • {warning}
+              </li>
+            ))}
+          </ul>
+          {warnings.length > MAX_WARNINGS && (
+            <p className="mt-1 text-xs text-amber-700">
+              … va yana {warnings.length - MAX_WARNINGS} ta
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

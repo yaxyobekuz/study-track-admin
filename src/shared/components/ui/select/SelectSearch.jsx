@@ -119,12 +119,16 @@ const SelectSearch = ({
       variant="outline"
       playClickSound={false}
       disabled={props.disabled || isLoading}
-      className="justify-between font-normal px-3 hover:bg-white"
+      // ⚠️ `max-w-full` + `min-w-0`: tanlangan yorliq juda uzun bo'lsa
+      // (masalan bir necha jumlali mavzu nomi) tugma matn uzunligicha
+      // cho'zilib, modalni kengaytirib yuborardi va o'ng tomoni kesilardi.
+      // Qisqa yorliqda hech narsa o'zgarmaydi.
+      className="max-w-full justify-between font-normal px-3 hover:bg-white"
       {...(inline ? { onClick: () => handleOpenChange(!open) } : {})}
     >
       <span
         className={cn(
-          "line-clamp-1",
+          "line-clamp-1 min-w-0 text-left",
           selectedOption?.label ? "text-black" : "text-gray-500",
         )}
       >
