@@ -42,6 +42,24 @@ export const classesQueries = {
     }),
 
   /**
+   * HAQIQIY SINFI shu sinf bo'lgan o'quvchilar — a'zolik ro'yxatidan
+   * ALOHIDA so'rov va alohida kesh kaliti.
+   *
+   * ⚠️ Ikkisi bitta ro'yxatga qo'shilmaydi: "shu sinfda o'qiydi" va "aslida
+   * shu sinfniki" boshqa-boshqa savol, aralashtirilsa kuchli o'quvchi ikki
+   * marta sanalardi (`users.data.js` dagi izoh bilan AYNI qoida).
+   */
+  actualStudents: (classId) =>
+    queryOptions({
+      queryKey: [...classesKeys.detail(classId), "actual-students"],
+      queryFn: () =>
+        usersAPI
+          .getAll({ role: "student", actualClass: classId, limit: 200 })
+          .then((r) => r.data.data ?? []),
+      enabled: Boolean(classId),
+    }),
+
+  /**
    * SINF O'ZGARISHLARI JURNALI — ko'chirilganlar / sinfdan chiqarilganlar,
    * sababi va aktyori bilan. Javob to'liq qaytadi (`data`, `pagination`,
    * `totals`): tablar yorlig'idagi sanoq ham shu so'rovdan.
@@ -93,3 +111,12 @@ export const useClasses = ({ enabled = true } = {}) =>
  */
 export const useClassStudents = (classId) =>
   useQuery(classesQueries.students(classId));
+
+/**
+ * Haqiqiy sinfi shu sinf bo'lgan o'quvchilar (sinf sahifasidagi ikkinchi tab).
+ *
+ * @example
+ * const { data: students = [] } = useClassActualStudents(classId);
+ */
+export const useClassActualStudents = (classId) =>
+  useQuery(classesQueries.actualStudents(classId));

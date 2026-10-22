@@ -17,14 +17,20 @@ export const usersAPI = {
   restore: (id) => http.put(`/users/${id}/restore`),
   resetPassword: (id, data) => http.put(`/users/${id}/reset-password`, data),
   getPassword: (id) => http.get(`/users/${id}/password`),
-  // `classId` va `archived` — faqat `role: "student"` bilan (server boshqa
-  // rolda rad etadi). `archived`: "all" | "true" | "false" — ro'yxat
-  // endpointidagi bilan AYNI so'z boyligi, ustiga "hammasi" qiymati.
-  exportUsers: (role, { classId, archived } = {}) =>
+  // `classId` / `classScope` va `archived` — faqat `role: "student"` bilan
+  // (server boshqa rolda rad etadi). `archived`: "all" | "true" | "false" —
+  // ro'yxat endpointidagi bilan AYNI so'z boyligi, ustiga "hammasi" qiymati.
+  //
+  // `classScope` — tanlangan sinf QAYSI MA'NODA: `"class"` (shu sinfda
+  // o'qiydiganlar), `"actual"` (haqiqiy sinfi shu bo'lganlar) yoki `"both"`
+  // (ikkalasi — birlashma). ⚠️ SINF BITTA: ikkinchi sinf identifikatori
+  // yuborilmaydi, shuning uchun kesimlar kesishib ketolmaydi.
+  exportUsers: (role, { classId, classScope, archived } = {}) =>
     http.get("/users/export", {
       params: {
         role,
         ...(classId ? { classId } : {}),
+        ...(classId && classScope ? { classScope } : {}),
         ...(archived ? { archived } : {}),
       },
       responseType: "blob",

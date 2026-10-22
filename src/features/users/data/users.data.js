@@ -23,10 +23,40 @@ export const STAFF_TABLE_COLUMNS = [
 export const STUDENT_TABLE_COLUMNS = [
   "O'quvchi",
   "Sinflar",
+  // O'quvchining O'Z sinfi — u o'qiyotgan guruhdan farq qilishi mumkin
+  "Haqiqiy sinfi",
   "Telefon",
   "Tangalar",
   "Jarimalar",
   "",
+];
+
+// ── HAQIQIY SINF ────────────────────────────
+//
+// O'quvchi bilimi yaxshi bo'lgani uchun katta guruhda o'qishi mumkin:
+// "Sinflar" — u HOZIR O'QIYOTGAN guruh(lar), "Haqiqiy sinfi" — uning O'Z
+// sinfi. Ikkalasi ham AYNI katalogdan (`useClasses`) tanlanadi — ikkinchi
+// sinflar ro'yxati yo'q.
+//
+// ⚠️ Bu A'ZOLIK EMAS, BELGI: bu yerda sinf almashtirilsa o'quvchi o'sha
+// sinfga qo'shilmaydi, jurnalga ham yozilmaydi va shuning uchun SABAB
+// SO'RALMAYDI (sinf a'zoligidan farqi aynan shu).
+
+/** Server bilan AYNI so'z: "haqiqiy sinfi belgilanmaganlar" filtri. */
+export const ACTUAL_CLASS_NONE = "none";
+
+/**
+ * O'quvchilar ro'yxatidagi "Haqiqiy sinf" filtrining variantlari.
+ *
+ * Yorliqlarda "Haqiqiy:" prefiksi bor — yonida turgan oddiy sinf filtri
+ * bilan bir xil nomni ko'rsatib, qaysi biri tanlanganini noaniq qoldirmasin.
+ *
+ * @param {{id: string, name: string}[]} classes
+ */
+export const getActualClassFilterOptions = (classes = []) => [
+  { value: "", label: "Haqiqiy sinf: barchasi" },
+  ...classes.map((cls) => ({ value: cls.id, label: `Haqiqiy: ${cls.name}` })),
+  { value: ACTUAL_CLASS_NONE, label: "Haqiqiy: belgilanmagan" },
 ];
 
 /**
@@ -62,6 +92,44 @@ export const getStudentTableColumns = (coinPeriod = COIN_PERIOD_TOTAL) =>
       ? "Tangalar (hafta)"
       : column,
   );
+
+/**
+ * EKSPORT KESIMI — tanlangan sinf QAYSI MA'NODA olinadi.
+ *
+ * "Sinf" — o'quvchi QAYERDA o'qiydi, "Haqiqiy sinf" — u ASLIDA kimniki,
+ * "Ikkalasi" — shu sinfga ALOQADOR HAMMA (birlashma).
+ *
+ * ⚠️ SINF BITTA, MA'NO BITTA: ikkinchi sinf tanlagichi yo'q, shuning uchun
+ * "A da o'qiydigan, aslida B niki" degan hech kim so'ramagan kesim paydo
+ * bo'la olmaydi. "Ikkalasi" da ikkala shartga tushgan o'quvchi faylga BIR
+ * MARTA tushadi — bu birlashma, qo'shish emas.
+ */
+export const STUDENT_EXPORT_SCOPE_CLASS = "class";
+export const STUDENT_EXPORT_SCOPE_ACTUAL = "actual";
+export const STUDENT_EXPORT_SCOPE_BOTH = "both";
+
+/** Segment tugmalari — yorliqlar QISQA (uchtasi bir qatorga sig'sin). */
+export const STUDENT_EXPORT_SCOPE_OPTIONS = [
+  { value: STUDENT_EXPORT_SCOPE_CLASS, label: "Sinf" },
+  { value: STUDENT_EXPORT_SCOPE_ACTUAL, label: "Haqiqiy sinf" },
+  { value: STUDENT_EXPORT_SCOPE_BOTH, label: "Ikkalasi" },
+];
+
+/** Tanlangan kesim nima qilishini odam tilida aytadi (tugmalar ostida). */
+export const STUDENT_EXPORT_SCOPE_HINTS = {
+  [STUDENT_EXPORT_SCOPE_CLASS]: "Tanlangan sinfda o'qiyotgan o'quvchilar.",
+  [STUDENT_EXPORT_SCOPE_ACTUAL]:
+    "Haqiqiy sinfi tanlangan sinf bo'lgan o'quvchilar.",
+  [STUDENT_EXPORT_SCOPE_BOTH]:
+    "Ikkalasi ham: shu sinfda o'qiyotganlar va haqiqiy sinfi shu bo'lganlar — bitta ro'yxatda, takrorlanmasdan.",
+};
+
+/** Fayl nomidagi kesim belgisi ("students_haqiqiy_IT_1_...") */
+export const STUDENT_EXPORT_SCOPE_FILE_PART = {
+  [STUDENT_EXPORT_SCOPE_CLASS]: "",
+  [STUDENT_EXPORT_SCOPE_ACTUAL]: "haqiqiy_",
+  [STUDENT_EXPORT_SCOPE_BOTH]: "umumiy_",
+};
 
 /**
  * Excel eksport turlari.

@@ -10,6 +10,8 @@ import StudentClassHistory from "./StudentClassHistory";
 import EditUserBasicModal from "../EditUserBasicModal";
 import EditUserPhoneModal from "../EditUserPhoneModal";
 import EditStudentClassesModal from "../EditStudentClassesModal";
+import EditStudentActualClassModal from "../EditStudentActualClassModal";
+import StudentActualClassCell from "../StudentActualClassCell";
 import UserTransfersCard from "@/features/branchTransfers/components/UserTransfersCard";
 
 // Hooks
@@ -27,6 +29,11 @@ import { getGenderLabel } from "../../data/users.data";
  *
  * Xodimnikidan farqi: ish jadvali o'rnida sinflar kartasi turadi. Moliya va
  * davomat bu yerda takrorlanmaydi — ular o'z tablariga ega.
+ *
+ * "Haqiqiy sinfi" AYNI KARTADA turadi: u o'quvchi o'qiyotgan guruhdan farq
+ * qilishi mumkin va savol ("nega IT 1 da o'qiyapti") aynan shu ikki qator
+ * yonma-yon turganda javob topadi. Alohida karta bo'lsa, farqni ko'rish
+ * uchun ekranni qidirish kerak bo'lardi.
  */
 const StudentMainTab = ({ user }) => {
   const { openModal } = useModal();
@@ -76,6 +83,14 @@ const StudentMainTab = ({ user }) => {
             </p>
           )}
 
+          {/* HAQIQIY SINF — o'quvchining O'Z sinfi. A'zolik EMAS: bu yerda
+              sinf almashtirilsa o'quvchi o'sha sinfga qo'shilmaydi va
+              "Sinf o'zgarishlari" jurnaliga ham yozilmaydi. */}
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3">
+            <span className="text-sm text-gray-500">Haqiqiy sinfi:</span>
+            <StudentActualClassCell user={user} />
+          </div>
+
           {/* Ko'chirish / chiqarish tarixi, sababi bilan (`classes.history`) */}
           <StudentClassHistory user={user} />
         </InfoCard>
@@ -94,6 +109,7 @@ const StudentMainTab = ({ user }) => {
       {/* Modallar shu tab ichida — ro'yxat sahifalariga tegishli emas */}
       <EditUserBasicModal />
       <EditStudentClassesModal />
+      <EditStudentActualClassModal />
       <EditUserPhoneModal />
     </div>
   );

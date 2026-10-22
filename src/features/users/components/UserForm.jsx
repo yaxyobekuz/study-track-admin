@@ -77,6 +77,8 @@ const UserForm = ({ defaultRole = "student" }) => {
     phone: "",
     parentPhone: "",
     classes: [],
+    // Haqiqiy sinf — bo'sh bo'lsa server birinchi tanlangan sinfni qo'yadi
+    actualClassId: "",
     workStartTime: "",
     workEndTime: "",
     workDays: [1, 2, 3, 4, 5],
@@ -137,6 +139,10 @@ const UserForm = ({ defaultRole = "student" }) => {
       classes: state.role === "student" ? state.classes : undefined,
       // Moliya — faqat o'quvchi uchun (kirgan sana, to'lov oyi, birinchi oy, tarif)
       ...(state.role === "student" && {
+        // Bo'sh qoldirilsa YUBORILMAYDI: server birinchi tanlangan sinfni
+        // haqiqiy sinf qilib qo'yadi ("hozirgi sinfi haqiqiy sinfi ham
+        // bo'lsin"). Faqat FARQ QILSA qo'lda tanlanadi.
+        actualClassId: state.actualClassId || undefined,
         enrollmentDate: state.enrollmentDate || undefined,
         firstMonthKey: state.firstMonthKey || undefined,
         firstMonthAmount: state.firstMonthAmount || undefined,
@@ -232,6 +238,20 @@ const UserForm = ({ defaultRole = "student" }) => {
             value={state.classes}
             placeholder="Sinflarni tanlang..."
             onChange={(v) => setField("classes", v)}
+            options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
+          />
+
+          {/* HAQIQIY SINF — o'quvchining O'Z sinfi. Odatda u o'qiydigan
+              guruh bilan bir xil (shuning uchun bo'sh qoldirilsa server
+              o'zi qo'yadi), lekin kuchli o'quvchi katta guruhda o'qiyotgan
+              bo'lsa shu yerda farqi ko'rsatiladi. */}
+          <SelectField
+            searchable
+            label="Haqiqiy sinfi"
+            value={state.actualClassId}
+            placeholder="Tanlangan birinchi sinf bilan bir xil"
+            description="O'quvchi o'z sinfidan boshqa guruhda o'qiyotgan bo'lsa tanlang"
+            onChange={(v) => setField("actualClassId", v)}
             options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
           />
 

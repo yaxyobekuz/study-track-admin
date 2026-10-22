@@ -109,6 +109,12 @@ const UsersListView = ({
   const search = searchParams.get("search") || "";
   const roleFilter = searchParams.get("role") || "";
   const classFilter = searchParams.get("class") || "";
+  // Haqiqiy sinf filtri — eksport oynasiga qaysi kesim ochilishini ham shu
+  // hal qiladi. "none" (belgilanmaganlar) eksport kesimi EMAS, shuning
+  // uchun u sukutga olinmaydi.
+  const actualClassFilter = searchParams.get("actualClass") || "";
+  const exportActualClassId =
+    actualClassFilter && actualClassFilter !== "none" ? actualClassFilter : "";
   const activeTab = resolveTab(visibleTabs, searchParams.get("tab"));
   const isArchived = activeTab === "archived";
   const activePanel = tabPanels[activeTab] ?? null;
@@ -183,7 +189,10 @@ const UsersListView = ({
   const exportDefaults = isStudentList
     ? {
         defaultRole: "student",
-        defaultClassId: classFilter || "all",
+        // Ro'yxatda qaysi kesim bo'yicha filtrlangan bo'lsa, eksport ham
+        // o'shandan boshlanadi — fayl EKRANDAGI ro'yxatning nusxasi bo'lsin
+        defaultScope: exportActualClassId ? "actual" : "class",
+        defaultClassId: exportActualClassId || classFilter || "all",
         // Arxivlangan tabida eksport ham arxivdan boshlanadi — fayl ekrandagi
         // ro'yxatning nusxasi. Asosiy tabda sukut "hammasi" bo'lib qoladi:
         // moliyaviy eksport arxivlangan qarzdorni ko'rsatishda davom etadi

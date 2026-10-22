@@ -70,6 +70,30 @@ export const useUpdateStudentClasses = () => {
 };
 
 /**
+ * HAQIQIY SINF — o'quvchining O'Z sinfi (`PUT /users/:id` → `actualClassId`).
+ *
+ * `null` yuborilsa belgi olib tashlanadi. Sinf A'ZOLIGIGA TEGMAYDI va sabab
+ * talab qilmaydi: bu guruh almashtirish emas, o'quvchining qaysi sinfniki
+ * ekanini aytadigan belgi.
+ *
+ * `classesKeys.all` ham eskiradi — sinf sahifasidagi o'quvchilar ro'yxatida
+ * ham shu ustun bor, biri yangilanib ikkinchisi eski qolmasin.
+ */
+export const useUpdateStudentActualClass = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, actualClassId }) =>
+      usersAPI
+        .update(id, { actualClassId: actualClassId || null })
+        .then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: usersKeys.all });
+      qc.invalidateQueries({ queryKey: classesKeys.all });
+    },
+  });
+};
+
+/**
  * Telefon raqamlarini yangilash (`users.phone` ruxsati).
  *
  * `usersKeys.all` eskiradi: raqam ro'yxat ustunida ham, detal kartasida ham

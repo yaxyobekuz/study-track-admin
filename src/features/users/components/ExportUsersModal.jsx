@@ -11,6 +11,7 @@ import { useState } from "react";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
+import { TabsButtons } from "@/shared/components/ui/tabs/Tabs";
 
 // Hooks
 import { useClasses } from "@/features/classes/queries/classes.queries";
@@ -22,6 +23,12 @@ import { readBlobErrorMessage } from "@/shared/utils/download.utils";
 import {
   EXPORT_ROLE_OPTIONS,
   STUDENT_ARCHIVE_OPTIONS,
+  STUDENT_EXPORT_SCOPE_ACTUAL,
+  STUDENT_EXPORT_SCOPE_BOTH,
+  STUDENT_EXPORT_SCOPE_CLASS,
+  STUDENT_EXPORT_SCOPE_FILE_PART,
+  STUDENT_EXPORT_SCOPE_HINTS,
+  STUDENT_EXPORT_SCOPE_OPTIONS,
 } from "../data/users.data";
 
 const ALL_CLASSES = "all";
@@ -41,13 +48,22 @@ const toFileNamePart = (text = "") =>
  * boshqa turlarda ko'rinmaydi va so'rovga ham qo'shilmaydi — server ikkisini
  * ham faqat o'quvchilar eksportida qabul qiladi.
  *
- * ⚠️ "Faqat arxivlangan" tanlansa sinf tanlagichi yo'qoladi: arxivlangan
- * o'quvchi arxivlashda barcha sinflardan chiqariladi, ya'ni "sinf + arxiv"
- * har doim bo'sh fayl bo'lardi (server ham rad etadi).
+ * KESIM — tanlangan sinf QAYSI MA'NODA olinadi: "Sinf" (shu sinfda
+ * o'qiyotganlar), "Haqiqiy sinf" (aslida shu sinfniki bo'lganlar) yoki
+ * "Ikkalasi" (birlashma — shu sinfga aloqador hamma, takrorlanmasdan).
  *
- * `openModal("exportUsers", { defaultRole, defaultClassId, defaultArchived })`
- * — O'quvchilar sahifasi shu bilan joriy sinf filtrini va ochiq tabni
- * (asosiy / arxivlangan) oldindan tanlab ochadi.
+ * ⚠️ SINF TANLAGICHI BITTA: ikkinchi sinf tanlanmaydi, shuning uchun
+ * "A da o'qiydigan, aslida B niki" degan hech kim so'ramagan kesim paydo
+ * bo'la olmaydi.
+ *
+ * ⚠️ "Faqat arxivlangan" + "Sinf" — sinf tanlagichi yo'qoladi: arxivlangan
+ * o'quvchi arxivlashda barcha sinflardan chiqariladi, ya'ni bu juftlik har
+ * doim bo'sh fayl bo'lardi (server ham rad etadi). "Haqiqiy sinf" va
+ * "Ikkalasi" ga bu tegishli EMAS — belgi arxivlashda saqlanadi.
+ *
+ * `openModal("exportUsers", { defaultRole, defaultScope, defaultClassId,
+ * defaultArchived })` — O'quvchilar sahifasi shu bilan joriy filtrini
+ * (sinf yoki haqiqiy sinf) va ochiq tabni oldindan tanlab ochadi.
  */
 const ExportUsersModal = () => (
   <ResponsiveModal name="exportUsers" title="Foydalanuvchilarni yuklash">
@@ -60,18 +76,26 @@ const Content = ({
   isLoading,
   setIsLoading,
   defaultRole = "all",
+  defaultScope = STUDENT_EXPORT_SCOPE_CLASS,
   defaultClassId = ALL_CLASSES,
   defaultArchived = "all",
 }) => {
   const [exportType, setExportType] = useState(defaultRole);
+  const [scope, setScope] = useState(defaultScope || STUDENT_EXPORT_SCOPE_CLASS);
   const [classId, setClassId] = useState(defaultClassId || ALL_CLASSES);
   const [archived, setArchived] = useState(defaultArchived || "all");
   const { data: classes = [], isLoading: classesLoading } = useClasses();
 
   const isStudentExport = exportType === "student";
+  const byActual = scope === STUDENT_EXPORT_SCOPE_ACTUAL;
+  const byBoth = scope === STUDENT_EXPORT_SCOPE_BOTH;
+  // Arxiv cheklovi FAQAT sof a'zolik kesimiga tegishli (haqiqiy sinf belgisi
+  // arxivlashda saqlanadi), shuning uchun kesim ham shartga kiradi
   const onlyArchived = isStudentExport && archived === "true";
+  const classPickerHidden =
+    onlyArchived && scope === STUDENT_EXPORT_SCOPE_CLASS;
   const selectedClassId =
-    isStudentExport && !onlyArchived && classId !== ALL_CLASSES
+    isStudentExport && !classPickerHidden && classId !== ALL_CLASSES
       ? classId
       : null;
   const selectedClass = selectedClassId
@@ -88,7 +112,9 @@ const Content = ({
 
     try {
       const response = await usersAPI.exportUsers(exportType, {
+        // Sinf BITTA, ma'nosini `classScope` aytadi
         classId: selectedClassId,
+        classScope: scope,
         // Arxiv tanlovi faqat o'quvchilarda — boshqa rolda server rad etadi
         archived: isStudentExport ? archived : null,
       });
@@ -110,9 +136,14 @@ const Content = ({
         ? (STUDENT_ARCHIVE_OPTIONS.find((option) => option.value === archived)
             ?.suffix ?? "")
         : "";
+      // Kesim fayl NOMIDA ham ko'rinadi: "IT 1 da o'qiydiganlar" va "aslida
+      // IT 1 niki" fayllari papkada yonma-yon turganda farqi bilinsin
       const classPart = toFileNamePart(selectedClass?.name);
+      const scopePart = classPart
+        ? (STUDENT_EXPORT_SCOPE_FILE_PART[scope] ?? "")
+        : "";
       link.download = classPart
-        ? `${baseName}${archivePart}_${classPart}_${today}.xlsx`
+        ? `${baseName}${archivePart}_${scopePart}${classPart}_${today}.xlsx`
         : `${baseName}${archivePart}_${today}.xlsx`;
 
       document.body.appendChild(link);
@@ -167,11 +198,39 @@ const Content = ({
         </div>
       )}
 
-      {/* Class Select — faqat o'quvchilar eksportida; arxivlanganlar
-          sinflardan chiqarilgani uchun "faqat arxiv" da ko'rinmaydi */}
-      {isStudentExport && !onlyArchived && (
+      {/* KESIM — uchta variant, segment tugmalari bilan: tanlov bir
+          qarashda ko'rinib tursin (ochiladigan ro'yxat uni yashirardi) */}
+      {isStudentExport && (
+        <div className="space-y-2">
+          <span className="block text-sm font-medium text-gray-700">
+            Kesim
+          </span>
+
+          <TabsButtons
+            value={scope}
+            onChange={setScope}
+            items={STUDENT_EXPORT_SCOPE_OPTIONS}
+            listClassName="w-full"
+            triggerClassName="flex-1"
+          />
+
+          {/* Kesim faqat SINF TANLANGANDA ma'noga ega — buni jim qoldirsak,
+              "Barcha sinflar" da tanlov ishlayotgandek ko'rinardi */}
+          <p className="text-xs text-gray-500">
+            {selectedClassId
+              ? STUDENT_EXPORT_SCOPE_HINTS[scope]
+              : "Kesim pastdan sinf tanlangach qo'llanadi — hozir barcha o'quvchilar yuklanadi."}
+          </p>
+        </div>
+      )}
+
+      {/* Class Select — faqat o'quvchilar eksportida; sinf a'zoligi kesimida
+          arxivlanganlar sinflardan chiqarilgani uchun ko'rinmaydi */}
+      {isStudentExport && !classPickerHidden && (
         <div className="space-y-1.5">
-          <span className="block text-sm font-medium text-gray-700">Sinf</span>
+          <span className="block text-sm font-medium text-gray-700">
+            {byActual ? "Haqiqiy sinfi" : byBoth ? "Sinf (ikkalasi ham)" : "Sinf"}
+          </span>
           <Select
             size="lg"
             value={classId}
@@ -184,10 +243,11 @@ const Content = ({
         </div>
       )}
 
-      {onlyArchived && (
+      {classPickerHidden && (
         <p className="text-xs text-gray-500">
           Arxivlangan o'quvchilar arxivlashda barcha sinflardan chiqariladi —
-          shuning uchun sinf bo'yicha tanlov qo'llanmaydi.
+          shuning uchun sinf bo'yicha tanlov qo'llanmaydi. Haqiqiy sinf
+          kesimi esa arxivlanganlarda ham ishlaydi.
         </p>
       )}
 

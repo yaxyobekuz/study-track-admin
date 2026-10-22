@@ -104,8 +104,37 @@ const Classes = () => {
               </div>
             </div>
 
+            {/* IKKI SANOQ — ARALASHMAYDI.
+                "Sinfda o'qiydi" — a'zolik (`UserClass`), "Haqiqiy sinfi" —
+                aslida shu sinfniki bo'lganlar (`actualClassId`). Kuchli
+                o'quvchi IT 2 niki bo'lib IT 1 da o'qiydi, ya'ni u ikkala
+                raqamda ham bor — lekin BOSHQA-BOSHQA sinfda. Bitta raqamga
+                qo'shilsa, "sinfda nechta o'quvchi bor" degan savol javobsiz
+                qolardi. Har biri o'z ro'yxatini ochadi. */}
+            <div className="grid grid-cols-2 gap-2 pt-4 border-t">
+              <Link
+                to={`/classes/${classItem.id}`}
+                className="rounded-xl bg-blue-50 px-3 py-2 transition hover:bg-blue-100"
+              >
+                <p className="text-xs text-gray-500">Sinfda o'qiydi</p>
+                <p className="text-base font-semibold text-gray-900">
+                  {classItem.studentCount ?? 0} ta
+                </p>
+              </Link>
+
+              <Link
+                to={`/classes/${classItem.id}?tab=actual`}
+                className="rounded-xl bg-amber-50 px-3 py-2 transition hover:bg-amber-100"
+              >
+                <p className="text-xs text-gray-500">Haqiqiy sinfi</p>
+                <p className="text-base font-semibold text-gray-900">
+                  {classItem.actualStudentCount ?? 0} ta
+                </p>
+              </Link>
+            </div>
+
             {/* Bottom */}
-            <div className="flex items-center justify-between pt-4 border-t space-y-3">
+            <div className="flex items-center justify-between pt-3">
               <span className="bg-green-100 text-green-800 px-2 py-1 text-xs font-semibold rounded-full">
                 {classItem.isActive ? "Faol" : "Faol emas"}
               </span>

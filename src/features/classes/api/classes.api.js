@@ -16,7 +16,12 @@ export const classesAPI = {
     http.post(`/classes/${id}/students/move`, payload),
   // Sinf o'zgarishlari jurnali (`classes.history`) — `{ type, search, classId, studentId, page, limit }`
   getChanges: (params) => http.get("/classes/changes", { params }),
-  exportStudents: (id) =>
-    http.get(`/classes/${id}/export`, { responseType: "blob" }),
+  // `by` — KESIM: `"class"` (sukut, shu sinfda o'qiyotganlar) yoki
+  // `"actual"` (haqiqiy sinfi shu sinf bo'lganlar). Ekrandagi tab bilan AYNI.
+  exportStudents: (id, { by } = {}) =>
+    http.get(`/classes/${id}/export`, {
+      params: by ? { by } : undefined,
+      responseType: "blob",
+    }),
   exportAll: () => http.get("/classes/export", { responseType: "blob" }),
 };
