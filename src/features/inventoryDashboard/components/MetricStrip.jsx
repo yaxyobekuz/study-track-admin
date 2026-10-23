@@ -23,6 +23,11 @@ import { DELAY, HUE, MOTION, SURFACE, T, metricDelay } from "../data/atlas.token
 
 // Components
 import Delta from "./Delta";
+import BranchSplit from "@/shared/components/ui/BranchSplit";
+
+/** Umumiy ko'rinishdagi kesimda summa "so'm" siz ko'rsatiladi (joy tor). */
+const splitMoney = (value) => formatMoney(value, { withLabel: false });
+const splitCount = (value) => Number(value ?? 0).toLocaleString("uz-UZ");
 
 /**
  * OLTITA KO'RSATKICH — heroning ostidagi qator.
@@ -60,6 +65,8 @@ const MetricStrip = ({ data, isLoading }) => {
       accent: "damage",
       label: "Davr zarari",
       value: formatMoney(kpi?.damageAmount?.value, { withLabel: false }),
+      splitPath: "kpi.damageAmount.value",
+      splitFormat: splitMoney,
       suffix: "so'm",
       meta: `${kpi?.damageCount?.value ?? 0} ta hodisa`,
       change: kpi?.damageAmount?.change,
@@ -73,6 +80,8 @@ const MetricStrip = ({ data, isLoading }) => {
       accent: "damage",
       label: "Hodisalar",
       value: (kpi?.damageCount?.value ?? 0).toLocaleString("uz-UZ"),
+      splitPath: "kpi.damageCount.value",
+      splitFormat: splitCount,
       suffix: "ta",
       meta: `${data?.flow?.shares?.pending ?? 0}% qaror kutmoqda`,
       change: kpi?.damageCount?.change,
@@ -86,6 +95,8 @@ const MetricStrip = ({ data, isLoading }) => {
       accent: "recovery",
       label: "Undirilgan",
       value: formatMoney(kpi?.recoveredAmount?.value, { withLabel: false }),
+      splitPath: "kpi.recoveredAmount.value",
+      splitFormat: splitMoney,
       suffix: "so'm",
       meta: `${data?.rings?.recovery?.detail?.paymentCount ?? 0} ta to'lov`,
       change: kpi?.recoveredAmount?.change,
@@ -99,6 +110,8 @@ const MetricStrip = ({ data, isLoading }) => {
       accent: "warn",
       label: "Qarzdorlik",
       value: formatMoney(data?.debtors?.total, { withLabel: false }),
+      splitPath: "debtors.total",
+      splitFormat: splitMoney,
       suffix: "so'm",
       meta:
         data?.debtors?.overdueCount > 0
@@ -112,6 +125,8 @@ const MetricStrip = ({ data, isLoading }) => {
       accent: "warn",
       label: "Yaroqsiz",
       value: (kpi?.brokenQuantity?.value ?? 0).toLocaleString("uz-UZ"),
+      splitPath: "kpi.brokenQuantity.value",
+      splitFormat: splitCount,
       suffix: "dona",
       meta: `${data?.base?.unitHealthRate ?? 0}% yaroqli`,
       change: kpi?.brokenQuantity?.change,
@@ -126,6 +141,8 @@ const MetricStrip = ({ data, isLoading }) => {
       // bo'lib qolardi. Tafsilot pastdagi meta satrida turadi.
       label: "Bugun",
       value: `${data?.monitoring?.submittedToday ?? 0}`,
+      splitPath: "monitoring.submittedToday",
+      splitFormat: splitCount,
       suffix: `/ ${data?.monitoring?.totalLocations ?? 0}`,
       meta:
         data?.monitoring?.pendingToday > 0
@@ -141,7 +158,13 @@ const MetricStrip = ({ data, isLoading }) => {
           `key` maydoni bor va React uni "spread orqali kelgan key" deb
           ogohlantiradi — u propga aylanmaydi, faqat shovqin qiladi. */}
       {items.map(({ key, ...item }, index) => (
-        <MetricCard key={key} {...item} isLoading={isLoading} delay={metricDelay(index)} />
+        <MetricCard
+          key={key}
+          {...item}
+          data={data}
+          isLoading={isLoading}
+          delay={metricDelay(index)}
+        />
       ))}
     </div>
   );
@@ -175,6 +198,9 @@ const MetricCard = ({
   sparkColor,
   isLoading,
   delay,
+  data,
+  splitPath,
+  splitFormat,
 }) => (
   <article
     className={cn(SURFACE.card, "relative overflow-hidden px-3.5 py-3.5", MOTION.enter)}
@@ -184,6 +210,19 @@ const MetricCard = ({
     <div className="flex items-center gap-1.5">
       <Icon className={cn("size-3.5 shrink-0", ACCENT_ICON[accent])} strokeWidth={2.2} />
       <p className={cn(T.label, "truncate")}>{label}</p>
+
+      {/* ⚠️ Filiallar kesimi SARLAVHA QATORIDA: kartaning pastki cheti
+          sparkline bilan band (oqimdan tashqarida) va u yerga qator
+          qo'shilsa, chiziq matn ustiga tushardi. */}
+      <BranchSplit
+        variant="chip"
+        compact
+        data={data}
+        path={splitPath}
+        to="/equipment"
+        format={splitFormat}
+        className="ml-auto"
+      />
     </div>
 
     {isLoading ? (

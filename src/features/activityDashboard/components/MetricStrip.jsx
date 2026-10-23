@@ -4,6 +4,9 @@ import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 // Utils
 import { cn } from "@/shared/utils/cn";
 
+// Components
+import BranchSplit from "@/shared/components/ui/BranchSplit";
+
 // Hooks
 import { useCountUp } from "@/shared/hooks/useCountUp";
 
@@ -67,7 +70,12 @@ const MetricStrip = ({ data, isLoading = false, isError = false, delay = 0, clas
   return (
     <div className={cn(GRID, className)}>
       {metrics.map((metric, index) => (
-        <MetricTile key={metric.key} metric={metric} delay={tileDelay(index)} />
+        <MetricTile
+          key={metric.key}
+          metric={metric}
+          data={data}
+          delay={tileDelay(index)}
+        />
       ))}
     </div>
   );
@@ -115,7 +123,7 @@ const formatMetric = (value, decimals) => {
  * ⚠️ Kasr xonasi QAT'IY: foizda bitta, donada nol. Sanoq davomida xona
  * soni o'zgarsa (`9.5` → `94`), raqamning kengligi sakrab turardi.
  */
-const MetricTile = ({ metric, delay }) => {
+const MetricTile = ({ metric, data, delay }) => {
   const { label, value, previous, unit, tone, hint, higherIsBetter } = metric;
 
   const decimals = unit === "%" ? 1 : 0;
@@ -153,6 +161,17 @@ const MetricTile = ({ metric, delay }) => {
 
       {/* Izoh — raqamning maxraji ("12 / 40 xodim tizimga kirdi") */}
       <p className={cn(T.meta, "mt-1.5 truncate")}>{hint || "—"}</p>
+
+      {/* Umumiy ko'rinishda: qaysi filialda qancha. ⚠️ Yo'l qatorning
+          KALITI bilan ("metrics[botCoverage].value") — lenta massiv
+          bo'lgani uchun (`aggregateMerge.helpers.js`). */}
+      <BranchSplit
+        data={data}
+        path={`metrics[${metric.key}].value`}
+        to="/pulse"
+        format={(value) => `${formatMetric(Number(value), decimals)}${unit === "%" ? "%" : ""}`}
+        className="mt-2"
+      />
     </article>
   );
 };

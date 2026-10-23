@@ -10,6 +10,7 @@ import { ArrowRight, Bot, BellOff, Link2Off, Users } from "lucide-react";
 // Components
 import Card from "@/shared/components/ui/Card";
 import Counter from "@/shared/components/ui/Counter";
+import BranchSplit from "@/shared/components/ui/BranchSplit";
 import { Skeleton } from "@/shared/components/shadcn/skeleton";
 
 // Hooks
@@ -60,6 +61,7 @@ const BotActivityStats = () => {
   const items = [
     {
       key: "today",
+      path: "today.bot.active",
       label: "Bugun botda faol",
       value: today?.active ?? 0,
       suffix: today?.total ? `/ ${today.total}` : null,
@@ -72,6 +74,7 @@ const BotActivityStats = () => {
     },
     {
       key: "students",
+      path: "parents.linkedStudents",
       label: "Qamrab olingan o'quvchilar",
       value: parents?.linkedStudents ?? 0,
       suffix: parents?.students ? `/ ${parents.students}` : null,
@@ -81,6 +84,7 @@ const BotActivityStats = () => {
     },
     {
       key: "unlinked",
+      path: "parents.unlinked",
       label: "Bog'lanmaganlar",
       value: parents?.unlinked ?? 0,
       suffix: null,
@@ -90,6 +94,7 @@ const BotActivityStats = () => {
     },
     {
       key: "muted",
+      path: "parents.notificationsOff",
       label: "Bildirishnoma o'chirilgan",
       value: parents?.notificationsOff ?? 0,
       suffix: null,
@@ -158,6 +163,9 @@ const BotActivityStats = () => {
             </div>
 
             <p className="text-xs leading-relaxed text-gray-500">{item.hint}</p>
+
+            {/* Umumiy ko'rinishda: qaysi filialda qancha */}
+            <BranchSplit data={data} path={item.path} to="/pulse" />
           </Card>
         ))}
       </div>

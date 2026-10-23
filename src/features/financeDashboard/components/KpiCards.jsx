@@ -22,6 +22,9 @@ import { useNavigate } from "react-router-dom";
 // Utils
 import { cn } from "@/shared/utils/cn";
 
+// Components
+import BranchSplit from "@/shared/components/ui/BranchSplit";
+
 // Data
 import {
   KPI_CARDS,
@@ -72,6 +75,12 @@ const Delta = ({ change, changeUnit, inverse }) => {
  * O'TGAN OY (haqiqat qayoqqa ketyapti). Dizaynning ikki variantida ular
  * alohida edi — bittasini tashlab qoldirish "reja bajarildimi?" yoki
  * "o'sdikmi?" savollaridan birini javobsiz qoldirardi.
+ */
+/**
+ * ⚠️ Umumiy ko'rinishda har kartaning raqami TO'RT FILIALNING YIG'INDISI
+ * (foizli kartalarda — o'rtachasi). Yonidagi chip o'sha raqamning filiallar
+ * kesimini ochadi va qator bosilganda o'sha filialga o'tib, AYNI sahifani
+ * ochadi — moliyachi "qaysi filialda" degan savol bilan qolmasligi kerak.
  */
 const KpiCards = ({ data, isLoading, debtorTopClass }) => {
   const navigate = useNavigate();
@@ -131,14 +140,25 @@ const KpiCards = ({ data, isLoading, debtorTopClass }) => {
               </span>
             </div>
 
-            <p
-              className={cn(
-                "relative mt-3 text-[22px] font-bold leading-tight tracking-tight xl:text-2xl",
-                card.tone,
-              )}
-            >
-              {formatByUnit(row.value, row.unit)}
-            </p>
+            <div className="relative mt-3 flex items-baseline justify-between gap-2">
+              <p
+                className={cn(
+                  "text-[22px] font-bold leading-tight tracking-tight xl:text-2xl",
+                  card.tone,
+                )}
+              >
+                {formatByUnit(row.value, row.unit)}
+              </p>
+
+              {/* Umumiy ko'rinishda: qaysi filialda qancha */}
+              <BranchSplit
+                variant="chip"
+                data={data}
+                path={`kpi.${card.key}.value`}
+                to={card.to ?? "/reports"}
+                format={(value) => formatByUnit(value, row.unit)}
+              />
+            </div>
 
             {/* Izoh satri — "38 ta xodim", "5 oy oldingi qarz" kabi.
                 Raqamning MA'NOSINI aytadi, shuning uchun summaning ostida,

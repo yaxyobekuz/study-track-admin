@@ -51,10 +51,18 @@ const useBranch = () => {
 
   /**
    * Boshqa filialga (yoki umumiy ko'rinishga) o'tish.
+   *
+   * ⚠️ `to` — ALMASHGANDAN KEYIN OCHILADIGAN SAHIFA. Umumiy ko'rinishdagi
+   * sanoqchi "qaysi filialda qancha" ni ko'rsatadi va o'sha qator bosilganda
+   * odam ikki narsani birga kutadi: o'sha filialga o'tishni VA o'sha
+   * ro'yxatni ochishni. Almashtirib, keyin qo'lda bo'limni qidirish —
+   * kesimning butun ma'nosini yo'qotadi.
+   *
    * @param {string} branchId - filial id si yoki `ALL_BRANCHES_ID`
+   * @param {{to?: string}} [options] - almashgandan keyingi yo'l
    * @returns {Promise<void>}
    */
-  const switchBranch = async (branchId) => {
+  const switchBranch = async (branchId, { to } = {}) => {
     if (!branchId || branchId === branch?.id) return;
 
     setIsSwitching(true);
@@ -72,7 +80,13 @@ const useBranch = () => {
       // boshqa filialga yuborib qo'yishi mumkin edi.
       clearBranchHints();
       queryClient.clear();
-      window.location.reload();
+
+      // ⚠️ To'liq QAYTA YUKLASH, router bilan o'tish EMAS: token almashdi va
+      // ochiq sahifadagi lokal holat (tanlangan qatorlar, filtrlar, ochiq
+      // oynalar) hali eski filialniki. `to` berilsa o'sha manzilga, aks
+      // holda shu sahifaga qaytiladi.
+      if (to) window.location.assign(to);
+      else window.location.reload();
     } finally {
       setIsSwitching(false);
     }

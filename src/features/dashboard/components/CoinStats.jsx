@@ -26,6 +26,7 @@ import { formatDateUZ } from "@/shared/utils/date.utils";
 import Card from "@/shared/components/ui/Card";
 import Counter from "@/shared/components/ui/Counter";
 import Button from "@/shared/components/ui/button/Button";
+import BranchSplit from "@/shared/components/ui/BranchSplit";
 
 const CoinStats = () => {
   const { data: stats } = useQuery({
@@ -40,23 +41,42 @@ const CoinStats = () => {
           {/* Total coin */}
           <Card
             title="Umumiy tarqatilgan tangalar"
-            className="flex items-center justify-between"
+            className="flex items-center justify-between gap-2"
           >
-            <Counter
-              value={stats?.totalCoinsDistributed ?? 0}
-              className="text-2xl font-bold text-blue-500"
-            />
+            {/* Kartaning sarlavhasi va raqami BIR QATORDA turadi, shuning
+                uchun filiallar kesimi ichma-ich ro'yxat emas, chip bilan:
+                qator qo'shilsa sarlavha raqamdan ajralib ketardi. */}
+            <div className="flex items-center gap-2">
+              <BranchSplit
+                variant="chip"
+                data={stats}
+                path="totalCoinsDistributed"
+                to="/coin-distribution"
+              />
+              <Counter
+                value={stats?.totalCoinsDistributed ?? 0}
+                className="text-2xl font-bold text-blue-500"
+              />
+            </div>
           </Card>
 
           {/* Available coin */}
           <Card
             title="Mavjud tangalar"
-            className="flex items-center justify-between"
+            className="flex items-center justify-between gap-2"
           >
-            <Counter
-              value={stats?.availableCoins ?? 0}
-              className="text-2xl font-bold text-blue-500"
-            />
+            <div className="flex items-center gap-2">
+              <BranchSplit
+                variant="chip"
+                data={stats}
+                path="availableCoins"
+                to="/coin-distribution"
+              />
+              <Counter
+                value={stats?.availableCoins ?? 0}
+                className="text-2xl font-bold text-blue-500"
+              />
+            </div>
           </Card>
         </div>
 

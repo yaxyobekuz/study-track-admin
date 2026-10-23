@@ -10,6 +10,9 @@ import {
   resolveRequestBranch,
 } from "@/shared/api/branchHints";
 
+// Umumiy ko'rinish: "bu raqamning qanchasi qaysi filialdan"
+import { attachAggregateMeta } from "@/shared/api/aggregateMeta";
+
 // API URL
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4040";
 
@@ -71,7 +74,14 @@ http.interceptors.response.use(
   (response) => {
     // Umumiy ko'rinishda har qator `_branch` bilan keladi — keyingi yozuv
     // amali uchun eslab qolinadi (`branchHints.js`).
-    if (response?.data) rememberBranchHints(response.data);
+    if (response?.data) {
+      rememberBranchHints(response.data);
+      // Sanoqchilarning filiallar kesimi javob konvertidan ma'lumotning
+      // o'ziga ko'chiriladi (`aggregateMeta.js`) — kartalar uni shundan
+      // o'qiydi va `meta` ni har bir so'rov funksiyasiga olib yurish
+      // kerak bo'lmaydi.
+      attachAggregateMeta(response.data);
+    }
     return response;
   },
   (error) => {

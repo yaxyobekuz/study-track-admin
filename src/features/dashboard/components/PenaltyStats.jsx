@@ -27,6 +27,7 @@ import { formatDateUZ } from "@/shared/utils/date.utils";
 import Card from "@/shared/components/ui/Card";
 import Counter from "@/shared/components/ui/Counter";
 import Button from "@/shared/components/ui/button/Button";
+import BranchSplit from "@/shared/components/ui/BranchSplit";
 
 // Queries
 import { penaltiesKeys } from "@/features/penalties/queries/penalties.queries";
@@ -50,32 +51,59 @@ const PenaltyStats = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card
             title="Jami jarima ballar"
-            className="flex items-center justify-between"
+            className="flex items-center justify-between gap-2"
           >
-            <Counter
-              value={stats?.totalApprovedPoints ?? 0}
-              className="text-2xl font-bold text-red-500"
-            />
+            {/* Sarlavha va raqam bir qatorda — filiallar kesimi chip bilan */}
+            <div className="flex items-center gap-2">
+              <BranchSplit
+                variant="chip"
+                data={stats}
+                path="totalApprovedPoints"
+                to="/penalties"
+              />
+              <Counter
+                value={stats?.totalApprovedPoints ?? 0}
+                className="text-2xl font-bold text-red-500"
+              />
+            </div>
           </Card>
 
           <Card
             title="Kamaytirilgan ballar"
-            className="flex items-center justify-between"
+            className="flex items-center justify-between gap-2"
           >
-            <Counter
-              value={stats?.totalReducedPoints ?? 0}
-              className="text-2xl font-bold text-green-500"
-            />
+            {/* Sarlavha va raqam bir qatorda — filiallar kesimi chip bilan */}
+            <div className="flex items-center gap-2">
+              <BranchSplit
+                variant="chip"
+                data={stats}
+                path="totalReducedPoints"
+                to="/penalties"
+              />
+              <Counter
+                value={stats?.totalReducedPoints ?? 0}
+                className="text-2xl font-bold text-green-500"
+              />
+            </div>
           </Card>
 
           <Card
             title="Kutilayotgan jarimalar"
-            className="flex items-center justify-between"
+            className="flex items-center justify-between gap-2"
           >
-            <Counter
-              value={stats?.pendingCount ?? 0}
-              className="text-2xl font-bold text-yellow-500"
-            />
+            {/* Sarlavha va raqam bir qatorda — filiallar kesimi chip bilan */}
+            <div className="flex items-center gap-2">
+              <BranchSplit
+                variant="chip"
+                data={stats}
+                path="pendingCount"
+                to="/penalties"
+              />
+              <Counter
+                value={stats?.pendingCount ?? 0}
+                className="text-2xl font-bold text-yellow-500"
+              />
+            </div>
           </Card>
         </div>
 

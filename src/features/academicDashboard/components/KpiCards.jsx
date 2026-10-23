@@ -22,6 +22,9 @@ import useEnterOnce from "@/shared/hooks/useEnterOnce";
 // Utils
 import { cn } from "@/shared/utils/cn";
 
+// Components
+import BranchSplit from "@/shared/components/ui/BranchSplit";
+
 // Data
 import {
   KPI_CARDS,
@@ -271,7 +274,7 @@ const Skeleton = () => (
  * ⚠️ `previous` SANALMAYDI — u taqqoslash raqami, e'tibor joriy qiymatda.
  * Ikkalasi bir vaqtda sanalsa ko'z qaysi biriga qarashni bilmasdi.
  */
-const KpiCard = ({ card, row, compareLabel, index }) => {
+const KpiCard = ({ card, row, compareLabel, index, data }) => {
   const delay = kpiDelay(index);
   const contentAt = contentDelay(delay);
   const enter = useEnterOnce(MOTION.enter);
@@ -325,7 +328,21 @@ const KpiCard = ({ card, row, compareLabel, index }) => {
         <span className="truncate">
           {compareLabel}: {formatByUnit(row.previous, row.unit)}
         </span>
-        <Delta change={row.change} changeUnit={row.changeUnit} />
+
+        <div className="flex shrink-0 items-center gap-1.5">
+          {/* Umumiy ko'rinishda: qaysi filialda qancha. ⚠️ Chip ZICH
+              shaklda — bu qator oltala kartada bir xil balandlikda
+              qolishi kerak (yuqoridagi maket izohlari). */}
+          <BranchSplit
+            variant="chip"
+            compact
+            data={data}
+            path={`kpi.${card.key}.value`}
+            to="/education"
+            format={(value) => formatByUnit(value, row.unit)}
+          />
+          <Delta change={row.change} changeUnit={row.changeUnit} />
+        </div>
       </div>
 
       {row.plan != null && <PlanBar planRate={row.planRate} delay={contentAt} />}
@@ -381,7 +398,14 @@ const KpiCards = ({ data, isLoading }) => {
         if (!row) return null;
 
         return (
-          <KpiCard key={card.key} card={card} row={row} compareLabel={compareLabel} index={index} />
+          <KpiCard
+            key={card.key}
+            card={card}
+            row={row}
+            data={data}
+            compareLabel={compareLabel}
+            index={index}
+          />
         );
       })}
     </div>
