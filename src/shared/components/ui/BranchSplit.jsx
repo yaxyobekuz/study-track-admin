@@ -44,7 +44,10 @@ import { cn } from "@/shared/utils/cn";
  * @param {object} props
  * @param {object} props.data - so'rov qaytargan ma'lumot obyekti
  * @param {string} props.path - kalit yo'li ("students", "kpi.income.value")
- * @param {string} [props.to] - filialga o'tgandan keyin ochiladigan sahifa
+ * @param {string} [props.to] - filialga o'tgandan keyin ochiladigan sahifa.
+ *   ⚠️ Berilmasa SHU SAHIFANING O'ZI qayta ochiladi (URL dagi sana va
+ *   filtrlar bilan) — kunlik davomat kabi ekranlarda aynan shu kerak:
+ *   aniq yo'l berilsa tanlangan sana yo'qolardi.
  * @param {(value: *) => string} [props.format] - qiymat ko'rinishi
  * @param {"rows"|"chip"} [props.variant] - ichma-ich ro'yxat yoki chip+oyna
  * @param {boolean} [props.compact] - chipda faqat ikonka va filial soni
@@ -93,18 +96,22 @@ const BranchSplit = ({
               go(branch.id);
             }}
             title={`${branch.name} — shu filialga o'tish`}
+            // ⚠️ RANG MEROS QILIB OLINADI (`text-current`, `bg-black/5`):
+            // kesim oq kartada ham, rangli davomat kartasida ham (yashil,
+            // sariq, qizil fon) turadi — qat'iy kulrang yozilsa, rangli
+            // kartada u begona bo'lib ko'rinardi.
             className={cn(
               "group flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left transition-colors",
-              "hover:bg-gray-50 disabled:cursor-wait disabled:opacity-60",
+              "hover:bg-black/5 disabled:cursor-wait disabled:opacity-60",
             )}
           >
-            <span className="min-w-0 flex-1 truncate text-xs text-gray-500">
+            <span className="min-w-0 flex-1 truncate text-xs opacity-60">
               {branch.shortName || branch.name}
             </span>
-            <span className="shrink-0 text-xs font-semibold tabular-nums text-gray-700">
+            <span className="shrink-0 text-xs font-semibold tabular-nums opacity-90">
               {show(value)}
             </span>
-            <ChevronRight className="size-3 shrink-0 text-gray-300 transition-colors group-hover:text-gray-500" />
+            <ChevronRight className="size-3 shrink-0 opacity-30 transition-opacity group-hover:opacity-70" />
           </button>
         </li>
       ))}
@@ -144,7 +151,7 @@ const BranchSplit = ({
   }
 
   return (
-    <div className={cn("border-t border-gray-100 pt-2", className)}>{rows}</div>
+    <div className={cn("mt-2 border-t border-black/5 pt-2", className)}>{rows}</div>
   );
 };
 

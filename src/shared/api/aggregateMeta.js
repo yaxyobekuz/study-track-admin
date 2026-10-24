@@ -25,6 +25,13 @@
  *
  * ⚠️ FAQAT OBYEKT JAVOBGA yoziladi. Ro'yxatda kesimning hojati yo'q: u
  * yerda har qator allaqachon `_branch` bilan belgilangan.
+ *
+ * ⚠️ KESIM IKKI JOYGA yoziladi — ma'lumotning o'ziga ham, JAVOB
+ * KONVERTIGA ham. Loyihadagi so'rovlarning bir qismi `r.data.data` ni
+ * oladi (sanoqchilar `data` ichida), bir qismi esa butun konvertni
+ * (`r.data`) — masalan kunlik davomat `{ rows, summary, date }` ni
+ * qaytaradi va u yerda `data` umuman yo'q. Faqat bittasiga yozilsa,
+ * ikkinchi shakldagi ekranlar kesimsiz qolardi.
  */
 
 /** Ma'lumot obyektidagi xizmat maydoni. */
@@ -45,9 +52,6 @@ export const attachAggregateMeta = (payload) => {
   const byBranch = payload?.meta?.aggregate?.byBranch;
   if (!byBranch?.branches?.length || !byBranch.values) return;
 
-  const data = payload.data;
-  if (!data || typeof data !== "object" || Array.isArray(data)) return;
-
   const values = {};
   for (const [path, line] of Object.entries(byBranch.values)) {
     if (!Array.isArray(line)) continue;
@@ -55,13 +59,19 @@ export const attachAggregateMeta = (payload) => {
     values[key] = line;
   }
 
-  data[AGGREGATE_FIELD] = {
+  const split = {
     branches: byBranch.branches,
     values,
     // "Nechta odam bir nechta filialda sanalgan" — kesim yig'indisi
     // jamidan katta chiqqanda sababini aytish uchun (`shared`).
     shared: payload.meta.aggregate.shared ?? null,
   };
+
+  payload[AGGREGATE_FIELD] = split;
+
+  const data = payload.data;
+  if (!data || typeof data !== "object" || Array.isArray(data)) return;
+  data[AGGREGATE_FIELD] = split;
 };
 
 /**
