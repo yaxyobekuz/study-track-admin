@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usersAPI } from "@/features/users/api/users.api";
 
 // API
-import { branchSharedOf } from "@/shared/api/aggregateMeta";
+import { branchSharedOf, branchSplitSum } from "@/shared/api/aggregateMeta";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -85,10 +85,16 @@ const UsersStats = () => {
               filialga o'tadi va ro'yxatni ochadi) */}
           <BranchSplit data={stats} path={item.path} to={item.to} />
 
+          {/* ⚠️ ARIFMETIKA OCHIQ YOZILADI. Xodimning hammasi ikkala filialga
+              biriktirilgan bo'lsa, jami KATTA filialning soniga TENG chiqadi
+              ("MBSI 95, AiHub 23, jami 95") va bu "AiHub hisobga olinmadi"
+              bo'lib o'qiladi. Shuning uchun yig'indi ham, takrorlanish ham
+              raqam bilan ko'rsatiladi. */}
           {item.sharedKey && branchSharedOf(stats, item.sharedKey) > 0 && (
             <p className="text-[11px] leading-snug text-gray-400">
-              {branchSharedOf(stats, item.sharedKey)} ta bir nechta filialda —
-              jamida bir marta sanalgan
+              Filiallar yig'indisi {branchSplitSum(stats, item.path)} —
+              shundan {branchSharedOf(stats, item.sharedKey)} tasi bir nechta
+              filialda ishlaydi, jamida bir marta sanalgan.
             </p>
           )}
         </Card>

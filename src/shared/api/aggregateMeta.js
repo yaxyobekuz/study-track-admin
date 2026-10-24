@@ -85,6 +85,20 @@ export const branchSplitOf = (data, path) => {
 };
 
 /**
+ * Kesimdagi sonlarning yig'indisi — "nega jami bundan kichik" degan savolga
+ * aniq raqam berish uchun (ekranda turgan sonlarning oddiy yig'indisi).
+ *
+ * @param {object} data
+ * @param {string} path
+ * @returns {number|null}
+ */
+export const branchSplitSum = (data, path) => {
+  const split = branchSplitOf(data, path);
+  if (!split) return null;
+  return split.reduce((acc, row) => acc + (Number(row.value) || 0), 0);
+};
+
+/**
  * Nechta odam bir nechta filialda sanalgan.
  *
  * ⚠️ FAQAT SERVER AYTGANDA chiqadi va panel uni O'ZI hisoblamaydi: kesim
