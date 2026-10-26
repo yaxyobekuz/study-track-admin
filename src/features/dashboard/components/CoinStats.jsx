@@ -18,6 +18,10 @@ import { useQuery } from "@tanstack/react-query";
 // API
 import { coinsAPI } from "@/features/coin-settings/api/coins.api";
 
+// Hooks
+import useBranch from "@/shared/hooks/useBranch";
+import usePermissions from "@/shared/hooks/usePermissions";
+
 // Utils
 import { cn } from "@/shared/utils/cn";
 import { formatDateUZ } from "@/shared/utils/date.utils";
@@ -27,8 +31,24 @@ import Card from "@/shared/components/ui/Card";
 import Counter from "@/shared/components/ui/Counter";
 import Button from "@/shared/components/ui/button/Button";
 import BranchSplit from "@/shared/components/ui/BranchSplit";
+import AttendanceTrendCard from "./AttendanceTrendCard";
 
+/**
+ * ⚠️ UMUMIY KO'RINISHDA (barcha filiallar, faqat tizim egasi) KUNLIK
+ * GRAFIK O'RNINI DAVOMAT EGALLAYDI (biznes qarori, 2026-10-26).
+ * Tanga — filialning ichki rag'bati va uni filial o'zi boshqaradi; butun
+ * tarmoqqa qaraydigan odamning birinchi savoli esa "bolalar maktabdami".
+ * Sanoqchi kartalar (umumiy / mavjud tanga, top 10) o'z joyida qoladi:
+ * ular filiallar bo'ylab to'g'ri qo'shiladi va savolni o'zgartirmaydi.
+ *
+ * Ruxsati bo'lmaganda (`attendance.reports` yo'q) tanga grafigi qoladi —
+ * bo'sh joy qoldirish grafikni "yo'qolgan" qilib ko'rsatardi.
+ */
 const CoinStats = () => {
+  const { isAggregate } = useBranch();
+  const { can } = usePermissions();
+  const showAttendance = isAggregate && can("attendance.reports");
+
   const { data: stats } = useQuery({
     queryKey: ["coins", "stats"],
     queryFn: () => coinsAPI.getStats().then((res) => res.data.data),
@@ -80,68 +100,12 @@ const CoinStats = () => {
           </Card>
         </div>
 
-        {/* Line Chart */}
-        <Card
-          title="So'nggi 30 kunda tarqatilgan tangalar"
-          className="col-span-2 h-60 space-y-2.5 sm:h-80"
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={stats?.dailyDistribution || []}
-              margin={{ top: 20, right: 10, left: -20, bottom: 40 }}
-            >
-              <defs>
-                <linearGradient id="colorCoins" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid
-                vertical={false}
-                stroke="#E5E7EB"
-                strokeDasharray="3 3"
-              />
-              <XAxis
-                dy={10}
-                dataKey="date"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "#9CA3AF" }}
-                tickFormatter={(val) => formatDateUZ(val, { hideYear: true })}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "#9CA3AF" }}
-                tickFormatter={(value) => value.toLocaleString()}
-              />
-              <Tooltip
-                labelStyle={{
-                  color: "#6B7280",
-                  fontSize: "14px",
-                  marginBottom: "2px",
-                }}
-                contentStyle={{
-                  borderRadius: "12px",
-                  border: "1px solid #E5E7EB",
-                  boxShadow: "0 2px 6px -1px rgb(0 0 0 / 0.1)",
-                }}
-                labelFormatter={formatDateUZ}
-                formatter={(value) => value.toLocaleString()}
-                itemStyle={{ color: "#f59e0b", fontWeight: "bold" }}
-              />
-              <Area
-                name="Tangalar"
-                strokeWidth={2}
-                fillOpacity={1}
-                stroke="#f59e0b"
-                type="monotone"
-                fill="url(#colorCoins)"
-                dataKey="totalDistributed"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </Card>
+        {/* Kunlik grafik — umumiy ko'rinishda davomat, aks holda tanga */}
+        {showAttendance ? (
+          <AttendanceTrendCard />
+        ) : (
+          <CoinsDailyChart stats={stats} />
+        )}
       </div>
 
       {/* Top 10 coin owner */}
@@ -149,6 +113,71 @@ const CoinStats = () => {
     </div>
   );
 };
+
+/** So'nggi 30 kunda tarqatilgan tangalar (filial ko'rinishi). */
+const CoinsDailyChart = ({ stats }) => (
+  <Card
+    title="So'nggi 30 kunda tarqatilgan tangalar"
+    className="col-span-2 h-60 space-y-2.5 sm:h-80"
+  >
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart
+        data={stats?.dailyDistribution || []}
+        margin={{ top: 20, right: 10, left: -20, bottom: 40 }}
+      >
+        <defs>
+          <linearGradient id="colorCoins" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2} />
+            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid
+          vertical={false}
+          stroke="#E5E7EB"
+          strokeDasharray="3 3"
+        />
+        <XAxis
+          dy={10}
+          dataKey="date"
+          axisLine={false}
+          tickLine={false}
+          tick={{ fontSize: 12, fill: "#9CA3AF" }}
+          tickFormatter={(val) => formatDateUZ(val, { hideYear: true })}
+        />
+        <YAxis
+          axisLine={false}
+          tickLine={false}
+          tick={{ fontSize: 12, fill: "#9CA3AF" }}
+          tickFormatter={(value) => value.toLocaleString()}
+        />
+        <Tooltip
+          labelStyle={{
+            color: "#6B7280",
+            fontSize: "14px",
+            marginBottom: "2px",
+          }}
+          contentStyle={{
+            borderRadius: "12px",
+            border: "1px solid #E5E7EB",
+            boxShadow: "0 2px 6px -1px rgb(0 0 0 / 0.1)",
+          }}
+          labelFormatter={formatDateUZ}
+          formatter={(value) => value.toLocaleString()}
+          itemStyle={{ color: "#f59e0b", fontWeight: "bold" }}
+        />
+        <Area
+          name="Tangalar"
+          strokeWidth={2}
+          fillOpacity={1}
+          stroke="#f59e0b"
+          type="monotone"
+          fill="url(#colorCoins)"
+          dataKey="totalDistributed"
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  </Card>
+);
 
 const TopTenCoinOwner = ({ stats }) => {
   const getRankColor = (index) => {

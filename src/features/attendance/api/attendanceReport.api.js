@@ -14,6 +14,15 @@ export const attendanceReportAPI = {
       params: { month, year, ...compare },
     }),
   /**
+   * So'nggi N kundagi davomat trendi (bosh sahifadagi grafik) →
+   * `{ byDay, summary }`. Foiz SERVERDAN KELMAYDI — sanoqlardan
+   * hisoblanadi (umumiy ko'rinishda foiz o'rtachalanib, sanoq esa
+   * qo'shilib ketardi).
+   * @param {number} [days=30]
+   */
+  getStudentTrend: (days = 30) =>
+    http.get("/attendance-reports/students/trend", { params: { days } }),
+  /**
    * Bitta sinf hisoboti.
    * @param {string} classId
    * @param {{period: "day"|"month"|"year", date?: string, month?: number,

@@ -172,6 +172,20 @@ export const attendanceReportsQueries = {
     }),
 
   /**
+   * So'nggi N kundagi davomat trendi (bosh sahifadagi grafik) →
+   * `{ byDay, summary }`.
+   *
+   * Davomat kun davomida belgilanadi, ya'ni bugungi nuqta kun davomida
+   * o'sib boradi — shuning uchun ma'lumot 5 daqiqada eskiradi.
+   */
+  studentTrend: (days = 30) =>
+    queryOptions({
+      queryKey: [...attendanceReportsKeys.all, "students", "trend", days],
+      queryFn: () => attendanceReportAPI.getStudentTrend(days).then((r) => r.data),
+      staleTime: 5 * 60 * 1000,
+    }),
+
+  /**
    * Bitta sinf hisoboti (kunlik / oylik / yillik) →
    * `{ classInfo, summary, concentration, students, byDay?, byMonth? }`.
    * Davr almashganda eski jadval ekranda qoladi — sahifa "sakramaydi".
