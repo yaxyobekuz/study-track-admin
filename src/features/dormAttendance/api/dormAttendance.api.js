@@ -7,6 +7,15 @@ export const dormAttendanceAPI = {
   // "Qaysi sinfdan nechta qoldi" — `{ date }`
   getClasses: (params) => http.get("/dorm-attendance/classes", { params }),
 
+  // Bitta sinf — kunlik ro'yxat + har o'quvchining oxirgi kunlari + kunlar
+  // kesimi (`{ date, status, search, days }`)
+  getClassDetail: (classId, params) =>
+    http.get(`/dorm-attendance/class/${classId}`, { params }),
+
+  // Bitta o'quvchining kun-ba-kun tarixi (`{ date, days }`)
+  getStudentHistory: (studentId, params) =>
+    http.get(`/dorm-attendance/student/${studentId}`, { params }),
+
   // Belgilash — `{ date, records: [{ studentId, status, note }] }`
   mark: (payload) => http.post("/dorm-attendance/mark", payload),
 

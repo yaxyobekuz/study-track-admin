@@ -29,6 +29,7 @@ export const MODAL_NAMES = [
 
   // Yotoqxona davomati
   "dormAttendanceSettings",
+  "dormStudentHistory",
 
   // Sertifikat rejalari
   "certificatePlan",

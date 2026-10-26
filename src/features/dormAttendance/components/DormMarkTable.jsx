@@ -29,11 +29,20 @@ import { DORM_STATUS_COLORS, DORM_STATUS_OPTIONS } from "../data/dormAttendance.
  * sabablari katalogi bu yerda ataylab yo'q (`AttendanceMarkTable`
  * izohidagi sabab): tanlovga qadab qo'yish oddiy tuzatishni to'sardi.
  *
+ * ⚠️ IKKI EKRANDA BITTA JADVAL: butun maktab ro'yxati ham, sinf sahifasi
+ * ham shu komponent. Farqi faqat USTUNLARDA — sinf sahifasida "Sinf"
+ * ustuni ortiqcha (hammasi bitta sinf), uning o'rniga "Oxirgi kunlar"
+ * turadi. Ikkinchi jadval yozilsa, belgilash mantig'i (tanlov, o'zgargan
+ * qatorning sariq foni, izoh) ikki joyda ayri-ayri eskirardi.
+ *
  * @param {object} props
- * @param {Array} props.rows - server qatorlari `[{ student, classId, className, status, note, markedAt, markedBy }]`
+ * @param {Array} props.rows - server qatorlari `[{ student, classId, className, status, note, markedAt, markedBy, history? }]`
  * @param {Object} props.marks - `{ [studentId]: { status, note } }`
  * @param {Set<string>} props.selected
  * @param {boolean} [props.canMark] - false → faqat ko'rish
+ * @param {boolean} [props.showClass] - "Sinf" ustuni (sinf sahifasida yopiq)
+ * @param {boolean} [props.showHistory] - "Oxirgi kunlar" ustuni
+ * @param {Function} [props.onStudentClick] - ism bosilganda (tarix oynasi)
  * @param {Function} props.onStatusChange
  * @param {Function} props.onNoteChange
  * @param {Function} props.onToggleSelect
@@ -44,6 +53,9 @@ const DormMarkTable = ({
   marks = {},
   selected,
   canMark = false,
+  showClass = true,
+  showHistory = false,
+  onStudentClick,
   onStatusChange,
   onNoteChange,
   onToggleSelect,
@@ -74,9 +86,10 @@ const DormMarkTable = ({
       : []),
     { key: "no", label: "#", className: "w-14" },
     { key: "student", label: "O'quvchi" },
-    { key: "class", label: "Sinf" },
+    ...(showClass ? [{ key: "class", label: "Sinf" }] : []),
     { key: "status", label: "Holat" },
     { key: "note", label: "Izoh" },
+    ...(showHistory ? [{ key: "history", label: "Oxirgi kunlar" }] : []),
     { key: "markedBy", label: "Kim belgilagan" },
   ];
 
@@ -90,6 +103,8 @@ const DormMarkTable = ({
           Boolean(current) &&
           (current !== (row.status ?? null) ||
             (mark.note || "").trim() !== (row.note || "").trim());
+        const name =
+          [row.student.lastName, row.student.firstName].filter(Boolean).join(" ") || "—";
 
         return (
           <Tr key={id} className={cn(changed && "bg-amber-50/60")}>
@@ -107,21 +122,35 @@ const DormMarkTable = ({
 
             <Td className="text-gray-500">{index + 1}</Td>
 
+            {/* Ism — tarix oynasi bo'lsa o'sha, bo'lmasa o'quvchi profili.
+                ⚠️ Ikkalasi ham bo'lsa TARIX yutadi: bu ekranda odam
+                "nega bu bola yo'q" degan savol bilan turadi, profil esa
+                bitta bosish narida (`@login` ostidagi havola). */}
             <Td>
-              <Link
-                to={`/users/${id}`}
-                className="font-medium text-gray-900 hover:text-blue-600"
-              >
-                {[row.student.lastName, row.student.firstName]
-                  .filter(Boolean)
-                  .join(" ") || "—"}
-              </Link>
+              {onStudentClick ? (
+                <button
+                  type="button"
+                  onClick={() => onStudentClick(row)}
+                  className="text-left font-medium text-gray-900 hover:text-blue-600"
+                >
+                  {name}
+                </button>
+              ) : (
+                <Link
+                  to={`/users/${id}`}
+                  className="font-medium text-gray-900 hover:text-blue-600"
+                >
+                  {name}
+                </Link>
+              )}
               <p className="text-xs text-gray-500">@{row.student.username}</p>
             </Td>
 
-            <Td className="text-gray-700">
-              {row.className || <span className="text-gray-400">Sinfsiz</span>}
-            </Td>
+            {showClass && (
+              <Td className="text-gray-700">
+                {row.className || <span className="text-gray-400">Sinfsiz</span>}
+              </Td>
+            )}
 
             <Td>
               <div className="flex flex-wrap items-center gap-1.5">
@@ -158,6 +187,8 @@ const DormMarkTable = ({
               />
             </Td>
 
+            {showHistory && <HistoryCell history={row.history} />}
+
             <Td className="text-xs text-gray-500">
               {row.markedBy ? (
                 <>
@@ -176,6 +207,42 @@ const DormMarkTable = ({
         );
       })}
     </Table>
+  );
+};
+
+/**
+ * "OXIRGI KUNLAR" KATAGI — necha kunda qolgan.
+ *
+ * ⚠️ MAXRAJ — DAVOMAT OLINGAN KUNLAR, kalendar kunlari EMAS (server
+ * `tracked`). Modul yangi yoqilgan bo'lsa, kalendar bo'yicha har bir
+ * o'quvchi "14 kundan 11 tasida belgilanmagan" bo'lib chiqar va bu raqam
+ * hech narsani anglatmasdi.
+ */
+const HistoryCell = ({ history }) => {
+  if (!history || history.tracked === 0) {
+    return (
+      <Td className="text-xs text-gray-400">
+        Davomat olinmagan
+      </Td>
+    );
+  }
+
+  const { present, absent, excused, missing, tracked } = history;
+
+  return (
+    <Td
+      className="text-gray-700"
+      title={`Qoldi: ${present} · Kelmadi: ${absent} · Sababli: ${excused} · Belgilanmagan: ${missing}`}
+    >
+      <p className="font-medium">
+        {present} / {tracked}
+      </p>
+      <p className="text-xs text-gray-500">
+        kun qoldi
+        {absent > 0 && ` · ${absent} yo'q`}
+        {excused > 0 && ` · ${excused} sababli`}
+      </p>
+    </Td>
   );
 };
 

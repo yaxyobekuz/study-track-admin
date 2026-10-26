@@ -34,6 +34,33 @@ export const dormAttendanceQueries = {
       queryFn: () => dormAttendanceAPI.getClasses(params).then((r) => r.data.data),
     }),
 
+  /**
+   * BITTA SINF — "guruh ichiga kirilganda" ko'rinadigan to'liq manzara:
+   * kunlik ro'yxat, har o'quvchining oxirgi kunlardagi yo'nalishi va
+   * sinfning kunlar kesimi.
+   *
+   * ⚠️ Kunlik ro'yxat bilan AYNI `refetchOnWindowFocus: false`: bu ham
+   * belgilash ekrani va boshqa oynadan qaytganda saqlanmagan tanlovlar
+   * o'chib ketmasligi kerak.
+   */
+  classDetail: (classId, params) =>
+    queryOptions({
+      queryKey: [...dormAttendanceKeys.detail(classId), params],
+      queryFn: () =>
+        dormAttendanceAPI.getClassDetail(classId, params).then((r) => r.data.data),
+      enabled: Boolean(classId),
+      refetchOnWindowFocus: false,
+    }),
+
+  /** Bitta o'quvchining kun-ba-kun tarixi (oyna ichida). */
+  studentHistory: (studentId, params) =>
+    queryOptions({
+      queryKey: [...dormAttendanceKeys.all, "student", studentId, params],
+      queryFn: () =>
+        dormAttendanceAPI.getStudentHistory(studentId, params).then((r) => r.data.data),
+      enabled: Boolean(studentId),
+    }),
+
   /** Boshlanish vaqti (sozlama). */
   settings: () =>
     queryOptions({

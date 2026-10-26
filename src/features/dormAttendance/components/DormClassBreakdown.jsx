@@ -1,15 +1,27 @@
+// Router
+import { Link } from "react-router-dom";
+
 // Icons
 import { ChevronRight, School } from "lucide-react";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
 
+// Data
+import { NO_CLASS } from "../data/dormAttendance.data";
+
 /**
  * "QAYSI SINFDAN NECHTA QOLDI" — sinflar kesimi.
  *
  * ⚠️ Kesim BUTUN MAKTAB bo'yicha va sinf filtriga BOG'LIQ EMAS (alohida
  * so'rov): sinf tanlanganda ham rahbariyat umumiy manzarani ko'rishi kerak.
- * Qator bosilsa — o'sha sinfning ro'yxati ochiladi.
+ *
+ * ⚠️ QATOR BOSILSA SINF SAHIFASI OCHILADI, ro'yxat shu yerda
+ * FILTRLANMAYDI: ichkarida o'quvchining oxirgi kunlari, tarixi va
+ * sinfning kunlar kesimi bor — ular bu ekranga sig'maydi. Sinfni joyida
+ * filtrlash kerak bo'lsa, yuqoridagi sinf tanlagichi qoladi.
+ * "Sinfsiz" qatorining sahifasi yo'q: u sinf emas, shuning uchun u
+ * tanlagich orqali filtr sifatida ochiladi.
  *
  * ⚠️ IKKI SINFDAGI O'QUVCHI har ikki qatorda sanaladi, pastdagi "Jami" da
  * esa BIR MARTA — shuning uchun qatorlar yig'indisi jamidan katta bo'lishi
@@ -43,11 +55,18 @@ const DormClassBreakdown = ({ classes = [], totals, selected, onSelect }) => {
       </div>
 
       <div className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
-        {classes.map((row) => (
-          <button
+        {classes.map((row) => {
+          // "Sinfsiz" — sinf emas, uning sahifasi ham yo'q: filtr bo'lib qoladi
+          const isClass = row.id !== NO_CLASS;
+          const Row = isClass ? Link : "button";
+          const rowProps = isClass
+            ? { to: `/dorm-attendance/${row.id}` }
+            : { type: "button", onClick: () => onSelect(selected === row.id ? "" : row.id) };
+
+          return (
+          <Row
             key={row.id}
-            type="button"
-            onClick={() => onSelect(selected === row.id ? "" : row.id)}
+            {...rowProps}
             className={cn(
               "flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition",
               selected === row.id
@@ -71,8 +90,9 @@ const DormClassBreakdown = ({ classes = [], totals, selected, onSelect }) => {
               />
               <ChevronRight className="size-4 text-gray-300" strokeWidth={1.5} />
             </div>
-          </button>
-        ))}
+          </Row>
+          );
+        })}
       </div>
 
       {multiClass && (

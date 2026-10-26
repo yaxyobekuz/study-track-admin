@@ -63,6 +63,19 @@ export const buildClassOptions = (classes = []) => [
   { value: NO_CLASS, label: "Sinfsiz o'quvchilar" },
 ];
 
+/**
+ * Tarix oynasi — sinf sahifasidagi "oxirgi kunlar" necha kunni qamraydi.
+ *
+ * ⚠️ Qiymatlar server chegarasi ichida (`HISTORY_DAYS_MAX = 60`): undan
+ * kattasi jimgina 60 ga qisqartirilib, ekranda boshqa raqam turardi.
+ */
+export const HISTORY_WINDOW_OPTIONS = [
+  { value: "7", label: "Oxirgi 7 kun" },
+  { value: "14", label: "Oxirgi 14 kun" },
+  { value: "30", label: "Oxirgi 30 kun" },
+  { value: "60", label: "Oxirgi 60 kun" },
+];
+
 /** "322 daqiqa" emas, "5 soat 22 daqiqa". */
 export const formatWaitUz = (minutes) => {
   const total = Math.max(0, Number(minutes) || 0);

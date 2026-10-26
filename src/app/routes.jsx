@@ -45,6 +45,7 @@ import StudentSystemsPage from "@/features/studentSystems/pages/StudentSystemsPa
 
 // YOTOQXONA DAVOMATI — kechqurun yotoqxonada kim qoldi (tarbiyachi belgilaydi)
 import DormAttendancePage from "@/features/dormAttendance/pages/DormAttendancePage";
+import DormClassPage from "@/features/dormAttendance/pages/DormClassPage";
 
 // SERTIFIKAT REJALARI — kim qaysi sertifikatni qachon topshirmoqchi
 import CertificatesPage from "@/features/certificates/pages/CertificatesPage";
@@ -419,6 +420,9 @@ const Routes = () => {
           {/* YOTOQXONA DAVOMATI (`dormAttendance.view`) — kunlik ro'yxat,
               sinflar kesimi va Excel */}
           <Route path="/dorm-attendance" element={<DormAttendancePage />} />
+          {/* Sinf sahifasi — "guruh ichiga kirish": belgilash + o'quvchining
+              oxirgi kunlari + sinfning kunlar kesimi */}
+          <Route path="/dorm-attendance/:classId" element={<DormClassPage />} />
 
           {/* SERTIFIKAT REJALARI (`certificates.view`) — ro'yxat, statistika,
               yo'nalishlar katalogi va fayldan ommaviy yuklash */}
