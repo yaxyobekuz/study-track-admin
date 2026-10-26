@@ -29,9 +29,17 @@ import {
 
 const ALL_CLASSES = "all";
 
-/** Fayl nomida ishlatib bo'lmaydigan belgilar olib tashlanadi. */
-const toFileNamePart = (text = "") =>
-  text
+/**
+ * Fayl nomida ishlatib bo'lmaydigan belgilar olib tashlanadi.
+ *
+ * ⚠️ QIYMAT `null` BO'LISHI MUMKIN va sukut qiymati uni USHLAMAYDI
+ * (standart parametr faqat `undefined` uchun ishlaydi). `formatGrade`
+ * "Barcha asl sinflar" tanlanganda aynan `null` qaytaradi — shu sababli
+ * eksport fayl SERVERDAN KELGANIDAN KEYIN brauzerda yiqilib,
+ * foydalanuvchiga "Eksport qilishda xatolik yuz berdi" bo'lib ko'rinardi.
+ */
+const toFileNamePart = (text) =>
+  String(text ?? "")
     .replace(/[\\/:*?"<>|]+/g, "")
     .trim()
     .replace(/\s+/g, "_");
