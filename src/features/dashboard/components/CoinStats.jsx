@@ -32,6 +32,7 @@ import Counter from "@/shared/components/ui/Counter";
 import Button from "@/shared/components/ui/button/Button";
 import BranchSplit from "@/shared/components/ui/BranchSplit";
 import AttendanceTrendCard from "./AttendanceTrendCard";
+import TopStudentsCard from "./TopStudentsCard";
 
 /**
  * ⚠️ UMUMIY KO'RINISHDA (barcha filiallar, faqat tizim egasi) KUNLIK
@@ -43,11 +44,19 @@ import AttendanceTrendCard from "./AttendanceTrendCard";
  *
  * Ruxsati bo'lmaganda (`attendance.reports` yo'q) tanga grafigi qoladi —
  * bo'sh joy qoldirish grafikni "yo'qolgan" qilib ko'rsatardi.
+ *
+ * ⚠️ O'NG USTUNDA — TOP 10 TANGA EGASI O'RNIDA O'QUVCHILAR NATIJALARI
+ * (biznes qarori, 2026-10-26): bosh sahifaga qaragan rahbarning savoli
+ * "kim yaxshi o'qiyapti, kimga e'tibor kerak", tanga esa rag'bat
+ * mexanikasi va u "Tanga" bo'limida o'z o'rnida qoladi.
+ * `gradeAnalysis.view` ruxsati bo'lmaganda eski karta QOLADI — davomat
+ * grafigi bilan AYNI mulohaza: bo'sh joy kartani "yo'qolgan" qilardi.
  */
 const CoinStats = () => {
   const { isAggregate } = useBranch();
   const { can } = usePermissions();
   const showAttendance = isAggregate && can("attendance.reports");
+  const showResults = can("gradeAnalysis.view");
 
   const { data: stats } = useQuery({
     queryKey: ["coins", "stats"],
@@ -108,8 +117,8 @@ const CoinStats = () => {
         )}
       </div>
 
-      {/* Top 10 coin owner */}
-      <TopTenCoinOwner stats={stats} />
+      {/* Eng yaxshi 5 / eng past 5 o'quvchi (ruxsati yo'qda — top 10 tanga) */}
+      {showResults ? <TopStudentsCard /> : <TopTenCoinOwner stats={stats} />}
     </div>
   );
 };
