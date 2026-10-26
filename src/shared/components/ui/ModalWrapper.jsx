@@ -37,10 +37,21 @@ const ModalWrapper = ({
     ...(data || {}),
   });
 
+  // Radix DialogContent description'ni KUTADI: `description` berilmaganda
+  // DialogDescription ham render qilinmaydi va Radix konsolga "Missing
+  // Description or aria-describedby={undefined}" deb yozadi. Bu yerda
+  // description ATAYLAB ixtiyoriy (modallarning yarmida u ortiqcha),
+  // shuning uchun yo'qligi Radix'ga ANIQ aytiladi — aks holda har
+  // description'siz modal konsolni ogohlantirish bilan to'ldiradi.
+  const a11yProps = description ? {} : { "aria-describedby": undefined };
+
   if (isDesktop) {
     return (
       <Dialog open={isOpen} onOpenChange={hanldeCloseModal}>
-        <DialogContent className={cn("max-w-md", className)}>
+        <DialogContent
+          className={cn("max-w-md", className)}
+          {...a11yProps}
+        >
           {/* Header */}
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
@@ -58,7 +69,10 @@ const ModalWrapper = ({
 
   return (
     <Drawer open={isOpen} onOpenChange={hanldeCloseModal}>
-      <DrawerContent className={cn("px-5 pb-5", className)}>
+      <DrawerContent
+        className={cn("px-5 pb-5", className)}
+        {...a11yProps}
+      >
         {/* Header */}
         <DialogHeader className="bg-white pb-3.5">
           <DialogTitle>{title}</DialogTitle>
