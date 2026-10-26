@@ -36,6 +36,7 @@ const toDraft = (role) => ({
   workDays: role.workDays || [1, 2, 3, 4, 5],
   weeklySchedule: role.weeklySchedule || {},
   isTutor: Boolean(role.isTutor),
+  isClassLeader: Boolean(role.isClassLeader),
 });
 
 /**
@@ -142,6 +143,7 @@ const RoleDetailsPanel = ({ role, onDirtyChange, className = "" }) => {
         </div>
       </section>
 
+      {/* Rol belgilari — rol kaliti emas, BELGI: rollar dinamik */}
       {/* Tyutor belgisi — rol kaliti emas, belgi: rollar dinamik */}
       <section>
         <h3 className="mb-2 text-sm font-semibold text-gray-900">Tyutor</h3>
@@ -163,6 +165,35 @@ const RoleDetailsPanel = ({ role, onDirtyChange, className = "" }) => {
             biriktiriladi va o'quvchilar soniga qarab qo'shimcha oylik
             hisoblanadi. Belgi olinsa mavjud guruhlar o'chmaydi — xodim
             sahifasida ko'rinib turadi.
+          </p>
+        </div>
+      </section>
+
+      {/* Sinf rahbari belgisi — tyutordan ALOHIDA: bu pul emas, huquq */}
+      <section>
+        <h3 className="mb-2 text-sm font-semibold text-gray-900">Sinf rahbari</h3>
+
+        <div className="space-y-2 rounded-xl border border-gray-100 p-3.5">
+          <Field
+            className="flex-row"
+            htmlFor="roleIsClassLeader"
+            label="Bu rol — sinf rahbari roli"
+          >
+            <Switch
+              id="roleIsClassLeader"
+              checked={state.isClassLeader}
+              onChange={(v) => setField("isClassLeader", v)}
+            />
+          </Field>
+          <p className="text-xs text-gray-500">
+            Bu rol (asosiy yoki qo'shimcha) berilgan xodimga sinf biriktiriladi
+            va u o'z sinfining kunlik davomatini o'zi belgilaydi — darsi
+            bo'lmasa ham. Tyutor belgisidan farqi: bu yerda qo'shimcha oylik
+            hisoblanmaydi, faqat huquq beriladi.
+          </p>
+          <p className="text-xs text-amber-700">
+            Belgi olinsa, biriktirilgan sinflar qolsa ham davomat huquqi
+            darhol to'xtaydi.
           </p>
         </div>
       </section>

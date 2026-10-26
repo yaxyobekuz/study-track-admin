@@ -14,6 +14,9 @@ import TutorGroupsCard from "@/features/tutorGroups/components/TutorGroupsCard";
 import UserTransfersCard from "@/features/branchTransfers/components/UserTransfersCard";
 import TutorGroupModal from "@/features/tutorGroups/components/TutorGroupModal";
 import RemoveTutorGroupModal from "@/features/tutorGroups/components/RemoveTutorGroupModal";
+import ClassLeadersCard from "@/features/classLeaders/components/ClassLeadersCard";
+import ClassLeaderModal from "@/features/classLeaders/components/ClassLeaderModal";
+import RemoveClassLeaderModal from "@/features/classLeaders/components/RemoveClassLeaderModal";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -260,6 +263,10 @@ const StaffMainTab = ({ user }) => {
       {/* Tyutor guruhlari — tyutor rolida yoki guruhi bor xodimda ko'rinadi */}
       <TutorGroupsCard user={user} />
 
+      {/* Sinf rahbarligi — tyutor kartasidan ALOHIDA: u pul, bu huquq.
+          Sinf rahbari rolida yoki biriktirilgan sinfi bor xodimda ko'rinadi */}
+      <ClassLeadersCard user={user} />
+
       {/* Xodim qayerda ishlashi — faqat O'QISH uchun qisqa ro'yxat.
           Biriktirish va ruxsatlar "Ruxsatlar" tabida: ular bir-biridan
           ajralmaydi va ikki joyda takrorlanmasligi kerak. */}
@@ -276,6 +283,8 @@ const StaffMainTab = ({ user }) => {
       <EditUserPhoneModal />
       <TutorGroupModal />
       <RemoveTutorGroupModal />
+      <ClassLeaderModal />
+      <RemoveClassLeaderModal />
     </div>
   );
 };

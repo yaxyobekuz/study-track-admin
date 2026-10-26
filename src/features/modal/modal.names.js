@@ -55,6 +55,9 @@ export const MODAL_NAMES = [
   "detachUserBranch",
   "tutorGroup",
   "removeTutorGroup",
+  // Sinf rahbarligi — PULSIZ biriktirish (davomat huquqi)
+  "classLeader",
+  "removeClassLeader",
   "deleteUser",
   "archiveUser",
   "restoreUser",
