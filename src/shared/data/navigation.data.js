@@ -194,6 +194,12 @@ export const navItems = [
         url: "/student-systems",
       },
       {
+        // Kechqurun yotoqxonada kim qoldi — tarbiyachi belgilaydi, sinflar
+        // kesimi va Excel. Alohida ruxsat (`dormAttendance.*`)
+        title: "Yotoqxona davomati",
+        url: "/dorm-attendance",
+      },
+      {
         // Kim qaysi sertifikatni qachon topshirmoqchi — reja, muddat,
         // mavzu progressi va statistika. Alohida ruxsat (`certificates.*`)
         title: "Sertifikat rejalari",

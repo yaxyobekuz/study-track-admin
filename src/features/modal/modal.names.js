@@ -27,6 +27,9 @@ export const MODAL_NAMES = [
   // ERP va Kundalik.com
   "exportStudentSystems",
 
+  // Yotoqxona davomati
+  "dormAttendanceSettings",
+
   // Sertifikat rejalari
   "certificatePlan",
   "certificateStudent",
