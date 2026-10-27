@@ -82,6 +82,7 @@ const StaffDailyPage = () => {
         <AttendanceSummaryCards
           cards={STAFF_SUMMARY_CARDS}
           summary={summary}
+          data={data}
           className="sm:grid-cols-3 lg:grid-cols-6"
         />
       )}

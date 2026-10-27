@@ -17,14 +17,23 @@ export const usersAPI = {
   restore: (id) => http.put(`/users/${id}/restore`),
   resetPassword: (id, data) => http.put(`/users/${id}/reset-password`, data),
   getPassword: (id) => http.get(`/users/${id}/password`),
-  // `classId` va `archived` — faqat `role: "student"` bilan (server boshqa
-  // rolda rad etadi). `archived`: "all" | "true" | "false" — ro'yxat
-  // endpointidagi bilan AYNI so'z boyligi, ustiga "hammasi" qiymati.
-  exportUsers: (role, { classId, archived } = {}) =>
+  // ASL SINFLAR KESIMI — har darajada nechta o'quvchi (1-sinf … 11-sinf).
+  // Sinflar sanog'idan ALOHIDA: ular ikki boshqa savol.
+  getActualGrades: () => http.get("/users/actual-grades"),
+
+  // `classId` / `actualGrade` va `archived` — faqat `role: "student"` bilan
+  // (server boshqa rolda rad etadi). `archived`: "all" | "true" | "false" —
+  // ro'yxat endpointidagi bilan AYNI so'z boyligi, ustiga "hammasi" qiymati.
+  //
+  // ⚠️ `classId` (guruh) va `actualGrade` (daraja) — MUSTAQIL ikki o'lcham:
+  // ikkalasi yuborilsa shart KESISHADI ("IT 1 da o'qiydigan 5-sinf
+  // o'quvchilari"), bu ma'noli savol va server uni rad etmaydi.
+  exportUsers: (role, { classId, actualGrade, archived } = {}) =>
     http.get("/users/export", {
       params: {
         role,
         ...(classId ? { classId } : {}),
+        ...(actualGrade ? { actualGrade } : {}),
         ...(archived ? { archived } : {}),
       },
       responseType: "blob",

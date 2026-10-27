@@ -7,6 +7,8 @@ import CallButton from "@/shared/components/ui/CallButton";
 import UsersListView from "../components/UsersListView";
 import UserRowActions from "../components/UserRowActions";
 import StudentCoinCell from "../components/StudentCoinCell";
+import StudentActualGradeCell from "../components/StudentActualGradeCell";
+import EditStudentActualGradeModal from "../components/EditStudentActualGradeModal";
 import CoinWeekNav from "../components/CoinWeekNav";
 
 // Hooks
@@ -17,6 +19,7 @@ import {
   COIN_PERIOD_OPTIONS,
   COIN_PERIOD_TOTAL,
   COIN_PERIOD_WEEK,
+  getActualGradeFilterOptions,
   getInitials,
   getStudentTableColumns,
 } from "../data/users.data";
@@ -35,6 +38,11 @@ import {
  * Ikkala tanlov ham URL'da (`?coins=week&coinWeek=2026-10-12`): ro'yxat
  * holatini link qilsa bo'ladi va "orqaga" qaytganda yo'qolmaydi. Hafta
  * kaliti ISO ko'rinishida — bu FORMAT emas, so'rov parametri (`dates.md`).
+ *
+ * "ASL SINFI" USTUNI — o'quvchi nechanchi sinf o'quvchisi (1-sinf …
+ * 11-sinf). U o'qiyotgan guruhdan farq qilishi mumkin, katakdan turib
+ * o'zgartiriladi va o'z filtri bor (`?actualGrade=`), shu jumladan
+ * "belgilanmagan" kesimi.
  */
 const StudentsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -51,10 +59,25 @@ const StudentsPage = () => {
   // qotib qolgan sanani yozmaydi (ertaga ham joriy hafta bo'lib qolsin).
   const coinWeek = isWeeklyCoins ? searchParams.get("coinWeek") : null;
 
+  // Asl sinf filtri — bo'sh satr "filtr yo'q" degani (`Select` ham shu
+  // qiymatni shunday o'qiydi), `none` esa "belgilanmaganlar".
+  const actualGradeFilter = searchParams.get("actualGrade") || "";
+
   const classOptions = [
     { value: "all", label: "Barcha sinflar" },
     ...classes.map((cls) => ({ value: cls.id, label: cls.name })),
   ];
+
+  // Sinf filtri bilan AYNI qoida: ro'yxat TARKIBI o'zgaradi, demak
+  // birinchi sahifaga qaytiladi (5-sahifada turib filtrlagan odam bo'sh
+  // ro'yxatni tizim nosozligi deb o'ylamasin).
+  const handleActualGradeChange = (value) =>
+    setSearchParams((prev) => {
+      if (value) prev.set("actualGrade", value);
+      else prev.delete("actualGrade");
+      prev.delete("page");
+      return prev;
+    });
 
   const handleClassChange = (value) =>
     setSearchParams((prev) => {
@@ -86,100 +109,119 @@ const StudentsPage = () => {
     });
 
   return (
-    <UsersListView
-      variant="student"
-      title="O'quvchilar"
-      description="Sinflarga biriktirilgan o'quvchilar ro'yxati"
-      columns={getStudentTableColumns(coinPeriod)}
-      emptyText="O'quvchilar topilmadi"
-      emptyArchivedText="Arxivlangan o'quvchilar yo'q"
-      // Umumiy qoldiq — tizimning sukutdagi ko'rinishi, shuning uchun
-      // parametr faqat haftalik kesimda yuboriladi (so'rov kaliti ham,
-      // serverdagi qo'shimcha so'rov ham bekorga o'zgarmasin).
-      queryParams={
-        isWeeklyCoins
-          ? {
-              coinPeriod: COIN_PERIOD_WEEK,
-              ...(coinWeek && { coinWeek }),
-            }
-          : {}
-      }
-      subToolbar={
-        isWeeklyCoins
-          ? (data) => (
-              <CoinWeekNav
-                period={data?.coinPeriod}
-                onChange={handleCoinWeekChange}
-              />
-            )
-          : null
-      }
-      filters={
-        <div className="flex flex-col gap-3 sm:flex-row sm:shrink-0">
-          <Select
-            value={classFilter}
-            options={classOptions}
-            placeholder="Sinf tanlang"
-            onChange={handleClassChange}
-            triggerClassName="w-full sm:w-44 sm:shrink-0"
-          />
-
-          <Select
-            value={coinPeriod}
-            options={COIN_PERIOD_OPTIONS}
-            placeholder="Tanga kesimi"
-            onChange={handleCoinPeriodChange}
-            triggerClassName="w-full sm:w-48 sm:shrink-0"
-          />
-        </div>
-      }
-      renderRow={(user, { isArchived }) => (
-        <>
-          <td className="px-4 py-3">
-            <div className="flex items-center gap-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-600">
-                {getInitials(user)}
-              </span>
-              <div>
-                <p className="font-medium text-gray-900">{user.fullName}</p>
-                <p className="text-xs text-gray-500">@{user.username}</p>
-                {isArchived && user.archiveNote && (
-                  <p className="text-xs text-gray-500 line-clamp-1">
-                    Izoh: {user.archiveNote}
-                  </p>
-                )}
-              </div>
-            </div>
-          </td>
-
-          <td className="px-4 py-3 text-gray-500">
-            {user.classes?.length > 0
-              ? user.classes.map((cls) => cls.name).join(", ")
-              : "—"}
-          </td>
-
-          {/* Qo'ng'iroq tugmasi qator bosilishiga tarqalmasin — aks holda
-              qo'ng'iroq o'rniga detal sahifasi ochilib ketardi */}
-          <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-            <CallButton
-              compact
-              phone={user.phone}
-              parentPhone={user.parentPhone}
+    <>
+      <UsersListView
+        variant="student"
+        title="O'quvchilar"
+        description="Sinflarga biriktirilgan o'quvchilar ro'yxati"
+        columns={getStudentTableColumns(coinPeriod)}
+        emptyText="O'quvchilar topilmadi"
+        emptyArchivedText="Arxivlangan o'quvchilar yo'q"
+        // Umumiy qoldiq — tizimning sukutdagi ko'rinishi, shuning uchun
+        // parametr faqat haftalik kesimda yuboriladi (so'rov kaliti ham,
+        // serverdagi qo'shimcha so'rov ham bekorga o'zgarmasin).
+        queryParams={{
+          ...(isWeeklyCoins && {
+            coinPeriod: COIN_PERIOD_WEEK,
+            ...(coinWeek && { coinWeek }),
+          }),
+          ...(actualGradeFilter && { actualGrade: actualGradeFilter }),
+        }}
+        subToolbar={
+          isWeeklyCoins
+            ? (data) => (
+                <CoinWeekNav
+                  period={data?.coinPeriod}
+                  onChange={handleCoinWeekChange}
+                />
+              )
+            : null
+        }
+        filters={
+          <div className="flex flex-col gap-3 sm:flex-row sm:shrink-0">
+            <Select
+              value={classFilter}
+              options={classOptions}
+              placeholder="Sinf tanlang"
+              onChange={handleClassChange}
+              triggerClassName="w-full sm:w-44 sm:shrink-0"
             />
-          </td>
 
-          <td className="px-4 py-3">
-            <StudentCoinCell user={user} isWeekly={isWeeklyCoins} />
-          </td>
+            <Select
+              value={actualGradeFilter}
+              options={getActualGradeFilterOptions()}
+              placeholder="Asl sinf"
+              onChange={handleActualGradeChange}
+              triggerClassName="w-full sm:w-52 sm:shrink-0"
+            />
 
-          <td className="px-4 py-3 text-gray-500">{user.penaltyPoints ?? 0}</td>
+            <Select
+              value={coinPeriod}
+              options={COIN_PERIOD_OPTIONS}
+              placeholder="Tanga kesimi"
+              onChange={handleCoinPeriodChange}
+              triggerClassName="w-full sm:w-48 sm:shrink-0"
+            />
+          </div>
+        }
+        renderRow={(user, { isArchived }) => (
+          <>
+            <td className="px-4 py-3">
+              <div className="flex items-center gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-600">
+                  {getInitials(user)}
+                </span>
+                <div>
+                  <p className="font-medium text-gray-900">{user.fullName}</p>
+                  <p className="text-xs text-gray-500">@{user.username}</p>
+                  {isArchived && user.archiveNote && (
+                    <p className="text-xs text-gray-500 line-clamp-1">
+                      Izoh: {user.archiveNote}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </td>
 
-          <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-            <UserRowActions user={user} isArchived={isArchived} />
-          </td>
-        </>
-      )}
-    />
+            <td className="px-4 py-3 text-gray-500">
+              {user.classes?.length > 0
+                ? user.classes.map((cls) => cls.name).join(", ")
+                : "—"}
+            </td>
+
+            {/* Asl sinfi — katakdan turib tahrirlanadi */}
+            <td className="px-4 py-3">
+              <StudentActualGradeCell user={user} />
+            </td>
+
+            {/* Qo'ng'iroq tugmasi qator bosilishiga tarqalmasin — aks holda
+              qo'ng'iroq o'rniga detal sahifasi ochilib ketardi */}
+            <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+              <CallButton
+                compact
+                phone={user.phone}
+                parentPhone={user.parentPhone}
+              />
+            </td>
+
+            <td className="px-4 py-3">
+              <StudentCoinCell user={user} isWeekly={isWeeklyCoins} />
+            </td>
+
+            <td className="px-4 py-3 text-gray-500">
+              {user.penaltyPoints ?? 0}
+            </td>
+
+            <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+              <UserRowActions user={user} isArchived={isArchived} />
+            </td>
+          </>
+        )}
+      />
+
+      {/* Katakdagi tahrirlash oynasi shu sahifada ulanadi */}
+      <EditStudentActualGradeModal />
+    </>
   );
 };
 

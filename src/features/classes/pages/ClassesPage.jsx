@@ -9,14 +9,28 @@ import { classesAPI } from "@/features/classes/api/classes.api";
 // Icons
 import { Plus, Edit, Trash2, ChevronRight, Download, History } from "lucide-react";
 
+// TanStack Query
+import { useQuery } from "@tanstack/react-query";
+
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import usePermissions from "@/shared/hooks/usePermissions";
 import { useClasses } from "@/features/classes/queries/classes.queries";
+import { usersQueries } from "@/features/users/queries/users.queries";
 import { Link } from "react-router-dom";
 
 const Classes = () => {
   const { openModal } = useModal();
+  const { can } = usePermissions();
   const { data: classes = [], isLoading } = useClasses();
+
+  // ASL SINFLAR KESIMI — o'quvchilar ro'yxatining kesimi, shuning uchun
+  // `users.view` bilan. Ruxsati yo'qqa so'rov umuman yuborilmaydi (403
+  // o'rniga blok ko'rinmaydi).
+  const { data: actualGrades } = useQuery({
+    ...usersQueries.actualGrades(),
+    enabled: can("users.view"),
+  });
 
   // Excel yuklab olish
   const handleExport = async () => {
@@ -68,6 +82,59 @@ const Classes = () => {
         </div>
       </div>
 
+      {/* ASL SINFLAR — SINFLARDAN ALOHIDA KESIM.
+          Sinf — o'quvchi o'qiydigan GURUH ("IT 1", "Bog'cha"), asl sinf —
+          u NECHANCHI SINF o'quvchisi (1 … 11). Ikkisi bir ro'yxatga
+          qo'shilsa, "5-sinfda nechta o'quvchi bor" degan savol "IT 1 da
+          nechta" bilan aralashib ketardi — shuning uchun ular yonma-yon,
+          lekin ALOHIDA turadi. Har bir raqam o'sha darajadagi
+          o'quvchilar ro'yxatini ochadi. */}
+      {actualGrades && (
+        <div className="mb-4 rounded-2xl bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">
+                Asl sinflar
+              </h2>
+              <p className="text-xs text-gray-500">
+                O'quvchi nechanchi sinf o'quvchisi — u o'qiyotgan guruhdan
+                alohida
+              </p>
+            </div>
+
+            <span className="text-xs text-gray-500">
+              Jami: {actualGrades.total ?? 0} ta o'quvchi
+            </span>
+          </div>
+
+          <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6 lg:grid-cols-12">
+            {actualGrades.grades?.map((row) => (
+              <Link
+                key={row.grade}
+                to={`/users/students?actualGrade=${row.grade}`}
+                className="rounded-xl bg-amber-50 px-2 py-2 text-center transition hover:bg-amber-100"
+              >
+                <p className="text-xs text-gray-500">{row.label}</p>
+                <p className="text-base font-semibold text-gray-900">
+                  {row.studentCount}
+                </p>
+              </Link>
+            ))}
+
+            {/* "Kimga hali qo'yilmagan" ham javobsiz qolmasin */}
+            <Link
+              to="/users/students?actualGrade=none"
+              className="rounded-xl bg-gray-100 px-2 py-2 text-center transition hover:bg-gray-200"
+            >
+              <p className="text-xs text-gray-500">Belgilanmagan</p>
+              <p className="text-base font-semibold text-gray-900">
+                {actualGrades.unset ?? 0}
+              </p>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {classes.map((classItem) => (
@@ -105,9 +172,17 @@ const Classes = () => {
             </div>
 
             {/* Bottom */}
-            <div className="flex items-center justify-between pt-4 border-t space-y-3">
+            <div className="flex items-center justify-between gap-3 pt-4 border-t">
               <span className="bg-green-100 text-green-800 px-2 py-1 text-xs font-semibold rounded-full">
                 {classItem.isActive ? "Faol" : "Faol emas"}
+              </span>
+
+              {/* Shu GURUHDA o'qiyotganlar soni. "Asl sinf" sanog'i bu yerda
+                  EMAS: daraja (1 … 11) sinflar katalogiga bog'liq emas va
+                  o'z kesimida, tepada ko'rsatiladi. */}
+              <span className="text-sm text-gray-600">
+                <b className="text-gray-900">{classItem.studentCount ?? 0}</b> ta
+                o'quvchi
               </span>
             </div>
           </Card>

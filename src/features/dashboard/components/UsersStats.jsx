@@ -4,9 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 // API
 import { usersAPI } from "@/features/users/api/users.api";
 
+// API
+import { branchSharedOf, branchSplitSum } from "@/shared/api/aggregateMeta";
+
 // Components
 import Card from "@/shared/components/ui/Card";
 import Counter from "@/shared/components/ui/Counter";
+import BranchSplit from "@/shared/components/ui/BranchSplit";
 import { Skeleton } from "@/shared/components/shadcn/skeleton";
 
 // Icons
@@ -18,33 +22,48 @@ const UsersStats = () => {
     queryFn: () => usersAPI.getStats().then((res) => res.data.data),
   });
 
+  // `path` — umumiy ko'rinishdagi filiallar kesimining kaliti, `to` esa
+  // o'sha filialga o'tgandan keyin ochiladigan bo'lim (`BranchSplit`).
   const statItems = [
     {
       label: "O'quvchilar",
       value: stats?.students || 0,
       icon: GraduationCap,
+      path: "students",
+      to: "/users/students",
     },
     {
       label: "Xodimlar",
       value: stats?.workers || 0,
       icon: Briefcase,
+      path: "workers",
+      to: "/users/staff",
+      // ⚠️ Xodim bir nechta filialda ishlashi mumkin: jami uni BIR MARTA
+      // sanaydi, kesim esa har filialda ko'rsatadi — shuning uchun kesim
+      // yig'indisi jamidan katta chiqishi mumkin va sababi yozib qo'yiladi.
+      sharedKey: "workers",
     },
     {
       label: "Bot foydalanuvchilar",
       value: stats?.telegramUsers || 0,
       icon: Bot,
+      path: "telegramUsers",
+      to: "/pulse",
+      sharedKey: "telegramUsers",
     },
     {
       label: "Premium foydalanuvchilar",
       value: stats?.premiumUsers || 0,
       icon: Sparkle,
+      path: "premiumUsers",
+      to: "/premium",
     },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
       {statItems.map((item, idx) => (
-        <Card key={idx} title={item.label} className="space-y-4">
+        <Card key={idx} title={item.label} className="space-y-3">
           <div className="flex items-center justify-between">
             {/* Icon */}
             <div className="flex items-center justify-center size-9 bg-blue-50 rounded-full">
@@ -61,6 +80,23 @@ const UsersStats = () => {
               />
             )}
           </div>
+
+          {/* Umumiy ko'rinishda: qaysi filialda qancha (bosilsa — o'sha
+              filialga o'tadi va ro'yxatni ochadi) */}
+          <BranchSplit data={stats} path={item.path} to={item.to} />
+
+          {/* ⚠️ ARIFMETIKA OCHIQ YOZILADI. Xodimning hammasi ikkala filialga
+              biriktirilgan bo'lsa, jami KATTA filialning soniga TENG chiqadi
+              ("MBSI 95, AiHub 23, jami 95") va bu "AiHub hisobga olinmadi"
+              bo'lib o'qiladi. Shuning uchun yig'indi ham, takrorlanish ham
+              raqam bilan ko'rsatiladi. */}
+          {item.sharedKey && branchSharedOf(stats, item.sharedKey) > 0 && (
+            <p className="text-[11px] leading-snug text-gray-400">
+              Filiallar yig'indisi {branchSplitSum(stats, item.path)} —
+              shundan {branchSharedOf(stats, item.sharedKey)} tasi bir nechta
+              filialda ishlaydi, jamida bir marta sanalgan.
+            </p>
+          )}
         </Card>
       ))}
     </div>

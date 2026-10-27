@@ -35,6 +35,12 @@ const Topics = () => {
 
   const { mutate: deleteSubjectTopics } = useDeleteSubjectTopics();
 
+  // Daraja va Kitob ustunlari faqat fanning faylida bo'lsa chiqadi: eski
+  // shablon (Mavzu nomi, Tavsif) bilan yuklangan fanda ular har qatorda
+  // "—" bo'lib, jadvalni bo'sh ustunlarga to'ldirardi.
+  const hasLevel = topics.some((topic) => topic.level);
+  const hasBook = topics.some((topic) => topic.book);
+
   useEffect(() => {
     if (selectedSubject) {
       localStorage.setItem("topics_selectedSubject", selectedSubject);
@@ -147,11 +153,19 @@ const Topics = () => {
           {!loading && topics.length > 0 && (
             <div className="rounded-lg overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
+                {/* ⚠️ Sarlavha `text-left`: global uslub `th` ni markazga
+                    tekislaydi, katakdagi matn esa chapda turadi — keng
+                    ustunda sarlavha ma'lumotdan "siljib" ko'rinardi.
+                    Kenglik — Daraja/Kitob qisqa, Mavzu va mazmun keng. */}
                 <thead>
                   <tr>
-                    <th>T/R</th>
-                    <th>Mavzu nomi</th>
-                    <th>Tavsif</th>
+                    {/* Platforma bergan mavzu raqami (jadvaldagi "N-mavzu"),
+                        fayldagi T/R EMAS — u yuklashda o'qilmaydi */}
+                    <th className="w-16 text-left whitespace-nowrap">№</th>
+                    {hasLevel && <th className="w-40 text-left">Daraja</th>}
+                    {hasBook && <th className="w-56 text-left">Kitob</th>}
+                    <th className="min-w-[260px] text-left">Mavzu</th>
+                    <th className="min-w-[300px] text-left">Nimalar o'rgatiladi</th>
                   </tr>
                 </thead>
 
@@ -161,11 +175,21 @@ const Topics = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {topic.order}
                       </td>
+                      {hasLevel && (
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {topic.level || "—"}
+                        </td>
+                      )}
+                      {hasBook && (
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {topic.book || "—"}
+                        </td>
+                      )}
                       <td className="px-6 py-4 text-sm text-gray-900">
                         {topic.name}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {topic.description || "-"}
+                        {topic.description || "—"}
                       </td>
                     </tr>
                   ))}

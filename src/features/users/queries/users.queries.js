@@ -40,6 +40,20 @@ export const usersQueries = {
     }),
 
   /**
+   * ASL SINFLAR KESIMI — `{ grades: [{grade, label, studentCount}], unset, total }`.
+   *
+   * ⚠️ Sinflar sanog'idan ALOHIDA so'rov: sinf — o'quvchi o'qiydigan GURUH,
+   * asl sinf — u NECHANCHI SINF o'quvchisi. Ikkisi bitta ro'yxatga
+   * qo'shilsa, "5-sinfda nechta o'quvchi bor" degan savol "IT 1 da nechta"
+   * bilan aralashib ketardi.
+   */
+  actualGrades: () =>
+    queryOptions({
+      queryKey: [...usersKeys.all, "actual-grades"],
+      queryFn: () => usersAPI.getActualGrades().then((r) => r.data.data),
+    }),
+
+  /**
    * All users, short form (id, fullName, role, …). Ungated reference list for
    * pickers that must work for any authenticated user (unlike `useTeachers`,
    * which is owner-gated). Filter by role client-side where needed.

@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 import usePermissions from "@/shared/hooks/usePermissions";
-import { useRoles } from "@/features/roles/queries/roles.queries";
+import { useRoleOptions } from "@/features/roles/queries/roles.queries";
 import { useClasses } from "@/features/classes/queries/classes.queries";
 import { useCreateUser } from "@/features/users/queries/users.mutations";
 import { financeQueries } from "@/features/finance/queries/finance.queries";
@@ -26,6 +26,7 @@ import WeeklyScheduleEditor from "./WeeklyScheduleEditor";
 // Data
 import {
   genderOptions,
+  getGradeOptions,
   getPhoneLabels,
   maskedPhoneOrNull,
 } from "../data/users.data";
@@ -56,7 +57,7 @@ const UserForm = ({ defaultRole = "student" }) => {
   const navigate = useNavigate();
   const { can } = usePermissions();
   const { data: classes = [] } = useClasses();
-  const { data: rolesData = [] } = useRoles();
+  const { data: rolesData = [] } = useRoleOptions();
   const roles = rolesData.filter((r) => r.value !== "owner");
   const { data: tariffs = [] } = useQuery(financeQueries.assignableTariffs());
 
@@ -77,6 +78,8 @@ const UserForm = ({ defaultRole = "student" }) => {
     phone: "",
     parentPhone: "",
     classes: [],
+    // Asl sinf (daraja) — bo'sh bo'lsa server uni sinf NOMIDAN chiqaradi
+    actualGrade: "",
     workStartTime: "",
     workEndTime: "",
     workDays: [1, 2, 3, 4, 5],
@@ -137,6 +140,10 @@ const UserForm = ({ defaultRole = "student" }) => {
       classes: state.role === "student" ? state.classes : undefined,
       // Moliya — faqat o'quvchi uchun (kirgan sana, to'lov oyi, birinchi oy, tarif)
       ...(state.role === "student" && {
+        // Bo'sh qoldirilsa YUBORILMAYDI: server darajani tanlangan birinchi
+        // sinf NOMIDAN chiqaradi ("5-A" → 5-sinf), nomi daraja bilan
+        // boshlanmasa ("IT 1") bo'sh qoladi va qo'lda belgilanadi.
+        actualGrade: state.actualGrade || undefined,
         enrollmentDate: state.enrollmentDate || undefined,
         firstMonthKey: state.firstMonthKey || undefined,
         firstMonthAmount: state.firstMonthAmount || undefined,
@@ -233,6 +240,20 @@ const UserForm = ({ defaultRole = "student" }) => {
             placeholder="Sinflarni tanlang..."
             onChange={(v) => setField("classes", v)}
             options={classes.map((cls) => ({ label: cls.name, value: cls.id }))}
+          />
+
+          {/* ASL SINF — o'quvchi nechanchi sinf o'quvchisi (1-sinf …
+              11-sinf). Odatda sinf nomidan o'zi chiqadi ("5-A" → 5-sinf),
+              lekin guruh nomi darajani aytmasa ("IT 1") yoki kuchli
+              o'quvchi katta guruhda o'qisa — shu yerda tanlanadi. */}
+          <SelectField
+            searchable
+            label="Asl sinfi"
+            value={state.actualGrade}
+            placeholder="Sinf nomidan aniqlanadi"
+            description="Guruh nomi darajani aytmasa yoki undan farq qilsa tanlang"
+            onChange={(v) => setField("actualGrade", v)}
+            options={getGradeOptions()}
           />
 
           {/* ── Moliya: kirgan sana + to'lov oyi + birinchi oy summasi + tarif ── */}

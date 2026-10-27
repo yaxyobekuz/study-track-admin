@@ -23,10 +23,71 @@ export const STAFF_TABLE_COLUMNS = [
 export const STUDENT_TABLE_COLUMNS = [
   "O'quvchi",
   "Sinflar",
+  // O'quvchining maktab darajasi — u o'qiydigan guruhdan farq qilishi mumkin
+  "Asl sinfi",
   "Telefon",
   "Tangalar",
   "Jarimalar",
   "",
+];
+
+// ── ASL SINF (daraja) ────────────────────────────
+//
+// O'quvchi bilimi yaxshi bo'lgani uchun katta guruhda o'qishi mumkin:
+// "Sinflar" — u HOZIR O'QIYOTGAN guruh(lar), "Asl sinfi" — u NECHANCHI
+// SINF o'quvchisi (1-sinf … 11-sinf).
+//
+// ⚠️ SINFLAR KATALOGI EMAS: katalogda "IT 1", "Union 2", "Bog'cha — katta
+// guruh" bor va ulardagi raqam guruh tartibi, daraja emas. Shuning uchun
+// ro'yxat katalogdan EMAS, shu yerdagi doimiy darajalardan quriladi.
+//
+// ⚠️ Bu A'ZOLIK EMAS, BELGI: bu yerda daraja almashtirilsa o'quvchi hech
+// qaysi sinfga qo'shilmaydi, jurnalga ham yozilmaydi va shuning uchun
+// SABAB SO'RALMAYDI (sinf a'zoligidan farqi aynan shu).
+//
+// ⚠️ Serverdagi `helpers/grade.helpers.js` bilan QO'LDA SINXRON (ikki
+// alohida repo): chegara ham, "N-sinf" shakli ham o'sha yerda.
+
+export const MIN_GRADE = 1;
+export const MAX_GRADE = 11;
+
+/** [1 … 11] */
+export const GRADES = Array.from(
+  { length: MAX_GRADE - MIN_GRADE + 1 },
+  (_, i) => MIN_GRADE + i,
+);
+
+/** Server bilan AYNI so'z: "asl sinfi belgilanmaganlar". */
+export const ACTUAL_GRADE_NONE = "none";
+
+/** Darajaning YAGONA matn ko'rinishi — "5-sinf". */
+export const formatGrade = (grade) =>
+  GRADES.includes(Number(grade)) ? `${Number(grade)}-sinf` : null;
+
+/** Tahrirlash oynasi va yaratish formasi uchun — "1-sinf" … "11-sinf". */
+export const getGradeOptions = () =>
+  GRADES.map((grade) => ({ value: String(grade), label: formatGrade(grade) }));
+
+/**
+ * O'quvchilar ro'yxatidagi "Asl sinf" filtrining variantlari.
+ *
+ * Yorliqlarda "Asl:" prefiksi bor — yonida turgan sinf filtri bilan
+ * chalkashmasin (ikkalasi ham sinf haqida).
+ */
+export const getActualGradeFilterOptions = () => [
+  { value: "", label: "Asl sinf: barchasi" },
+  ...GRADES.map((grade) => ({
+    value: String(grade),
+    label: `Asl: ${formatGrade(grade)}`,
+  })),
+  { value: ACTUAL_GRADE_NONE, label: "Asl: belgilanmagan" },
+];
+
+/** Eksport oynasidagi tanlagich — "barchasi" va "belgilanmagan" bilan. */
+export const getActualGradeExportOptions = () => [
+  { value: "", label: "Barcha asl sinflar" },
+  ...getGradeOptions(),
+  { value: ACTUAL_GRADE_NONE, label: "Belgilanmagan" },
 ];
 
 /**

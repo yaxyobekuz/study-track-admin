@@ -33,6 +33,10 @@ export const MODAL_NAMES = [
   // ERP va Kundalik.com
   "exportStudentSystems",
 
+  // Yotoqxona davomati
+  "dormAttendanceSettings",
+  "dormStudentHistory",
+
   // Sertifikat rejalari
   "certificatePlan",
   "certificateStudent",
@@ -57,6 +61,9 @@ export const MODAL_NAMES = [
   "detachUserBranch",
   "tutorGroup",
   "removeTutorGroup",
+  // Sinf rahbarligi — PULSIZ biriktirish (davomat huquqi)
+  "classLeader",
+  "removeClassLeader",
   "deleteUser",
   "archiveUser",
   "restoreUser",

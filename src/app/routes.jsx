@@ -43,6 +43,10 @@ import ClassChangesPage from "@/features/classes/pages/ClassChangesPage";
 // Pages - ERP va Kundalik.com (o'quvchi tashqi tizimlarda bormi)
 import StudentSystemsPage from "@/features/studentSystems/pages/StudentSystemsPage";
 
+// YOTOQXONA DAVOMATI — kechqurun yotoqxonada kim qoldi (tarbiyachi belgilaydi)
+import DormAttendancePage from "@/features/dormAttendance/pages/DormAttendancePage";
+import DormClassPage from "@/features/dormAttendance/pages/DormClassPage";
+
 // SERTIFIKAT REJALARI — kim qaysi sertifikatni qachon topshirmoqchi
 import CertificatesPage from "@/features/certificates/pages/CertificatesPage";
 import TutorGroupPage from "@/features/tutorGroups/pages/TutorGroupPage";
@@ -435,6 +439,13 @@ const Routes = () => {
 
           {/* ERP va Kundalik.com (`studentSystems.view`) */}
           <Route path="/student-systems" element={<StudentSystemsPage />} />
+
+          {/* YOTOQXONA DAVOMATI (`dormAttendance.view`) — kunlik ro'yxat,
+              sinflar kesimi va Excel */}
+          <Route path="/dorm-attendance" element={<DormAttendancePage />} />
+          {/* Sinf sahifasi — "guruh ichiga kirish": belgilash + o'quvchining
+              oxirgi kunlari + sinfning kunlar kesimi */}
+          <Route path="/dorm-attendance/:classId" element={<DormClassPage />} />
 
           {/* SERTIFIKAT REJALARI (`certificates.view`) — ro'yxat, statistika,
               yo'nalishlar katalogi va fayldan ommaviy yuklash */}

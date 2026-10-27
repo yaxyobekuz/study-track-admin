@@ -70,6 +70,31 @@ export const useUpdateStudentClasses = () => {
 };
 
 /**
+ * ASL SINF — o'quvchining maktab darajasi (`PUT /users/:id` → `actualGrade`).
+ *
+ * Bo'sh yuborilsa belgi olib tashlanadi. Sinf A'ZOLIGIGA TEGMAYDI va sabab
+ * talab qilmaydi: bu guruh almashtirish emas, o'quvchi nechanchi sinf
+ * o'quvchisi ekanini aytadigan belgi.
+ *
+ * `classesKeys.all` ham eskiradi — sinf sahifasidagi o'quvchilar ro'yxatida
+ * ham shu ustun bor; `usersKeys.all` esa daraja kesimidagi sanoqni ham
+ * yangilaydi (u ham `users` kaliti ostida).
+ */
+export const useUpdateStudentActualGrade = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, actualGrade }) =>
+      usersAPI
+        .update(id, { actualGrade: actualGrade === "" ? null : actualGrade })
+        .then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: usersKeys.all });
+      qc.invalidateQueries({ queryKey: classesKeys.all });
+    },
+  });
+};
+
+/**
  * Telefon raqamlarini yangilash (`users.phone` ruxsati).
  *
  * `usersKeys.all` eskiradi: raqam ro'yxat ustunida ham, detal kartasida ham

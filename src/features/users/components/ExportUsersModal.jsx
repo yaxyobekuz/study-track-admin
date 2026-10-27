@@ -20,15 +20,26 @@ import { readBlobErrorMessage } from "@/shared/utils/download.utils";
 
 // Data
 import {
+  ACTUAL_GRADE_NONE,
   EXPORT_ROLE_OPTIONS,
   STUDENT_ARCHIVE_OPTIONS,
+  formatGrade,
+  getActualGradeExportOptions,
 } from "../data/users.data";
 
 const ALL_CLASSES = "all";
 
-/** Fayl nomida ishlatib bo'lmaydigan belgilar olib tashlanadi. */
-const toFileNamePart = (text = "") =>
-  text
+/**
+ * Fayl nomida ishlatib bo'lmaydigan belgilar olib tashlanadi.
+ *
+ * ⚠️ QIYMAT `null` BO'LISHI MUMKIN va sukut qiymati uni USHLAMAYDI
+ * (standart parametr faqat `undefined` uchun ishlaydi). `formatGrade`
+ * "Barcha asl sinflar" tanlanganda aynan `null` qaytaradi — shu sababli
+ * eksport fayl SERVERDAN KELGANIDAN KEYIN brauzerda yiqilib,
+ * foydalanuvchiga "Eksport qilishda xatolik yuz berdi" bo'lib ko'rinardi.
+ */
+const toFileNamePart = (text) =>
+  String(text ?? "")
     .replace(/[\\/:*?"<>|]+/g, "")
     .trim()
     .replace(/\s+/g, "_");
@@ -41,13 +52,20 @@ const toFileNamePart = (text = "") =>
  * boshqa turlarda ko'rinmaydi va so'rovga ham qo'shilmaydi — server ikkisini
  * ham faqat o'quvchilar eksportida qabul qiladi.
  *
- * ⚠️ "Faqat arxivlangan" tanlansa sinf tanlagichi yo'qoladi: arxivlangan
- * o'quvchi arxivlashda barcha sinflardan chiqariladi, ya'ni "sinf + arxiv"
- * har doim bo'sh fayl bo'lardi (server ham rad etadi).
+ * IKKI MUSTAQIL KESIM: "Sinf" — o'quvchi QAYSI GURUHDA o'qiydi,
+ * "Asl sinfi" — u NECHANCHI SINF o'quvchisi (1-sinf … 11-sinf). Ikkalasi
+ * tanlansa shart KESISHADI ("IT 1 da o'qiydigan 5-sinf o'quvchilari"),
+ * bittasi tanlansa faqat o'sha qo'llanadi — ikkisi bir-birini bekor
+ * qilmaydi, chunki ular bir narsaning ikki o'qilishi EMAS.
  *
- * `openModal("exportUsers", { defaultRole, defaultClassId, defaultArchived })`
- * — O'quvchilar sahifasi shu bilan joriy sinf filtrini va ochiq tabni
- * (asosiy / arxivlangan) oldindan tanlab ochadi.
+ * ⚠️ "Faqat arxivlangan" da SINF tanlagichi yo'qoladi: arxivlangan
+ * o'quvchi arxivlashda barcha sinflardan chiqariladi, ya'ni bu juftlik har
+ * doim bo'sh fayl bo'lardi (server ham rad etadi). ASL SINFGA bu tegishli
+ * EMAS — daraja arxivlashda saqlanadi.
+ *
+ * `openModal("exportUsers", { defaultRole, defaultClassId,
+ * defaultActualGrade, defaultArchived })` — O'quvchilar sahifasi shu bilan
+ * joriy filtrlarini va ochiq tabni oldindan tanlab ochadi.
  */
 const ExportUsersModal = () => (
   <ResponsiveModal name="exportUsers" title="Foydalanuvchilarni yuklash">
@@ -61,19 +79,23 @@ const Content = ({
   setIsLoading,
   defaultRole = "all",
   defaultClassId = ALL_CLASSES,
+  defaultActualGrade = "",
   defaultArchived = "all",
 }) => {
   const [exportType, setExportType] = useState(defaultRole);
   const [classId, setClassId] = useState(defaultClassId || ALL_CLASSES);
+  const [actualGrade, setActualGrade] = useState(defaultActualGrade || "");
   const [archived, setArchived] = useState(defaultArchived || "all");
   const { data: classes = [], isLoading: classesLoading } = useClasses();
 
   const isStudentExport = exportType === "student";
+  // Arxivlangan o'quvchi barcha sinflardan chiqarilgan — sinf tanlagichi
+  // ma'nosini yo'qotadi. Asl sinf (daraja) esa saqlanadi, shuning uchun u
+  // bu yerda ham qoladi.
   const onlyArchived = isStudentExport && archived === "true";
   const selectedClassId =
-    isStudentExport && !onlyArchived && classId !== ALL_CLASSES
-      ? classId
-      : null;
+    isStudentExport && !onlyArchived && classId !== ALL_CLASSES ? classId : null;
+  const selectedGrade = isStudentExport && actualGrade ? actualGrade : null;
   const selectedClass = selectedClassId
     ? classes.find((cls) => cls.id === selectedClassId)
     : null;
@@ -88,7 +110,9 @@ const Content = ({
 
     try {
       const response = await usersAPI.exportUsers(exportType, {
+        // Ikki mustaqil kesim: ikkalasi berilsa shart kesishadi
         classId: selectedClassId,
+        actualGrade: selectedGrade,
         // Arxiv tanlovi faqat o'quvchilarda — boshqa rolda server rad etadi
         archived: isStudentExport ? archived : null,
       });
@@ -110,10 +134,17 @@ const Content = ({
         ? (STUDENT_ARCHIVE_OPTIONS.find((option) => option.value === archived)
             ?.suffix ?? "")
         : "";
+      // Kesimlar fayl NOMIDA ham ko'rinadi: bir nechta fayl papkada
+      // yonma-yon turganda qaysi biri nima ekani nomidan bilinsin
       const classPart = toFileNamePart(selectedClass?.name);
-      link.download = classPart
-        ? `${baseName}${archivePart}_${classPart}_${today}.xlsx`
-        : `${baseName}${archivePart}_${today}.xlsx`;
+      const gradePart =
+        selectedGrade === ACTUAL_GRADE_NONE
+          ? "asl_belgilanmagan"
+          : toFileNamePart(formatGrade(selectedGrade));
+      const parts = [baseName + archivePart, classPart, gradePart, today].filter(
+        Boolean,
+      );
+      link.download = `${parts.join("_")}.xlsx`;
 
       document.body.appendChild(link);
       link.click();
@@ -167,8 +198,8 @@ const Content = ({
         </div>
       )}
 
-      {/* Class Select — faqat o'quvchilar eksportida; arxivlanganlar
-          sinflardan chiqarilgani uchun "faqat arxiv" da ko'rinmaydi */}
+      {/* SINF — o'quvchi qaysi guruhda o'qiydi. Arxivlanganlar barcha
+          sinflardan chiqarilgani uchun "faqat arxiv" da ko'rinmaydi. */}
       {isStudentExport && !onlyArchived && (
         <div className="space-y-1.5">
           <span className="block text-sm font-medium text-gray-700">Sinf</span>
@@ -184,10 +215,37 @@ const Content = ({
         </div>
       )}
 
-      {onlyArchived && (
+      {/* ASL SINF — o'quvchi nechanchi sinf o'quvchisi. Sinfdan MUSTAQIL:
+          ikkalasi tanlansa shart kesishadi, bittasi tanlansa faqat o'sha
+          qo'llanadi. Daraja arxivlashda saqlanadi, shuning uchun bu
+          tanlagich "faqat arxiv" da ham qoladi. */}
+      {isStudentExport && (
+        <div className="space-y-1.5">
+          <span className="block text-sm font-medium text-gray-700">
+            Asl sinfi
+          </span>
+          <Select
+            size="lg"
+            value={actualGrade}
+            options={getActualGradeExportOptions()}
+            disabled={isLoading}
+            onChange={setActualGrade}
+            placeholder="Asl sinfni tanlang"
+          />
+        </div>
+      )}
+
+      {isStudentExport && (
         <p className="text-xs text-gray-500">
-          Arxivlangan o'quvchilar arxivlashda barcha sinflardan chiqariladi —
-          shuning uchun sinf bo'yicha tanlov qo'llanmaydi.
+          {selectedClassId && selectedGrade
+            ? "Ikkala shartga ham mos keladigan o'quvchilar yuklanadi."
+            : selectedGrade
+              ? "Tanlangan asl sinfdagi o'quvchilar yuklanadi — qaysi guruhda o'qishidan qat'i nazar."
+              : selectedClassId
+                ? "Tanlangan sinfda o'qiyotgan o'quvchilar yuklanadi."
+                : "Barcha o'quvchilar yuklanadi."}
+          {onlyArchived &&
+            " Arxivlanganlar barcha sinflardan chiqarilgani uchun sinf bo'yicha tanlov qo'llanmaydi."}
         </p>
       )}
 

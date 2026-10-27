@@ -21,6 +21,9 @@ import { useNavigate } from "react-router-dom";
 // Hooks
 import { useMissingGradesToday } from "../queries/grades.queries";
 
+// Data
+import { LESSON_GRADE_STATE } from "./MissingGradesPage.data";
+
 // Components
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
@@ -255,54 +258,65 @@ const MissingGrades = () => {
             {/* Lessons */}
             {expandedTeachers[teacherData.teacher.id] && (
               <div className="p-5 space-y-4">
-                {teacherData.lessons.map((lesson, idx) => (
-                  <div
-                    key={idx}
-                    className="border border-gray-200 rounded-lg overflow-hidden"
-                  >
-                    {/* Lesson Header */}
-                    <div className="flex items-center justify-between p-3 bg-gray-50">
-                      <div className="flex items-center gap-3">
-                        <span className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-700 font-semibold rounded text-sm">
-                          {lesson.lessonOrder}
-                        </span>
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {lesson.class.name} - {lesson.subject.name}
-                          </p>
-                          {lesson.startTime && lesson.endTime && (
-                            <p className="text-xs text-gray-500">
-                              {lesson.startTime} - {lesson.endTime}
+                {teacherData.lessons.map((lesson, idx) => {
+                  const gradeState =
+                    LESSON_GRADE_STATE[lesson.ungraded ? "ungraded" : "partial"];
+
+                  return (
+                    <div
+                      key={idx}
+                      className="border border-gray-200 rounded-lg overflow-hidden"
+                    >
+                      {/* Lesson Header */}
+                      <div className="flex items-center justify-between p-3 bg-gray-50">
+                        <div className="flex items-center gap-3">
+                          <span className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-700 font-semibold rounded text-sm">
+                            {lesson.lessonOrder}
+                          </span>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {lesson.class.name} - {lesson.subject.name}
                             </p>
-                          )}
+                            {lesson.startTime && lesson.endTime && (
+                              <p className="text-xs text-gray-500">
+                                {lesson.startTime} - {lesson.endTime}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 text-right">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            {lesson.missingStudents.length} /{" "}
+                            {lesson.totalStudents}
+                          </span>
+                          {/* Jarima faqat bitta ham baho yo'q darsga — kechki pass bilan AYNI */}
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${gradeState.className}`}
+                          >
+                            {gradeState.label}
+                          </span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          {lesson.missingStudents.length} /{" "}
-                          {lesson.totalStudents}
-                        </span>
+  
+                      {/* Students List */}
+                      <div className="p-3">
+                        <p className="text-sm text-gray-500 mb-2">
+                          Baholanmagan o'quvchilar:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {lesson.missingStudents.map((student) => (
+                            <span
+                              key={student.id}
+                              className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700"
+                            >
+                              {student.firstName} {student.lastName}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-
-                    {/* Students List */}
-                    <div className="p-3">
-                      <p className="text-sm text-gray-500 mb-2">
-                        Baholanmagan o'quvchilar:
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {lesson.missingStudents.map((student) => (
-                          <span
-                            key={student.id}
-                            className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700"
-                          >
-                            {student.firstName} {student.lastName}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </Card>

@@ -36,6 +36,11 @@ import {
 // API
 import { classesAPI } from "@/features/classes/api/classes.api";
 
+// Asl sinf — o'quvchilar bo'limidagi AYNI katak va AYNI oyna
+// (ikkinchi nusxa bo'lsa, ruxsat sharti bir joyda tushib qolardi)
+import StudentActualGradeCell from "@/features/users/components/StudentActualGradeCell";
+import EditStudentActualGradeModal from "@/features/users/components/EditStudentActualGradeModal";
+
 const ClassDetail = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
@@ -246,6 +251,10 @@ const ClassDetail = () => {
                   <th>Ism</th>
                   <th>Familiya</th>
                   <th>Username</th>
+                  {/* O'quvchi NECHANCHI SINF o'quvchisi — shu guruhdan
+                      farq qilishi mumkin (kuchli o'quvchi katta guruhda
+                      o'qiydi). Daraja sinflar katalogiga bog'liq emas. */}
+                  <th>Asl sinfi</th>
                 </tr>
               </thead>
 
@@ -294,6 +303,11 @@ const ClassDetail = () => {
                           {student.username}
                         </div>
                       </td>
+
+                      {/* Asl sinfi — shu yerdan tahrirlanadi */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <StudentActualGradeCell user={student} />
+                      </td>
                     </tr>
                   );
                 })}
@@ -320,6 +334,9 @@ const ClassDetail = () => {
           </div>
         )}
       </div>
+
+      {/* Jadvaldagi "Asl sinfi" katagining tahrirlash oynasi */}
+      <EditStudentActualGradeModal />
     </div>
   );
 };

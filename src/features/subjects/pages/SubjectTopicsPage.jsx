@@ -14,6 +14,7 @@ import {
 
 // Components
 import Card from "@/shared/components/ui/Card";
+import TopicMeta from "@/features/subjects/components/TopicMeta";
 
 // Hooks
 import usePermissions from "@/shared/hooks/usePermissions";
@@ -145,6 +146,10 @@ const SubjectTopics = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {classesData.map((item) => {
             const isEditing = editingClassId === item.class.id;
+            const currentTopic =
+              item.currentTopicNumber != null
+                ? topics.find((t) => t.order === item.currentTopicNumber)
+                : null;
 
             return (
               <Card key={item.class.id}>
@@ -207,6 +212,11 @@ const SubjectTopics = () => {
                             </button>
                           )}
                         </div>
+                        <TopicMeta
+                          level={currentTopic?.level}
+                          book={currentTopic?.book}
+                          className="mb-1"
+                        />
                         <p className="text-sm text-gray-600">
                           {getTopicName(item.currentTopicNumber) ||
                             item.reason ||

@@ -93,3 +93,4 @@ export const useClasses = ({ enabled = true } = {}) =>
  */
 export const useClassStudents = (classId) =>
   useQuery(classesQueries.students(classId));
+

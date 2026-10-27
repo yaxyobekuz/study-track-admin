@@ -13,6 +13,7 @@ export const SECTIONS = {
   ENROLLMENT: "enrollment",
   STATISTICS: "statistics",
   ATTENDANCE: "attendance",
+  DORM_ATTENDANCE: "dormAttendance",
   GRADES: "grades",
   GRADE_GRANTS: "gradeGrants",
   LESSON_CREDITS: "lessonCredits",
@@ -25,6 +26,7 @@ export const SECTIONS = {
   PLANNER: "planner",
   SUBSTITUTIONS: "substitutions",
   TUTORS: "tutors",
+  CLASS_LEADERS: "classLeaders",
   TOPICS: "topics",
   CERTIFICATES: "certificates",
   CLASSES: "classes",
@@ -159,6 +161,29 @@ export const PERMISSION_SECTIONS = [
       { key: "review", label: "Sababnoma va ketish so'rovlarini ko'rib chiqish" },
       { key: "reasons", label: "Sabab turlarini boshqarish" },
       { key: "reports", label: "Hisobotlar" },
+      A.settings,
+    ],
+  },
+  {
+    // YOTOQXONA DAVOMATI — kechqurun yotoqxonada kim qoldi. Belgilashni
+    // TARBIYACHI qiladi.
+    //
+    // ⚠️ ALOHIDA BO'LIM, `attendance` ichidagi amal EMAS: eski bare
+    // "attendance" kaliti bo'limning HAMMA amalini beradi, ya'ni dars
+    // davomatiga umumiy huquqi bor har kim yotoqxona registrini ham ochib
+    // olardi. Teskarisi ham to'g'ri — tarbiyachiga `attendance.mark`
+    // berilsa, u butun maktabning DARS davomatini belgilay olardi.
+    //
+    // `update` — O'TGAN kunni to'g'rilash va boshlanish vaqtidan (sukut
+    // 16:00) OLDIN belgilash: ikkalasi ham ma'muriyat qarori.
+    key: SECTIONS.DORM_ATTENDANCE,
+    label: "Yotoqxona davomati",
+    group: "Ta'lim",
+    actions: [
+      A.view,
+      { key: "mark", label: "Davomat belgilash" },
+      { key: "update", label: "O'tgan kunni to'g'rilash" },
+      A.export,
       A.settings,
     ],
   },
@@ -666,6 +691,25 @@ export const PERMISSION_SECTIONS = [
     ],
   },
   {
+    // SINF RAHBARI — xodimga sinf biriktirish. Biriktirishdan keladigan
+    // yagona huquq: shu sinfning KUNLIK davomatini belgilash.
+    //
+    // ⚠️ `tutors` DAN ALOHIDA BO'LIM: tyutor biriktirishi PULNI belgilaydi
+    // (qo'shimcha oylik), sinf rahbarligi esa faqat huquq beradi. Bitta
+    // bo'limga qo'shilsa, "davomat uchun sinf biriktirish" huquqi jimgina
+    // qo'shimcha oylik yozish huquqiga aylanardi.
+    //
+    // ⚠️ Server katalogi bilan QO'LDA sinxron:
+    // `server/src/utils/permissions.js`.
+    key: SECTIONS.CLASS_LEADERS,
+    label: "Sinf rahbarlari",
+    group: "Ta'lim",
+    actions: [
+      { key: "view", label: "Ko'rish (kim qaysi sinfga rahbar)" },
+      { key: "assign", label: "Sinf biriktirish va olib tashlash" },
+    ],
+  },
+  {
     key: SECTIONS.PAYROLL,
     label: "Xodimlar oyligi",
     group: "Moliya",
@@ -1145,6 +1189,7 @@ const ROUTE_PERMISSIONS = [
   // ko'chirish SABABLARI sinf ro'yxatini ko'rish huquqi bilan ochilmasin
   { prefix: "/classes/changes", key: "classes.history" },
   { prefix: "/student-systems", key: "studentSystems.view" },
+  { prefix: "/dorm-attendance", key: "dormAttendance.view" },
   { prefix: "/certificates", key: "certificates.view" },
   { prefix: "/subjects", key: "subjects.view" },
   { prefix: "/test-seasons", key: "tests.view" },

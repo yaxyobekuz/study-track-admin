@@ -109,6 +109,9 @@ const UsersListView = ({
   const search = searchParams.get("search") || "";
   const roleFilter = searchParams.get("role") || "";
   const classFilter = searchParams.get("class") || "";
+  // Asl sinf (daraja) filtri — eksport oynasi ham shu bilan ochiladi
+  // ("belgilanmagan" ham ma'noli kesim, shuning uchun o'zi uzatiladi).
+  const actualGradeFilter = searchParams.get("actualGrade") || "";
   const activeTab = resolveTab(visibleTabs, searchParams.get("tab"));
   const isArchived = activeTab === "archived";
   const activePanel = tabPanels[activeTab] ?? null;
@@ -183,7 +186,10 @@ const UsersListView = ({
   const exportDefaults = isStudentList
     ? {
         defaultRole: "student",
+        // Ro'yxatda qaysi filtr yoqilgan bo'lsa, eksport ham o'shandan
+        // boshlanadi — fayl EKRANDAGI ro'yxatning nusxasi bo'lsin
         defaultClassId: classFilter || "all",
+        defaultActualGrade: actualGradeFilter,
         // Arxivlangan tabida eksport ham arxivdan boshlanadi — fayl ekrandagi
         // ro'yxatning nusxasi. Asosiy tabda sukut "hammasi" bo'lib qoladi:
         // moliyaviy eksport arxivlangan qarzdorni ko'rsatishda davom etadi

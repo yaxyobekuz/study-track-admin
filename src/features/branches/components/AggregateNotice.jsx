@@ -31,8 +31,10 @@ const AggregateNotice = () => {
         )}
         <span className="opacity-80">
           . Har qatorda u qaysi filialga tegishli ekani ko'rsatiladi; tahrir
-          va to'lov o'sha qatorning filialiga yoziladi. Yangi yozuv qo'shish,
-          sozlamalar va fayl yuklab olish uchun filialni tanlang.
+          va to'lov o'sha qatorning filialiga yoziladi. Sanoqchi ostidagi
+          filial qatorini bossangiz — o'sha filialga o'tib, shu bo'lim
+          ochiladi. Yangi yozuv qo'shish, sozlamalar va fayl yuklab olish
+          uchun filialni tanlang.
         </span>
       </p>
     </div>

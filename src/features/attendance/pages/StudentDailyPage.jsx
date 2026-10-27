@@ -233,6 +233,7 @@ const StudentDailyPage = () => {
         <AttendanceSummaryCards
           cards={SUMMARY_CARDS}
           summary={summary}
+          data={data}
           className={SUMMARY_CARDS_GRID}
         />
       )}
