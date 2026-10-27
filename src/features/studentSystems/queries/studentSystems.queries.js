@@ -21,4 +21,27 @@ export const studentSystemsQueries = {
       queryFn: () => studentSystemsAPI.getAll(params).then((r) => r.data),
       placeholderData: keepPreviousData,
     }),
+
+  /**
+   * BOSH SAHIFADAGI KARTA — "nechtasi ERP da, nechtasi Kundalik.com da".
+   *
+   * ⚠️ Ro'yxat so'rovidan (`list`) ALOHIDA: u sahifalangan jadval uchun
+   * o'quvchilarni ham yuklaydi, karta esa faqat sanoqchi kutadi.
+   */
+  summary: () =>
+    queryOptions({
+      queryKey: [...studentSystemsKeys.all, "summary"],
+      queryFn: () => studentSystemsAPI.getSummary().then((r) => r.data.data),
+    }),
+
+  /**
+   * HISOBOT — ko'rsatkichlar, sinflar kesimi va kiritilmaganlar ro'yxati.
+   * Word fayli ham AYNI ma'lumotdan quriladi, shuning uchun ekranda va
+   * faylda bir xil raqam turadi.
+   */
+  report: () =>
+    queryOptions({
+      queryKey: [...studentSystemsKeys.all, "report"],
+      queryFn: () => studentSystemsAPI.getReport().then((r) => r.data.data),
+    }),
 };

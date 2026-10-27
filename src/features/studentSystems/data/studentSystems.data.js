@@ -15,6 +15,22 @@ export const STUDENT_SYSTEMS = [
 
 export const STUDENT_SYSTEMS_PAGE_LIMIT = 50;
 
+/** Hujjat ko'rinishidagi hisobot — bosh sahifadagi kartadagi belgi shu yerga olib keladi. */
+export const SYSTEMS_REPORT_PATH = "/student-systems/report";
+
+/**
+ * Foiz: "82,4%" / "—" (maxraj nol bo'lsa). Kasr — VERGUL bilan.
+ *
+ * ⚠️ Panel foizni O'ZI HISOBLAMAYDI — serverdan kelgan qiymatni faqat
+ * ko'rinishga keltiradi (`studentSystemReport.service.js`): Word fayli
+ * bilan ekrandagi raqam bir xil formuladan chiqishi shart.
+ *
+ * ⚠️ `null` NOL EMAS: o'quvchisi yo'q sinfda "0%" degan yozuv "hech kim
+ * kiritilmagan" bo'lib o'qilardi.
+ */
+export const percentText = (value) =>
+  value == null ? "—" : `${Math.abs(value).toFixed(1).replace(".", ",")}%`;
+
 /** Sinf filtri: sinfga biriktirilmagan o'quvchilar. */
 export const NO_CLASS = "none";
 

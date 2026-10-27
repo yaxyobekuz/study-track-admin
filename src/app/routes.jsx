@@ -48,6 +48,7 @@ import ClassChangesPage from "@/features/classes/pages/ClassChangesPage";
 
 // Pages - ERP va Kundalik.com (o'quvchi tashqi tizimlarda bormi)
 import StudentSystemsPage from "@/features/studentSystems/pages/StudentSystemsPage";
+import StudentSystemsReportPage from "@/features/studentSystems/pages/StudentSystemsReportPage";
 
 // YOTOQXONA DAVOMATI — kechqurun yotoqxonada kim qoldi (tarbiyachi belgilaydi)
 import DormAttendancePage from "@/features/dormAttendance/pages/DormAttendancePage";
@@ -457,6 +458,14 @@ const Routes = () => {
 
           {/* ERP va Kundalik.com (`studentSystems.view`) */}
           <Route path="/student-systems" element={<StudentSystemsPage />} />
+          {/* AYNI bo'limning hujjat ko'rinishi: ko'rsatkichlar, sinflar
+              kesimi va kiritilmaganlar ro'yxati — chop etish va Word uchun.
+              Bosh sahifadagi "ERP va Kundalik.com" kartasidagi belgi aynan
+              shu yo'lga olib keladi (yangi tab EMAS). */}
+          <Route
+            path="/student-systems/report"
+            element={<StudentSystemsReportPage />}
+          />
 
           {/* YOTOQXONA DAVOMATI (`dormAttendance.view`) — kunlik ro'yxat,
               sinflar kesimi va Excel */}

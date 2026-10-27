@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 // Icons
-import { FileSpreadsheet, ListChecks, RefreshCw } from "lucide-react";
+import { FileSpreadsheet, FileText, ListChecks, RefreshCw } from "lucide-react";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -44,6 +44,7 @@ import {
   PRESENCE,
   STUDENT_SYSTEMS,
   STUDENT_SYSTEMS_PAGE_LIMIT,
+  SYSTEMS_REPORT_PATH,
   defaultExportList,
   presenceOptions,
 } from "../data/studentSystems.data";
@@ -246,12 +247,25 @@ const StudentSystemsPage = () => {
           </p>
         </div>
 
-        {canExport && (
-          <Button onClick={openExport} className="shrink-0 px-3.5">
-            <FileSpreadsheet strokeWidth={1.5} />
-            Excelga yuklash
-          </Button>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {/* HUJJAT KO'RINISHI — chop etish va Word uchun. Ruxsat
+              `studentSystems.view` (sahifaning o'zi bilan AYNI): hisobot
+              shu ro'yxatning yig'masi, yangi ma'lumot ochib bermaydi —
+              Word fayli esa o'sha sahifada `export` ortida turadi. */}
+          <Link to={SYSTEMS_REPORT_PATH}>
+            <Button variant="outline" className="px-3.5">
+              <FileText strokeWidth={1.5} />
+              <span className="hidden sm:inline">Hisobot</span>
+            </Button>
+          </Link>
+
+          {canExport && (
+            <Button onClick={openExport} className="px-3.5">
+              <FileSpreadsheet strokeWidth={1.5} />
+              <span className="hidden sm:inline">Excelga yuklash</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       <SystemSummaryCards

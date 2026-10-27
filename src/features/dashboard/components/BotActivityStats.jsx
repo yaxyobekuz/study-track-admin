@@ -5,13 +5,14 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 // Icons
-import { ArrowRight, Bot, BellOff, Link2Off, Users } from "lucide-react";
+import { ArrowRight, Bot, BellOff, Users } from "lucide-react";
 
 // Components
 import Card from "@/shared/components/ui/Card";
 import Counter from "@/shared/components/ui/Counter";
 import BranchSplit from "@/shared/components/ui/BranchSplit";
 import { Skeleton } from "@/shared/components/shadcn/skeleton";
+import StudentSystemsCard from "./StudentSystemsCard";
 
 // Hooks
 import usePermissions from "@/shared/hooks/usePermissions";
@@ -39,6 +40,14 @@ import { cn } from "@/shared/utils/cn";
  * ⚠️ DAVR — 7 KUN, dashboarddagi 30 emas. Bosh sahifa "hozir qanday"
  * degan savolga javob beradi, chuqur tahlil esa "Faollik" bo'limida.
  * Qisqa davr so'rovni ham yengillashtiradi.
+ *
+ * ⚠️ UCHINCHI KARTA — "ERP va Kundalik.com" (biznes qarori, 2026-10-27).
+ * Ilgari u yerda "Bog'lanmaganlar" turardi; o'sha raqam YO'QOLMADI — u
+ * Faollik bo'limida, o'quvchilar ro'yxati bilan birga qoldi, ya'ni
+ * "nechta" degan javob yonida "kimlar" degan javob ham bor. Bosh sahifada
+ * esa uning o'rnini har kuni ish talab qiladigan raqam egalladi.
+ * Karta O'Z so'rovidan oziqlanadi (`StudentSystemsCard`) — bot sanoqchisi
+ * bilan bir so'rovga tiqilsa, ikki bo'limning ruxsatlari chalkashardi.
  */
 
 /** Bosh sahifadagi kesim davri (kun). */
@@ -82,16 +91,9 @@ const BotActivityStats = () => {
       tone: "indigo",
       hint: "Kamida bitta ota-onasi botga ulangan",
     },
-    {
-      key: "unlinked",
-      path: "parents.unlinked",
-      label: "Bog'lanmaganlar",
-      value: parents?.unlinked ?? 0,
-      suffix: null,
-      icon: Link2Off,
-      tone: "amber",
-      hint: "Hisobi umuman ulanmagan o'quvchilar",
-    },
+    // ⚠️ O'Z SO'ROVI VA O'Z RUXSATI BO'LGAN KARTA — bu yerda faqat
+    // O'RNI band qiladi (`items` tartibi ekrandagi tartib).
+    { key: "systems", custom: true },
     {
       key: "muted",
       path: "parents.notificationsOff",
@@ -131,43 +133,49 @@ const BotActivityStats = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {items.map((item) => (
-          <Card key={item.key} title={item.label} className="space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <div
-                className={cn(
-                  "flex size-9 shrink-0 items-center justify-center rounded-full",
-                  TONE[item.tone],
+        {items.map((item) =>
+          item.custom ? (
+            <StudentSystemsCard key={item.key} />
+          ) : (
+            <Card key={item.key} title={item.label} className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-full",
+                    TONE[item.tone],
+                  )}
+                >
+                  <item.icon className="size-5" strokeWidth={1.5} />
+                </div>
+
+                {isLoading ? (
+                  <Skeleton className="h-7 w-16" />
+                ) : isError ? (
+                  <span className="text-2xl font-bold text-gray-300">—</span>
+                ) : (
+                  <div className="flex items-baseline gap-1">
+                    <Counter
+                      value={item.value}
+                      className="text-2xl font-bold tabular-nums text-gray-900"
+                    />
+                    {item.suffix && (
+                      <span className="text-sm font-medium text-gray-400">
+                        {item.suffix}
+                      </span>
+                    )}
+                  </div>
                 )}
-              >
-                <item.icon className="size-5" strokeWidth={1.5} />
               </div>
 
-              {isLoading ? (
-                <Skeleton className="h-7 w-16" />
-              ) : isError ? (
-                <span className="text-2xl font-bold text-gray-300">—</span>
-              ) : (
-                <div className="flex items-baseline gap-1">
-                  <Counter
-                    value={item.value}
-                    className="text-2xl font-bold tabular-nums text-gray-900"
-                  />
-                  {item.suffix && (
-                    <span className="text-sm font-medium text-gray-400">
-                      {item.suffix}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+              <p className="text-xs leading-relaxed text-gray-500">
+                {item.hint}
+              </p>
 
-            <p className="text-xs leading-relaxed text-gray-500">{item.hint}</p>
-
-            {/* Umumiy ko'rinishda: qaysi filialda qancha */}
-            <BranchSplit data={data} path={item.path} to="/pulse" />
-          </Card>
-        ))}
+              {/* Umumiy ko'rinishda: qaysi filialda qancha */}
+              <BranchSplit data={data} path={item.path} to="/pulse" />
+            </Card>
+          ),
+        )}
       </div>
 
       {/* ⚠️ Tarix hali yig'ilmagan bo'lsa buni AYTAMIZ: nol raqam
