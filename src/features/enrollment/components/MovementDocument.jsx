@@ -108,7 +108,10 @@ const Td = ({ align, className, children }) => (
 
 /* ── Umumiy ko'rsatkichlar ───────────────────────────────────────── */
 
-const SummarySection = ({ totals, index }) => (
+const SummarySection = ({ totals, index }) => {
+  const hasMoves = totals.movedIn > 0 || totals.movedOut > 0;
+
+  return (
   <Section title={`${index}. Umumiy ko'rsatkichlar`}>
     <DocTable
       columns={[
@@ -171,6 +174,35 @@ const SummarySection = ({ totals, index }) => (
           {percentText(totals.growthPercent)}
         </Td>
       </Tr>
+      {/* ⚠️ KO'CHISH "o'zgarish" bilan "davr oxirida" ORASIDA: jadval
+          yuqoridan pastga o'qilganda arifmetika ko'rinib boradi. */}
+      {hasMoves && (
+        <>
+          <Tr>
+            <Td className="text-gray-600">
+              Boshqa filialdan ko&apos;chib kelgan
+            </Td>
+            <Td align="right" className="text-gray-600">
+              {signedNumber(totals.movedIn)}
+            </Td>
+            <Td align="right" className="text-gray-400">
+              —
+            </Td>
+          </Tr>
+          <Tr>
+            <Td className="text-gray-600">
+              Boshqa filialga ko&apos;chib ketgan
+            </Td>
+            <Td align="right" className="text-gray-600">
+              {totals.movedOut ? `${MINUS}${totals.movedOut}` : "0"}
+            </Td>
+            <Td align="right" className="text-gray-400">
+              —
+            </Td>
+          </Tr>
+        </>
+      )}
+
       <Tr>
         <Td>Davr oxirida o&apos;qiyotganlar</Td>
         <Td align="right" className="font-bold">
@@ -188,12 +220,30 @@ const SummarySection = ({ totals, index }) => (
       Foiz davr boshidagi o&apos;quvchilar soniga nisbatan hisoblangan: (
       {totals.joined} {MINUS} {totals.left}) ÷ {totals.openCount || 0}.
     </p>
+
+    {/* ⚠️ IZOHSIZ "keldi 5, ketdi 2, lekin oxirida 20 ta ko'paydi" degan
+        jadval hisob xatosi bo'lib o'qilardi. */}
+    {hasMoves && (
+      <p className="mt-1 text-[8.5pt] text-gray-500">
+        Filiallararo ko&apos;chish &laquo;kelgan&raquo; va
+        &laquo;ketgan&raquo; soniga KIRMAYDI: o&apos;quvchi maktabni tashlab
+        ketmagan, faqat boshqa filialga o&apos;tgan. Shuning uchun davr
+        oxiridagi son = davr boshi + kelgan {MINUS} ketgan + ko&apos;chib
+        kelgan {MINUS} ko&apos;chib ketgan.
+      </p>
+    )}
   </Section>
-);
+  );
+};
 
 /* ── Oylar kesimi ────────────────────────────────────────────────── */
 
-const MonthlySection = ({ byMonth, index }) => (
+const MonthlySection = ({ byMonth, index }) => {
+  // ⚠️ Ustun faqat haqiqatan ko'chish bo'lganda: doimiy "0" ustuni
+  // jadvalni toraytirib, hech narsa aytmasdi.
+  const hasMoves = byMonth.some((item) => item.movedIn || item.movedOut);
+
+  return (
   <Section title={`${index}. Oylar kesimi`}>
     <DocTable
       columns={[
@@ -203,6 +253,7 @@ const MonthlySection = ({ byMonth, index }) => (
         { label: "Ketdi", align: "right" },
         { label: "Farq", align: "right" },
         { label: "Foiz", align: "right" },
+        ...(hasMoves ? [{ label: "Ko'chish", align: "right" }] : []),
         { label: "Oy oxirida", align: "right" },
       ]}
     >
@@ -229,6 +280,11 @@ const MonthlySection = ({ byMonth, index }) => (
           <Td align="right" className={docToneOfNet(item.net)}>
             {percentText(item.growthPercent)}
           </Td>
+          {hasMoves && (
+            <Td align="right" className="text-gray-500">
+              {signedNumber(item.moveNet)}
+            </Td>
+          )}
           <Td align="right" className="font-bold">
             {item.closeCount}
           </Td>
@@ -236,7 +292,8 @@ const MonthlySection = ({ byMonth, index }) => (
       ))}
     </DocTable>
   </Section>
-);
+  );
+};
 
 /* ── Filiallar kesimi (faqat umumiy ko'rinish) ──────────────────────── */
 
@@ -250,7 +307,12 @@ const MonthlySection = ({ byMonth, index }) => (
  * jadval ostida buni ochiq yozadigan izoh turibdi: usiz raqam hisob
  * xatosi bo'lib ko'rinardi.
  */
-const BranchSection = ({ byBranch, totals, index }) => (
+const BranchSection = ({ byBranch, totals, index }) => {
+  // ⚠️ Filial darajasida bu ENG MUHIM ustun: tarmoq jamisida ko'chish
+  // o'zini yo'qotadi, filialda esa aynan u "nega o'sdi" ni tushuntiradi.
+  const hasMoves = byBranch.some((item) => item.movedIn || item.movedOut);
+
+  return (
   <Section title={`${index}. Filiallar kesimi`}>
     <DocTable
       columns={[
@@ -260,6 +322,7 @@ const BranchSection = ({ byBranch, totals, index }) => (
         { label: "Ketdi", align: "right" },
         { label: "Farq", align: "right" },
         { label: "Foiz", align: "right" },
+        ...(hasMoves ? [{ label: "Ko'chish", align: "right" }] : []),
         { label: "Davr oxirida", align: "right" },
       ]}
     >
@@ -279,6 +342,11 @@ const BranchSection = ({ byBranch, totals, index }) => (
           <Td align="right" className={docToneOfNet(item.net)}>
             {percentText(item.growthPercent)}
           </Td>
+          {hasMoves && (
+            <Td align="right" className="text-gray-500">
+              {signedNumber(item.moveNet)}
+            </Td>
+          )}
           <Td align="right" className="font-bold">
             {item.closeCount}
           </Td>
@@ -302,6 +370,11 @@ const BranchSection = ({ byBranch, totals, index }) => (
         <Td align="right" className={cn("font-bold", docToneOfNet(totals.net))}>
           {percentText(totals.growthPercent)}
         </Td>
+        {hasMoves && (
+          <Td align="right" className="font-bold text-gray-500">
+            {signedNumber(totals.moveNet)}
+          </Td>
+        )}
         <Td align="right" className="font-bold">
           {totals.closeCount}
         </Td>
@@ -315,7 +388,8 @@ const BranchSection = ({ byBranch, totals, index }) => (
       natijaga ko&apos;proq ta&apos;sir qiladi.
     </p>
   </Section>
-);
+  );
+};
 
 /* ── Sabablar ────────────────────────────────────────────────────── */
 
@@ -442,6 +516,52 @@ const LeftSection = ({ items, index, showBranch }) => (
   </Section>
 );
 
+/* ── Filiallararo ko'chganlar ───────────────────────────────────────── */
+
+/**
+ * ⚠️ BU BO'LIM ULAR "KELDI/KETDI" DAN CHIQARILGANI UCHUN KERAK: jadvaldagi
+ * "ko'chish: +12" raqamining orqasida kim borligi ko'rinmasa, sanoqchi jim
+ * qolgan bo'lardi (`wipedByDiscount` bilan AYNI mulohaza). Ko'chish
+ * bo'lmasa bo'lim umuman chizilmaydi.
+ */
+const MovedSection = ({ items, index }) => (
+  <Section title={`${index}. Filiallararo ko'chganlar (${items.length} ta)`}>
+    <DocTable
+      columns={[
+        { label: "№", align: "center", width: "6%" },
+        { label: "F.I.Sh." },
+        { label: "Sinf", width: "16%" },
+        { label: "Qaysi filialdan", align: "center", width: "18%" },
+        { label: "Qaysi filialga", align: "center", width: "18%" },
+        { label: "Sana", align: "center", width: "16%" },
+      ]}
+    >
+      {items.map((item, i) => (
+        <Tr key={`${item.studentId}-${item.date}`}>
+          <Td align="center" className="text-gray-500">
+            {i + 1}
+          </Td>
+          <Td className="font-semibold">{item.name}</Td>
+          <Td>{item.className || "—"}</Td>
+          <Td align="center" className="text-gray-600">
+            {item.fromBranch || "—"}
+          </Td>
+          <Td align="center" className="text-emerald-700">
+            {item.toBranch || "—"}
+          </Td>
+          <Td align="center">{formatDateUz(item.date)}</Td>
+        </Tr>
+      ))}
+    </DocTable>
+
+    <p className="mt-2 text-[8.5pt] text-gray-500">
+      Bu o&apos;quvchilar maktabni tashlab ketmagan — ular tarmoq ichida
+      boshqa filialga o&apos;tgan, shuning uchun &laquo;kelgan&raquo; va
+      &laquo;ketgan&raquo; ro&apos;yxatlariga kirmaydi.
+    </p>
+  </Section>
+);
+
 /* ── Hujjat ─────────────────────────────────────────────────────────── */
 
 const MovementDocument = ({ report }) => {
@@ -466,6 +586,9 @@ const MovementDocument = ({ report }) => {
   const reasonIndex = 2 + optional;
   const joinedIndex = reasonIndex + 1;
   const leftIndex = reasonIndex + 2;
+  const movedIndex = reasonIndex + 3;
+
+  const moved = report.movedStudents ?? [];
 
   return (
     <article className="doc-sheet mx-auto w-full max-w-[210mm] rounded-sm border border-gray-200 bg-white px-[6mm] py-[10mm] font-serif text-[11pt] leading-relaxed text-gray-900 shadow-sm sm:px-[16mm] sm:py-[18mm] print:rounded-none print:border-0 print:shadow-none">
@@ -530,6 +653,10 @@ const MovementDocument = ({ report }) => {
         index={leftIndex}
         showBranch={net}
       />
+
+      {moved.length > 0 && (
+        <MovedSection items={moved} index={movedIndex} />
+      )}
 
       {/* Ikki xil "o'quvchilar soni" farqi — yashirilmaydi */}
       <section className="mt-8 border-t border-gray-200 pt-3 text-[9pt] text-gray-500">
