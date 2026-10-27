@@ -5,6 +5,7 @@ export const PANEL_OPTIONS = [
   { value: "student", label: "O'quvchi paneli" },
   { value: "server", label: "Server" },
   { value: "bot", label: "Telegram bot" },
+  { value: "kiosk", label: "Kiosk (Face ID)" },
 ];
 
 // Filtr uchun — "barchasi" varianti bilan
@@ -23,6 +24,7 @@ export const PANEL_META = {
   student: { label: "O'quvchi", className: "bg-green-100 text-green-800" },
   server: { label: "Server", className: "bg-orange-100 text-orange-800" },
   bot: { label: "Bot", className: "bg-cyan-100 text-cyan-800" },
+  kiosk: { label: "Kiosk", className: "bg-rose-100 text-rose-800" },
 };
 
 // O'zgarish darajasi — versiya shu asosda oshadi

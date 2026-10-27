@@ -515,6 +515,28 @@ export const navItems = [
         title: "Ekran vaqti hisoboti",
         url: "/devices/reports",
       },
+      // FACE ID — kiosk orqali yuz bilan davomatdan o'tish. Shu guruhda
+      // va bu ataylab: faollik "kim foydalanyapti", xavfsizlik "kim
+      // kirdi", qurilma nazorati "telefonda nima ochiladi", bu esa "kim
+      // binoga kirdi" degan savolga javob beradi — to'rttasi ham
+      // KUZATUV, sozlama emas.
+      //
+      // ⚠️ "Ta'lim → Davomat" bilan chalkashtirmang: u yerda davomatning
+      // O'ZI (ro'yxat, belgilash, hisobot), bu yerda esa QURILMA va
+      // BIOMETRIKA. Davomat qaydini kiosk ham, panel ham bitta
+      // service'ga yozadi (`.claude/rules/face-id.md` §0).
+      {
+        title: "Face ID kiosklari",
+        url: "/face-id/kiosks",
+      },
+      {
+        title: "Yuzni ro'yxatga olish",
+        url: "/face-id/enroll",
+      },
+      {
+        title: "Face ID jurnali",
+        url: "/face-id/events",
+      },
     ],
   },
   {

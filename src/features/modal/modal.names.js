@@ -24,6 +24,12 @@ export const MODAL_NAMES = [
   "deviceAssignPolicy",
   "deviceApp",
 
+  // Face ID (kiosk davomati)
+  "faceKiosk",
+  "faceKioskPairingCode",
+  "faceKioskPin",
+  "faceEnroll",
+
   // ERP va Kundalik.com
   "exportStudentSystems",
 

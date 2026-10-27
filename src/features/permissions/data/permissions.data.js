@@ -60,6 +60,7 @@ export const SECTIONS = {
   ISSUES: "issues",
   SECURITY: "security",
   DEVICES: "devices",
+  FACE_ID: "faceId",
 };
 
 // Tez-tez takrorlanadigan amal nomlari
@@ -959,6 +960,39 @@ export const PERMISSION_SECTIONS = [
       A.settings,
     ],
   },
+  {
+    // FACE ID — kiosk orqali yuz bilan davomatdan o'tish
+    // (`.claude/rules/face-id.md`).
+    //
+    // ⚠️ `attendance` ICHIDAGI AMAL EMAS, ALOHIDA BO'LIM. Davomat
+    // ruxsati "kim keldi" ni ko'rish va belgilash huquqini beradi; bu
+    // bo'lim esa BIOMETRIKA bilan ishlaydi. Ikkalasini bitta bo'limga
+    // yig'ish "davomat belgilasin" degan ruxsatni "maktabning butun
+    // biometrik bazasini boshqarsin" ga aylantirardi.
+    //
+    //   `kiosks`   — qurilma yaratish/tahrirlash, PIN. Hali hech kimning
+    //                yuzini ko'rmaydi.
+    //   `pair`     — biriktirish kodi va tokenni bekor qilish. ⚠️ ALOHIDA:
+    //                kod — YANGI KOMPYUTERNI maktab davomatiga ulash huquqi.
+    //   `enroll`   — yuz namunasini OLISH.
+    //   `unenroll` — namunani/profilni O'CHIRISH. ⚠️ `enroll` dan alohida:
+    //                odam ertasiga kiosk oldida "tanilmadi" bo'lib qoladi.
+    //   `events`   — urinishlar jurnali. ⚠️ `view` DAN ALOHIDA
+    //                (`security.sessions` bilan ayni mulohaza): jurnal
+    //                kirish eshigidagi kamera KADRLARINI ko'rsatadi.
+    key: SECTIONS.FACE_ID,
+    label: "Face ID (kiosk davomati)",
+    group: "Nazorat",
+    actions: [
+      A.view,
+      { key: "kiosks", label: "Kiosklarni boshqarish" },
+      { key: "pair", label: "Qurilmani biriktirish / bekor qilish" },
+      { key: "enroll", label: "Yuzni ro'yxatga olish" },
+      { key: "unenroll", label: "Yuz namunasini o'chirish" },
+      { key: "events", label: "Urinishlar jurnali (kadrlar bilan)" },
+      A.settings,
+    ],
+  },
 ];
 
 /** Barcha ruxsat kalitlari: ["users.view", "users.create", ...] */
@@ -1215,6 +1249,13 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/devices/apps", key: "devices.apps" },
   { prefix: "/devices/reports", key: "devices.reports" },
   { prefix: "/devices/settings", key: "devices.settings" },
+  // FACE ID — bo'limga kirish `faceId.view` bilan; ro'yxatga olish,
+  // jurnal va sozlama tablari o'z kalitini talab qiladi (eng UZUN mos
+  // prefiks yutadi).
+  { prefix: "/face-id", key: "faceId.view" },
+  { prefix: "/face-id/enroll", key: "faceId.enroll" },
+  { prefix: "/face-id/events", key: "faceId.events" },
+  { prefix: "/face-id/settings", key: "faceId.settings" },
   // Bosh sahifadagi "Xavfsizlik" tabi — `/security` bilan ayni sahifa
   { prefix: "/watch", key: "security.view" },
   { prefix: "/roles", key: "roles" },

@@ -184,6 +184,16 @@ import DeviceAppsPage from "@/features/devices/pages/AppsPage";
 import DeviceUnlocksPage from "@/features/devices/pages/UnlocksPage";
 import DeviceReportsPage from "@/features/devices/pages/ReportsPage";
 import DeviceSettingsPage from "@/features/devices/pages/SettingsPage";
+// FACE ID — kiosk orqali yuz bilan davomatdan o'tish
+// (`.claude/rules/face-id.md`). Davomatning O'ZI "Ta'lim → Davomat" da
+// qoladi: kiosk unga uchinchi tetik bo'lib qo'shiladi, yangi davomat
+// tizimi EMAS.
+import FaceIdLayout from "@/features/faceId/layouts/FaceIdLayout";
+import FaceIdIndex from "@/features/faceId/layouts/FaceIdIndex";
+import FaceIdKiosksPage from "@/features/faceId/pages/KiosksPage";
+import FaceIdEnrollPage from "@/features/faceId/pages/EnrollPage";
+import FaceIdEventsPage from "@/features/faceId/pages/EventsPage";
+import FaceIdSettingsPage from "@/features/faceId/pages/SettingsPage";
 
 // Pages - Faollik va Xavfsizlik
 import ActivityDashboardPage from "@/features/activityDashboard/pages/ActivityDashboardPage";
@@ -381,6 +391,19 @@ const Routes = () => {
             <Route path="apps" element={<DeviceAppsPage />} />
             <Route path="reports" element={<DeviceReportsPage />} />
             <Route path="settings" element={<DeviceSettingsPage />} />
+          </Route>
+
+          {/* FACE ID — kiosk davomati.
+              ⚠️ Tablar ruxsat bo'yicha `FaceIdLayout` ichida filtrlanadi va
+              `FaceIdIndex` ruxsati bor BIRINCHI tabga yo'naltiradi: faqat
+              `faceId.events` bor xodim "Ruxsat yo'q" ekraniga tushmasligi
+              kerak. */}
+          <Route path="/face-id" element={<FaceIdLayout />}>
+            <Route index element={<FaceIdIndex />} />
+            <Route path="kiosks" element={<FaceIdKiosksPage />} />
+            <Route path="enroll" element={<FaceIdEnrollPage />} />
+            <Route path="events" element={<FaceIdEventsPage />} />
+            <Route path="settings" element={<FaceIdSettingsPage />} />
           </Route>
 
           {/* XAVFSIZLIK — seanslar, kirish urinishlari, ogohlantirishlar.
