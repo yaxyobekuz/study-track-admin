@@ -35,6 +35,12 @@ import RolesPage from "@/features/roles/pages/RolesPage";
 // Pages - Permissions
 import PermissionsPage from "@/features/permissions/pages/PermissionsPage";
 
+// CHIQIB KETGANLAR — yopilgan o'qish davrlari registri ("nega, qachon")
+import DeparturesPage from "@/features/enrollment/pages/DeparturesPage";
+
+// O'QUVCHILAR HARAKATI — "kimlar keldi, kimlar ketdi" hujjati
+import StudentMovementPage from "@/features/enrollment/pages/StudentMovementPage";
+
 // Pages - Classes
 import ClassesPage from "@/features/classes/pages/ClassesPage";
 import ClassDetailPage from "@/features/classes/pages/ClassDetailPage";
@@ -430,6 +436,18 @@ const Routes = () => {
 
           {/* Permissions */}
           <Route path="/permissions" element={<PermissionsPage />} />
+
+          {/* CHIQIB KETGAN O'QUVCHILAR (`enrollment.view`) — kim, qachon va
+              nega ketdi. Manba: yopilgan o'qish davrlari, alohida jadval
+              emas (`studentDeparture.service.js`). Bosh sahifadagi
+              "Batafsil" aynan shu yo'lga olib keladi. */}
+          <Route path="/departures" element={<DeparturesPage />} />
+
+          {/* O'QUVCHILAR HARAKATI (`enrollment.view`) — o'sish va tushish
+              foizlari, kelganlar va ketganlar ro'yxati, hujjat
+              ko'rinishida. Bosh sahifadagi "O'quvchilar" kartasidagi
+              belgi aynan shu yo'lga olib keladi (yangi tab EMAS). */}
+          <Route path="/student-movement" element={<StudentMovementPage />} />
 
           {/* Classes */}
           <Route path="/classes" element={<ClassesPage />} />

@@ -175,6 +175,33 @@ input[type="number"] {
     display: none !important;
   }
 
+  /* ── HUJJAT SAHIFASI (`.doc-sheet`) ─────────────────────────────
+     O'quvchilar harakati hisoboti yon menyu va yuqori panel ICHIDA
+     ochiladi (chekdan farqi: u alohida marshrutda). Shuning uchun
+     qog'ozga faqat hujjatning o'zi tushishi kerak.
+
+     ⚠️ `display: none` EMAS, `visibility`: ota elementni yashirsak,
+     uning ichidagi hujjat ham yo'qolardi. `visibility` esa meros
+     bo'ladi va faqat hujjat qismi qaytarib yoqiladi. */
+  body:has(.doc-sheet) * {
+    visibility: hidden;
+  }
+
+  body:has(.doc-sheet) .doc-sheet,
+  body:has(.doc-sheet) .doc-sheet * {
+    visibility: visible;
+  }
+
+  .doc-sheet {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+
   /* Qog.oz chetlari — brauzer sukut bo'yicha katta chekka qo.yadi */
   @page {
     margin: 12mm;

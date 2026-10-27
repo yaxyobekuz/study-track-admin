@@ -45,6 +45,23 @@ export const penaltiesQueries = {
       enabled: Boolean(id),
     }),
 
+  /**
+   * Bosh sahifadagi jarima sanoqlari va grafiklari → `{ totalApprovedPoints,
+   * totalReducedPoints, pendingCount, topUsers, topStudents, dailyTrend }`.
+   *
+   * ⚠️ IKKI KARTA BITTA SO'ROVDAN: sanoqlar yuqoridagi umumiy blokda,
+   * ro'yxat va grafik pastdagi blokda turadi. Ikkalasi AYNI `queryOptions`
+   * ni chaqirgani uchun tarmoqqa bitta so'rov ketadi — qo'lda yozilgan
+   * `useQuery` nusxasi bo'lsa, kalit bir harfga farq qilganda bosh sahifa
+   * jim ravishda ikki marta so'rardi.
+   */
+  stats: () =>
+    queryOptions({
+      queryKey: [...penaltiesKeys.all, "stats"],
+      queryFn: () => penaltiesAPI.getStats().then((r) => r.data.data),
+      staleTime: 60 * 1000,
+    }),
+
   /** Penalty settings (fine amounts, premium discount) → the settings object. */
   settings: () =>
     queryOptions({

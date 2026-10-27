@@ -40,6 +40,10 @@ import { Skeleton } from "@/shared/components/shadcn/skeleton";
  *
  * Foiz KUTILGAN o'quvchi-kunlarga nisbatan: belgilanmagan o'quvchi
  * kelmagan hisoblanadi ("Hisobotlar" bo'limi bilan AYNI qoida).
+ *
+ * ⚠️ BALANDLIK QAT'IY EMAS (`min-h` + `flex-1`): karta ustunda qolgan
+ * joyni egallaydi, shuning uchun o'ng ustundagi baland karta yonida
+ * bo'sh oq joy qolmaydi (`OverviewStats`).
  */
 
 /** Grafik davri (kun) — tanga grafigi bilan AYNI. */
@@ -100,7 +104,7 @@ const AttendanceTrendCard = () => {
   const overall = percentOf(trend?.summary?.came, trend?.summary?.expected);
 
   return (
-    <Card className="col-span-2 h-60 space-y-2.5 sm:h-80">
+    <Card className="flex min-h-60 flex-1 flex-col gap-2.5 sm:min-h-80">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-semibold text-gray-900">
           So&apos;nggi {TREND_DAYS} kundagi davomat
@@ -115,58 +119,62 @@ const AttendanceTrendCard = () => {
         )}
       </div>
 
-      {!isLoading && !data.length ? (
-        <p className="py-8 text-center text-sm text-gray-400">
-          Davomat ma&apos;lumoti topilmadi
-        </p>
-      ) : (
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={data}
-            margin={{ top: 20, right: 10, left: -20, bottom: 40 }}
-          >
-            <defs>
-              <linearGradient id="colorAttendance" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid
-              vertical={false}
-              stroke="#E5E7EB"
-              strokeDasharray="3 3"
-            />
-            <XAxis
-              dy={10}
-              dataKey="date"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 12, fill: "#9CA3AF" }}
-              tickFormatter={(val) => formatDateUZ(val, { hideYear: true })}
-            />
-            <YAxis
-              domain={[yMin, 100]}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 12, fill: "#9CA3AF" }}
-              tickFormatter={(value) => `${value}%`}
-            />
-            <Tooltip content={<ChartTooltip />} />
-            <Area
-              name="Davomat"
-              strokeWidth={2}
-              fillOpacity={1}
-              stroke="#3b82f6"
-              type="monotone"
-              dataKey="percent"
-              fill="url(#colorAttendance)"
-              // Yozuvsiz kun (yakshanba, bayram) ro'yxatga umuman
-              // kirmaydi, lekin ma'lumoti yo'q nuqta chiziqni uzsin.
-              connectNulls={false}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      )}
+      {/* ⚠️ `min-h-0` MAJBURIY: flex bolasining eng kichik balandligi sukut
+          bo'yicha mazmuniga teng va grafik ustunni cho'zib yuborardi. */}
+      <div className="min-h-0 flex-1">
+        {!isLoading && !data.length ? (
+          <p className="flex h-full items-center justify-center text-center text-sm text-gray-400">
+            Davomat ma&apos;lumoti topilmadi
+          </p>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={data}
+              margin={{ top: 20, right: 10, left: -20, bottom: 40 }}
+            >
+              <defs>
+                <linearGradient id="colorAttendance" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                vertical={false}
+                stroke="#E5E7EB"
+                strokeDasharray="3 3"
+              />
+              <XAxis
+                dy={10}
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: "#9CA3AF" }}
+                tickFormatter={(val) => formatDateUZ(val, { hideYear: true })}
+              />
+              <YAxis
+                domain={[yMin, 100]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: "#9CA3AF" }}
+                tickFormatter={(value) => `${value}%`}
+              />
+              <Tooltip content={<ChartTooltip />} />
+              <Area
+                name="Davomat"
+                strokeWidth={2}
+                fillOpacity={1}
+                stroke="#3b82f6"
+                type="monotone"
+                dataKey="percent"
+                fill="url(#colorAttendance)"
+                // Yozuvsiz kun (yakshanba, bayram) ro'yxatga umuman
+                // kirmaydi, lekin ma'lumoti yo'q nuqta chiziqni uzsin.
+                connectNulls={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </div>
     </Card>
   );
 };

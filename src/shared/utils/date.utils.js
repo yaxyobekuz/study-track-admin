@@ -131,24 +131,29 @@ export const formatTimeUz = (value, fallback = "—") => {
  *   - Date / ISO satr (o'sha sananing oyi olinadi)
  *
  * @param {number|Date|string|null} value
- * @param {{fallback?: string}} [options]
+ * @param {{fallback?: string, hideYear?: boolean}} [options]
+ *   `hideYear` — faqat DIAGRAMMA O'QI uchun ("Oktabr"): o'qda yil bilan
+ *   yozilgan yorliqlar bir-birining ustiga chiqib ketadi. Matnda
+ *   ishlatilmaydi (`formatDateUz` dagi AYNI istisno).
  * @returns {string}
  */
 export const formatMonthUz = (value, options = {}) => {
-  const { fallback = "—" } = options;
+  const { fallback = "—", hideYear = false } = options;
   if (value === null || value === undefined || value === "") return fallback;
 
   // YYYYMM oy kaliti — moliyaning o'lchov birligi (`finance.md` §0).
   if (typeof value === "number" && value >= 100001) {
     const year = Math.trunc(value / 100);
     const name = MONTHS_UZ_CAP[(value % 100) - 1];
-    return name ? `${name}, ${year}` : fallback;
+    if (!name) return fallback;
+    return hideYear ? name : `${name}, ${year}`;
   }
 
   const date = toDate(value);
   if (!date) return fallback;
 
-  return `${MONTHS_UZ_CAP[date.getMonth()]}, ${date.getFullYear()}`;
+  const name = MONTHS_UZ_CAP[date.getMonth()];
+  return hideYear ? name : `${name}, ${date.getFullYear()}`;
 };
 
 /**

@@ -58,6 +58,7 @@ import { authAPI } from "@/features/auth/api/auth.api";
 // Hooks
 import { useIsMobile } from "@/shared/hooks/useMobile";
 import usePermissions from "@/shared/hooks/usePermissions";
+import useBranch from "@/shared/hooks/useBranch";
 
 // Permissions
 import { permissionForPath } from "@/features/permissions/data/permissions.data";
@@ -143,19 +144,26 @@ const Main = () => {
   const isMobile = useIsMobile();
   const { toggleSidebar } = useSidebar();
   const { can, isOwner } = usePermissions();
+  const { isAggregate } = useBranch();
 
   // Ruxsati bo'lmagan sahifalarni yashiramiz; bo'lim bo'sh qolsa — butun bo'limni.
   // `hideForOwner` — ruxsatga emas, ROLGA bog'liq bo'lim (owner'da davomat
   // yozuvi yo'q): "ruxsati bor, lekin ishlamaydi" degan holat bo'lmasin.
   // `ownerOnly` — aksincha, faqat egaga (AI yordamchi).
+  //
+  // ⚠️ `aggregateOnly` — REJIMGA bog'liq (ruxsatga ham, rolga ham emas):
+  // sahifa faqat "Umumiy — barcha filiallar" ko'rinishida ma'noli
+  // ("O'quvchilar harakati"). Filial tanlab turgan egaga ham ko'rsatilmaydi:
+  // serverda u 403 qaytaradi, ya'ni menyudagi qator ishlamaydigan havola
+  // bo'lib qolardi.
   const visibleNavItems = navItems
     .filter((item) => !(item.hideForOwner && isOwner))
     .filter((item) => !item.ownerOnly || isOwner)
     .map((item) => ({
       ...item,
-      items: (item.items || []).filter((sub) =>
-        can(permissionForPath(sub.url)),
-      ),
+      items: (item.items || [])
+        .filter((sub) => !sub.aggregateOnly || isAggregate)
+        .filter((sub) => can(permissionForPath(sub.url))),
     }))
     .filter((item) => item.items.length > 0);
 

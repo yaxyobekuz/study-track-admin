@@ -60,6 +60,26 @@ export const navItems = [
         url: "/users/students",
       },
       {
+        // Yopilgan o'qish davrlari — "nega va qachon ketdi"
+        // (`enrollment.view`, `permissionForPath` filtrlaydi)
+        title: "Chiqib ketganlar",
+        url: "/departures",
+      },
+      {
+        // Keldi / ketdi va o'sish foizi — hujjat ko'rinishidagi hisobot
+        // (`enrollment.view`, `permissionForPath` filtrlaydi).
+        //
+        // ⚠️ `aggregateOnly` — FAQAT "Umumiy — barcha filiallar" rejimida
+        // ko'rinadi (biznes qarori, 2026-10-27). Hisobot tarmoq savoliga
+        // javob beradi va filial ichida o'sha filialning raqami bo'lib
+        // qolardi; serverda ham AYNI darvoza bor
+        // (`studentEnrollment.controller.js` → 403), ya'ni saqlangan
+        // havola orqali ham ochilmaydi.
+        title: "O'quvchilar harakati",
+        url: "/student-movement",
+        aggregateOnly: true,
+      },
+      {
         title: "Statistika",
         url: "/statistics",
       },

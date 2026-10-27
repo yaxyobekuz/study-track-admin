@@ -16,9 +16,6 @@ import {
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
 
-// API
-import { penaltiesAPI } from "@/features/penalties/api/penalties.api";
-
 // Utils
 import { cn } from "@/shared/utils/cn";
 import { formatDateUZ } from "@/shared/utils/date.utils";
@@ -27,177 +24,121 @@ import { formatDateUZ } from "@/shared/utils/date.utils";
 import Card from "@/shared/components/ui/Card";
 import Counter from "@/shared/components/ui/Counter";
 import Button from "@/shared/components/ui/button/Button";
-import BranchSplit from "@/shared/components/ui/BranchSplit";
 
 // Queries
-import { penaltiesKeys } from "@/features/penalties/queries/penalties.queries";
+import { penaltiesQueries } from "@/features/penalties/queries/penalties.queries";
 import { useRoles } from "@/features/roles/queries/roles.queries";
 
 // Helpers
 import { getRoleLabel } from "@/shared/helpers/role.helpers";
 
+/**
+ * JARIMALAR BLOKI — eng ko'p jarima olgan xodimlar, kunlik grafik va
+ * eng ko'p jarima olgan o'quvchilar.
+ *
+ * ⚠️ UCHTA SANOQ (jami ball, kamaytirilgan, kutilayotgan) BU YERDA EMAS:
+ * ular yuqoridagi blokning chap ustuni oxiriga ko'tarilgan
+ * (`PenaltySummaryCards`) — u yerda o'ng ustundagi baland karta ostida
+ * bir ekranlik oq joy qolib ketardi. So'rov AYNI `queryOptions` dan,
+ * ya'ni ikki blok uchun bitta so'rov ketadi.
+ */
 const PenaltyStats = () => {
-  const { data: stats } = useQuery({
-    queryKey: [...penaltiesKeys.all, "stats"],
-    queryFn: () => penaltiesAPI.getStats().then((res) => res.data.data),
-  });
+  const { data: stats } = useQuery(penaltiesQueries.stats());
 
   const { data: roles = [] } = useRoles();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-      <div className="space-y-4 lg:col-span-2">
-        {/* Total */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card
-            title="Jami jarima ballar"
-            className="flex items-center justify-between gap-2"
-          >
-            {/* Sarlavha va raqam bir qatorda — filiallar kesimi chip bilan */}
-            <div className="flex items-center gap-2">
-              <BranchSplit
-                variant="chip"
-                data={stats}
-                path="totalApprovedPoints"
-                to="/penalties"
-              />
-              <Counter
-                value={stats?.totalApprovedPoints ?? 0}
-                className="text-2xl font-bold text-red-500"
-              />
-            </div>
-          </Card>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2">
+        {/* Top 10 workers */}
+        <TopTenList
+          roles={roles}
+          data={stats?.topUsers || []}
+          title="Top 10 jarima olgan xodimlar"
+        />
 
-          <Card
-            title="Kamaytirilgan ballar"
-            className="flex items-center justify-between gap-2"
-          >
-            {/* Sarlavha va raqam bir qatorda — filiallar kesimi chip bilan */}
-            <div className="flex items-center gap-2">
-              <BranchSplit
-                variant="chip"
-                data={stats}
-                path="totalReducedPoints"
-                to="/penalties"
+        {/* Penalty Stats Chart */}
+        <Card
+          title="So'nggi 30 kunlik jarimalar"
+          className="min-h-60 space-y-4 sm:min-h-80"
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={stats?.dailyTrend || []}
+              margin={{ left: -32, bottom: 40 }}
+            >
+              <defs>
+                <linearGradient id="colorPenalty" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient
+                  id="colorReduction"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                vertical={false}
+                stroke="#E5E7EB"
+                strokeDasharray="3 3"
               />
-              <Counter
-                value={stats?.totalReducedPoints ?? 0}
-                className="text-2xl font-bold text-green-500"
+              <XAxis
+                dy={10}
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#9CA3AF" }}
+                tickFormatter={(val) => formatDateUZ(val, { hideYear: true })}
+                interval={4}
               />
-            </div>
-          </Card>
-
-          <Card
-            title="Kutilayotgan jarimalar"
-            className="flex items-center justify-between gap-2"
-          >
-            {/* Sarlavha va raqam bir qatorda — filiallar kesimi chip bilan */}
-            <div className="flex items-center gap-2">
-              <BranchSplit
-                variant="chip"
-                data={stats}
-                path="pendingCount"
-                to="/penalties"
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#9CA3AF" }}
               />
-              <Counter
-                value={stats?.pendingCount ?? 0}
-                className="text-2xl font-bold text-yellow-500"
+              <Tooltip
+                labelStyle={{
+                  color: "#6B7280",
+                  fontSize: "13px",
+                  marginBottom: "2px",
+                }}
+                contentStyle={{
+                  borderRadius: "12px",
+                  border: "1px solid #E5E7EB",
+                  boxShadow: "0 2px 6px -1px rgb(0 0 0 / 0.1)",
+                }}
+                labelFormatter={formatDateUZ}
               />
-            </div>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {/* Top 10 workers */}
-          <TopTenList
-            roles={roles}
-            data={stats?.topUsers || []}
-            title="Top 10 jarima olgan xodimlar"
-          />
-
-          {/* Penalty Stats Chart */}
-          <Card
-            title="So'nggi 30 kunlik jarimalar"
-            className="min-h-60 space-y-4 sm:min-h-80"
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={stats?.dailyTrend || []}
-                margin={{ left: -32, bottom: 40 }}
-              >
-                <defs>
-                  <linearGradient id="colorPenalty" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient
-                    id="colorReduction"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid
-                  vertical={false}
-                  stroke="#E5E7EB"
-                  strokeDasharray="3 3"
-                />
-                <XAxis
-                  dy={10}
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11, fill: "#9CA3AF" }}
-                  tickFormatter={(val) => formatDateUZ(val, { hideYear: true })}
-                  interval={4}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11, fill: "#9CA3AF" }}
-                />
-                <Tooltip
-                  labelStyle={{
-                    color: "#6B7280",
-                    fontSize: "13px",
-                    marginBottom: "2px",
-                  }}
-                  contentStyle={{
-                    borderRadius: "12px",
-                    border: "1px solid #E5E7EB",
-                    boxShadow: "0 2px 6px -1px rgb(0 0 0 / 0.1)",
-                  }}
-                  labelFormatter={formatDateUZ}
-                />
-                <Legend
-                  wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }}
-                />
-                <Line
-                  name="Berilgan jarimalar"
-                  type="monotone"
-                  dataKey="penaltyPoints"
-                  stroke="#ef4444"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
-                <Line
-                  name="Ayirilgan jarimalar"
-                  type="monotone"
-                  dataKey="reductionPoints"
-                  stroke="#22c55e"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </Card>
-        </div>
+              <Legend
+                wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }}
+              />
+              <Line
+                name="Berilgan jarimalar"
+                type="monotone"
+                dataKey="penaltyPoints"
+                stroke="#ef4444"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4 }}
+              />
+              <Line
+                name="Ayirilgan jarimalar"
+                type="monotone"
+                dataKey="reductionPoints"
+                stroke="#22c55e"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </Card>
       </div>
 
       {/* Top 10 students */}

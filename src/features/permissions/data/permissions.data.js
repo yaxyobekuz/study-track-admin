@@ -1174,6 +1174,16 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/transfers", key: "transfers.view" },
   { prefix: "/users", key: "users.view" },
   { prefix: "/statistics", key: "statistics.view" },
+  // CHIQIB KETGANLAR — yopilgan o'qish davrlari registri. Alohida kalit
+  // YO'Q va kiritilmaydi: ketish sababi o'quvchi profilidagi "O'qish
+  // davri" bo'limida allaqachon `enrollment.view` ortida ko'rinadi —
+  // registr o'sha BITTA faktni bitta ekranga yig'adi, yangi ma'lumot
+  // ochib bermaydi.
+  { prefix: "/departures", key: "enrollment.view" },
+  // O'QUVCHILAR HARAKATI hisoboti — chiqib ketganlar registri bilan AYNI
+  // manba (o'qish davrining ochilishi va yopilishi), shuning uchun kalit
+  // ham o'sha: yangi ma'lumot ochib bermaydi, mavjudini yig'adi.
+  { prefix: "/student-movement", key: "enrollment.view" },
   { prefix: "/attendance", key: "attendance.view" },
   { prefix: "/grades", key: "grades.view" },
   { prefix: "/grade-analysis", key: "gradeAnalysis.view" },

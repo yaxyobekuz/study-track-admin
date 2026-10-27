@@ -33,8 +33,19 @@ import Button from "@/shared/components/ui/button/Button";
 import BranchSplit from "@/shared/components/ui/BranchSplit";
 import AttendanceTrendCard from "./AttendanceTrendCard";
 import TopStudentsCard from "./TopStudentsCard";
+import PenaltySummaryCards from "./PenaltySummaryCards";
 
 /**
+ * BOSH SAHIFANING YUQORI BLOKI — chapda tanga sanoqlari, kunlik grafik va
+ * jarima sanoqlari; o'ngda o'quvchilar natijalari.
+ *
+ * ⚠️ BLOK UCHTA BO'LIMNI BIRLASHTIRADI VA BU ATAYLAB: o'ng ustundagi
+ * karta (eng yaxshi 5 + eng past 5) chap ustundan BALAND. Ilgari chap
+ * ustun grafikdan keyin tugab, ostida bir ekranlik oq joy qolardi, jarima
+ * sanoqlari esa o'sha bo'shliqdan keyin boshlanardi. Endi ular shu
+ * ustunning oxirida turadi va grafik (`flex-1`) qolgan farqni yutadi —
+ * ustunlar uzunligi qanday bo'lmasin, bo'sh joy qolmaydi.
+ *
  * ⚠️ UMUMIY KO'RINISHDA (barcha filiallar, faqat tizim egasi) KUNLIK
  * GRAFIK O'RNINI DAVOMAT EGALLAYDI (biznes qarori, 2026-10-26).
  * Tanga — filialning ichki rag'bati va uni filial o'zi boshqaradi; butun
@@ -52,7 +63,7 @@ import TopStudentsCard from "./TopStudentsCard";
  * `gradeAnalysis.view` ruxsati bo'lmaganda eski karta QOLADI — davomat
  * grafigi bilan AYNI mulohaza: bo'sh joy kartani "yo'qolgan" qilardi.
  */
-const CoinStats = () => {
+const OverviewStats = () => {
   const { isAggregate } = useBranch();
   const { can } = usePermissions();
   const showAttendance = isAggregate && can("attendance.reports");
@@ -65,7 +76,7 @@ const CoinStats = () => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-      <div className="space-y-4 lg:col-span-2">
+      <div className="flex flex-col gap-4 lg:col-span-2">
         <div className="grid grid-cols-2 gap-4">
           {/* Total coin */}
           <Card
@@ -109,12 +120,16 @@ const CoinStats = () => {
           </Card>
         </div>
 
-        {/* Kunlik grafik — umumiy ko'rinishda davomat, aks holda tanga */}
+        {/* Kunlik grafik — umumiy ko'rinishda davomat, aks holda tanga.
+            Ikkalasi ham `flex-1`: ustunlar balandligidagi farqni shu yutadi. */}
         {showAttendance ? (
           <AttendanceTrendCard />
         ) : (
           <CoinsDailyChart stats={stats} />
         )}
+
+        {/* Jarima sanoqlari — pastdagi "Jarimalar" blokidan KO'TARILGAN */}
+        <PenaltySummaryCards />
       </div>
 
       {/* Eng yaxshi 5 / eng past 5 o'quvchi (ruxsati yo'qda — top 10 tanga) */}
@@ -127,64 +142,68 @@ const CoinStats = () => {
 const CoinsDailyChart = ({ stats }) => (
   <Card
     title="So'nggi 30 kunda tarqatilgan tangalar"
-    className="col-span-2 h-60 space-y-2.5 sm:h-80"
+    className="flex min-h-60 flex-1 flex-col gap-2.5 sm:min-h-80"
   >
-    <ResponsiveContainer width="100%" height="100%">
-      <AreaChart
-        data={stats?.dailyDistribution || []}
-        margin={{ top: 20, right: 10, left: -20, bottom: 40 }}
-      >
-        <defs>
-          <linearGradient id="colorCoins" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2} />
-            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid
-          vertical={false}
-          stroke="#E5E7EB"
-          strokeDasharray="3 3"
-        />
-        <XAxis
-          dy={10}
-          dataKey="date"
-          axisLine={false}
-          tickLine={false}
-          tick={{ fontSize: 12, fill: "#9CA3AF" }}
-          tickFormatter={(val) => formatDateUZ(val, { hideYear: true })}
-        />
-        <YAxis
-          axisLine={false}
-          tickLine={false}
-          tick={{ fontSize: 12, fill: "#9CA3AF" }}
-          tickFormatter={(value) => value.toLocaleString()}
-        />
-        <Tooltip
-          labelStyle={{
-            color: "#6B7280",
-            fontSize: "14px",
-            marginBottom: "2px",
-          }}
-          contentStyle={{
-            borderRadius: "12px",
-            border: "1px solid #E5E7EB",
-            boxShadow: "0 2px 6px -1px rgb(0 0 0 / 0.1)",
-          }}
-          labelFormatter={formatDateUZ}
-          formatter={(value) => value.toLocaleString()}
-          itemStyle={{ color: "#f59e0b", fontWeight: "bold" }}
-        />
-        <Area
-          name="Tangalar"
-          strokeWidth={2}
-          fillOpacity={1}
-          stroke="#f59e0b"
-          type="monotone"
-          fill="url(#colorCoins)"
-          dataKey="totalDistributed"
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    {/* ⚠️ `min-h-0` MAJBURIY: flex bolasining eng kichik balandligi sukut
+        bo'yicha mazmuniga teng va `ResponsiveContainer` cho'zilib ketardi. */}
+    <div className="min-h-0 flex-1">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart
+          data={stats?.dailyDistribution || []}
+          margin={{ top: 20, right: 10, left: -20, bottom: 40 }}
+        >
+          <defs>
+            <linearGradient id="colorCoins" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2} />
+              <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid
+            vertical={false}
+            stroke="#E5E7EB"
+            strokeDasharray="3 3"
+          />
+          <XAxis
+            dy={10}
+            dataKey="date"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 12, fill: "#9CA3AF" }}
+            tickFormatter={(val) => formatDateUZ(val, { hideYear: true })}
+          />
+          <YAxis
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 12, fill: "#9CA3AF" }}
+            tickFormatter={(value) => value.toLocaleString()}
+          />
+          <Tooltip
+            labelStyle={{
+              color: "#6B7280",
+              fontSize: "14px",
+              marginBottom: "2px",
+            }}
+            contentStyle={{
+              borderRadius: "12px",
+              border: "1px solid #E5E7EB",
+              boxShadow: "0 2px 6px -1px rgb(0 0 0 / 0.1)",
+            }}
+            labelFormatter={formatDateUZ}
+            formatter={(value) => value.toLocaleString()}
+            itemStyle={{ color: "#f59e0b", fontWeight: "bold" }}
+          />
+          <Area
+            name="Tangalar"
+            strokeWidth={2}
+            fillOpacity={1}
+            stroke="#f59e0b"
+            type="monotone"
+            fill="url(#colorCoins)"
+            dataKey="totalDistributed"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   </Card>
 );
 
@@ -251,4 +270,4 @@ const TopTenCoinOwner = ({ stats }) => {
   );
 };
 
-export default CoinStats;
+export default OverviewStats;

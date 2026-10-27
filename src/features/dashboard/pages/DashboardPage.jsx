@@ -10,7 +10,7 @@ import useModal from "@/shared/hooks/useModal";
 
 // Components
 import Card from "@/shared/components/ui/Card";
-import CoinStats from "../components/CoinStats";
+import OverviewStats from "../components/OverviewStats";
 import UsersStats from "../components/UsersStats";
 import BotActivityStats from "../components/BotActivityStats";
 import HolidayInfo from "../components/HolidayInfo";
@@ -18,6 +18,7 @@ import PenaltyStats from "../components/PenaltyStats";
 import RecentExcuses from "../components/RecentExcuses";
 import DownloadAppModal from "../components/DownloadAppModal";
 import AllSchedulesToday from "../components/AllSchedulesToday";
+import DepartedStudents from "../components/DepartedStudents";
 
 // Utils
 import { getTimedRandomAnimation } from "@/shared/utils/animations.utils";
@@ -67,10 +68,16 @@ const Dashboard = () => {
           FOYDALANAYOTGANINI. Ruxsati bo'lmaganda umuman chizilmaydi. */}
       <BotActivityStats />
 
-      {/* Coin Statistics */}
-      <CoinStats />
+      {/* CHIQIB KETGAN O'QUVCHILAR — "kim, qachon va nega ketdi".
+          ⚠️ O'quvchilar sanog'idan KEYIN turadi: "461 o'quvchi" degan
+          raqamdan keyin darhol "va 12 tasi oxirgi oyda ketdi" degan
+          javob kelishi kerak — ikkalasi bir savolning ikki yarmi. */}
+      <DepartedStudents />
 
-      {/* Penalty Statistics */}
+      {/* Tanga sanoqlari + kunlik grafik + jarima sanoqlari | o'quvchilar natijalari */}
+      <OverviewStats />
+
+      {/* Jarimalar: top xodimlar + grafik | top o'quvchilar */}
       <PenaltyStats />
 
       {/* Recent Excuse Requests */}

@@ -36,6 +36,46 @@ export const enrollmentQueries = {
       retry: false,
     }),
 
+  /**
+   * CHIQIB KETGANLAR REGISTRI — sahifalangan ro'yxat + kesimlar.
+   *
+   * Javobda `data`/`pagination` dan tashqari `stats` (sabab kesimi) va
+   * `byMonth` (oylar) ham keladi, shuning uchun `r.data` TO'LIQ olinadi.
+   */
+  departures: (params) =>
+    queryOptions({
+      queryKey: [...enrollmentKeys.all, "departures", params],
+      queryFn: () => enrollmentAPI.getDepartures(params).then((r) => r.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Bosh sahifadagi karta (oxirgi 30 kun + so'nggi 5 ketish). */
+  departureSummary: () =>
+    queryOptions({
+      queryKey: [...enrollmentKeys.all, "departures", "summary"],
+      queryFn: () => enrollmentAPI.getDepartureSummary().then((r) => r.data.data),
+    }),
+
+  /**
+   * O'QUVCHILAR HARAKATI — to'liq hisobot (ko'rsatkichlar, oylar kesimi,
+   * kelganlar va ketganlar ro'yxati). Word fayli ham AYNI ma'lumotdan
+   * quriladi, shuning uchun ekranda va faylda bir xil raqam turadi.
+   */
+  movement: (params) =>
+    queryOptions({
+      queryKey: [...enrollmentKeys.all, "movement", params],
+      queryFn: () => enrollmentAPI.getMovement(params).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+    }),
+
+  /** Bosh sahifadagi "O'quvchilar" kartasi — joriy oy va joriy yil. */
+  movementSummary: () =>
+    queryOptions({
+      queryKey: [...enrollmentKeys.all, "movement", "summary"],
+      queryFn: () =>
+        enrollmentAPI.getMovementSummary().then((r) => r.data.data),
+    }),
+
   /** Umumiy ro'yxat (sahifalangan) — kelajakdagi alohida ekran uchun. */
   list: (params) =>
     queryOptions({
