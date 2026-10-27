@@ -1,8 +1,11 @@
+// React
+import { useState } from "react";
+
 // Router
 import { Link, useNavigate } from "react-router-dom";
 
 // Icons
-import { Crown, TrendingDown } from "lucide-react";
+import { ChevronDown, Crown, TrendingDown } from "lucide-react";
 
 // Tanstack Query
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +25,13 @@ import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
 import BranchBadge from "@/shared/components/ui/BranchBadge";
 import { Skeleton } from "@/shared/components/shadcn/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/shared/components/shadcn/dropdown-menu";
 
 /**
  * ENG YAXSHI 5 VA ENG PAST 5 O'QUVCHI — bosh sahifadagi karta.
@@ -32,18 +42,43 @@ import { Skeleton } from "@/shared/components/shadcn/skeleton";
  * faqat birinchi beshtasini oladi. Ikkinchi hisob yozilsa, bosh sahifada
  * bir o'quvchi, bo'lim ichida boshqasi birinchi o'rinda turardi.
  *
- * Davr — natijalar sahifasining SUKUTI (1 oy), shuning uchun "Batafsil"
- * ayni shu manzarani ochadi va kesh ham ikkalasiga BITTA.
+ * DAVR KARTANING O'ZIDA TANLANADI (haftalik / oylik / yillik) va "Batafsil"
+ * AYNI davrni ochadi — kesh ham ikkalasiga BITTA (`results({ period })`).
+ * Sukut — natijalar sahifasining sukuti (1 oy).
  */
 
 /** Har ro'yxatdan nechta qator (biznes qarori: eng yaxshi 5, eng past 5). */
 const LIMIT = 5;
 
-/** Natijalar sahifasining sukut davri bilan AYNI. */
-const PERIOD = "month";
+/**
+ * Kartadagi davrlar — serverning `GRADE_ANALYSIS_PERIODS` kalitlari va
+ * `title` matni bilan AYNI (`helpers/gradeAnalysis.js`).
+ *
+ * ⚠️ UCHTASI (biznes qarori): bosh sahifa — bir qarashda ko'riladigan
+ * manzara. "3 oylik" va "Yarim yillik" to'liq ro'yxat bilan birga
+ * "Baholar tahlili → O'quvchilar natijalari" da qoladi, "Batafsil"
+ * havolasi esa aynan shu yerda tanlangan davr bilan ochiladi.
+ */
+const PERIODS = [
+  { key: "week", label: "Haftalik" },
+  { key: "month", label: "Oylik" },
+  { key: "year", label: "Yillik" },
+];
 
-/** "Batafsil" — o'sha davr, o'sha tab. */
-const DETAILS_LINK = "/grade-analysis?tab=results";
+/** Natijalar sahifasining sukut davri bilan AYNI. */
+const DEFAULT_PERIOD = "month";
+
+/**
+ * "Batafsil" — o'sha davr, o'sha tab.
+ *
+ * ⚠️ Sukut davrda `period` YOZILMAYDI: natijalar sahifasi ham URL'dan
+ * aynan shunday tozalaydi (`StudentResults` → `setPeriod`), aks holda
+ * bitta manzaraning ikki xil havolasi paydo bo'lardi.
+ */
+const detailsLink = (period) =>
+  period === DEFAULT_PERIOD
+    ? "/grade-analysis?tab=results"
+    : `/grade-analysis?tab=results&period=${period}`;
 
 const SECTION = {
   best: {
@@ -97,8 +132,13 @@ const pickTop = (rows = [], kind, isAggregate) => {
 
 const TopStudentsCard = () => {
   const { isAggregate } = useBranch();
-  const { data, isLoading, isError } = useQuery(
-    gradeAnalysisQueries.results({ period: PERIOD }),
+  const [period, setPeriod] = useState(DEFAULT_PERIOD);
+
+  /* ⚠️ Davr almashtirilganda ro'yxat BO'SHAMAYDI (`keepPreviousData`):
+     eski beshtalik xiralashib turadi va yangisi kelgach almashadi —
+     karta balandligi sakramaydi. */
+  const { data, isLoading, isError, isPlaceholderData } = useQuery(
+    gradeAnalysisQueries.results({ period }),
   );
 
   const best = pickTop(data?.rankings?.school?.best, "best", isAggregate);
@@ -109,15 +149,18 @@ const TopStudentsCard = () => {
     <Card className="flex flex-col gap-1.5 xs:gap-3.5">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-semibold text-gray-900">O&apos;quvchilar natijalari</h2>
-        <span className="shrink-0 text-xs text-gray-400">
-          {data?.period?.title || "1 oy"}
-        </span>
+        <PeriodMenu period={period} onPeriod={setPeriod} />
       </div>
 
       {/* ⚠️ ICHKI SKROLL YO'Q: o'nta qator ham ko'rinadi. Eski "Top 10
           tanga" kartasida ro'yxat skroll ichida edi va bu yerda u "eng past
           5 ta" ni bekitib qo'yardi — holbuki kartaning yarmi aynan o'sha. */}
-      <div className="space-y-4">
+      <div
+        className={cn(
+          "space-y-4 transition-opacity duration-200",
+          isPlaceholderData && "opacity-60",
+        )}
+      >
         {isLoading && <LoadingRows />}
 
         {!isLoading && isError && (
@@ -146,9 +189,44 @@ const TopStudentsCard = () => {
         variant="link"
         className="inline-block py-0 size-auto mx-auto text-sm"
       >
-        <Link to={DETAILS_LINK}>Batafsil</Link>
+        <Link to={detailsLink(period)}>Batafsil</Link>
       </Button>
     </Card>
+  );
+};
+
+/**
+ * DAVR TANLAGICHI — kartaning o'ng yuqori burchagidagi yorliq.
+ *
+ * Ilgari bu yerda shunchaki davr matni turardi ("Oylik") va uni
+ * o'zgartirishning yagona yo'li "Baholar tahlili" bo'limiga o'tish edi.
+ */
+const PeriodMenu = ({ period, onPeriod }) => {
+  const active = PERIODS.find((row) => row.key === period) ?? PERIODS[1];
+
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          title="Davrni tanlash"
+          className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 data-[state=open]:bg-gray-100 data-[state=open]:text-gray-600"
+        >
+          {active.label}
+          <ChevronDown className="size-3.5" strokeWidth={2} />
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" className="min-w-36">
+        <DropdownMenuRadioGroup value={period} onValueChange={onPeriod}>
+          {PERIODS.map((row) => (
+            <DropdownMenuRadioItem key={row.key} value={row.key}>
+              {row.label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
