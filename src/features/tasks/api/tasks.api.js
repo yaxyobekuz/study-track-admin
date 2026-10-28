@@ -17,6 +17,21 @@ export const tasksAPI = {
   // (rahbar — o'z bo'limi). Davr chegarasi serverda, Toshkent vaqtida.
   getDashboard: (params) => http.get("/tasks/dashboard", { params }),
 
+  // ─── XODIMLAR TOPSHIRIQLARI — TARMOQ HISOBOTI ──────────────────
+  // Faqat "Umumiy — barcha filiallar" ko'rinishida ochiladi: server
+  // boshqa rejimda 403 qaytaradi (`task.controller.js`).
+
+  // Bosh sahifadagi karta: { period } — day | week | month | year
+  getNetworkPulse: (params) => http.get("/tasks/network/pulse", { params }),
+
+  // Hujjat ko'rinishidagi hisobot (ekran uchun)
+  getNetworkReport: (params) => http.get("/tasks/network/report", { params }),
+
+  // AYNI hisobot — Word (.docx) fayli. Fayl nomini server beradi
+  // (`downloadBlob` → `Content-Disposition`).
+  exportNetworkReport: (params) =>
+    http.get("/tasks/network/report/export", { params, responseType: "blob" }),
+
   // Ijrochi tanlash ro'yxati — DOIRA bo'yicha (bo'lim rahbari uchun).
   // ⚠️ `users.view` talab qilmaydi: javobda faqat ism va rol bor.
   getAssignees: (params) => http.get("/tasks/assignees", { params }),

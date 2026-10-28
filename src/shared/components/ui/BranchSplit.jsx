@@ -41,9 +41,18 @@ import { cn } from "@/shared/utils/cn";
  * ⚠️ `null` qiymat NOL EMAS: o'sha filial bu raqamni umuman qaytarmagan
  * (bo'lim yo'q yoki ruxsat yopiq) — "—" bo'lib ko'rinadi.
  *
+ * ⚠️ `items` — TAYYOR KESIM. Ba'zi hisobotlar umumiy birlashtiruvchidan
+ * ATAYLAB chetlab o'tadi (`anchor` rejimi: foiz og'irliksiz
+ * o'rtachalanmasin, reyting qayta saralansin) va kesimni SERVISNING O'ZI
+ * quradi — `meta.aggregate.byBranch` u yerda umuman bo'lmaydi. Shunday
+ * hollarda qatorlar shu prop bilan beriladi va komponent o'zgarmaydi:
+ * ko'rinish, filialga o'tish va "almashtirilyapti" holati bitta joyda
+ * qoladi. Berilsa `data` / `path` o'qilmaydi.
+ *
  * @param {object} props
- * @param {object} props.data - so'rov qaytargan ma'lumot obyekti
- * @param {string} props.path - kalit yo'li ("students", "kpi.income.value")
+ * @param {object} [props.data] - so'rov qaytargan ma'lumot obyekti
+ * @param {string} [props.path] - kalit yo'li ("students", "kpi.income.value")
+ * @param {Array<{branch: object, value: *}>} [props.items] - tayyor kesim
  * @param {string} [props.to] - filialga o'tgandan keyin ochiladigan sahifa.
  *   ⚠️ Berilmasa SHU SAHIFANING O'ZI qayta ochiladi (URL dagi sana va
  *   filtrlar bilan) — kunlik davomat kabi ekranlarda aynan shu kerak:
@@ -56,6 +65,7 @@ import { cn } from "@/shared/utils/cn";
 const BranchSplit = ({
   data,
   path,
+  items,
   to,
   format,
   variant = "rows",
@@ -65,7 +75,9 @@ const BranchSplit = ({
   const { isAggregate, switchBranch, isSwitching } = useBranch();
   const [open, setOpen] = useState(false);
 
-  const split = isAggregate ? branchSplitOf(data, path) : null;
+  // ⚠️ UMUMIY REJIM SHARTI `items` DA HAM QOLADI: tayyor kesim berilgan
+  // bo'lsa ham, bitta filial ichida bu ro'yxatning ma'nosi yo'q.
+  const split = isAggregate ? (items ?? branchSplitOf(data, path)) : null;
   if (!split || split.length < 2) return null;
 
   const show = (value) => {

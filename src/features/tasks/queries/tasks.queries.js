@@ -60,6 +60,39 @@ export const tasksQueries = {
     }),
 
   /**
+   * BOSH SAHIFADAGI KARTA — butun tarmoq bo'yicha topshiriq sanoqchilari.
+   *
+   * ⚠️ Faqat "Umumiy — barcha filiallar" ko'rinishida so'raladi: boshqa
+   * rejimda server 403 qaytaradi, ya'ni `enabled` bilan to'silishi shart
+   * (`StaffTasksCard`).
+   *
+   * @param {{ period: "day"|"week"|"month"|"year" }} params
+   */
+  networkPulse: (params) =>
+    queryOptions({
+      queryKey: [...tasksKeys.all, "network", "pulse", params],
+      queryFn: () => tasksAPI.getNetworkPulse(params).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+      staleTime: 60 * 1000,
+    }),
+
+  /**
+   * Hujjat ko'rinishidagi tarmoq hisoboti — ekrandagi nusxasi va Word
+   * fayli AYNI obyektdan quriladi (serverda).
+   *
+   * @param {{ period: "day"|"week"|"month"|"year" }} params
+   */
+  networkReport: (params) =>
+    queryOptions({
+      queryKey: [...tasksKeys.all, "network", "report", params],
+      queryFn: () => tasksAPI.getNetworkReport(params).then((r) => r.data.data),
+      placeholderData: keepPreviousData,
+      // Jonli ro'yxatlar (muddati o'tganlar, tekshiruv navbati) shu
+      // payload ichida — uzoq kesh ularni eskirtirardi.
+      staleTime: 30 * 1000,
+    }),
+
+  /**
    * Assignee options for a DEPARTMENT HEAD (`tasks.team`) — the normal users
    * list sits behind `users.view`, which such a manager may not have.
    *

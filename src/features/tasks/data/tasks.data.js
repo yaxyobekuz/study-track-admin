@@ -706,6 +706,56 @@ export const resolveReportPeriod = (value) => {
 export const percentText = (value) =>
   value == null ? "—" : `${Number.isInteger(value) ? value : value.toFixed(1)}%`;
 
+/**
+ * HUJJATDAGI FOIZ — "80,0%" (kasr VERGUL bilan, har doim bitta xona).
+ *
+ * ⚠️ Yuqoridagi `percentText` dan ATAYLAB farq qiladi va uning o'rniga
+ * ishlatilmaydi: u BOSHQARUV EKRANLARI uchun (butun son qisqa ko'rinadi),
+ * bu esa HUJJAT uchun — ekrandagi nusxa Word faylidagi raqam bilan belgima
+ * belgi bir xil bo'lishi shart (`taskReportExport.service.js` dagi AYNI
+ * qoida). Aks holda yuklab olingan fayl "boshqacha" bo'lib ko'rinardi.
+ *
+ * Qo'shni hisobotlar ham shunday (`movement.data.js`,
+ * `studentSystems.data.js`).
+ */
+export const docPercentText = (value) =>
+  value == null ? "—" : `${Math.abs(value).toFixed(1).replace(".", ",")}%`;
+
+/**
+ * XODIMLAR TOPSHIRIQLARI HUJJATI — bosh sahifadagi kartadagi belgi aynan
+ * shu yo'lga olib keladi (yangi tab EMAS).
+ *
+ * ⚠️ `/tasks/...` EMAS: `/tasks/:taskId` marshruti istalgan bo'lakni
+ * topshiriq id si deb oladi va hujjat "topshiriq topilmadi" bo'lib
+ * ochilardi (`routes.jsx`).
+ */
+export const STAFF_TASKS_REPORT_PATH = "/staff-tasks";
+
+/**
+ * HUJJATDAGI HOLAT YORLIQLARI.
+ *
+ * ⚠️ `BREAKDOWN_META` dan ATAYLAB farq qiladi: u boshqaruv ekranlari uchun
+ * jonli tilda yozilgan ("Kechikyapti", "To'xtatildi"), hujjat esa rasmiy
+ * va u Word fayli bilan SO'ZMA-SO'Z bir xil bo'lishi shart
+ * (`server/src/services/taskReportExport.service.js` dagi `STATUS_LABEL`).
+ * Ikki matn ajralib ketsa, yuklab olingan fayl "boshqacha" bo'lib
+ * ko'rinardi.
+ */
+export const DOC_STATUS_LABEL = {
+  completed: "Bajarildi",
+  review: "Tekshiruvda",
+  inProgress: "Jarayonda",
+  overdue: "Muddati o'tgan",
+  stopped: "To'xtatilgan",
+};
+
+/** Hujjatdagi topshirish vaqti yorliqlari (serverdagi `TIMING_LABEL`). */
+export const DOC_TIMING_LABEL = {
+  early: "Muddatdan oldin",
+  lastDay: "Oxirgi kuni",
+  late: "Kech topshirilgan",
+};
+
 /** Bajarilish foizi chizig'ining rangi: ≥80 yashil, ≥50 sariq, aks holda qizil. */
 export const getRateBarClass = (rate) => {
   if (rate == null) return "bg-gray-300";

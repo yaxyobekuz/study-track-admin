@@ -127,6 +127,7 @@ import MyTasksPage from "@/features/myTasks/pages/MyTasksPage";
 import SelfTasksPage from "@/features/tasks/pages/SelfTasksPage";
 import SelfTaskDetailPage from "@/features/selfTasks/pages/SelfTaskDetailPage";
 import TaskReportsPage from "@/features/tasks/pages/TaskReportsPage";
+import StaffTasksReportPage from "@/features/tasks/pages/StaffTasksReportPage";
 import TaskSchedulesPage from "@/features/tasks/pages/TaskSchedulesPage";
 import TaskSettingsPage from "@/features/tasks/pages/TaskSettingsPage";
 import TaskDetailPage from "@/features/tasks/pages/TaskDetailPage";
@@ -562,6 +563,22 @@ const Routes = () => {
               KO'RISH: birovning shaxsiy rejasini rahbar tahrirlamaydi. */}
           <Route path="/tasks/self/:taskId" element={<SelfTaskDetailPage readOnly />} />
           <Route path="/tasks/:taskId" element={<TaskDetailPage />} />
+
+          {/* XODIMLAR TOPSHIRIQLARI (`tasks.reports`) — butun tarmoq
+              bo'yicha hujjat ko'rinishidagi hisobot: ko'rsatkichlar,
+              filiallar va xodimlar kesimi, chop etish va Word uchun.
+              Bosh sahifadagi "Xodimlar topshiriqlari" kartasidagi belgi
+              aynan shu yo'lga olib keladi (yangi tab EMAS).
+
+              ⚠️ Yo'l `/tasks/...` EMAS: yuqoridagi `/tasks/:taskId`
+              istalgan bo'lakni topshiriq id si deb oladi va hujjat
+              "topshiriq topilmadi" bo'lib ochilardi. Kalit
+              `STAFF_TASKS_REPORT_PATH` da (`tasks.data.js`).
+
+              ⚠️ Faqat "Umumiy — barcha filiallar" ko'rinishida ochiladi:
+              darvoza sahifaning o'zida ham, SERVERDA ham bor
+              (`task.controller.js` → 403). */}
+          <Route path="/staff-tasks" element={<StaffTasksReportPage />} />
 
           {/* Muammolar */}
           {/* Muammolar / Hisobotlar / Kategoriyalar / Bot sozlamalari —

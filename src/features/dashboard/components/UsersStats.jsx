@@ -19,6 +19,7 @@ import Card from "@/shared/components/ui/Card";
 import Counter from "@/shared/components/ui/Counter";
 import BranchSplit from "@/shared/components/ui/BranchSplit";
 import { Skeleton } from "@/shared/components/shadcn/skeleton";
+import StaffTasksCard from "./StaffTasksCard";
 
 // Queries & data
 import { enrollmentQueries } from "@/features/enrollment/queries/enrollment.queries";
@@ -113,6 +114,22 @@ const UsersStats = () => {
    */
   const canSeeMovement = isAggregate && can("enrollment.view");
 
+  /**
+   * ⚠️ TO'RTINCHI KARTA REJIMGA QARAB ALMASHADI (biznes qarori,
+   * 2026-10-27): umumiy ko'rinishda u "Xodimlar topshiriqlari", filial
+   * ichida esa avvalgidek "Premium foydalanuvchilar".
+   *
+   * Sabab: topshiriqlar hisoboti TARMOQ savoliga javob beradi ("qaysi
+   * filialda ish qolib ketyapti") va bitta filial ichida u Lavozimlar
+   * markazidagi raqamni takrorlardi. Premium esa yo'qolmaydi — u o'z
+   * joyida qoladi, ya'ni birorta raqam ekrandan tushib qolmaydi.
+   *
+   * ⚠️ Shart KARTANING O'ZIDA ham bor (`StaffTasksCard`), lekin tanlov
+   * shu yerda qilinadi: karta ichida `null` qaytsa, to'rt ustunli
+   * maketda BO'SH JOY qolardi.
+   */
+  const showStaffTasks = isAggregate && can("tasks.view");
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ["users", "stats"],
     queryFn: () => usersAPI.getStats().then((res) => res.data.data),
@@ -164,89 +181,97 @@ const UsersStats = () => {
       to: "/pulse",
       sharedKey: "telegramUsers",
     },
-    {
-      label: "Premium foydalanuvchilar",
-      value: stats?.premiumUsers || 0,
-      icon: Sparkle,
-      path: "premiumUsers",
-      to: "/premium",
-    },
+    showStaffTasks
+      ? { key: "staffTasks", custom: true }
+      : {
+          label: "Premium foydalanuvchilar",
+          value: stats?.premiumUsers || 0,
+          icon: Sparkle,
+          path: "premiumUsers",
+          to: "/premium",
+        },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
-      {statItems.map((item, idx) => (
-        <Card key={idx} title={item.label} className="space-y-3">
-          <div className="flex items-center justify-between">
-            {/* Icon — hisoboti bor kartada BOSILADI. Ustiga kelganda
-                hujjat belgisiga almashadi: dizayn o'zgarmaydi, lekin
-                bosiladigani ko'rinib turadi. */}
-            {item.report ? (
-              <button
-                type="button"
-                title={item.reportTitle}
-                aria-label={item.reportTitle}
-                onClick={() => navigate(item.report)}
-                className="group relative flex size-9 items-center justify-center rounded-full bg-blue-50 outline-none transition hover:bg-blue-100 focus-visible:ring-2 focus-visible:ring-blue-300"
-              >
-                <item.icon
-                  className="size-5 text-blue-700 transition-opacity group-hover:opacity-0"
-                  strokeWidth={1.5}
+      {statItems.map((item, idx) =>
+        // O'Z so'rovi va o'z davri bor karta — bu yerda faqat O'RNI
+        // band qiladi (`BotActivityStats` bilan AYNI naqsh).
+        item.custom ? (
+          <StaffTasksCard key={item.key} />
+        ) : (
+          <Card key={idx} title={item.label} className="space-y-3">
+            <div className="flex items-center justify-between">
+              {/* Icon — hisoboti bor kartada BOSILADI. Ustiga kelganda
+                  hujjat belgisiga almashadi: dizayn o'zgarmaydi, lekin
+                  bosiladigani ko'rinib turadi. */}
+              {item.report ? (
+                <button
+                  type="button"
+                  title={item.reportTitle}
+                  aria-label={item.reportTitle}
+                  onClick={() => navigate(item.report)}
+                  className="group relative flex size-9 items-center justify-center rounded-full bg-blue-50 outline-none transition hover:bg-blue-100 focus-visible:ring-2 focus-visible:ring-blue-300"
+                >
+                  <item.icon
+                    className="size-5 text-blue-700 transition-opacity group-hover:opacity-0"
+                    strokeWidth={1.5}
+                  />
+                  <FileText
+                    className="absolute size-4 text-blue-700 opacity-0 transition-opacity group-hover:opacity-100"
+                    strokeWidth={1.5}
+                  />
+                </button>
+              ) : (
+                <div className="flex items-center justify-center size-9 bg-blue-50 rounded-full">
+                  <item.icon className="size-5 text-blue-700" strokeWidth={1.5} />
+                </div>
+              )}
+
+              {/* Value */}
+              {isLoading ? (
+                <Skeleton className="w-16 h-7" />
+              ) : (
+                <Counter
+                  value={item.value}
+                  className="text-2xl font-bold text-gray-900"
                 />
-                <FileText
-                  className="absolute size-4 text-blue-700 opacity-0 transition-opacity group-hover:opacity-100"
-                  strokeWidth={1.5}
-                />
-              </button>
-            ) : (
-              <div className="flex items-center justify-center size-9 bg-blue-50 rounded-full">
-                <item.icon className="size-5 text-blue-700" strokeWidth={1.5} />
-              </div>
+              )}
+            </div>
+
+            {/* O'SISH / TUSHISH — keldi va ketdi, oy va yil kesimida */}
+            {item.movement &&
+              (movementLoading ? (
+                <Skeleton className="h-8 w-full" />
+              ) : movement ? (
+                <Link
+                  to={item.report}
+                  className="block space-y-1 rounded-lg border-t border-gray-100 pt-2 transition hover:bg-gray-50"
+                >
+                  <MovementRow label="Bu oy" item={movement.month} />
+                  <MovementRow label="Bu yil" item={movement.year} />
+                </Link>
+              ) : null)}
+
+            {/* Umumiy ko'rinishda: qaysi filialda qancha (bosilsa — o'sha
+                filialga o'tadi va ro'yxatni ochadi) */}
+            <BranchSplit data={stats} path={item.path} to={item.to} />
+
+            {/* ⚠️ ARIFMETIKA OCHIQ YOZILADI. Xodimning hammasi ikkala filialga
+                biriktirilgan bo'lsa, jami KATTA filialning soniga TENG chiqadi
+                ("MBSI 95, AiHub 23, jami 95") va bu "AiHub hisobga olinmadi"
+                bo'lib o'qiladi. Shuning uchun yig'indi ham, takrorlanish ham
+                raqam bilan ko'rsatiladi. */}
+            {item.sharedKey && branchSharedOf(stats, item.sharedKey) > 0 && (
+              <p className="text-[11px] leading-snug text-gray-400">
+                Filiallar yig'indisi {branchSplitSum(stats, item.path)} —
+                shundan {branchSharedOf(stats, item.sharedKey)} tasi bir
+                nechta filialda ishlaydi, jamida bir marta sanalgan.
+              </p>
             )}
-
-            {/* Value */}
-            {isLoading ? (
-              <Skeleton className="w-16 h-7" />
-            ) : (
-              <Counter
-                value={item.value}
-                className="text-2xl font-bold text-gray-900"
-              />
-            )}
-          </div>
-
-          {/* O'SISH / TUSHISH — keldi va ketdi, oy va yil kesimida */}
-          {item.movement &&
-            (movementLoading ? (
-              <Skeleton className="h-8 w-full" />
-            ) : movement ? (
-              <Link
-                to={item.report}
-                className="block space-y-1 rounded-lg border-t border-gray-100 pt-2 transition hover:bg-gray-50"
-              >
-                <MovementRow label="Bu oy" item={movement.month} />
-                <MovementRow label="Bu yil" item={movement.year} />
-              </Link>
-            ) : null)}
-
-          {/* Umumiy ko'rinishda: qaysi filialda qancha (bosilsa — o'sha
-              filialga o'tadi va ro'yxatni ochadi) */}
-          <BranchSplit data={stats} path={item.path} to={item.to} />
-
-          {/* ⚠️ ARIFMETIKA OCHIQ YOZILADI. Xodimning hammasi ikkala filialga
-              biriktirilgan bo'lsa, jami KATTA filialning soniga TENG chiqadi
-              ("MBSI 95, AiHub 23, jami 95") va bu "AiHub hisobga olinmadi"
-              bo'lib o'qiladi. Shuning uchun yig'indi ham, takrorlanish ham
-              raqam bilan ko'rsatiladi. */}
-          {item.sharedKey && branchSharedOf(stats, item.sharedKey) > 0 && (
-            <p className="text-[11px] leading-snug text-gray-400">
-              Filiallar yig'indisi {branchSplitSum(stats, item.path)} —
-              shundan {branchSharedOf(stats, item.sharedKey)} tasi bir nechta
-              filialda ishlaydi, jamida bir marta sanalgan.
-            </p>
-          )}
-        </Card>
-      ))}
+          </Card>
+        ),
+      )}
     </div>
   );
 };
