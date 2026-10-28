@@ -636,12 +636,14 @@ export const WEEKDAY_FULL = [
  * mintaqasi boshqa bo'lsa "bugun" bir kunga siljib ketardi (`dates.md`).
  * Shuning uchun bu yerda faqat kalit va yorliq bor, sana hisoblanmaydi.
  */
-export const DASHBOARD_PERIODS = [
-  { value: "day", label: "Kunlik", hint: "Bugun" },
-  { value: "week", label: "Haftalik", hint: "Dushanbadan bugungacha" },
-  { value: "month", label: "Oylik", hint: "Oy boshidan bugungacha" },
-  { value: "year", label: "Yillik", hint: "Yil boshidan bugungacha" },
-];
+/**
+ * ⚠️ RO'YXAT UMUMIY (`shared/data/dashboardPeriods.data.js`): bosh
+ * sahifada bu tanlagich bir nechta kartada turadi (topshiriqlar, o'quvchilar
+ * davomati, o'qituvchilar davomati) va "oylik" hammasida AYNI oynani
+ * bildirishi shart. Bu yerdan qayta eksport qilinadi — mavjud import'lar
+ * o'zgarmasin.
+ */
+export { DASHBOARD_PERIODS } from "@/shared/data/dashboardPeriods.data";
 
 export const DASHBOARD_PEOPLE_FILTERS = [
   { value: "all", label: "Hammasi" },
@@ -718,8 +720,7 @@ export const percentText = (value) =>
  * Qo'shni hisobotlar ham shunday (`movement.data.js`,
  * `studentSystems.data.js`).
  */
-export const docPercentText = (value) =>
-  value == null ? "—" : `${Math.abs(value).toFixed(1).replace(".", ",")}%`;
+export { docPercentText } from "@/shared/data/dashboardPeriods.data";
 
 /**
  * XODIMLAR TOPSHIRIQLARI HUJJATI — bosh sahifadagi kartadagi belgi aynan

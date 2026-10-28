@@ -49,6 +49,7 @@ import ClassChangesPage from "@/features/classes/pages/ClassChangesPage";
 // Pages - ERP va Kundalik.com (o'quvchi tashqi tizimlarda bormi)
 import StudentSystemsPage from "@/features/studentSystems/pages/StudentSystemsPage";
 import StudentSystemsReportPage from "@/features/studentSystems/pages/StudentSystemsReportPage";
+import AttendanceStatsReportPage from "@/features/attendance/pages/AttendanceStatsReportPage";
 
 // YOTOQXONA DAVOMATI — kechqurun yotoqxonada kim qoldi (tarbiyachi belgilaydi)
 import DormAttendancePage from "@/features/dormAttendance/pages/DormAttendancePage";
@@ -466,6 +467,25 @@ const Routes = () => {
           <Route
             path="/student-systems/report"
             element={<StudentSystemsReportPage />}
+          />
+
+          {/* DAVOMAT HISOBOTLARI (`attendance.reports`) — hujjat
+              ko'rinishida: ko'rsatkichlar, oldingi davr bilan taqqoslash,
+              dinamika va kesimlar. Bosh sahifadagi "O'quvchilar davomati"
+              va "O'qituvchilar davomati" kartalaridagi belgi aynan shu
+              yo'llarga olib keladi (yangi tab EMAS).
+
+              ⚠️ Yo'l `/attendance/...` EMAS: `/attendance` — tabli layout
+              (`AttendanceLayout`) va hujjat uning ichiga tushib qolardi.
+              Kalit `attendanceStats.data.js` dagi
+              `ATTENDANCE_REPORT_PATHS` da. */}
+          <Route
+            path="/attendance-report/students"
+            element={<AttendanceStatsReportPage kind="students" />}
+          />
+          <Route
+            path="/attendance-report/teachers"
+            element={<AttendanceStatsReportPage kind="teachers" />}
           />
 
           {/* YOTOQXONA DAVOMATI (`dormAttendance.view`) — kunlik ro'yxat,

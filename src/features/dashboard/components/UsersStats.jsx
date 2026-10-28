@@ -22,6 +22,7 @@ import { Skeleton } from "@/shared/components/shadcn/skeleton";
 import StaffTasksCard from "./StaffTasksCard";
 
 // Queries & data
+import { activityQueries } from "@/features/activityDashboard/queries/activity.queries";
 import { enrollmentQueries } from "@/features/enrollment/queries/enrollment.queries";
 import {
   MINUS,
@@ -46,6 +47,9 @@ import {
 
 /** Hisobot sahifasi — kartadagi belgi aynan shu yo'lga olib keladi. */
 const MOVEMENT_PATH = "/student-movement";
+
+/** Bot kesimining davri — `DailyStats` bilan AYNI (so'rov keshi umumiy). */
+const BOT_PERIOD_DAYS = 7;
 
 /**
  * O'sish / tushish o'qi.
@@ -95,6 +99,42 @@ const MovementRow = ({ label, item }) => (
   </div>
 );
 
+/**
+ * BOT KARTASINING ICHKI QATORI — "Bugun faol" va "Qamrab olingan".
+ *
+ * ⚠️ IKKI RAQAM UCHINCHISI BILAN BIR KARTADA (biznes qarori, 2026-10-28).
+ * Ilgari ular pastdagi qatorda alohida ikki karta edi, lekin uchalasi ham
+ * BITTA savolning uch qismi: "botdan qanchalik foydalanilyapti".
+ * Bog'langan hisoblar soni yonida bugungi faollik va qamrov turmasa,
+ * "276" degan raqam o'z-o'zidan hech narsa demasdi.
+ *
+ * ⚠️ RAQAMLAR BOSHQA-BOSHQA MANBADAN: kartaning katta raqami — BOG'LANGAN
+ * hisoblar (`users/stats`), bu qatorlar esa FOYDALANISH
+ * (`activityDashboard`). Shuning uchun so'rov ham, ruxsat ham alohida —
+ * `activity.view` bo'lmasa qatorlar umuman chizilmaydi.
+ */
+const BotRow = ({ label, value, total, extra, title }) => (
+  <div
+    title={title}
+    className="flex items-center justify-between gap-2 text-[11px]"
+  >
+    <span className="shrink-0 text-gray-500">{label}</span>
+
+    <span className="flex items-center gap-1.5 tabular-nums">
+      <span className="font-semibold text-gray-700">{value ?? 0}</span>
+      {total ? (
+        <>
+          <span className="text-gray-300">/</span>
+          <span className="text-gray-400">{total}</span>
+        </>
+      ) : null}
+      {extra ? (
+        <span className="font-semibold text-blue-600">{extra}</span>
+      ) : null}
+    </span>
+  </div>
+);
+
 const UsersStats = () => {
   const navigate = useNavigate();
   const { can } = usePermissions();
@@ -130,6 +170,19 @@ const UsersStats = () => {
    */
   const showStaffTasks = isAggregate && can("tasks.view");
 
+  /**
+   * ⚠️ BOT RAQAMLARI FAQAT UMUMIY KO'RINISHDA BIRLASHADI (biznes qarori,
+   * 2026-10-28). Filial tanlangan bo'lsa "Bugun botda faol" va "Qamrab
+   * olingan o'quvchilar" avvalgidek PASTDAGI QATORDA alohida karta bo'lib
+   * turadi (`DailyStats`) — u yerdagi o'rinni davomat kartalari faqat
+   * umumiy ko'rinishda egallaydi. Ikkala joyda ham ko'rsatilsa, bitta
+   * raqam ekranda ikki marta turardi.
+   *
+   * Ma'lumot FOYDALANISH bo'limidan keladi (`activity.view`) — bog'langan
+   * hisoblar sanog'idan alohida ruxsat.
+   */
+  const canSeeBot = isAggregate && can("activity.view");
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ["users", "stats"],
     queryFn: () => usersAPI.getStats().then((res) => res.data.data),
@@ -140,6 +193,17 @@ const UsersStats = () => {
   const { data: movement, isLoading: movementLoading } = useQuery({
     ...enrollmentQueries.movementSummary(),
     enabled: canSeeMovement,
+  });
+
+  /**
+   * ⚠️ AYNI SO'ROV `DailyStats` DA HAM BOR va bu ataylab: kalit bir xil
+   * (`days: 7`), ya'ni TanStack uni BIR MARTA yuboradi va ikkala joy
+   * bitta keshdan o'qiydi. Ikkinchi parametr qo'yilsa, bosh sahifa ikki
+   * marta so'rardi.
+   */
+  const { data: botActivity, isLoading: botLoading } = useQuery({
+    ...activityQueries.overview({ days: BOT_PERIOD_DAYS }),
+    enabled: canSeeBot,
   });
 
   // `path` — umumiy ko'rinishdagi filiallar kesimining kaliti, `to` esa
@@ -180,6 +244,8 @@ const UsersStats = () => {
       path: "telegramUsers",
       to: "/pulse",
       sharedKey: "telegramUsers",
+      // Bugungi faollik va qamrov — AYNI kartaning ichida (pastga qarang)
+      bot: canSeeBot,
     },
     showStaffTasks
       ? { key: "staffTasks", custom: true }
@@ -196,7 +262,7 @@ const UsersStats = () => {
     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
       {statItems.map((item, idx) =>
         // O'Z so'rovi va o'z davri bor karta — bu yerda faqat O'RNI
-        // band qiladi (`BotActivityStats` bilan AYNI naqsh).
+        // band qiladi (`DailyStats` bilan AYNI naqsh).
         item.custom ? (
           <StaffTasksCard key={item.key} />
         ) : (
@@ -250,6 +316,35 @@ const UsersStats = () => {
                 >
                   <MovementRow label="Bu oy" item={movement.month} />
                   <MovementRow label="Bu yil" item={movement.year} />
+                </Link>
+              ) : null)}
+
+            {/* BOT: bugungi faollik va qamrov — AYNI kartada */}
+            {item.bot &&
+              (botLoading ? (
+                <Skeleton className="h-8 w-full" />
+              ) : botActivity ? (
+                <Link
+                  to="/pulse"
+                  className="block space-y-1 rounded-lg border-t border-gray-100 pt-2 transition hover:bg-gray-50"
+                >
+                  <BotRow
+                    label="Bugun faol"
+                    value={botActivity.today?.bot?.active}
+                    total={botActivity.today?.bot?.total}
+                    extra={
+                      botActivity.today?.bot?.rate != null
+                        ? `${botActivity.today.bot.rate}%`
+                        : null
+                    }
+                    title="Bog'langan hisoblardan bugun botni ochganlar"
+                  />
+                  <BotRow
+                    label="Qamrab olingan"
+                    value={botActivity.parents?.linkedStudents}
+                    total={botActivity.parents?.students}
+                    title="Kamida bitta ota-onasi botga ulangan o'quvchilar"
+                  />
                 </Link>
               ) : null)}
 

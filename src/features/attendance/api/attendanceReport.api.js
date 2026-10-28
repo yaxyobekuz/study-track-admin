@@ -32,4 +32,36 @@ export const attendanceReportAPI = {
     http.get(`/attendance-reports/students/classes/${classId}`, { params }),
   getStaffReport: (month, year) =>
     http.get("/attendance-reports/staff", { params: { month, year } }),
+
+  /**
+   * DAVR KESIMIDAGI STATISTIKA — bosh sahifadagi kartalar va hujjat.
+   *
+   * `params`: `{ period: "day"|"week"|"month"|"year" }` yoki qo'lda
+   * tanlangan `{ from, to }` ("YYYY-MM-DD" — MASHINA qiymati, ekranga
+   * chiqmaydi: `.claude/rules/dates.md` §3). Davr chegarasi va hamma
+   * yorliq SERVERDA hisoblanadi.
+   *
+   * `pulse` — kartaning yengil proyeksiyasi (jami + oldingi davr farqi),
+   * `report` — hujjatning to'liq obyekti, `export` — AYNI hisobotning
+   * Word nusxasi.
+   */
+  getStudentAttendancePulse: (params) =>
+    http.get("/attendance-reports/students/pulse", { params }),
+  getStudentAttendanceReport: (params) =>
+    http.get("/attendance-reports/students/report", { params }),
+  exportStudentAttendanceReport: (params) =>
+    http.get("/attendance-reports/students/report/export", {
+      params,
+      responseType: "blob",
+    }),
+
+  getTeacherAttendancePulse: (params) =>
+    http.get("/attendance-reports/teachers/pulse", { params }),
+  getTeacherAttendanceReport: (params) =>
+    http.get("/attendance-reports/teachers/report", { params }),
+  exportTeacherAttendanceReport: (params) =>
+    http.get("/attendance-reports/teachers/report/export", {
+      params,
+      responseType: "blob",
+    }),
 };

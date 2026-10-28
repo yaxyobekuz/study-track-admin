@@ -47,7 +47,7 @@ import { formatDateUz, formatMonthUz } from "@/shared/utils/date.utils";
  * qoldirardi — holbuki "oxirgi kim ketdi" savoli har doim o'z javobiga ega.
  *
  * ⚠️ RUXSATSIZ UMUMAN CHIZILMAYDI (`enrollment.view`) — bosh sahifada
- * "ruxsatingiz yo'q" degan quti keraksiz shovqin (`BotActivityStats`
+ * "ruxsatingiz yo'q" degan quti keraksiz shovqin (`DailyStats`
  * bilan AYNI qaror).
  */
 const DepartedStudents = () => {

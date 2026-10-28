@@ -12,7 +12,7 @@ import useModal from "@/shared/hooks/useModal";
 import Card from "@/shared/components/ui/Card";
 import OverviewStats from "../components/OverviewStats";
 import UsersStats from "../components/UsersStats";
-import BotActivityStats from "../components/BotActivityStats";
+import DailyStats from "../components/DailyStats";
 import HolidayInfo from "../components/HolidayInfo";
 import PenaltyStats from "../components/PenaltyStats";
 import RecentExcuses from "../components/RecentExcuses";
@@ -66,7 +66,7 @@ const Dashboard = () => {
       {/* Bot faolligi — `UsersStats` dagi "Bot foydalanuvchilar" BOG'LANGAN
           hisoblar sonini beradi, bu blok esa ularning qanchasi haqiqatan
           FOYDALANAYOTGANINI. Ruxsati bo'lmaganda umuman chizilmaydi. */}
-      <BotActivityStats />
+      <DailyStats />
 
       {/* CHIQIB KETGAN O'QUVCHILAR — "kim, qachon va nega ketdi".
           ⚠️ O'quvchilar sanog'idan KEYIN turadi: "461 o'quvchi" degan

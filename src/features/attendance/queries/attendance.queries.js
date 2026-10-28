@@ -198,4 +198,54 @@ export const attendanceReportsQueries = {
       enabled: Boolean(classId),
       placeholderData: keepPreviousData,
     }),
+
+  /**
+   * BOSH SAHIFADAGI KARTA — davr kesimidagi davomat
+   * (`{ totals, previous, change, byBranch }`).
+   *
+   * ⚠️ Davr KALITGA kiradi: tanlagich almashganda javob o'zgaradi.
+   * Eski ma'lumot ekranda qoladi (`keepPreviousData`), shuning uchun
+   * karta tanlov almashganda "sakramaydi".
+   *
+   * Davomat kun davomida belgilanadi — ma'lumot bir daqiqada eskiradi.
+   */
+  studentPulse: (params) =>
+    queryOptions({
+      queryKey: [...attendanceReportsKeys.all, "students", "pulse", params],
+      queryFn: () =>
+        attendanceReportAPI.getStudentAttendancePulse(params).then((r) => r.data.data),
+      staleTime: 60 * 1000,
+      placeholderData: keepPreviousData,
+    }),
+
+  teacherPulse: (params) =>
+    queryOptions({
+      queryKey: [...attendanceReportsKeys.all, "teachers", "pulse", params],
+      queryFn: () =>
+        attendanceReportAPI.getTeacherAttendancePulse(params).then((r) => r.data.data),
+      staleTime: 60 * 1000,
+      placeholderData: keepPreviousData,
+    }),
+
+  /**
+   * HUJJAT KO'RINISHIDAGI HISOBOT — ekrandagi nusxa ham, Word fayli ham
+   * AYNI shu obyektdan quriladi (server tomonda ham bitta hisob).
+   */
+  studentAttendanceReport: (params) =>
+    queryOptions({
+      queryKey: [...attendanceReportsKeys.all, "students", "report", params],
+      queryFn: () =>
+        attendanceReportAPI.getStudentAttendanceReport(params).then((r) => r.data.data),
+      staleTime: 60 * 1000,
+      placeholderData: keepPreviousData,
+    }),
+
+  teacherAttendanceReport: (params) =>
+    queryOptions({
+      queryKey: [...attendanceReportsKeys.all, "teachers", "report", params],
+      queryFn: () =>
+        attendanceReportAPI.getTeacherAttendanceReport(params).then((r) => r.data.data),
+      staleTime: 60 * 1000,
+      placeholderData: keepPreviousData,
+    }),
 };

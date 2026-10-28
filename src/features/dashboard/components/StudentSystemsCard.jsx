@@ -41,7 +41,7 @@ import {
  * paytda ikki marta sanalardi. Shuning uchun katta raqam serverdan
  * keladi (`students − ikkalasida ham bor`), panelda hisoblanmaydi.
  *
- * ⚠️ RUXSATSIZ UMUMAN CHIZILMAYDI (`BotActivityStats` bilan AYNI qoida):
+ * ⚠️ RUXSATSIZ UMUMAN CHIZILMAYDI (`DailyStats` bilan AYNI qoida):
  * bosh sahifada "ruxsatingiz yo'q" degan quti keraksiz shovqin bo'lardi.
  */
 const StudentSystemsCard = () => {
