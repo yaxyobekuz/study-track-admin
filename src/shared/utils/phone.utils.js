@@ -37,3 +37,30 @@ export const toTelHref = (value) => {
 
 /** Raqam kiritilganmi (ekranda tugma chizish uchun). */
 export const hasPhone = (value) => digitsOf(value).length > 0;
+
+/**
+ * IKKI RAQAM BITTA KATAKDA — o'quvchining O'ZINIKI va OTA-ONASINIKI.
+ *
+ * ⚠️ SERVERDAGI `phone.helpers.js` → `phonePairText` BILAN AYNI QOIDA:
+ * birinchi qator o'quvchining, ikkinchisi ota-onasining raqami; raqami
+ * yo'q tomon `—` bilan O'Z O'RNIDA qoladi (yolg'iz raqam kimniki ekani
+ * noma'lum bo'lmasin), ikkalasi ham yo'q bo'lsa bitta `—`.
+ * Ekrandagi hujjat Word fayli bilan bir xil ko'rinishi uchun ikkalasi
+ * BIR XIL bo'lishi shart.
+ *
+ * Qaytadigan qiymat — QATORLAR massivi: HTML `\n` ni yutadi, shuning
+ * uchun hujjat komponenti har qatorni alohida chizadi.
+ *
+ * @param {{phone?: string|null, parentPhone?: string|null}|null} contact
+ * @returns {string[]}
+ */
+export const phonePairLines = (contact) => {
+  const own = formatPhoneUz(contact?.phone);
+  const parent = formatPhoneUz(contact?.parentPhone);
+
+  if (own === "—" && parent === "—") return ["—"];
+  return [own, parent];
+};
+
+/** Ustun sarlavhasi — Word nusxasidagi bilan AYNAN bir xil matn. */
+export const PHONE_PAIR_LABEL = "Telefon (o'quvchi / ota-ona)";

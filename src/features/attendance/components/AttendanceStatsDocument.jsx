@@ -1,6 +1,7 @@
 // Utils
 import { cn } from "@/shared/utils/cn";
 import { formatDateTimeUz } from "@/shared/utils/date.utils";
+import { PHONE_PAIR_LABEL, phonePairLines } from "@/shared/utils/phone.utils";
 
 // Data
 import {
@@ -102,6 +103,23 @@ const Td = ({ align, className, children }) => (
   >
     {children}
   </td>
+);
+
+/**
+ * TELEFON KATAGI — ikki qator: o'quvchining o'z raqami, so'ng ota-onasiniki.
+ *
+ * ⚠️ Word nusxasida AYNI matn bitta katakda `<w:br/>` bilan ikki qator
+ * bo'lib chiqadi (`attendanceStatsExport.service.js`). Nega ikkita ustun
+ * emasligi — `phone.utils.js` dagi izohda.
+ */
+const PhoneTd = ({ contact }) => (
+  <Td className="whitespace-nowrap text-gray-700">
+    {phonePairLines(contact).map((line, i) => (
+      <span key={i} className="block tabular-nums">
+        {line}
+      </span>
+    ))}
+  </Td>
 );
 
 /** Sanoq katagi: nol — kulrang (hech narsa yo'q joy ko'zga tashlanmasin). */
@@ -415,16 +433,19 @@ const StudentSection = ({ report, index, net }) => (
     </Note>
 
     <DocTable
-      minWidth="640px"
+      minWidth="760px"
       columns={[
-        { label: "№", align: "center", width: "5%" },
+        { label: "№", align: "center", width: "4%" },
         { label: "O'quvchi" },
-        ...(net ? [{ label: "Filial", width: "13%" }] : []),
-        { label: "Sinf", width: "13%" },
-        { label: "Kutilgan", align: "right", width: "11%" },
-        { label: "Keldi", align: "right", width: "11%" },
-        { label: "Qoldirdi", align: "right", width: "11%" },
-        { label: "Davomat", align: "right", width: "11%" },
+        // ⚠️ RO'YXAT QO'NG'IROQ UCHUN: raqamsiz u faqat "xabar" bo'lib
+        // qolardi. Word nusxasida ham AYNI ustun turadi.
+        { label: PHONE_PAIR_LABEL, width: net ? "20%" : "22%" },
+        ...(net ? [{ label: "Filial", width: "11%" }] : []),
+        { label: "Sinf", width: net ? "11%" : "13%" },
+        { label: "Kutilgan", align: "right", width: "9%" },
+        { label: "Keldi", align: "right", width: "9%" },
+        { label: "Qoldirdi", align: "right", width: "9%" },
+        { label: "Davomat", align: "right", width: "9%" },
       ]}
     >
       {report.students.map((row, i) => (
@@ -433,6 +454,7 @@ const StudentSection = ({ report, index, net }) => (
             {i + 1}
           </Td>
           <Td className="font-semibold">{row.name}</Td>
+          <PhoneTd contact={row} />
           {net && <Td className="text-gray-600">{row.branchName}</Td>}
           <Td>{row.className}</Td>
           <Count value={row.expected} />

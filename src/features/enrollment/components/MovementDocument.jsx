@@ -1,6 +1,7 @@
 // Utils
 import { cn } from "@/shared/utils/cn";
 import { formatDateUz, formatDateTimeUz } from "@/shared/utils/date.utils";
+import { PHONE_PAIR_LABEL, phonePairLines } from "@/shared/utils/phone.utils";
 
 // Data
 import {
@@ -104,6 +105,23 @@ const Td = ({ align, className, children }) => (
   >
     {children}
   </td>
+);
+
+/**
+ * TELEFON KATAGI — ikki qator: o'quvchining o'z raqami, so'ng ota-onasiniki.
+ *
+ * ⚠️ Word nusxasida AYNI matn bitta katakda `<w:br/>` bilan ikki qator
+ * bo'lib chiqadi (`studentMovementExport.service.js`). Nega ikkita ustun
+ * emasligi — `phone.utils.js` dagi izohda.
+ */
+const PhoneTd = ({ contact }) => (
+  <Td className="whitespace-nowrap text-gray-700">
+    {phonePairLines(contact).map((line, i) => (
+      <span key={i} className="block tabular-nums">
+        {line}
+      </span>
+    ))}
+  </Td>
 );
 
 /* ── Umumiy ko'rsatkichlar ───────────────────────────────────────── */
@@ -444,12 +462,13 @@ const JoinedSection = ({ items, index, showBranch }) => (
     ) : (
       <DocTable
         columns={[
-          { label: "№", align: "center", width: "7%" },
+          { label: "№", align: "center", width: "5%" },
           { label: "F.I.Sh." },
-          ...(showBranch ? [{ label: "Filial", width: "18%" }] : []),
-          { label: "Sinf", width: showBranch ? "16%" : "22%" },
-          { label: "Kelgan sana", align: "center", width: showBranch ? "16%" : "20%" },
-          { label: "Holati", align: "center", width: showBranch ? "14%" : "16%" },
+          { label: PHONE_PAIR_LABEL, width: showBranch ? "22%" : "24%" },
+          ...(showBranch ? [{ label: "Filial", width: "14%" }] : []),
+          { label: "Sinf", width: showBranch ? "13%" : "17%" },
+          { label: "Kelgan sana", align: "center", width: showBranch ? "13%" : "16%" },
+          { label: "Holati", align: "center", width: showBranch ? "11%" : "13%" },
         ]}
       >
         {items.map((item, i) => (
@@ -458,6 +477,7 @@ const JoinedSection = ({ items, index, showBranch }) => (
               {i + 1}
             </Td>
             <Td className="font-semibold">{item.name}</Td>
+            <PhoneTd contact={item} />
             {showBranch && <Td className="text-gray-600">{item.branchName || "—"}</Td>}
             <Td>{item.className || "—"}</Td>
             <Td align="center">{formatDateUz(item.date)}</Td>
@@ -483,13 +503,14 @@ const LeftSection = ({ items, index, showBranch }) => (
     ) : (
       <DocTable
         columns={[
-          { label: "№", align: "center", width: "6%" },
+          { label: "№", align: "center", width: "4%" },
           { label: "F.I.Sh." },
-          ...(showBranch ? [{ label: "Filial", width: "14%" }] : []),
-          { label: "Sinf", width: showBranch ? "12%" : "16%" },
-          { label: "Ketgan sana", align: "center", width: showBranch ? "14%" : "16%" },
-          { label: "Sababi", align: "center", width: showBranch ? "14%" : "16%" },
-          { label: "Izoh", width: showBranch ? "18%" : "22%" },
+          { label: PHONE_PAIR_LABEL, width: showBranch ? "19%" : "21%" },
+          ...(showBranch ? [{ label: "Filial", width: "11%" }] : []),
+          { label: "Sinf", width: showBranch ? "10%" : "13%" },
+          { label: "Ketgan sana", align: "center", width: showBranch ? "11%" : "13%" },
+          { label: "Sababi", align: "center", width: showBranch ? "11%" : "13%" },
+          { label: "Izoh", width: showBranch ? "14%" : "18%" },
         ]}
       >
         {items.map((item, i) => (
@@ -498,6 +519,7 @@ const LeftSection = ({ items, index, showBranch }) => (
               {i + 1}
             </Td>
             <Td className="font-semibold">{item.name}</Td>
+            <PhoneTd contact={item} />
             {showBranch && <Td className="text-gray-600">{item.branchName || "—"}</Td>}
             <Td>{item.className || "—"}</Td>
             <Td align="center">{formatDateUz(item.date)}</Td>
@@ -528,12 +550,13 @@ const MovedSection = ({ items, index }) => (
   <Section title={`${index}. Filiallararo ko'chganlar (${items.length} ta)`}>
     <DocTable
       columns={[
-        { label: "№", align: "center", width: "6%" },
+        { label: "№", align: "center", width: "5%" },
         { label: "F.I.Sh." },
-        { label: "Sinf", width: "16%" },
-        { label: "Qaysi filialdan", align: "center", width: "18%" },
-        { label: "Qaysi filialga", align: "center", width: "18%" },
-        { label: "Sana", align: "center", width: "16%" },
+        { label: PHONE_PAIR_LABEL, width: "20%" },
+        { label: "Sinf", width: "13%" },
+        { label: "Qaysi filialdan", align: "center", width: "15%" },
+        { label: "Qaysi filialga", align: "center", width: "15%" },
+        { label: "Sana", align: "center", width: "13%" },
       ]}
     >
       {items.map((item, i) => (
@@ -542,6 +565,7 @@ const MovedSection = ({ items, index }) => (
             {i + 1}
           </Td>
           <Td className="font-semibold">{item.name}</Td>
+          <PhoneTd contact={item} />
           <Td>{item.className || "—"}</Td>
           <Td align="center" className="text-gray-600">
             {item.fromBranch || "—"}
