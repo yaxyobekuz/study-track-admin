@@ -35,6 +35,7 @@ import {
 
 // Components
 import Card from "@/shared/components/ui/Card";
+import BranchBadge from "@/shared/components/ui/BranchBadge";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import Pagination from "@/shared/components/ui/Pagination";
@@ -154,6 +155,8 @@ const Statistics = () => {
           end: res.data.data.periodEnd,
           date: res.data.data.periodDate,
           isCurrent: res.data.data.isCurrentPeriod,
+          // Umumiy ko'rinishda javob bermagan filiallar (jim qolmaydi)
+          partial: res.data.data.partial || [],
         });
 
         // Set pagination data
@@ -402,6 +405,15 @@ const Statistics = () => {
               </p>
             )}
           </div>
+
+          {/* ⚠️ Javob bermagan filial JIM QOLMAYDI: usiz ro'yxat to'liq
+              ko'rinib, aslida bir filialsiz turardi. */}
+          {range?.partial?.length > 0 && (
+            <p className="mt-2 text-sm text-amber-600">
+              Ma&apos;lumot to&apos;liq emas — javob bermagan filial:{" "}
+              {range.partial.join(", ")}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-4 md:flex-row">
@@ -511,16 +523,23 @@ const Statistics = () => {
                       </div>
                     </td>
 
-                    {/* Student Name — qatorni bosish profilni ochadi */}
+                    {/* Student Name — qatorni bosish profilni ochadi.
+                        Umumiy ko'rinishda yonida filial belgisi turadi:
+                        o'rin butun tarmoq bo'yicha berilgani uchun "bu kim
+                        va qayerdan" degan savol darhol tug'iladi. */}
                     <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                      <span
-                        className={cn(
-                          canOpenProfile &&
-                            "group-hover:text-blue-600 group-hover:underline",
-                        )}
-                      >
-                        {item.student.fullName}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={cn(
+                            canOpenProfile &&
+                              "group-hover:text-blue-600 group-hover:underline",
+                          )}
+                        >
+                          {item.student.fullName}
+                        </span>
+
+                        <BranchBadge branch={item._branch} />
+                      </div>
                     </td>
 
                     {/* Classes (faqat maktab ko'rinishida) */}
