@@ -22,6 +22,9 @@ import {
   shiftDateKey,
   resolvePeriod,
   toMonthValue,
+  weekOptions,
+  yearOptions,
+  mondayOfKey,
   STATISTICS_PERIODS,
   CURRENT_PERIOD_LABEL,
   EMPTY_PERIOD_TEXT,
@@ -80,11 +83,73 @@ import {
  * joyda (`getStatisticsPeriodRange`), aks holda brauzer va Toshkent vaqti
  * farq qilganda ekrandagi davr bilan sanalgan baholar mos kelmasdi.
  */
-/** Qiymat o'qilsa — Date, aks holda `null` (yorliq chizilmaydi). */
-const toValidDate = (value) => {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
+/**
+ * ANKOR TANLAGICHI — DAVRGA QARAB BOSHQA SHAKL.
+ *
+ * ⚠️ TANLOV DAVRNING O'LCHOVIDA BO'LADI (biznes qarori, 2026-10-29):
+ * haftalik davrda HAFTA, yillikda YIL tanlanadi. Ilgari ikkalasida ham
+ * kalendardan KUN tanlanardi: "o'tgan haftani ko'ray" degan odam qaysi
+ * kunni bossa ham o'sha hafta ochilardi, ya'ni tanlov javobi bo'lmagan
+ * savol berardi. Oylik davrda `<input type="month">` allaqachon shunday
+ * ishlagan — endi uchalasi ham bir xil qoidaga bo'ysunadi.
+ *
+ * ⚠️ `<input type="week">` ISHLATILMAYDI: uni Firefox ham, Safari ham
+ * qo'llamaydi va u yerda maydon oddiy matn qutisiga aylanib qolardi.
+ * Ro'yxatda esa haftaning ORALIG'I o'zbekcha yozilib turadi — "2026-W44"
+ * dan ko'ra "26-oktabr, 2026 — 1-noyabr, 2026" aniqroq.
+ *
+ * ⚠️ Yuborilgan qiymat HAR DOIM "YYYY-MM-DD" ankor kun: server davrni
+ * o'zi hal qiladi (`getStatisticsPeriodRange`), panel oraliq hisoblamaydi.
+ */
+const AnchorPicker = ({ period, anchorDate, maxDate, onChange }) => {
+  if (period === "week") {
+    return (
+      <Select
+        value={mondayOfKey(anchorDate)}
+        onChange={onChange}
+        options={weekOptions(maxDate, anchorDate)}
+        // ⚠️ KENGLIK ENG UZUN YORLIQQA QARAB: "21-sentabr, 2026 —
+        // 27-sentabr, 2026" (35 belgi). Torroq bo'lsa oxiridagi yil
+        // kesilib, "19-oktabr, 2026 — 25-oktabr" bo'lib qolardi.
+        triggerClassName="h-9 w-[19rem] max-w-full"
+      />
+    );
+  }
+
+  if (period === "year") {
+    return (
+      <Select
+        value={`${String(anchorDate).slice(0, 4)}-01-01`}
+        onChange={onChange}
+        options={yearOptions(maxDate, anchorDate)}
+        triggerClassName="h-9 w-28"
+      />
+    );
+  }
+
+  // Oylik davrda kun emas, OY tanlanadi: 31 kundan birini tanlash
+  // foydalanuvchiga ortiqcha savol berardi.
+  if (period === "month") {
+    return (
+      <input
+        type="month"
+        max={toMonthValue(maxDate)}
+        value={toMonthValue(anchorDate)}
+        onChange={(e) => e.target.value && onChange(`${e.target.value}-01`)}
+        className="h-9 rounded-lg border border-gray-200 px-3 text-sm text-gray-700"
+      />
+    );
+  }
+
+  return (
+    <input
+      type="date"
+      max={maxDate}
+      value={anchorDate}
+      onChange={(e) => e.target.value && onChange(e.target.value)}
+      className="h-9 rounded-lg border border-gray-200 px-3 text-sm text-gray-700"
+    />
+  );
 };
 
 const Statistics = () => {
@@ -152,8 +217,12 @@ const Statistics = () => {
         if (!res.data.success) return;
         setRankings(res.data.data.rankings || []);
         setRange({
-          start: res.data.data.periodStart,
-          end: res.data.data.periodEnd,
+          // ⚠️ YORLIQ UCHUN KUN KALITLARI (`periodStartDay`/`periodEndDay`),
+          // instantlar EMAS: oraliq oxiri 23:59:59 bo'lgani uchun u
+          // brauzerda +5 soat surilib, yorliqda KEYINGI kun chiqardi
+          // ("26-oktabr — 30-oktabr", holbuki hafta 29-da tugaydi).
+          start: res.data.data.periodStartDay,
+          end: res.data.data.periodEndDay,
           date: res.data.data.periodDate,
           isCurrent: res.data.data.isCurrentPeriod,
           // Umumiy ko'rinishda javob bermagan filiallar (jim qolmaydi)
@@ -263,20 +332,19 @@ const Statistics = () => {
     range && !range.isCurrent && nextDate <= maxDate,
   );
 
-  // Davr oralig'i — SERVERDAN. Kunlik davrda boshi va oxiri bitta kun,
-  // shuning uchun oraliq emas, sananing o'zi yoziladi.
+  // Davr oralig'i — SERVERDAN, KUN KALITI shaklida. Kunlik davrda boshi
+  // va oxiri bitta kun, shuning uchun oraliq emas, sananing o'zi yoziladi.
   //
-  // ⚠️ Qiymat o'qilmasa YORLIQ UMUMAN CHIZILMAYDI: `formatDateRangeUz`
+  // ⚠️ Qiymat kelmasa YORLIQ UMUMAN CHIZILMAYDI: `formatDateRangeUz`
   // bunday holatda "—" qaytaradi va ekranda sababsiz chiziqcha turib
   // qolardi (masalan server paneldan eski bo'lsa — davr maydonlari hali
-  // yo'q).
-  const rangeStart = toValidDate(range?.start);
-  const rangeEnd = toValidDate(range?.end);
-  const rangeLabel = !rangeStart
+  // yo'q). Kun kalitini sanaga aylantirish `date.utils.js` ning ishi —
+  // bu yerda ikkinchi o'qigich yozilmaydi.
+  const rangeLabel = !range?.start
     ? ""
     : period === "day"
-      ? formatDateUz(rangeStart)
-      : formatDateRangeUz(rangeStart, rangeEnd);
+      ? formatDateUz(range.start)
+      : formatDateRangeUz(range.start, range.end);
 
   // Excel yuklab olish
   const handleExport = async () => {
@@ -356,27 +424,12 @@ const Statistics = () => {
               <ChevronLeft className="size-4" />
             </button>
 
-            {/* Oylik davrda kun emas, OY tanlanadi: 31 kundan birini
-                tanlash foydalanuvchiga ortiqcha savol berardi. */}
-            {period === "month" ? (
-              <input
-                type="month"
-                max={toMonthValue(maxDate)}
-                value={toMonthValue(anchorDate)}
-                onChange={(e) =>
-                  e.target.value && changeDate(`${e.target.value}-01`)
-                }
-                className="h-9 rounded-lg border border-gray-200 px-3 text-sm text-gray-700"
-              />
-            ) : (
-              <input
-                type="date"
-                max={maxDate}
-                value={anchorDate}
-                onChange={(e) => e.target.value && changeDate(e.target.value)}
-                className="h-9 rounded-lg border border-gray-200 px-3 text-sm text-gray-700"
-              />
-            )}
+            <AnchorPicker
+              period={period}
+              anchorDate={anchorDate}
+              maxDate={maxDate}
+              onChange={changeDate}
+            />
 
             <button
               type="button"

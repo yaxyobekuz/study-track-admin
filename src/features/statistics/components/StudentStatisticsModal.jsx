@@ -75,11 +75,16 @@ const Content = ({ studentId, period, date }) => {
   // Davr nomi va oralig'i SERVERDAN ("Kunlik" / "Haftalik" / "Oylik") —
   // panelda ikkinchi ro'yxat ham, ikkinchi hisob ham yozilmaydi.
   const periodTitle = data.periodTitle || "Haftalik";
-  const rangeLabel = !data.periodStart
+  // ⚠️ KUN KALITLARI (`periodStartDay`/`periodEndDay`), instantlar EMAS:
+  // oraliq oxiri 23:59:59 bo'lgani uchun brauzerda +5 soat surilib,
+  // yorliqda KEYINGI kun chiqardi (sahifadagi yorliq bilan AYNI tuzatish).
+  const rangeStart = data.periodStartDay || data.periodStart;
+  const rangeEnd = data.periodEndDay || data.periodEnd;
+  const rangeLabel = !rangeStart
     ? ""
     : data.period === "day"
-      ? formatDateUz(data.periodStart)
-      : formatDateRangeUz(data.periodStart, data.periodEnd);
+      ? formatDateUz(rangeStart)
+      : formatDateRangeUz(rangeStart, rangeEnd);
 
   return (
     <div className="space-y-8">

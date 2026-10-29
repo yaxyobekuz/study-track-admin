@@ -1,5 +1,5 @@
 // Utils
-import { toDateInputValue } from "@/shared/utils/date.utils";
+import { toDateInputValue, formatDateRangeUz } from "@/shared/utils/date.utils";
 
 /**
  * Reyting davrlari va ball chegaralari — BITTA joyda.
@@ -128,6 +128,111 @@ export const shiftDateKey = (key, period, step) => {
   const next = new Date(date);
   next.setDate(date.getDate() + days * step);
   return toDateInputValue(next);
+};
+
+/* ──────────────────────── HAFTA VA YIL TANLOVI ──────────────────────── */
+
+/**
+ * Ankor kun tegishli haftaning DUSHANBASI ("YYYY-MM-DD").
+ *
+ * ⚠️ Serverdagi `mondayOf` bilan AYNI qoida (yakshanba → 6 kun orqaga):
+ * tanlagichdagi hafta bilan serverda hisoblanadigan hafta bir xil
+ * bo'lishi shart, aks holda ro'yxat tanlangandan boshqa haftani
+ * ko'rsatardi.
+ */
+export const mondayOfKey = (key) => {
+  const date = fromDateKey(key);
+  if (!date) return "";
+
+  const day = date.getDay(); // 0 = yakshanba
+  const back = day === 0 ? 6 : day - 1;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - back);
+  return toDateInputValue(monday);
+};
+
+/** Haftaning yakshanbasi — faqat YORLIQ uchun (oraliqning o'zi serverda). */
+const sundayOfKey = (mondayKey) => {
+  const monday = fromDateKey(mondayKey);
+  if (!monday) return "";
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return toDateInputValue(sunday);
+};
+
+/** Tanlagichda nechta hafta turadi (bir yil ortga). */
+const WEEK_OPTIONS_COUNT = 53;
+
+/**
+ * HAFTA TANLAGICHINING RO'YXATI — "26-oktabr, 2026 — 1-noyabr, 2026".
+ *
+ * ⚠️ KUN EMAS, HAFTA TANLANADI (biznes qarori, 2026-10-29). Ilgari bu
+ * yerda `<input type="date">` turardi: "o'tgan haftani ko'ray" degan odam
+ * kalendardan KUN tanlashi kerak edi va qaysi kunni bossa ham o'sha hafta
+ * ochilardi — ya'ni tanlov ortiqcha savol berardi. Oylik davrda
+ * `<input type="month">` allaqachon shunday ishlaydi.
+ *
+ * ⚠️ YORLIQ — TO'LIQ HAFTA (dushanba–yakshanba), ya'ni haftaning
+ * KIMLIGI. Joriy haftada hisob bugun bilan tugaydi va buni yonidagi
+ * oraliq yozuvi aytadi — ikkalasi boshqa savolga javob beradi.
+ *
+ * @param {string} todayKey - bugungi kun ("YYYY-MM-DD")
+ * @param {string} [anchorKey] - tanlangan kun; ro'yxatdan tashqarida
+ *   bo'lsa (eski havola) o'z haftasi ham qo'shiladi
+ */
+export const weekOptions = (todayKey, anchorKey = "") => {
+  const current = mondayOfKey(todayKey);
+  const options = [];
+
+  for (let i = 0; i < WEEK_OPTIONS_COUNT; i += 1) {
+    const monday = fromDateKey(current);
+    if (!monday) break;
+    monday.setDate(monday.getDate() - i * 7);
+
+    const value = toDateInputValue(monday);
+    options.push({ value, label: formatDateRangeUz(value, sundayOfKey(value)) });
+  }
+
+  // Eskirgan havola bilan kelingan hafta jim tushib qolmasin
+  const anchorMonday = mondayOfKey(anchorKey);
+  if (anchorMonday && !options.some((row) => row.value === anchorMonday)) {
+    options.push({
+      value: anchorMonday,
+      label: formatDateRangeUz(anchorMonday, sundayOfKey(anchorMonday)),
+    });
+  }
+
+  return options;
+};
+
+/** Tanlagichda nechta yil turadi. */
+const YEAR_OPTIONS_COUNT = 6;
+
+/**
+ * YIL TANLAGICHINING RO'YXATI — "2026", "2025", ...
+ *
+ * Hafta bilan AYNI mulohaza: yillik davrda kalendardan kun tanlash
+ * foydalanuvchiga ortiqcha savol berardi.
+ */
+export const yearOptions = (todayKey, anchorKey = "") => {
+  const today = fromDateKey(todayKey) || new Date();
+  const years = [];
+
+  for (let i = 0; i < YEAR_OPTIONS_COUNT; i += 1) {
+    const year = today.getFullYear() - i;
+    years.push({ value: `${year}-01-01`, label: String(year) });
+  }
+
+  const anchor = fromDateKey(anchorKey);
+  if (anchor && !years.some((row) => row.value.startsWith(String(anchor.getFullYear())))) {
+    years.push({
+      value: `${anchor.getFullYear()}-01-01`,
+      label: String(anchor.getFullYear()),
+    });
+  }
+
+  return years;
 };
 
 /**
