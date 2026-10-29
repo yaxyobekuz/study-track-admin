@@ -60,14 +60,18 @@ import PenaltySummaryCards from "./PenaltySummaryCards";
  * (biznes qarori, 2026-10-26): bosh sahifaga qaragan rahbarning savoli
  * "kim yaxshi o'qiyapti, kimga e'tibor kerak", tanga esa rag'bat
  * mexanikasi va u "Tanga" bo'limida o'z o'rnida qoladi.
- * `gradeAnalysis.view` ruxsati bo'lmaganda eski karta QOLADI — davomat
- * grafigi bilan AYNI mulohaza: bo'sh joy kartani "yo'qolgan" qilardi.
+ * ⚠️ RUXSAT — `statistics.view`, `gradeAnalysis.view` EMAS (2026-10-29):
+ * karta Statistika bo'limidan o'qiydi, ya'ni uni ochadigan huquq ham
+ * o'sha bo'limniki. Aks holda baholar tahlili ruxsati bor-u, statistika
+ * ruxsati yo'q odamga karta "yuklab bo'lmadi" bo'lib turardi.
+ * Ruxsat bo'lmaganda eski karta QOLADI — davomat grafigi bilan AYNI
+ * mulohaza: bo'sh joy kartani "yo'qolgan" qilardi.
  */
 const OverviewStats = () => {
   const { isAggregate } = useBranch();
   const { can } = usePermissions();
   const showAttendance = isAggregate && can("attendance.reports");
-  const showResults = can("gradeAnalysis.view");
+  const showResults = can("statistics.view");
 
   const { data: stats } = useQuery({
     queryKey: ["coins", "stats"],

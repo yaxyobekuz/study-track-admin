@@ -12,6 +12,10 @@ export const STATISTICS_PERIODS = [
   { value: "day", label: "Kunlik" },
   { value: "week", label: "Haftalik" },
   { value: "month", label: "Oylik" },
+  // ⚠️ KALENDAR YILI (1-yanvardan), o'quv yili EMAS — bu domenda o'quv
+  // yili tushunchasi yo'q. Bosh sahifadagi karta ham shu davrni so'raydi,
+  // ya'ni "Batafsil" bosilganda bo'lim AYNI oraliqni ochadi.
+  { value: "year", label: "Yillik" },
 ];
 
 export const DEFAULT_PERIOD = "week";
@@ -24,18 +28,20 @@ export const resolvePeriod = (value) =>
  * Ball ranglari ("a'lo / yaxshi / qoniqarli") davrga qarab o'zgaradi.
  *
  * ⚠️ HAFTALIK CHEGARA O'ZGARMAYDI (45 / 35) — u maktabda allaqachon
- * ishlatiladigan o'lchov. Qolgan ikkitasi O'SHANDAN keltirib chiqarilgan:
- * hafta 6 o'quv kuni (45 ÷ 6 ≈ 8, 35 ÷ 6 ≈ 6), oy esa 4 hafta
- * (45 × 4 = 180, 35 × 4 = 140).
+ * ishlatiladigan o'lchov. Qolganlari O'SHANDAN keltirib chiqarilgan:
+ * hafta 6 o'quv kuni (45 ÷ 6 ≈ 8, 35 ÷ 6 ≈ 6), oy 4 hafta
+ * (45 × 4 = 180), yil esa ~40 o'quv haftasi — ta'til oylari chiqarilgan
+ * (45 × 40 = 1800, 35 × 40 = 1400).
  *
- * ⚠️ Aks holda bitta chegara uchala davrga qo'llanardi: kunlik ro'yxatda
- * hamma "qoniqarli" (bir kunda 35 ball imkonsiz), oylikda esa hamma
+ * ⚠️ Aks holda bitta chegara hamma davrga qo'llanardi: kunlik ro'yxatda
+ * hamma "qoniqarli" (bir kunda 35 ball imkonsiz), yillikda esa hamma
  * "a'lo" bo'lib, rang umuman ma'no bermay qolardi.
  */
 export const SCORE_THRESHOLDS = {
   day: { high: 8, mid: 6 },
   week: { high: 45, mid: 35 },
   month: { high: 180, mid: 140 },
+  year: { high: 1800, mid: 1400 },
 };
 
 /** Jadvaldagi ball rangi (legend bilan AYNI chegaradan). */
@@ -112,10 +118,29 @@ export const shiftDateKey = (key, period, step) => {
     );
   }
 
+  // Yillik davrda ankor — yilning 1-yanvari: "oldingi davr" butun bir yil
+  // orqaga suriladi, kun emas.
+  if (period === "year") {
+    return toDateInputValue(new Date(date.getFullYear() + step, 0, 1));
+  }
+
   const days = period === "week" ? 7 : 1;
   const next = new Date(date);
   next.setDate(date.getDate() + days * step);
   return toDateInputValue(next);
+};
+
+/**
+ * "Natija yo'q" matni — davr bo'yicha, BITTA joyda.
+ *
+ * ⚠️ Shart zanjiri emas: yangi davr qo'shilganda (yillik) zanjirning
+ * oxiridagi "Joriy haftada..." matni jimgina chiqib qolardi.
+ */
+export const EMPTY_PERIOD_TEXT = {
+  day: "Bugun hech qanday natija topilmadi",
+  week: "Joriy haftada hech qanday natija topilmadi",
+  month: "Joriy oyda hech qanday natija topilmadi",
+  year: "Joriy yilda hech qanday natija topilmadi",
 };
 
 /** Tanlagichdagi "joriy davrga qaytish" tugmasining matni. */
@@ -123,4 +148,5 @@ export const CURRENT_PERIOD_LABEL = {
   day: "Bugun",
   week: "Bu hafta",
   month: "Bu oy",
+  year: "Bu yil",
 };

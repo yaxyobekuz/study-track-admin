@@ -17,6 +17,14 @@ export const statisticsAPI = {
     http.get(`/statistics/weekly/class/${classId}/rankings`, { params }),
   getSchoolRankings: (params) =>
     http.get("/statistics/weekly/school/rankings", { params }),
+  /**
+   * Bosh sahifadagi karta — reytingning ikki uchi.
+   *
+   * ⚠️ AYNI ro'yxatdan kesiladi (serverda `splitTopAndBottom`): jadvalning
+   * birinchi beshtaligi bilan kartaning beshtaligi bir xil bo'lishi shart.
+   */
+  getSchoolTop: (params) =>
+    http.get("/statistics/weekly/school/top", { params }),
   export: (params) =>
     http.get("/statistics/weekly/export", { params, responseType: "blob" }),
 };

@@ -24,6 +24,7 @@ import {
   toMonthValue,
   STATISTICS_PERIODS,
   CURRENT_PERIOD_LABEL,
+  EMPTY_PERIOD_TEXT,
 } from "@/features/statistics/data/statistics.data";
 
 // Utils
@@ -471,11 +472,7 @@ const Statistics = () => {
           <div className="text-center py-12">
             <GraduationCap className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600">
-              {period === "day"
-                ? "Bugun hech qanday natija topilmadi"
-                : period === "month"
-                  ? "Joriy oyda hech qanday natija topilmadi"
-                  : "Joriy haftada hech qanday natija topilmadi"}
+              {EMPTY_PERIOD_TEXT[period] ?? EMPTY_PERIOD_TEXT.week}
             </p>
           </div>
         ) : (

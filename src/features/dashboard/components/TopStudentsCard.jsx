@@ -11,14 +11,10 @@ import { ChevronDown, Crown, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 // Queries
-import { gradeAnalysisQueries } from "@/features/gradeAnalysis/queries/gradeAnalysis.queries";
-
-// Hooks
-import useBranch from "@/shared/hooks/useBranch";
+import { statisticsQueries } from "@/features/statistics/queries/statistics.queries";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
-import { fmtAvg } from "@/features/gradeAnalysis/data/gradeAnalysis.data";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -34,30 +30,36 @@ import {
 } from "@/shared/components/shadcn/dropdown-menu";
 
 /**
- * ENG YAXSHI 5 VA ENG PAST 5 O'QUVCHI — bosh sahifadagi karta.
+ * ENG YUQORI 5 VA ENG PAST 5 O'QUVCHI — bosh sahifadagi karta.
  *
- * ⚠️ MANBA — "Ta'lim → Baholar tahlili → O'quvchilar natijalari" bilan
- * AYNI (`GET /grade-analysis/results`): maktab kesimidagi reyting
- * serverda quriladi (`buildStudentResults` → `buildRankings`), karta esa
- * faqat birinchi beshtasini oladi. Ikkinchi hisob yozilsa, bosh sahifada
- * bir o'quvchi, bo'lim ichida boshqasi birinchi o'rinda turardi.
+ * ⚠️ MANBA — "Asosiy → Statistika" BO'LIMINING O'ZI (biznes qarori,
+ * 2026-10-29; `GET /statistics/weekly/school/top`). Ya'ni kartadagi
+ * raqam — davr ichida TO'PLANGAN UMUMIY BALL, bo'limdagi "Umumiy ball"
+ * ustuni bilan AYNI. Ilgari karta "Ta'lim → Baholar tahlili →
+ * O'quvchilar natijalari" dan (o'rtacha baho) o'qirdi va bitta maktabda
+ * ikki xil "eng yaxshi o'quvchi" paydo bo'lardi.
  *
- * DAVR KARTANING O'ZIDA TANLANADI (haftalik / oylik / yillik) va "Batafsil"
- * AYNI davrni ochadi — kesh ham ikkalasiga BITTA (`results({ period })`).
- * Sukut — natijalar sahifasining sukuti (1 oy).
+ * ⚠️ BESHTALIK SERVERDA KESILADI (`splitTopAndBottom`), panelda
+ * QAYTA SARALANMAYDI — umumiy ko'rinishda ham: u yerda yo'l `anchor` deb
+ * belgilangan va tarmoq ro'yxati filiallar yig'ilgandan KEYIN
+ * saralanadi (`statisticsNetwork.service.js`). Panel saralasa, bosh
+ * sahifadagi tartib bo'limdagi tartibdan asta-sekin uzoqlashardi.
+ *
+ * ⚠️ ENG PAST — FAQAT BALL TO'PLAGANLAR ORASIDAN (server qoidasi):
+ * ro'yxatning aynan oxirida davr ichida umuman baho olmaganlar turadi va
+ * ular teng bo'lgani uchun tartib alifboga tushardi. Ularning soni
+ * yo'qolmaydi — ro'yxat ostida aytiladi.
+ *
+ * DAVR KARTANING O'ZIDA TANLANADI va "Batafsil" AYNI davrni ochadi.
  */
 
-/** Har ro'yxatdan nechta qator (biznes qarori: eng yaxshi 5, eng past 5). */
-const LIMIT = 5;
-
 /**
- * Kartadagi davrlar — serverning `GRADE_ANALYSIS_PERIODS` kalitlari va
- * `title` matni bilan AYNI (`helpers/gradeAnalysis.js`).
+ * Kartadagi davrlar — serverning `STATISTICS_PERIODS` kalitlari va
+ * `title` matni bilan AYNI (`helpers/statistics.helpers.js`).
  *
- * ⚠️ UCHTASI (biznes qarori): bosh sahifa — bir qarashda ko'riladigan
- * manzara. "3 oylik" va "Yarim yillik" to'liq ro'yxat bilan birga
- * "Baholar tahlili → O'quvchilar natijalari" da qoladi, "Batafsil"
- * havolasi esa aynan shu yerda tanlangan davr bilan ochiladi.
+ * ⚠️ "Kunlik" bu yerda YO'Q (bo'limda bor): bosh sahifa — bir qarashda
+ * ko'riladigan manzara, bir kunlik ball esa reyting emas, shovqin
+ * (6-7 baho bilan tartib har soatda o'zgaradi).
  */
 const PERIODS = [
   { key: "week", label: "Haftalik" },
@@ -65,29 +67,25 @@ const PERIODS = [
   { key: "year", label: "Yillik" },
 ];
 
-/** Natijalar sahifasining sukut davri bilan AYNI. */
+/** Statistika bo'limining sukut davri HAFTALIK; karta esa oylikdan boshlaydi. */
 const DEFAULT_PERIOD = "month";
 
 /**
- * "Batafsil" — o'sha davr, o'sha tab.
+ * "Batafsil" — Statistika bo'limi, AYNI davr bilan.
  *
- * ⚠️ Sukut davrda `period` YOZILMAYDI: natijalar sahifasi ham URL'dan
- * aynan shunday tozalaydi (`StudentResults` → `setPeriod`), aks holda
- * bitta manzaraning ikki xil havolasi paydo bo'lardi.
+ * ⚠️ Davr HAR DOIM yoziladi: bo'limning o'z sukuti haftalik, ya'ni
+ * parametrsiz havola kartada "Oylik" turganda boshqa oraliqni ochardi.
  */
-const detailsLink = (period) =>
-  period === DEFAULT_PERIOD
-    ? "/grade-analysis?tab=results"
-    : `/grade-analysis?tab=results&period=${period}`;
+const detailsLink = (period) => `/statistics?period=${period}`;
 
 const SECTION = {
   best: {
-    label: "Eng yaxshi 5 ta",
+    label: "Eng yuqori 5 ta",
     icon: Crown,
     accent: "bg-amber-100 text-amber-700",
     badge: "bg-amber-50 text-amber-700",
     value: "text-emerald-600",
-    empty: "Reytingga kirgan o'quvchi yo'q",
+    empty: "Bu davrda baho olgan o'quvchi yo'q",
   },
   worst: {
     label: "Eng past 5 ta",
@@ -95,55 +93,31 @@ const SECTION = {
     accent: "bg-rose-100 text-rose-700",
     badge: "bg-rose-50 text-rose-700",
     value: "text-rose-600",
-    empty: "Eng past natijalar ro'yxati bo'sh",
+    empty: "Taqqoslash uchun o'quvchi yetarli emas",
   },
 };
 
-/**
- * Serverdagi `compareBest` / `compareWorst` bilan AYNI qoida: o'rtacha,
- * keyin baholar soni, keyin ism. "Eng past" — har uchalasining teskarisi.
- */
-const compareRows = (kind) => (a, b) => {
-  const [x, y] = kind === "best" ? [b, a] : [a, b];
-  return (
-    x.average - y.average ||
-    x.gradeCount - y.gradeCount ||
-    String(y.name ?? "").localeCompare(String(x.name ?? ""), "uz")
-  );
-};
-
-/**
- * Ro'yxatning birinchi beshtasi.
- *
- * ⚠️ UMUMIY KO'RINISHDA QAYTA TARTIBLANADI. U yerda so'rov HAR FILIALDA
- * alohida bajariladi va javoblar ULANADI — o'quvchi qatori kimlikka ega
- * bo'lgani uchun guruhlanmaydi (`helpers/aggregateMerge.helpers.js`).
- * Ya'ni ro'yxat boshida langar filialning beshtaligi turib qolardi va
- * "tarmoqning eng yaxshisi" aslida bitta filialniki bo'lib chiqardi.
- * Bitta filial rejimida serverning tartibiga va o'rniga TEGILMAYDI.
- */
-const pickTop = (rows = [], kind, isAggregate) => {
-  if (!isAggregate) return rows.slice(0, LIMIT);
-  return [...rows]
-    .sort(compareRows(kind))
-    .slice(0, LIMIT)
-    .map((row, index) => ({ ...row, place: index + 1 }));
-};
+/** Sinflar ro'yxati — qatorga bitta matn bo'lib tushadi. */
+const classNameOf = (row) =>
+  (row.classes ?? [])
+    .map((item) => item?.name)
+    .filter(Boolean)
+    .join(", ");
 
 const TopStudentsCard = () => {
-  const { isAggregate } = useBranch();
   const [period, setPeriod] = useState(DEFAULT_PERIOD);
 
   /* ⚠️ Davr almashtirilganda ro'yxat BO'SHAMAYDI (`keepPreviousData`):
      eski beshtalik xiralashib turadi va yangisi kelgach almashadi —
      karta balandligi sakramaydi. */
   const { data, isLoading, isError, isPlaceholderData } = useQuery(
-    gradeAnalysisQueries.results({ period }),
+    statisticsQueries.schoolTop({ period }),
   );
 
-  const best = pickTop(data?.rankings?.school?.best, "best", isAggregate);
-  const worst = pickTop(data?.rankings?.school?.worst, "worst", isAggregate);
+  const best = data?.best ?? [];
+  const worst = data?.worst ?? [];
   const hasRows = best.length > 0 || worst.length > 0;
+  const unscored = data?.unscored ?? 0;
 
   return (
     <Card className="flex flex-col gap-1.5 xs:gap-3.5">
@@ -171,7 +145,7 @@ const TopStudentsCard = () => {
 
         {!isLoading && !isError && !hasRows && (
           <p className="py-8 text-center text-sm text-gray-400">
-            Bu davrda reyting uchun baho yetarli emas
+            Bu davrda hech kim baho olmagan
           </p>
         )}
 
@@ -179,11 +153,21 @@ const TopStudentsCard = () => {
           <>
             <RankList kind="best" rows={best} />
             <RankList kind="worst" rows={worst} />
+
+            {/* ⚠️ BALL TO'PLAMAGANLAR JIM QOLMAYDI: ular "eng past"
+                ro'yxatiga kirmaydi (alifbo bo'yicha tasodifiy beshta ism
+                chiqmasin), lekin soni aytiladi — aks holda rahbar ularni
+                umuman ko'rmay qolardi. */}
+            {unscored > 0 && (
+              <p className="text-center text-xs text-gray-400">
+                {unscored} ta o&apos;quvchi bu davrda baho olmagan
+              </p>
+            )}
           </>
         )}
       </div>
 
-      {/* Batafsil — "Baholar tahlili" bo'limidagi to'liq ro'yxat */}
+      {/* Batafsil — "Statistika" bo'limidagi to'liq reyting */}
       <Button
         asChild
         variant="link"
@@ -268,7 +252,7 @@ const RankList = ({ kind, rows }) => {
       ) : (
         <ul className="mt-1">
           {rows.map((row) => (
-            <li key={`${row.classId}-${row.studentId}`}>
+            <li key={`${row._branch?.id ?? ""}-${row.student.id}`}>
               <RankRow kind={kind} row={row} />
             </li>
           ))}
@@ -279,7 +263,8 @@ const RankList = ({ kind, rows }) => {
 };
 
 /**
- * Qatorni bosish — o'quvchi profili ("O'quvchilar natijalari" bilan AYNI).
+ * Qatorni bosish — o'quvchi profili (Statistika bo'limidagi jadval bilan
+ * AYNI xatti-harakat).
  *
  * ⚠️ BITTA SATR: kartaga o'nta qator sig'ishi kerak. Baholar soni ikkinchi
  * satrga chiqarilsa ro'yxat ikki barobar uzayib, "eng past 5 ta" ekrandan
@@ -288,12 +273,13 @@ const RankList = ({ kind, rows }) => {
 const RankRow = ({ kind, row }) => {
   const navigate = useNavigate();
   const meta = SECTION[kind];
+  const className = classNameOf(row);
 
   return (
     <button
       type="button"
-      title={`${row.name} · ${row.className || "sinfsiz"} · ${row.gradeCount} baho`}
-      onClick={() => navigate(`/users/${row.studentId}`)}
+      title={`${row.student.fullName} · ${className || "sinfsiz"} · ${row.totalGrades} baho · ${row.totalSum} ball`}
+      onClick={() => navigate(`/users/${row.student.id}`)}
       className="flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-left transition-colors hover:bg-gray-50"
     >
       <span
@@ -306,24 +292,27 @@ const RankRow = ({ kind, row }) => {
       </span>
 
       <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-800">
-        {row.name}
+        {row.student.fullName}
       </span>
 
-      {row.className && (
+      {className && (
         <span className="max-w-16 shrink-0 truncate text-xs text-gray-400">
-          {row.className}
+          {className}
         </span>
       )}
 
       <BranchBadge branch={row._branch} />
 
+      {/* ⚠️ UMUMIY BALL (o'rtacha baho EMAS) — Statistika bo'limidagi
+          "Umumiy ball" ustuni bilan AYNI raqam. Yillik davrda u to'rt
+          xonali bo'ladi, shuning uchun ustun biroz kengroq. */}
       <span
         className={cn(
-          "w-10 shrink-0 text-right text-sm font-semibold tabular-nums",
+          "w-12 shrink-0 text-right text-sm font-semibold tabular-nums",
           meta.value,
         )}
       >
-        {fmtAvg(row.average)}
+        {row.totalSum}
       </span>
     </button>
   );
