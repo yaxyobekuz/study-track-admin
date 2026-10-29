@@ -1,5 +1,5 @@
 // TanStack Query
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 
 // Shared
 import { createQueryKeys } from "@/shared/lib/query";
@@ -26,6 +26,18 @@ export const activityQueries = {
       queryKey: [...activityKeys.all, "overview", params],
       queryFn: () => activityAPI.getOverview(params).then((r) => r.data.data),
       staleTime: STALE,
+    }),
+
+  /**
+   * BOT FOYDALANUVCHILARI HUJJATI — ekrandagi nusxa ham, Word fayli ham
+   * AYNI shu obyektdan quriladi (server tomonda ham bitta hisob).
+   */
+  botReport: (params) =>
+    queryOptions({
+      queryKey: [...activityKeys.all, "bot-report", params],
+      queryFn: () => activityAPI.getBotReport(params).then((r) => r.data.data),
+      staleTime: STALE,
+      placeholderData: keepPreviousData,
     }),
 
   /** Bitta odamning faollik tarixi — modal ochilganda yuklanadi. */

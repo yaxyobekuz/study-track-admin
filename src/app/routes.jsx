@@ -50,6 +50,7 @@ import ClassChangesPage from "@/features/classes/pages/ClassChangesPage";
 import StudentSystemsPage from "@/features/studentSystems/pages/StudentSystemsPage";
 import StudentSystemsReportPage from "@/features/studentSystems/pages/StudentSystemsReportPage";
 import AttendanceStatsReportPage from "@/features/attendance/pages/AttendanceStatsReportPage";
+import BotReportPage from "@/features/activityDashboard/pages/BotReportPage";
 
 // YOTOQXONA DAVOMATI — kechqurun yotoqxonada kim qoldi (tarbiyachi belgilaydi)
 import DormAttendancePage from "@/features/dormAttendance/pages/DormAttendancePage";
@@ -487,6 +488,16 @@ const Routes = () => {
             path="/attendance-report/teachers"
             element={<AttendanceStatsReportPage kind="teachers" />}
           />
+
+          {/* BOT FOYDALANUVCHILARI (`activity.view`) — qamrov, foydalanish,
+              sinflar kesimi va ulanmaganlar ro'yxati, hujjat ko'rinishida.
+              Bosh sahifadagi "Bot foydalanuvchilar" kartasidagi belgi aynan
+              shu yo'lga olib keladi (yangi tab EMAS).
+
+              ⚠️ Faqat "Umumiy — barcha filiallar" ko'rinishida: darvoza
+              sahifaning o'zida ham, SERVERDA ham bor
+              (`activity.controller.js` → 403). */}
+          <Route path="/bot-report" element={<BotReportPage />} />
 
           {/* YOTOQXONA DAVOMATI (`dormAttendance.view`) — kunlik ro'yxat,
               sinflar kesimi va Excel */}

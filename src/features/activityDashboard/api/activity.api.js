@@ -12,6 +12,17 @@ export const activityAPI = {
   /** Butun manzara. Params: { days } */
   getOverview: (params) => http.get("/activity/overview", { params }),
 
+  /**
+   * BOT FOYDALANUVCHILARI — hujjat ko'rinishidagi hisobot va uning Word
+   * nusxasi. Params: `{ days }` (7 | 14 | 30 | 90 — serverda tekshiriladi).
+   *
+   * ⚠️ FAQAT "Umumiy — barcha filiallar" ko'rinishida ochiladi: server
+   * filial rejimida 403 qaytaradi.
+   */
+  getBotReport: (params) => http.get("/activity/bot-report", { params }),
+  exportBotReport: (params) =>
+    http.get("/activity/bot-report/export", { params, responseType: "blob" }),
+
   /** Bitta odamning faollik tarixi. Params: { userId | telegramId, days } */
   getSubject: (params) => http.get("/activity/subject", { params }),
 

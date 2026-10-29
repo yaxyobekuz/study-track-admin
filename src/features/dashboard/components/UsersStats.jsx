@@ -52,6 +52,14 @@ const MOVEMENT_PATH = "/student-movement";
 const BOT_PERIOD_DAYS = 7;
 
 /**
+ * Bot hujjati — kartadagi belgi aynan shu yo'lga olib keladi.
+ *
+ * ⚠️ Hujjat FAQAT umumiy ko'rinishda ochiladi, shuning uchun belgi ham
+ * aynan o'sha rejimda bosiladi (`canSeeBot`).
+ */
+const BOT_REPORT_PATH = "/bot-report";
+
+/**
  * O'sish / tushish o'qi.
  *
  * ⚠️ Komponent MODUL darajasida e'lon qilinadi: ikonka render ichida
@@ -246,6 +254,10 @@ const UsersStats = () => {
       sharedKey: "telegramUsers",
       // Bugungi faollik va qamrov — AYNI kartaning ichida (pastga qarang)
       bot: canSeeBot,
+      // ⚠️ Belgi bosilganda hujjat PLATFORMA ICHIDA ochiladi (yangi tab
+      // emas) — "O'quvchilar" kartasi bilan AYNI naqsh.
+      report: canSeeBot ? BOT_REPORT_PATH : null,
+      reportTitle: "Bot foydalanuvchilari hisobotini ochish",
     },
     showStaffTasks
       ? { key: "staffTasks", custom: true }
@@ -324,6 +336,10 @@ const UsersStats = () => {
               (botLoading ? (
                 <Skeleton className="h-8 w-full" />
               ) : botActivity ? (
+                // ⚠️ QATORLAR AVVALGIDEK FAOLLIK BO'LIMIGA olib boradi,
+                // hujjatga EMAS (foydalanuvchi so'rovi): hujjat faqat
+                // belgi orqali ochiladi, qatorlar esa "kimlar" degan
+                // savolga javob beradigan ro'yxatga.
                 <Link
                   to="/pulse"
                   className="block space-y-1 rounded-lg border-t border-gray-100 pt-2 transition hover:bg-gray-50"
