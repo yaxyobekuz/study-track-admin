@@ -4,6 +4,7 @@ import { Fragment } from "react";
 // Utils
 import { cn } from "@/shared/utils/cn";
 import { formatDateTimeUz } from "@/shared/utils/date.utils";
+import { PHONE_PAIR_LABEL, phonePairLines } from "@/shared/utils/phone.utils";
 
 // Data
 import { STUDENT_SYSTEMS, percentText } from "../data/studentSystems.data";
@@ -93,6 +94,23 @@ const Td = ({ align, className, children }) => (
   >
     {children}
   </td>
+);
+
+/**
+ * TELEFON KATAGI — ikki qator: o'quvchining o'z raqami, so'ng ota-onasiniki.
+ *
+ * ⚠️ Word nusxasida AYNI matn bitta katakda `<w:br/>` bilan ikki qator
+ * bo'lib chiqadi (`studentSystemReportExport.service.js`). Nega ikkita
+ * ustun emasligi — `phone.utils.js` dagi izohda.
+ */
+const PhoneTd = ({ contact }) => (
+  <Td className="whitespace-nowrap text-gray-700">
+    {phonePairLines(contact).map((line, i) => (
+      <span key={i} className="block tabular-nums">
+        {line}
+      </span>
+    ))}
+  </Td>
 );
 
 /** Sanoq katagi: nol — kulrang (hech narsa qolmagan joy ko'zga tashlanmasin). */
@@ -316,14 +334,17 @@ const MissingSection = ({ system, items, index, showBranch }) => {
     >
       <DocTable
         columns={[
-          { label: "№", align: "center", width: "6%" },
+          { label: "№", align: "center", width: "5%" },
           { label: "F.I.Sh." },
-          ...(showBranch ? [{ label: "Filial", width: "16%" }] : []),
-          { label: "Sinf", width: "18%" },
+          // ⚠️ RO'YXAT ISH RO'YXATI: xodim shu qatorlar bo'yicha tizimga
+          // kiritadi va yetishmagan ma'lumot uchun qo'ng'iroq qiladi.
+          { label: PHONE_PAIR_LABEL, width: showBranch ? "21%" : "23%" },
+          ...(showBranch ? [{ label: "Filial", width: "13%" }] : []),
+          { label: "Sinf", width: showBranch ? "14%" : "16%" },
           ...others.map((item) => ({
             label: item.label,
             align: "center",
-            width: "14%",
+            width: "12%",
           })),
         ]}
       >
@@ -333,6 +354,7 @@ const MissingSection = ({ system, items, index, showBranch }) => {
               {i + 1}
             </Td>
             <Td className="font-semibold">{item.name}</Td>
+            <PhoneTd contact={item} />
             {showBranch && <Td className="text-gray-600">{item.branchName}</Td>}
             <Td>{item.className || "—"}</Td>
             {others.map((other) => (
