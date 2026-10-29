@@ -9,9 +9,9 @@ import http from "@/shared/api/http";
  * `period` yubormaganda avvalgidek haftalik javobni oladi.
  */
 export const statisticsAPI = {
-  getStudentWeekly: (studentId, period) =>
+  getStudentWeekly: (studentId, period, date) =>
     http.get(`/statistics/weekly/current/${studentId}`, {
-      params: period ? { period } : undefined,
+      params: { ...(period ? { period } : {}), ...(date ? { date } : {}) },
     }),
   getClassRankings: (classId, params) =>
     http.get(`/statistics/weekly/class/${classId}/rankings`, { params }),

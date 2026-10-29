@@ -10,6 +10,9 @@ import { statisticsAPI } from "@/features/statistics/api/statistics.api";
 // Data
 import { resolvePeriod } from "@/features/statistics/data/statistics.data";
 
+// Utils
+import { formatDateUz, formatDateRangeUz } from "@/shared/utils/date.utils";
+
 // Components
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
@@ -19,9 +22,10 @@ import { User, Award, School, BarChart3, Users } from "lucide-react";
 /**
  * O'quvchining bitta davrdagi natijasi.
  *
- * ⚠️ DAVRNI OYNANI OCHGAN EKRAN BERADI (`openModal(..., { period })`):
- * jadvalda "Oylik" turib, oynada haftalik ball chiqsa, ikkala raqam ham
- * ishonchini yo'qotardi. Davr berilmasa — haftalik (servis sukuti).
+ * ⚠️ DAVRNI VA KUNNI OYNANI OCHGAN EKRAN BERADI
+ * (`openModal(..., { period, date })`): jadvalda "Oylik" yoki o'tgan hafta
+ * turib, oynada bugungi ball chiqsa, ikkala raqam ham ishonchini
+ * yo'qotardi. Berilmasa — joriy hafta (servis sukuti).
  */
 const StudentStatisticsModal = () => (
   <ResponsiveModal name="studentStats" title="O'quvchi statistikasi">
@@ -29,13 +33,13 @@ const StudentStatisticsModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ studentId, period }) => {
+const Content = ({ studentId, period, date }) => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     statisticsAPI
-      .getStudentWeekly(studentId, resolvePeriod(period))
+      .getStudentWeekly(studentId, resolvePeriod(period), date)
       .then((res) => {
         if (res.data.success) {
           setData(res.data.data);
@@ -49,7 +53,7 @@ const Content = ({ studentId, period }) => {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [studentId, period]);
+  }, [studentId, period, date]);
 
   if (isLoading) {
     return (
@@ -68,9 +72,14 @@ const Content = ({ studentId, period }) => {
   }
 
   const { student, classes, simpleStats, rankings } = data;
-  // Davr nomi SERVERDAN ("Kunlik" / "Haftalik" / "Oylik") — panelda
-  // ikkinchi ro'yxat yozilmaydi.
+  // Davr nomi va oralig'i SERVERDAN ("Kunlik" / "Haftalik" / "Oylik") —
+  // panelda ikkinchi ro'yxat ham, ikkinchi hisob ham yozilmaydi.
   const periodTitle = data.periodTitle || "Haftalik";
+  const rangeLabel = !data.periodStart
+    ? ""
+    : data.period === "day"
+      ? formatDateUz(data.periodStart)
+      : formatDateRangeUz(data.periodStart, data.periodEnd);
 
   return (
     <div className="space-y-8">
@@ -106,9 +115,15 @@ const Content = ({ studentId, period }) => {
 
       {/* Weekly stats */}
       <div className="space-y-3">
-        <h4 className="text-lg font-semibold text-gray-900">
-          {periodTitle} reyting
-        </h4>
+        <div>
+          <h4 className="text-lg font-semibold text-gray-900">
+            {periodTitle} reyting
+          </h4>
+          {/* Qaysi kunlar hisoblangani — jadvaldagi yorliq bilan AYNI */}
+          {rangeLabel && (
+            <p className="text-sm text-gray-500">{rangeLabel}</p>
+          )}
+        </div>
 
         {/* Total score */}
         <div className="flex items-center justify-between bg-green-50 p-4 rounded-lg border border-green-200">

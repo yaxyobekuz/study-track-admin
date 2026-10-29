@@ -1,3 +1,6 @@
+// Utils
+import { toDateInputValue } from "@/shared/utils/date.utils";
+
 /**
  * Reyting davrlari va ball chegaralari — BITTA joyda.
  *
@@ -58,4 +61,66 @@ export const scoreLegend = (period) => {
       label: "Qoniqarli natija",
     },
   ];
+};
+
+/* ───────────────────────────── ANKOR KUN ───────────────────────────── */
+
+/**
+ * Davr qaysi kunga ochilishi — "YYYY-MM-DD" (ISO QIYMAT, format emas:
+ * `<input type="date">` va API parametri uchun, `dates.md` §3).
+ *
+ * ⚠️ Hisob SERVERDA (`getStatisticsPeriodRange`): bu yerda faqat tanlagich
+ * uchun kun suriladi. Oraliqning o'zi — dushanba qaysi kun, oy qachon
+ * tugaydi, kelajak sanasi bugunga tushishi — hech qachon panelda
+ * hisoblanmaydi, aks holda Toshkent va brauzer vaqti boshqa bo'lganda
+ * ekranda bir davr, ma'lumotda boshqasi turardi.
+ *
+ * ⚠️ Kalitlar ketma-ket nolga to'ldirilgan, shuning uchun ularni
+ * TAQQOSLASH uchun sanaga aylantirish shart emas: `"2026-10-29" <=
+ * "2026-11-01"` matn sifatida ham to'g'ri ishlaydi.
+ */
+
+/**
+ * "YYYY-MM-DD" → lokal kalendar kuni.
+ *
+ * ⚠️ `new Date("2026-10-19")` ISHLATILMAYDI: u qiymatni UTC yarim tuni deb
+ * o'qiydi va keyingi `getDate()` lokal kunni qaytarib, manfiy ofsetli
+ * brauzerda sanani bir kunga siljitardi (`date.utils.js` dagi `toDate`
+ * bilan AYNI mulohaza).
+ */
+const fromDateKey = (key) => {
+  const date = new Date(`${String(key || "").slice(0, 10)}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+/** `<input type="month">` qiymati ("2026-10"). */
+export const toMonthValue = (key) => String(key || "").slice(0, 7);
+
+/**
+ * Ankor kunni davr bo'yicha suradi: kun ±1 kun, hafta ±7 kun, oy ±1 oy.
+ *
+ * ⚠️ Oy surilganda kun 1 ga tushiriladi: 31-mart − 1 oy "3-mart" bo'lib
+ * qolardi (fevralda 31-kun yo'q) va "oldingi oy" tugmasi foydalanuvchini
+ * o'sha oyga qaytarib tashlardi.
+ */
+export const shiftDateKey = (key, period, step) => {
+  const date = fromDateKey(key) || new Date();
+
+  if (period === "month") {
+    return toDateInputValue(
+      new Date(date.getFullYear(), date.getMonth() + step, 1),
+    );
+  }
+
+  const days = period === "week" ? 7 : 1;
+  const next = new Date(date);
+  next.setDate(date.getDate() + days * step);
+  return toDateInputValue(next);
+};
+
+/** Tanlagichdagi "joriy davrga qaytish" tugmasining matni. */
+export const CURRENT_PERIOD_LABEL = {
+  day: "Bugun",
+  week: "Bu hafta",
+  month: "Bu oy",
 };

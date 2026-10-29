@@ -19,12 +19,19 @@ import { classesAPI } from "@/features/classes/api/classes.api";
 import {
   scoreColor,
   scoreLegend,
+  shiftDateKey,
   resolvePeriod,
+  toMonthValue,
   STATISTICS_PERIODS,
+  CURRENT_PERIOD_LABEL,
 } from "@/features/statistics/data/statistics.data";
 
 // Utils
-import { formatDateUz, formatDateRangeUz } from "@/shared/utils/date.utils";
+import {
+  formatDateUz,
+  todayInputValue,
+  formatDateRangeUz,
+} from "@/shared/utils/date.utils";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -41,6 +48,8 @@ import {
   Users,
   School,
   Download,
+  ChevronLeft,
+  ChevronRight,
   CalendarDays,
   GraduationCap,
 } from "lucide-react";
@@ -59,12 +68,23 @@ import {
  * yo'ldagi id bo'yicha o'z filialiga tushadi, shuning uchun filialni oldin
  * almashtirish SHART EMAS.
  *
- * ⚠️ DAVR (kunlik / haftalik / oylik) — URL'da (`?period=`), holatda EMAS:
- * profilga kirib "orqaga" qaytilganda tanlov saqlanib qolishi kerak
- * (davomat sahifasidagi filtrlar bilan AYNI qoida). Oraliqni SERVER
- * aytadi (`periodStart` / `periodEnd`) — panel sanani o'zi hisoblamaydi,
- * aks holda ekrandagi davr bilan sanalgan baholar boshqa-boshqa bo'lardi.
+ * ⚠️ DAVR (kunlik / haftalik / oylik) va ANKOR KUN — URL'da (`?period=`,
+ * `?date=`), holatda EMAS: profilga kirib "orqaga" qaytilganda tanlov
+ * saqlanib qolishi kerak (davomat sahifasidagi filtrlar bilan AYNI qoida).
+ *
+ * ⚠️ ORALIQNI SERVER HAL QILADI (`periodStart` / `periodEnd` /
+ * `periodDate`): panel faqat ANKOR KUNNI suradi. Dushanba qaysi kun, oy
+ * qachon tugaydi va kelajak sanasi bugunga tushirilishi — hammasi bitta
+ * joyda (`getStatisticsPeriodRange`), aks holda brauzer va Toshkent vaqti
+ * farq qilganda ekrandagi davr bilan sanalgan baholar mos kelmasdi.
  */
+/** Qiymat o'qilsa — Date, aks holda `null` (yorliq chizilmaydi). */
+const toValidDate = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
 const Statistics = () => {
   const { openModal } = useModal();
   const { can } = usePermissions();
@@ -79,6 +99,8 @@ const Statistics = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const period = resolvePeriod(searchParams.get("period"));
+  // Bo'sh bo'lsa — joriy davr (server bugunni oladi)
+  const dateParam = searchParams.get("date") || "";
 
   // States
   const [classes, setClasses] = useState([]);
@@ -86,7 +108,7 @@ const Statistics = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState("school");
   const [selectedClass, setSelectedClass] = useState(null);
-  // Serverdan kelgan davr oralig'i ({ start, end }) — sarlavha yorlig'i uchun
+  // Serverdan kelgan davr: { start, end, date, isCurrent }
   const [range, setRange] = useState(null);
 
   // Pagination states
@@ -116,6 +138,7 @@ const Statistics = () => {
     setIsLoading(true);
 
     const params = { page: currentPage, limit: 50, period };
+    if (dateParam) params.date = dateParam;
 
     const apiCall =
       viewMode === "school"
@@ -129,6 +152,8 @@ const Statistics = () => {
         setRange({
           start: res.data.data.periodStart,
           end: res.data.data.periodEnd,
+          date: res.data.data.periodDate,
+          isCurrent: res.data.data.isCurrentPeriod,
         });
 
         // Set pagination data
@@ -146,7 +171,7 @@ const Statistics = () => {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [viewMode, selectedClass, currentPage, period]);
+  }, [viewMode, selectedClass, currentPage, period, dateParam]);
 
   // Navigate to page
   const goToPage = useCallback(
@@ -159,16 +184,29 @@ const Statistics = () => {
     [searchParams, setSearchParams],
   );
 
-  // Davr almashtirish — sahifa bilan BIRGA yoziladi: ikki alohida yozuv
+  // Davr va ankor kun — sahifa bilan BIRGA yoziladi: ikki alohida yozuv
   // bo'lsa, oraliq holatda 5-sahifa yangi davr bilan so'ralardi.
-  const changePeriod = useCallback(
-    (value) => {
+  const setPeriodParams = useCallback(
+    (next) => {
       const params = new URLSearchParams(searchParams);
-      params.set("period", value);
+      if (next.period) params.set("period", next.period);
+      // Bo'sh sana — "joriy davr": parametr umuman yozilmaydi
+      if (next.date === "") params.delete("date");
+      else if (next.date) params.set("date", next.date);
       params.set("page", "1");
       setSearchParams(params);
     },
     [searchParams, setSearchParams],
+  );
+
+  const changePeriod = useCallback(
+    (value) => setPeriodParams({ period: value }),
+    [setPeriodParams],
+  );
+
+  const changeDate = useCallback(
+    (value) => setPeriodParams({ date: value }),
+    [setPeriodParams],
   );
 
   // View mode yoki sinf o'zgarganda page'ni 1 ga reset qilish
@@ -185,11 +223,12 @@ const Statistics = () => {
     }
   }, [viewMode, selectedClass, fetchRankings]);
 
-  // O'quvchi statistikasini ko'rsatish — JADVAL BILAN AYNI DAVRDA, aks
-  // holda ro'yxatda bir raqam, oynada boshqasi turardi.
+  // O'quvchi statistikasini ko'rsatish — JADVAL BILAN AYNI DAVRDA va AYNI
+  // KUNDA, aks holda ro'yxatda bir raqam, oynada boshqasi turardi.
   const handleViewStudent = useCallback(
-    (studentId) => openModal("studentStats", { studentId, period }),
-    [openModal, period],
+    (studentId) =>
+      openModal("studentStats", { studentId, period, date: dateParam }),
+    [openModal, period, dateParam],
   );
 
   // O'quvchining to'liq profili
@@ -208,13 +247,32 @@ const Statistics = () => {
   const periodLabel =
     STATISTICS_PERIODS.find((p) => p.value === period)?.label || "";
 
+  // Tanlagichdagi kun: URL'dagi tanlov → serverning normallashtirgani →
+  // bugun. Input har doim to'ldirilgan bo'lishi kerak (bo'sh `value` bilan
+  // u boshqarilmaydigan maydonga aylanadi).
+  const maxDate = todayInputValue();
+  const anchorDate = dateParam || range?.date || maxDate;
+  // "Keyingi" — kelajakka o'tmaydi (server ham bugunga tushiradi).
+  // Kalitlar nolga to'ldirilgan, shuning uchun matn taqqoslash yetarli.
+  const nextDate = shiftDateKey(anchorDate, period, 1);
+  const hasNextPeriod = Boolean(
+    range && !range.isCurrent && nextDate <= maxDate,
+  );
+
   // Davr oralig'i — SERVERDAN. Kunlik davrda boshi va oxiri bitta kun,
   // shuning uchun oraliq emas, sananing o'zi yoziladi.
-  const rangeLabel = !range?.start
+  //
+  // ⚠️ Qiymat o'qilmasa YORLIQ UMUMAN CHIZILMAYDI: `formatDateRangeUz`
+  // bunday holatda "—" qaytaradi va ekranda sababsiz chiziqcha turib
+  // qolardi (masalan server paneldan eski bo'lsa — davr maydonlari hali
+  // yo'q).
+  const rangeStart = toValidDate(range?.start);
+  const rangeEnd = toValidDate(range?.end);
+  const rangeLabel = !rangeStart
     ? ""
     : period === "day"
-      ? formatDateUz(range.start)
-      : formatDateRangeUz(range.start, range.end);
+      ? formatDateUz(rangeStart)
+      : formatDateRangeUz(rangeStart, rangeEnd);
 
   // Excel yuklab olish
   const handleExport = async () => {
@@ -223,19 +281,23 @@ const Statistics = () => {
         viewMode === "class"
           ? { type: "class", classId: selectedClass, period }
           : { type: "school", period };
+      // Tanlangan kun ham ketadi — eksport ekrandagi davr bilan AYNI
+      if (dateParam) params.date = dateParam;
 
       const response = await statisticsAPI.export(params);
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
 
-      // Fayl nomidagi davr server bilan bir xil: "kunlik_" / "haftalik_" / "oylik_"
+      // Fayl nomi server bilan bir xil: davr + ANKOR KUN (joriy davrda u
+      // baribir bugun). Bugungi sana yozilsa, o'tgan hafta va bugungi
+      // hafta fayllari bir xil nom bilan tushardi.
       const prefix = periodLabel.toLowerCase();
-      const today = new Date().toISOString().split("T")[0];
+      const day = range?.date || anchorDate;
       const fileName =
         viewMode === "class"
-          ? `${prefix}_reyting_sinf_${today}.xlsx`
-          : `${prefix}_reyting_maktab_${today}.xlsx`;
+          ? `${prefix}_reyting_sinf_${day}.xlsx`
+          : `${prefix}_reyting_maktab_${day}.xlsx`;
 
       link.setAttribute("download", fileName);
       document.body.appendChild(link);
@@ -266,23 +328,75 @@ const Statistics = () => {
             Davr
           </label>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-            <div className="flex w-full gap-2 sm:gap-4">
-              {STATISTICS_PERIODS.map((item) => (
-                <Button
-                  key={item.value}
-                  className="w-full"
-                  onClick={() => changePeriod(item.value)}
-                  variant={period === item.value ? "default" : "secondary"}
-                >
-                  {item.label}
-                </Button>
-              ))}
-            </div>
+          <div className="flex w-full gap-2 sm:gap-4">
+            {STATISTICS_PERIODS.map((item) => (
+              <Button
+                key={item.value}
+                className="w-full"
+                onClick={() => changePeriod(item.value)}
+                variant={period === item.value ? "default" : "secondary"}
+              >
+                {item.label}
+              </Button>
+            ))}
+          </div>
 
-            {/* Qaysi kunlar sanalgani — serverdan kelgan oraliq */}
+          {/* Qaysi kun / hafta / oy — tanlagich, o'q tugmalari va oraliq */}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              title="Oldingi davr"
+              onClick={() => changeDate(shiftDateKey(anchorDate, period, -1))}
+              className="flex size-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+
+            {/* Oylik davrda kun emas, OY tanlanadi: 31 kundan birini
+                tanlash foydalanuvchiga ortiqcha savol berardi. */}
+            {period === "month" ? (
+              <input
+                type="month"
+                max={toMonthValue(maxDate)}
+                value={toMonthValue(anchorDate)}
+                onChange={(e) =>
+                  e.target.value && changeDate(`${e.target.value}-01`)
+                }
+                className="h-9 rounded-lg border border-gray-200 px-3 text-sm text-gray-700"
+              />
+            ) : (
+              <input
+                type="date"
+                max={maxDate}
+                value={anchorDate}
+                onChange={(e) => e.target.value && changeDate(e.target.value)}
+                className="h-9 rounded-lg border border-gray-200 px-3 text-sm text-gray-700"
+              />
+            )}
+
+            <button
+              type="button"
+              title="Keyingi davr"
+              disabled={!hasNextPeriod}
+              onClick={() => changeDate(nextDate)}
+              className="flex size-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronRight className="size-4" />
+            </button>
+
+            {/* Joriy davrga qaytish — URL'dan sana olib tashlanadi */}
+            {dateParam && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => changeDate("")}
+              >
+                {CURRENT_PERIOD_LABEL[period]}
+              </Button>
+            )}
+
             {rangeLabel && (
-              <p className="flex shrink-0 items-center gap-1.5 text-sm text-gray-500">
+              <p className="flex items-center gap-1.5 text-sm text-gray-500 sm:ml-2">
                 <CalendarDays className="size-4" strokeWidth={1.5} />
                 {rangeLabel}
               </p>
