@@ -7,25 +7,35 @@ import { useState, useEffect } from "react";
 // API
 import { statisticsAPI } from "@/features/statistics/api/statistics.api";
 
+// Data
+import { resolvePeriod } from "@/features/statistics/data/statistics.data";
+
 // Components
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Icons
 import { User, Award, School, BarChart3, Users } from "lucide-react";
 
+/**
+ * O'quvchining bitta davrdagi natijasi.
+ *
+ * ⚠️ DAVRNI OYNANI OCHGAN EKRAN BERADI (`openModal(..., { period })`):
+ * jadvalda "Oylik" turib, oynada haftalik ball chiqsa, ikkala raqam ham
+ * ishonchini yo'qotardi. Davr berilmasa — haftalik (servis sukuti).
+ */
 const StudentStatisticsModal = () => (
   <ResponsiveModal name="studentStats" title="O'quvchi statistikasi">
     <Content />
   </ResponsiveModal>
 );
 
-const Content = ({ studentId }) => {
+const Content = ({ studentId, period }) => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     statisticsAPI
-      .getStudentWeekly(studentId)
+      .getStudentWeekly(studentId, resolvePeriod(period))
       .then((res) => {
         if (res.data.success) {
           setData(res.data.data);
@@ -39,7 +49,7 @@ const Content = ({ studentId }) => {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [studentId]);
+  }, [studentId, period]);
 
   if (isLoading) {
     return (
@@ -58,6 +68,9 @@ const Content = ({ studentId }) => {
   }
 
   const { student, classes, simpleStats, rankings } = data;
+  // Davr nomi SERVERDAN ("Kunlik" / "Haftalik" / "Oylik") — panelda
+  // ikkinchi ro'yxat yozilmaydi.
+  const periodTitle = data.periodTitle || "Haftalik";
 
   return (
     <div className="space-y-8">
@@ -94,7 +107,7 @@ const Content = ({ studentId }) => {
       {/* Weekly stats */}
       <div className="space-y-3">
         <h4 className="text-lg font-semibold text-gray-900">
-          Haftalik reyting
+          {periodTitle} reyting
         </h4>
 
         {/* Total score */}

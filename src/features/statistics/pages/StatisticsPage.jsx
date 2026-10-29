@@ -15,6 +15,17 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { statisticsAPI } from "@/features/statistics/api/statistics.api";
 import { classesAPI } from "@/features/classes/api/classes.api";
 
+// Data
+import {
+  scoreColor,
+  scoreLegend,
+  resolvePeriod,
+  STATISTICS_PERIODS,
+} from "@/features/statistics/data/statistics.data";
+
+// Utils
+import { formatDateUz, formatDateRangeUz } from "@/shared/utils/date.utils";
+
 // Components
 import Card from "@/shared/components/ui/Card";
 import Select from "@/shared/components/ui/select/Select";
@@ -25,7 +36,14 @@ import Pagination from "@/shared/components/ui/Pagination";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 // Icons
-import { Users, GraduationCap, Eye, School, Download } from "lucide-react";
+import {
+  Eye,
+  Users,
+  School,
+  Download,
+  CalendarDays,
+  GraduationCap,
+} from "lucide-react";
 
 /**
  * Haftalik reyting.
@@ -40,6 +58,12 @@ import { Users, GraduationCap, Eye, School, Download } from "lucide-react";
  * ⚠️ Umumiy ("barcha filiallar") ko'rinishida ham ishlaydi: profil so'rovi
  * yo'ldagi id bo'yicha o'z filialiga tushadi, shuning uchun filialni oldin
  * almashtirish SHART EMAS.
+ *
+ * ⚠️ DAVR (kunlik / haftalik / oylik) — URL'da (`?period=`), holatda EMAS:
+ * profilga kirib "orqaga" qaytilganda tanlov saqlanib qolishi kerak
+ * (davomat sahifasidagi filtrlar bilan AYNI qoida). Oraliqni SERVER
+ * aytadi (`periodStart` / `periodEnd`) — panel sanani o'zi hisoblamaydi,
+ * aks holda ekrandagi davr bilan sanalgan baholar boshqa-boshqa bo'lardi.
  */
 const Statistics = () => {
   const { openModal } = useModal();
@@ -54,6 +78,7 @@ const Statistics = () => {
   // Search params
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const period = resolvePeriod(searchParams.get("period"));
 
   // States
   const [classes, setClasses] = useState([]);
@@ -61,6 +86,8 @@ const Statistics = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState("school");
   const [selectedClass, setSelectedClass] = useState(null);
+  // Serverdan kelgan davr oralig'i ({ start, end }) — sarlavha yorlig'i uchun
+  const [range, setRange] = useState(null);
 
   // Pagination states
   const [hasNextPage, setHasNextPage] = useState(false);
@@ -88,7 +115,7 @@ const Statistics = () => {
   const fetchRankings = useCallback(() => {
     setIsLoading(true);
 
-    const params = { page: currentPage, limit: 50 };
+    const params = { page: currentPage, limit: 50, period };
 
     const apiCall =
       viewMode === "school"
@@ -99,6 +126,10 @@ const Statistics = () => {
       .then((res) => {
         if (!res.data.success) return;
         setRankings(res.data.data.rankings || []);
+        setRange({
+          start: res.data.data.periodStart,
+          end: res.data.data.periodEnd,
+        });
 
         // Set pagination data
         if (res.data.pagination) {
@@ -115,7 +146,7 @@ const Statistics = () => {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [viewMode, selectedClass, currentPage]);
+  }, [viewMode, selectedClass, currentPage, period]);
 
   // Navigate to page
   const goToPage = useCallback(
@@ -123,6 +154,18 @@ const Statistics = () => {
       if (page < 1) return;
       const params = new URLSearchParams(searchParams);
       params.set("page", page.toString());
+      setSearchParams(params);
+    },
+    [searchParams, setSearchParams],
+  );
+
+  // Davr almashtirish — sahifa bilan BIRGA yoziladi: ikki alohida yozuv
+  // bo'lsa, oraliq holatda 5-sahifa yangi davr bilan so'ralardi.
+  const changePeriod = useCallback(
+    (value) => {
+      const params = new URLSearchParams(searchParams);
+      params.set("period", value);
+      params.set("page", "1");
       setSearchParams(params);
     },
     [searchParams, setSearchParams],
@@ -142,10 +185,11 @@ const Statistics = () => {
     }
   }, [viewMode, selectedClass, fetchRankings]);
 
-  // O'quvchi statistikasini ko'rsatish (haftalik oyna)
+  // O'quvchi statistikasini ko'rsatish — JADVAL BILAN AYNI DAVRDA, aks
+  // holda ro'yxatda bir raqam, oynada boshqasi turardi.
   const handleViewStudent = useCallback(
-    (studentId) => openModal("studentStats", { studentId }),
-    [openModal],
+    (studentId) => openModal("studentStats", { studentId, period }),
+    [openModal, period],
   );
 
   // O'quvchining to'liq profili
@@ -160,23 +204,38 @@ const Statistics = () => {
     label: c.name,
   }));
 
+  // Tanlangan davrning nomi ("Kunlik" / "Haftalik" / "Oylik")
+  const periodLabel =
+    STATISTICS_PERIODS.find((p) => p.value === period)?.label || "";
+
+  // Davr oralig'i — SERVERDAN. Kunlik davrda boshi va oxiri bitta kun,
+  // shuning uchun oraliq emas, sananing o'zi yoziladi.
+  const rangeLabel = !range?.start
+    ? ""
+    : period === "day"
+      ? formatDateUz(range.start)
+      : formatDateRangeUz(range.start, range.end);
+
   // Excel yuklab olish
   const handleExport = async () => {
     try {
       const params =
         viewMode === "class"
-          ? { type: "class", classId: selectedClass }
-          : { type: "school" };
+          ? { type: "class", classId: selectedClass, period }
+          : { type: "school", period };
 
       const response = await statisticsAPI.export(params);
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
 
+      // Fayl nomidagi davr server bilan bir xil: "kunlik_" / "haftalik_" / "oylik_"
+      const prefix = periodLabel.toLowerCase();
+      const today = new Date().toISOString().split("T")[0];
       const fileName =
         viewMode === "class"
-          ? `haftalik_reyting_sinf_${new Date().toISOString().split("T")[0]}.xlsx`
-          : `haftalik_reyting_maktab_${new Date().toISOString().split("T")[0]}.xlsx`;
+          ? `${prefix}_reyting_sinf_${today}.xlsx`
+          : `${prefix}_reyting_maktab_${today}.xlsx`;
 
       link.setAttribute("download", fileName);
       document.body.appendChild(link);
@@ -200,7 +259,37 @@ const Statistics = () => {
   return (
     <div>
       {/* Controls */}
-      <Card className="mb-6">
+      <Card className="mb-6 space-y-4">
+        {/* Davr — kunlik / haftalik / oylik */}
+        <div className="w-full">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Davr
+          </label>
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex w-full gap-2 sm:gap-4">
+              {STATISTICS_PERIODS.map((item) => (
+                <Button
+                  key={item.value}
+                  className="w-full"
+                  onClick={() => changePeriod(item.value)}
+                  variant={period === item.value ? "default" : "secondary"}
+                >
+                  {item.label}
+                </Button>
+              ))}
+            </div>
+
+            {/* Qaysi kunlar sanalgani — serverdan kelgan oraliq */}
+            {rangeLabel && (
+              <p className="flex shrink-0 items-center gap-1.5 text-sm text-gray-500">
+                <CalendarDays className="size-4" strokeWidth={1.5} />
+                {rangeLabel}
+              </p>
+            )}
+          </div>
+        </div>
+
         <div className="flex flex-col gap-4 md:flex-row">
           {/* View Mode Toggle */}
           <div className="w-full">
@@ -256,7 +345,11 @@ const Statistics = () => {
           <div className="text-center py-12">
             <GraduationCap className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600">
-              Joriy haftada hech qanday natija topilmadi
+              {period === "day"
+                ? "Bugun hech qanday natija topilmadi"
+                : period === "month"
+                  ? "Joriy oyda hech qanday natija topilmadi"
+                  : "Joriy haftada hech qanday natija topilmadi"}
             </p>
           </div>
         ) : (
@@ -325,16 +418,14 @@ const Statistics = () => {
                       </td>
                     )}
 
-                    {/* Total Sum */}
+                    {/* Total Sum — chegara TANLANGAN DAVRNIKI (legend bilan
+                        AYNI manbadan: `statistics.data.js`) */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`font-semibold ${
-                          item.totalSum >= 45
-                            ? "text-green-600"
-                            : item.totalSum >= 35
-                              ? "text-blue-600"
-                              : "text-orange-600"
-                        }`}
+                        className={cn(
+                          "font-semibold",
+                          scoreColor(period, item.totalSum),
+                        )}
                       >
                         {item.totalSum}
                       </span>
@@ -348,12 +439,12 @@ const Statistics = () => {
                     {/* Actions */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       {/* ⚠️ Tugma bosilishi QATORGA TARQALMAYDI: aks holda
-                          haftalik oyna bilan birga profil ham ochilib,
+                          natija oynasi bilan birga profil ham ochilib,
                           oyna darhol boshqa sahifada qolib ketardi. */}
                       <Button
                         variant="secondary"
                         size="sm"
-                        title="Haftalik natijasi"
+                        title={`${periodLabel} natijasi`}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleViewStudent(item.student.id);
@@ -386,28 +477,17 @@ const Statistics = () => {
         )}
       </div>
 
-      {/* Legend */}
-      <Card className="flex flex-wrap gap-6 text-sm mt-6">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-          <span className="text-gray-700">
-            <strong>45+</strong> - A'lo natija
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-          <span className="text-gray-700">
-            <strong>35-44</strong> - Yaxshi natija
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-          <span className="text-gray-700">
-            <strong>35 dan past</strong> - Qoniqarli natija
-          </span>
-        </div>
+      {/* Legend — chegaralar DAVRGA qarab o'zgaradi (bir kunda 45 ball
+          imkonsiz, bir oyda esa u past natija) */}
+      <Card className="flex flex-wrap items-center gap-6 text-sm mt-6">
+        {scoreLegend(period).map((item) => (
+          <div key={item.range} className="flex items-center gap-2">
+            <div className={cn("size-3 rounded-full", item.dot)}></div>
+            <span className="text-gray-700">
+              <strong>{item.range}</strong> - {item.label}
+            </span>
+          </div>
+        ))}
 
         {/* Export Button */}
         <Button

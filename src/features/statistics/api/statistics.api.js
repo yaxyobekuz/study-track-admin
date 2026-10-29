@@ -1,8 +1,18 @@
 import http from "@/shared/api/http";
 
+/**
+ * Reyting yo'llari.
+ *
+ * ⚠️ Yo'llardagi "weekly" — TARIXIY NOM, davrni esa `period` so'rov
+ * parametri aytadi ("day" | "week" | "month"). Yo'l nomi o'zgartirilmadi:
+ * ayni endpointlarni o'quvchi paneli, bot va monitor ham o'qiydi va ular
+ * `period` yubormaganda avvalgidek haftalik javobni oladi.
+ */
 export const statisticsAPI = {
-  getStudentWeekly: (studentId) =>
-    http.get(`/statistics/weekly/current/${studentId}`),
+  getStudentWeekly: (studentId, period) =>
+    http.get(`/statistics/weekly/current/${studentId}`, {
+      params: period ? { period } : undefined,
+    }),
   getClassRankings: (classId, params) =>
     http.get(`/statistics/weekly/class/${classId}/rankings`, { params }),
   getSchoolRankings: (params) =>
