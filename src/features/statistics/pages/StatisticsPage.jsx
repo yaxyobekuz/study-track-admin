@@ -6,9 +6,10 @@ import { cn } from "@/shared/utils/cn";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
+import usePermissions from "@/shared/hooks/usePermissions";
 
 // Router
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 // API
 import { statisticsAPI } from "@/features/statistics/api/statistics.api";
@@ -26,9 +27,29 @@ import { useState, useEffect, useCallback, useRef } from "react";
 // Icons
 import { Users, GraduationCap, Eye, School, Download } from "lucide-react";
 
+/**
+ * Haftalik reyting.
+ *
+ * ⚠️ IKKI KIRISH NUQTASI, IKKI XIL SAVOL: ko'z tugmasi — "bu hafta qancha
+ * ball oldi" (haftalik oyna), qatorning O'ZI esa o'quvchining TO'LIQ
+ * profilini ochadi (`/users/:id` — davomat kunlik sahifasi va bosh
+ * sahifadagi "Eng yaxshilar" kartasi bilan AYNI naqsh). Reytingda ismni
+ * ko'rgan odam "bu kim" degan savolga shu yerdan javob olishi kerak,
+ * o'quvchini qaytadan "O'quvchilar" bo'limidan qidirmasdan.
+ *
+ * ⚠️ Umumiy ("barcha filiallar") ko'rinishida ham ishlaydi: profil so'rovi
+ * yo'ldagi id bo'yicha o'z filialiga tushadi, shuning uchun filialni oldin
+ * almashtirish SHART EMAS.
+ */
 const Statistics = () => {
   const { openModal } = useModal();
+  const { can } = usePermissions();
+  const navigate = useNavigate();
   const contentRef = useRef(null);
+
+  // Profil `GET /users/:id` ga tayanadi — ruxsatsiz qator bosilmaydi
+  // (403 o'rniga bosilmaydigan qator).
+  const canOpenProfile = can("users.view");
 
   // Search params
   const [searchParams, setSearchParams] = useSearchParams();
@@ -121,10 +142,16 @@ const Statistics = () => {
     }
   }, [viewMode, selectedClass, fetchRankings]);
 
-  // O'quvchi statistikasini ko'rsatish
+  // O'quvchi statistikasini ko'rsatish (haftalik oyna)
   const handleViewStudent = useCallback(
     (studentId) => openModal("studentStats", { studentId }),
     [openModal],
+  );
+
+  // O'quvchining to'liq profili
+  const openProfile = useCallback(
+    (studentId) => navigate(`/users/${studentId}`),
+    [navigate],
   );
 
   // Sinf tanlash uchun options
@@ -250,7 +277,20 @@ const Statistics = () => {
                 {rankings.map((item) => (
                   <tr
                     key={item.student.id}
-                    className="hover:bg-gray-50 transition-colors"
+                    title={
+                      canOpenProfile
+                        ? `${item.student.fullName} — profilni ochish`
+                        : undefined
+                    }
+                    onClick={
+                      canOpenProfile
+                        ? () => openProfile(item.student.id)
+                        : undefined
+                    }
+                    className={cn(
+                      "group transition-colors hover:bg-gray-50",
+                      canOpenProfile && "cursor-pointer",
+                    )}
                   >
                     {/* Rank */}
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -264,9 +304,16 @@ const Statistics = () => {
                       </div>
                     </td>
 
-                    {/* Student Name */}
+                    {/* Student Name — qatorni bosish profilni ochadi */}
                     <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                      {item.student.fullName}
+                      <span
+                        className={cn(
+                          canOpenProfile &&
+                            "group-hover:text-blue-600 group-hover:underline",
+                        )}
+                      >
+                        {item.student.fullName}
+                      </span>
                     </td>
 
                     {/* Classes (faqat maktab ko'rinishida) */}
@@ -300,10 +347,17 @@ const Statistics = () => {
 
                     {/* Actions */}
                     <td className="px-6 py-4 whitespace-nowrap">
+                      {/* ⚠️ Tugma bosilishi QATORGA TARQALMAYDI: aks holda
+                          haftalik oyna bilan birga profil ham ochilib,
+                          oyna darhol boshqa sahifada qolib ketardi. */}
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => handleViewStudent(item.student.id)}
+                        title="Haftalik natijasi"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewStudent(item.student.id);
+                        }}
                         className="flex items-center gap-2"
                       >
                         <Eye className="size-5" strokeWidth={1.5} />
