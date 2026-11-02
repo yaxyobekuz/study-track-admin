@@ -332,6 +332,14 @@ const Content = ({ close, isLoading, setIsLoading }) => {
           <li>
             • Yuklash shu fanning mavjud mavzular ro'yxatini almashtiradi
           </li>
+          {/* Mavzuni platformada tahrirlash yo'li yo'q: tuzatish yo'li
+              aynan shu — yuklab olish → Excel'da tahrirlash → qayta
+              yuklash. Eksport fayli shu shaklda keladi. */}
+          <li>
+            • Mavjud mavzularni tuzatish uchun avval <b>Yuklab olish</b> ni
+            bosing — fayl aynan shu shaklda keladi, tahrirlab qaytadan
+            yuklang
+          </li>
         </ul>
       </div>
 

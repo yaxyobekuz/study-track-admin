@@ -16,8 +16,17 @@ import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 import { useSubjectTopics } from "@/features/subjects/queries/topics.queries";
 import { useDeleteSubjectTopics } from "@/features/subjects/queries/topics.mutations";
 
+// API
+import { topicsAPI } from "@/features/subjects/api/topics.api";
+
+// Utils
+import {
+  downloadBlob,
+  readBlobErrorMessage,
+} from "@/shared/utils/download.utils";
+
 // Icons
-import { Upload, Trash2, BookOpen, Users } from "lucide-react";
+import { Upload, Download, Trash2, BookOpen, Users } from "lucide-react";
 
 const Topics = () => {
   const navigate = useNavigate();
@@ -35,6 +44,8 @@ const Topics = () => {
 
   const { mutate: deleteSubjectTopics } = useDeleteSubjectTopics();
 
+  const [exporting, setExporting] = useState(false);
+
   // Daraja va Kitob ustunlari faqat fanning faylida bo'lsa chiqadi: eski
   // shablon (Mavzu nomi, Tavsif) bilan yuklangan fanda ular har qatorda
   // "—" bo'lib, jadvalni bo'sh ustunlarga to'ldirardi.
@@ -48,6 +59,31 @@ const Topics = () => {
       localStorage.removeItem("topics_selectedSubject");
     }
   }, [selectedSubject]);
+
+  /**
+   * MAVZULARNI EXCEL'GA YUKLAB OLISH.
+   *
+   * ⚠️ Fayl — QAYTA YUKLASH SHABLONI, hisobot emas: ustunlar va varaq
+   * nomlari "Mavzular yuklash" kutadigan shaklda. Platformada mavzuni
+   * tahrirlash yo'li yo'q, shuning uchun tuzatish yo'li aynan shu:
+   * yuklab olish → Excel'da tahrirlash → qayta yuklash.
+   *
+   * Fan tanlanmagan bo'lsa — mavzusi bor HAMMA fan (har biri alohida
+   * varaqda), ya'ni butun rejaning zaxira nusxasi.
+   */
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const response = await topicsAPI.export(selectedSubject || null);
+      downloadBlob(response, "mavzular.xlsx");
+    } catch (error) {
+      toast.error(
+        await readBlobErrorMessage(error, "Mavzularni yuklab bo'lmadi"),
+      );
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleDeleteAllTopics = () => {
     if (!selectedSubject) return;
@@ -89,6 +125,26 @@ const Topics = () => {
           </div>
 
           <div className="flex gap-3 items-end">
+            {/* Fan tanlangan bo'lsa — o'sha fan, aks holda mavzusi bor
+                hamma fan. Mavzusi yo'q fanda tugma o'chiq: server ham rad
+                etadi, lekin bo'sh fayl kutib turish ortiqcha. */}
+            <Button
+              className="px-5"
+              variant="outline"
+              disabled={
+                exporting ||
+                Boolean(selectedSubject && (loading || topics.length === 0))
+              }
+              onClick={handleExport}
+            >
+              <Download className="size-4 mr-2" strokeWidth={1.5} />
+              {exporting
+                ? "Tayyorlanmoqda..."
+                : selectedSubject
+                  ? "Yuklab olish"
+                  : "Hammasini yuklab olish"}
+            </Button>
+
             <Button
               className="px-5"
               variant="default"

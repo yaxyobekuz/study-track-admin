@@ -13,5 +13,19 @@ export const topicsAPI = {
     });
   },
   getBySubject: (subjectId) => http.get(`/topics/subject/${subjectId}`),
+
+  /**
+   * Mavzular rejasini Excel'ga yuklab olish.
+   *
+   * ⚠️ Fayl — QAYTA YUKLASH SHABLONI (`upload` bilan AYNI ustunlar va
+   * varaq nomlari): platformada mavzuni tahrirlash yo'li yo'q, ro'yxat
+   * faqat fayl bilan almashtiriladi. `subjectId` berilmasa — mavzusi bor
+   * hamma fan, har biri alohida varaqda.
+   */
+  export: (subjectId = null) =>
+    http.get("/topics/export", {
+      params: subjectId ? { subjectId } : undefined,
+      responseType: "blob",
+    }),
   deleteBySubject: (subjectId) => http.delete(`/topics/subject/${subjectId}`),
 };
