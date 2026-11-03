@@ -52,6 +52,8 @@ export const MODAL_NAMES = [
   "editStaffSubjects",
   "editUserRoles",
   "attendanceDay",
+  // Xodim davomatini bekor qilish — kun "belgilanmagan" bo'lib qoladi
+  "cancelAttendance",
   "editStudentAttendance",
   "editUserPhone",
 

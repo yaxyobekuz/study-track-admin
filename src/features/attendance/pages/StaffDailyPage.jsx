@@ -15,6 +15,7 @@ import { attendanceAPI } from "../api/attendance.api";
 import Select from "@/shared/components/ui/select/Select";
 import AttendanceTodayTable from "../components/AttendanceTodayTable";
 import AttendanceSummaryCards from "../components/AttendanceSummaryCards";
+import CancelAttendanceModal from "../components/CancelAttendanceModal";
 
 // Data
 import {
@@ -91,8 +92,11 @@ const StaffDailyPage = () => {
       {isLoading ? (
         <div className="py-8 text-center text-gray-500">Yuklanmoqda...</div>
       ) : (
-        <AttendanceTodayTable rows={filteredRows} />
+        <AttendanceTodayTable rows={filteredRows} date={date} />
       )}
+
+      {/* Davomatni bekor qilish — kun "belgilanmagan" holatiga qaytadi */}
+      <CancelAttendanceModal />
     </div>
   );
 };

@@ -10,6 +10,10 @@ export const attendanceAPI = {
   // Kelish/ketish vaqtini qo'lda tahrirlash (ketishni o'chirsa baho ochiladi)
   updateTimes: (userId, data) =>
     http.patch(`/attendance/user/${userId}/times`, data),
+  // Kunni BEKOR QILISH — davomat "belgilanmagan" bo'lib qoladi (ish vaqti,
+  // kelmagan kun ayirmasi va o'sha kungi jarima ham yo'qoladi)
+  cancelAttendance: (userId, data) =>
+    http.post(`/attendance/user/${userId}/cancel`, data),
   getAllRecords: (params) => http.get("/attendance", { params }),
   getUserMonthRecords: (userId, month, year) =>
     http.get(`/attendance/user/${userId}`, { params: { month, year } }),

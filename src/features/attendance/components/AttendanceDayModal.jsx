@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Icons
-import { Pencil } from "lucide-react";
+import { Ban, Pencil } from "lucide-react";
 
 // Components
 import AttendanceStatusPill from "./AttendanceStatusPill";
@@ -14,6 +14,8 @@ import Input from "@/shared/components/ui/input/Input";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 
 // Hooks
+import useAuth from "@/shared/hooks/useAuth";
+import useModal from "@/shared/hooks/useModal";
 import usePermissions from "@/shared/hooks/usePermissions";
 import { useUpdateAttendanceTimes } from "../queries/attendance.mutations";
 
@@ -108,7 +110,17 @@ const AttendanceDayModal = () => (
 const Content = ({ close, record, variant = "staff", user }) => {
   const isStaff = variant === "staff";
   const { can } = usePermissions();
+  const { user: me } = useAuth();
+  const { openModal } = useModal();
   const canEdit = isStaff && Boolean(user?.id) && can("attendance.mark");
+  // ⚠️ `attendance.mark` YETMAYDI va O'ZINIKI bo'lmasligi kerak: bekor
+  // qilish kunni butunlay o'chiradi va o'sha kungi jarimani ham qaytaradi
+  // (server bilan AYNI shart — oyna faqat tugmani yashiradi).
+  const canCancel =
+    isStaff &&
+    Boolean(user?.id) &&
+    user.id !== me?.id &&
+    can("attendance.cancel");
 
   const [editing, setEditing] = useState(false);
   const [checkInVal, setCheckInVal] = useState(() => toTimeInput(record?.checkIn));
@@ -305,26 +317,52 @@ const Content = ({ close, record, variant = "staff", user }) => {
           </div>
         </div>
       ) : (
-        <div className="flex gap-2">
-          {canEdit && (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            {canEdit && (
+              <Button
+                type="button"
+                onClick={() => setEditing(true)}
+                variant="outline"
+                className="flex-1"
+              >
+                <Pencil className="size-4" />
+                Vaqtlarni tahrirlash
+              </Button>
+            )}
             <Button
               type="button"
-              onClick={() => setEditing(true)}
-              variant="outline"
-              className="flex-1"
+              onClick={close}
+              variant="secondary"
+              className={canEdit ? "flex-1" : "w-full xs:ml-auto xs:w-32"}
             >
-              <Pencil className="size-4" />
-              Vaqtlarni tahrirlash
+              Yopish
+            </Button>
+          </div>
+
+          {/* ⚠️ BEKOR QILISH — tahrirlash EMAS: kun butunlay o'chadi va
+              "belgilanmagan" bo'lib qoladi. Shuning uchun u alohida
+              qatorda turadi va o'z oynasida sabab so'raydi. */}
+          {canCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full text-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={() => {
+                close();
+                openModal("cancelAttendance", {
+                  user,
+                  date: record.date,
+                  status: record.status,
+                  checkIn: record.checkIn,
+                  checkOut: record.checkOut,
+                });
+              }}
+            >
+              <Ban className="size-4" />
+              Davomatni bekor qilish
             </Button>
           )}
-          <Button
-            type="button"
-            onClick={close}
-            variant="secondary"
-            className={canEdit ? "flex-1" : "w-full xs:ml-auto xs:w-32"}
-          >
-            Yopish
-          </Button>
         </div>
       )}
     </div>

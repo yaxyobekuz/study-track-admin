@@ -96,3 +96,23 @@ export const useUpdateAttendanceTimes = () => {
     },
   });
 };
+
+/**
+ * XODIM DAVOMATINI BEKOR QILISH — kun "belgilanmagan" bo'lib qoladi.
+ *
+ * ⚠️ Vaqtni tahrirlash EMAS: qator butunlay o'chadi, ya'ni ish vaqti,
+ * kelmagan kun ayirmasi va o'sha kungi davomat jarimasi ham yo'qoladi.
+ * Shuning uchun davomatga tayanadigan HAMMA so'rov eskiradi — kunlik
+ * ro'yxat, xodimning oylik paneli va hisobot foizlari.
+ */
+export const useCancelAttendance = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, data }) =>
+      attendanceAPI.cancelAttendance(userId, data).then((r) => r.data.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: attendanceKeys.all });
+      qc.invalidateQueries({ queryKey: attendanceReportsKeys.all });
+    },
+  });
+};

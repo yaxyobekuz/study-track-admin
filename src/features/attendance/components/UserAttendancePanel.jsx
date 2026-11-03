@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import Card from "@/shared/components/ui/Card";
 import AttendanceCalendarView from "./AttendanceCalendarView";
 import AttendanceDayModal from "./AttendanceDayModal";
+import CancelAttendanceModal from "./CancelAttendanceModal";
 import AttendanceMonthNav from "./AttendanceMonthNav";
 import AttendanceRecordRow from "./AttendanceRecordRow";
 import AttendanceSummaryStats from "./AttendanceSummaryStats";
@@ -167,6 +168,8 @@ const UserAttendancePanel = ({
       )}
 
       <AttendanceDayModal />
+      {/* Kunlik oynadagi "Davomatni bekor qilish" shu yerda ochiladi */}
+      <CancelAttendanceModal />
     </div>
   );
 };
