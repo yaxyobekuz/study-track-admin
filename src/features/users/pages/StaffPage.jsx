@@ -32,6 +32,12 @@ import { WORK_TIME_SOURCE } from "@/features/attendance/data/attendance.data";
 const WorkTimeCell = ({ schedule }) => {
   const { workStartTime, workEndTime, source } = schedule ?? {};
 
+  // ⚠️ "Ish vaqti yo'q" — QAROR, "—" esa to'ldirilmagan ma'lumot. Ikkalasi
+  // bir xil ko'rinsa, admin qarorni bo'shliq deb o'ylab to'ldirib qo'yardi.
+  if (source === WORK_TIME_SOURCE.NONE) {
+    return <span className="text-gray-500">Ish vaqti yo&apos;q</span>;
+  }
+
   if (!workStartTime || !workEndTime) return "—";
 
   return (

@@ -80,6 +80,8 @@ const LocationValue = ({ status, distance }) => {
 const getExpectedWindow = (user, date) => {
   const schedule = user?.effectiveSchedule;
 
+  if (schedule?.source === WORK_TIME_SOURCE.NONE) return "Ish vaqti yo'q";
+
   if (schedule?.source === WORK_TIME_SOURCE.SCHEDULE) {
     const day = new Date(date).getUTCDay();
     const window = schedule.byDay?.[day];

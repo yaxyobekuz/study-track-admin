@@ -231,6 +231,11 @@ export const CHECKOUT_REASON_MIN = 5;
 export const WORK_TIME_SOURCE = {
   MANUAL: "manual",
   SCHEDULE: "schedule",
+  // ISH VAQTI YO'Q — xodimdan davomat umuman talab qilinmaydi.
+  // ⚠️ `MANUAL` + bo'sh ish kunlari buni BERMAYDI: server bo'sh ro'yxatni
+  // "belgilanmagan" deb o'qib Du–Ju ga qaytaradi (roldan meros shu bilan
+  // ishlaydi). "Ish vaqti yo'q" esa qaror, bo'shliq emas.
+  NONE: "none",
 };
 
 export const WORK_DAYS_OPTIONS = [

@@ -27,23 +27,31 @@ const isTeacher = (user) =>
   user.role === "teacher" || (user.extraRoles ?? []).includes("teacher");
 
 /**
- * Ish vaqti UCH rejimdan birida bo'ladi va ular BIR-BIRINI istisno qiladi:
+ * Ish vaqti TO'RT rejimdan birida bo'ladi va ular BIR-BIRINI istisno qiladi:
  *
  *   role     — rol standarti (hech narsa kiritilmagan)
  *   custom   — shu xodimga qo'lda kiritilgan vaqt
  *   schedule — DARS JADVALIDAN hisoblanadi (faqat o'qituvchi)
+ *   none     — ISH VAQTI YO'Q: davomat umuman talab qilinmaydi
  *
  * ⚠️ Rejimlar radio bilan tanlanadi, checkbox bilan EMAS: "maxsus jadval" va
  * "dars jadvalidan" bir vaqtda yoqilsa, qaysi biri amal qilishini ekrandan
  * o'qib bo'lmasdi.
+ *
+ * ⚠️ `none` ALOHIDA REJIM, "maxsus jadval + bo'sh ish kunlari" EMAS: server
+ * bo'sh ish kunlarini "belgilanmagan" deb o'qib Du–Ju ga qaytaradi (roldan
+ * meros aynan shu bilan ishlaydi). Shuning uchun hamma kunni olib tashlash
+ * bilan ish vaqtini bekor qilib bo'lmasdi.
  */
 const MODES = {
   ROLE: "role",
   CUSTOM: "custom",
   SCHEDULE: "schedule",
+  NONE: "none",
 };
 
 const resolveInitialMode = (user) => {
+  if (user.workTimeSource === WORK_TIME_SOURCE.NONE) return MODES.NONE;
   if (user.workTimeSource === WORK_TIME_SOURCE.SCHEDULE) return MODES.SCHEDULE;
   if (user.workStartTime && user.workEndTime) return MODES.CUSTOM;
   return MODES.ROLE;
@@ -114,6 +122,12 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
   // xodimni "dars jadvalidan, lekin qo'lda kiritilgan vaqt bilan" degan
   // ikki manbali holatda qoldirardi.
   const buildPayload = () => {
+    // ⚠️ Qo'lda kiritilgan vaqtlarga TEGILMAYDI (`schedule` bilan AYNI):
+    // rejim qaytarilganda eski vaqtlar joyida turishi kerak.
+    if (state.mode === MODES.NONE) {
+      return { workTimeSource: WORK_TIME_SOURCE.NONE };
+    }
+
     if (state.mode === MODES.SCHEDULE) {
       // Qo'lda kiritilgan vaqtlarga TEGILMAYDI: rejim qaytarilganda ular
       // joyida turishi kerak (server ham shunday ishlaydi).
@@ -193,7 +207,24 @@ const Content = ({ close, isLoading, setIsLoading, ...user }) => {
             description="Kelish — kunning birinchi darsidan 10 daqiqa oldin, ketish — oxirgi darsi tugagach. Kechikish kelish vaqtidan sanaladi. Darsi yo'q kun ish kuni sanalmaydi."
           />
         )}
+
+        <ModeOption
+          value={MODES.NONE}
+          current={state.mode}
+          onSelect={(mode) => setField("mode", mode)}
+          title="Ish vaqti yo'q"
+          description="Xodimdan davomat umuman talab qilinmaydi."
+        />
       </div>
+
+      {state.mode === MODES.NONE && (
+        <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
+          Bu xodimga kechqurun &quot;kelmadi&quot; yozilmaydi, kechikish va
+          erta ketish jarimasi hisoblanmaydi, oylikdan kelmagan kun uchun
+          ayirma ham olinmaydi. Davomatni qo&apos;lda belgilash va
+          &quot;Men keldim&quot; tugmasi ochiq qoladi.
+        </p>
+      )}
 
       {state.mode === MODES.SCHEDULE && (
         <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-700">

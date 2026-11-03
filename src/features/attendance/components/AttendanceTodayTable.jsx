@@ -10,6 +10,7 @@ import {
   STATUS_COLORS,
   STATUS_LABELS,
   LOCATION_STATUS_COLORS,
+  WORK_TIME_SOURCE,
   buildRoleLabelMap,
   locationSummary,
   formatDistance,
@@ -80,9 +81,12 @@ const AttendanceTodayTable = ({ rows, date }) => {
                 {roleLabelMap[row.user.role] || row.user.role}
               </td>
               <td className="px-4 py-3 text-gray-700 text-xs">
-                {row.expectedStart && row.expectedEnd
-                  ? `${row.expectedStart}–${row.expectedEnd}`
-                  : "-"}
+                {/* ⚠️ "Ish vaqti yo'q" — qaror, "-" esa vaqt topilmagani */}
+                {row.scheduleSource === WORK_TIME_SOURCE.NONE
+                  ? "Ish vaqti yo'q"
+                  : row.expectedStart && row.expectedEnd
+                    ? `${row.expectedStart}–${row.expectedEnd}`
+                    : "-"}
                 {/* Dars jadvalidagi o'qituvchi: kutilgan vaqt — KELISH
                     (birinchi darsdan oldin), darsning o'zi alohida */}
                 {row.firstLessonTime && (

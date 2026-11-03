@@ -109,8 +109,14 @@ const StaffMainTab = ({ user }) => {
   // Ish vaqti dars jadvalidan olinadimi — bu boshqa ikki rejimni ISTISNO
   // qiladi, shuning uchun eng oldin tekshiriladi.
   const fromLessons = user.workTimeSource === WORK_TIME_SOURCE.SCHEDULE;
+  // ISH VAQTI YO'Q — davomat umuman talab qilinmaydi. ⚠️ Qolgan ikki
+  // rejimdan OLDIN tekshiriladi: qo'lda kiritilgan vaqtlar o'chirilmaydi
+  // (rejim qaytarilsa joyida tursin), ya'ni ular bu yerda ko'rinib qolardi.
+  const noWorkTime = user.workTimeSource === WORK_TIME_SOURCE.NONE;
   const hasCustomSchedule =
-    !fromLessons && Boolean(user.workStartTime && user.workEndTime);
+    !fromLessons &&
+    !noWorkTime &&
+    Boolean(user.workStartTime && user.workEndTime);
 
   // Dars jadvalidan hisoblangan oyna serverdan tayyor keladi
   // (`effectiveSchedule`): panel uni qayta hisoblamaydi, aks holda davomat
@@ -150,7 +156,13 @@ const StaffMainTab = ({ user }) => {
           canEdit={canManage}
           onEdit={() => openModal("editWorkSchedule", user)}
         >
-          {fromLessons ? (
+          {noWorkTime ? (
+            <p className="text-sm text-gray-500">
+              Ish vaqti yo&apos;q — bu xodimdan davomat talab qilinmaydi:
+              kechqurun &quot;kelmadi&quot; yozilmaydi, kechikish jarimasi va
+              oylikdan kelmagan kun ayirmasi ham hisoblanmaydi.
+            </p>
+          ) : fromLessons ? (
             <LessonScheduleView schedule={lessonSchedule} />
           ) : hasCustomSchedule ? (
             <div className="space-y-4">
