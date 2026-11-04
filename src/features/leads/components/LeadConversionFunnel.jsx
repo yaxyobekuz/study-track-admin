@@ -1,99 +1,108 @@
-// Tanstack Query
+// TanStack Query
 import { useQuery } from "@tanstack/react-query";
-
-// API
-import { leadsAPI } from "@/features/leads/api/leads.api";
-
-// Data
-import {
-  leadStatusLabels,
-  leadStatusChartColors,
-} from "@/features/leads/data/leads.data";
 
 // Components
 import Card from "@/shared/components/ui/Card";
 
-function buildParams(dateParams) {
-  if (!dateParams) return {};
-  if (dateParams.startDate || dateParams.endDate) {
-    const p = {};
-    if (dateParams.startDate) p.startDate = dateParams.startDate;
-    if (dateParams.endDate) p.endDate = dateParams.endDate;
-    return p;
-  }
-  if (dateParams.period) {
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - Number(dateParams.period));
-    return { startDate: startDate.toISOString().split("T")[0] };
-  }
-  return {};
-}
+// Utils
+import { cn } from "@/shared/utils/cn";
 
+// Data & queries
+import { leadStatusChartColors } from "../data/leads.data";
+import { leadsQueries } from "../queries/leads.queries";
+
+/**
+ * QABUL FUNNELI — 6 pog'ona.
+ *
+ * ⚠️ HAR POG'ONADA "YETGANLAR" TURADI, o'sha pog'onada TURGANLAR emas.
+ * Ilgari funnel joriy holatdan hisoblanardi: to'lov qilgan bola
+ * "keldi" da sanalmay qolar va har pog'ona faqat o'sha yerda QOTIB
+ * QOLGANLARNI ko'rsatardi — "10 ta olib keldim, 2 tasi qoldi" degan
+ * savolga javob bermasdi. Endi zinapoya monoton yoziladi
+ * (`helpers/leadStage.helpers.js`), ya'ni raqamlar pastga qarab faqat
+ * kamayadi va yo'qotish aynan qaysi qadamda bo'lgani ko'rinadi.
+ *
+ * ⚠️ "Hozir qaysi bosqichda" — ALOHIDA blok: u ishlash kerak bo'lgan
+ * navbat, funnel esa o'tgan natija. Bitta grafikda ko'rsatilsa, ikkisi
+ * bir-birini inkor qilib turardi.
+ */
 const LeadConversionFunnel = ({ dateParams }) => {
   const params = buildParams(dateParams);
-  const queryKey = JSON.stringify(params);
+  const { data, isLoading } = useQuery(leadsQueries.conversion(params));
 
-  const { data } = useQuery({
-    queryKey: ["leads", "conversion", queryKey],
-    queryFn: () => leadsAPI.getConversion(params).then((res) => res.data.data),
-  });
+  const pipeline = data?.pipeline ?? [];
+  const exits = data?.exits ?? [];
+  const current = data?.current ?? [];
+  const totalLeads = data?.totalLeads ?? 0;
 
-  const pipeline = data?.pipeline || [];
-  const exits = data?.exits || [];
-  const totalLeads = data?.totalLeads || 0;
-
-  const maxCount = pipeline.length > 0 ? Math.max(...pipeline.map((s) => s.count)) : 1;
+  if (isLoading) {
+    return <Card className="py-10 text-center text-gray-500">Yuklanmoqda...</Card>;
+  }
 
   return (
     <div className="space-y-4">
-      {/* Pipeline funnel */}
-      <Card title={`Sotuv funnel - Jami: ${totalLeads} lid`} className="space-y-3">
+      {/* ── Yakuniy natija ── */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Tile label="Ro'yxatga olingan" value={totalLeads} />
+        <Tile
+          label="Qabul qilindi (to'lov qildi)"
+          value={data?.enrolled ?? 0}
+          valueClassName="text-green-600"
+        />
+        <Tile
+          label="Konversiya"
+          value={`${data?.conversion ?? 0}%`}
+          valueClassName={
+            (data?.conversion ?? 0) >= 50
+              ? "text-green-600"
+              : (data?.conversion ?? 0) > 0
+                ? "text-amber-600"
+                : "text-red-600"
+          }
+        />
+      </div>
+
+      {/* ── Zinapoya ── */}
+      <Card title="Qabul bosqichlari — qaysi qadamda yo'qotildi" className="space-y-3">
         {pipeline.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8">
-            Ma'lumot topilmadi
-          </p>
+          <p className="py-8 text-center text-sm text-gray-400">Ma'lumot topilmadi</p>
         ) : (
           <div className="space-y-2">
-            {pipeline.map((stage, idx) => {
-              const widthPercent = maxCount > 0 ? (stage.count / maxCount) * 100 : 0;
-              const color = leadStatusChartColors[stage.stage] || "#6b7280";
+            {pipeline.map((row) => {
+              const width = totalLeads > 0 ? (row.reached / totalLeads) * 100 : 0;
+              const color = leadStatusChartColors[row.status] || "#6b7280";
 
               return (
-                <div key={stage.stage}>
+                <div key={row.stage}>
                   <div className="flex items-center gap-3">
-                    {/* Label */}
-                    <div className="w-32 flex items-center justify-end">
+                    <div className="flex w-40 shrink-0 items-center justify-end">
                       <span className="text-xs font-medium text-gray-700">
-                        {leadStatusLabels[stage.stage]}
+                        {row.stage}. {row.label}
                       </span>
                     </div>
 
-                    {/* Progress bar */}
-                    <div className="flex-1 h-8 bg-gray-100 rounded-xl overflow-hidden">
+                    <div className="h-8 flex-1 overflow-hidden rounded-xl bg-gray-100">
                       <div
-                        className="flex items-center justify-end pr-2 h-full rounded-xl transition-all duration-500"
-                        style={{ backgroundColor: color, width: `${Math.max(widthPercent, 8)}%` }}
+                        className="flex h-full items-center justify-end rounded-xl pr-2 transition-all duration-500"
+                        style={{ backgroundColor: color, width: `${Math.max(width, 8)}%` }}
                       >
-                        <span className="text-xs font-bold text-white">
-                          {stage.count}
-                        </span>
+                        <span className="text-xs font-bold text-white">{row.reached}</span>
                       </div>
                     </div>
 
-                    {/* Percent of total */}
-                    <div className="w-12 text-right text-xs font-semibold text-gray-500">
-                      {stage.percentage}%
+                    <div className="w-14 shrink-0 text-right text-xs font-semibold text-gray-500">
+                      {row.conversion}%
                     </div>
                   </div>
 
-                  {/* Drop-off indicator between stages */}
-                  {idx < pipeline.length - 1 && stage.dropOff !== undefined && stage.dropOff > 0 && (
+                  {/* Oldingi qadamdan yo'qotish — AYNAN shu yerda ko'rinadi */}
+                  {row.lostCount > 0 && (
                     <div className="flex items-center gap-3 py-0.5">
-                      <div className="w-32" />
-                      <div className="flex-1 flex items-center gap-1 pl-2">
-                        <div className="h-3 border-l-2 border-dashed border-gray-300 ml-4" />
-                        <span className="text-[10px] text-red-400 font-medium ml-1">
-                          ↓ {stage.dropOff}% tushdi
+                      <div className="w-40 shrink-0" />
+                      <div className="flex flex-1 items-center gap-1 pl-2">
+                        <div className="ml-4 h-3 border-l-2 border-dashed border-gray-300" />
+                        <span className="ml-1 text-[11px] font-medium text-red-500">
+                          ↓ {row.lostCount} ta yo'qotildi ({row.dropOff}%)
                         </span>
                       </div>
                     </div>
@@ -105,59 +114,77 @@ const LeadConversionFunnel = ({ dateParams }) => {
         )}
       </Card>
 
-      {/* Exit statuses */}
-      {exits.length > 0 && (
-        <Card title="Chiqish statuslari" className="space-y-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* ── Chiqib ketganlar ── */}
+        <Card title="Chiqib ketganlar" className="space-y-2">
           <div className="grid grid-cols-3 gap-3">
             {exits.map((exit) => {
-              const color = leadStatusChartColors[exit.stage] || "#6b7280";
+              const color = leadStatusChartColors[exit.status] || "#6b7280";
               return (
                 <div
-                  key={exit.stage}
+                  key={exit.status}
                   className="rounded-xl p-3 text-center"
                   style={{ backgroundColor: `${color}18` }}
                 >
                   <p className="text-2xl font-bold" style={{ color }}>
                     {exit.count}
                   </p>
-                  <p className="text-xs text-gray-600 mt-0.5">
-                    {leadStatusLabels[exit.stage]}
-                  </p>
+                  <p className="mt-0.5 text-xs text-gray-600">{exit.label}</p>
                   <p className="text-[11px] text-gray-400">{exit.percentage}%</p>
                 </div>
               );
             })}
           </div>
-
-          {/* Conversion summary */}
-          <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-2 gap-3 text-center">
-            <div>
-              <p className="text-xl font-bold text-green-600">
-                {pipeline.find((s) => s.stage === "enrolled")?.count || 0}
-              </p>
-              <p className="text-xs text-gray-500">Ro'yxatdan o'tdi</p>
-              <p className="text-[11px] text-gray-400">
-                {totalLeads > 0
-                  ? `${(((pipeline.find((s) => s.stage === "enrolled")?.count || 0) / totalLeads) * 100).toFixed(1)}% konversiya`
-                  : "-"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xl font-bold text-red-500">
-                {exits.reduce((sum, e) => sum + (e.stage === "postponed" ? 0 : e.count), 0)}
-              </p>
-              <p className="text-xs text-gray-500">Yo'qoldi / Rad etdi</p>
-              <p className="text-[11px] text-gray-400">
-                {totalLeads > 0
-                  ? `${((exits.reduce((sum, e) => sum + (e.stage === "postponed" ? 0 : e.count), 0) / totalLeads) * 100).toFixed(1)}% yo'qolish`
-                  : "-"}
-              </p>
-            </div>
-          </div>
         </Card>
-      )}
+
+        {/* ── Hozirgi navbat ── */}
+        <Card title="Hozir qaysi bosqichda turibdi" className="space-y-2">
+          <p className="text-xs text-gray-400">
+            Bu — ishlash kerak bo'lgan navbat (yuqoridagi funnel esa o'tgan natija).
+          </p>
+          <ul className="divide-y divide-gray-100">
+            {current.map((row) => (
+              <li key={row.stage} className="flex items-center justify-between py-1.5">
+                <span className="text-sm text-gray-700">{row.label}</span>
+                <span
+                  className={cn(
+                    "text-sm font-semibold",
+                    row.count > 0 ? "text-gray-900" : "text-gray-300",
+                  )}
+                >
+                  {row.count}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
     </div>
   );
 };
+
+const Tile = ({ label, value, valueClassName = "text-gray-900" }) => (
+  <Card>
+    <p className="text-xs font-medium text-gray-500">{label}</p>
+    <p className={cn("mt-1 text-2xl font-bold", valueClassName)}>{value}</p>
+  </Card>
+);
+
+/** Davr tanlagichidan so'rov parametrlari (boshqa chartlar bilan AYNI). */
+function buildParams(dateParams) {
+  if (!dateParams) return {};
+  if (dateParams.startDate || dateParams.endDate) {
+    const params = {};
+    if (dateParams.startDate) params.startDate = dateParams.startDate;
+    if (dateParams.endDate) params.endDate = dateParams.endDate;
+    return params;
+  }
+  if (dateParams.period) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - Number(dateParams.period));
+    return { startDate: startDate.toISOString().split("T")[0] };
+  }
+  return {};
+}
 
 export default LeadConversionFunnel;

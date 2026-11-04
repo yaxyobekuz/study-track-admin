@@ -15,6 +15,7 @@ import LeadOverviewStats from "@/features/leads/components/LeadOverviewStats";
 import LeadTrendChart from "@/features/leads/components/LeadTrendChart";
 import LeadSourceChart from "@/features/leads/components/LeadSourceChart";
 import LeadConversionFunnel from "@/features/leads/components/LeadConversionFunnel";
+import LeadStaffConversion from "@/features/leads/components/LeadStaffConversion";
 import LeadStatusDistribution from "@/features/leads/components/LeadStatusDistribution";
 import LeadDirectionChart from "@/features/leads/components/LeadDirectionChart";
 import LeadCategoryChart from "@/features/leads/components/LeadCategoryChart";
@@ -45,6 +46,8 @@ const LeadAnalyticsPage = () => {
       </div>
     ),
     funnel: <LeadConversionFunnel dateParams={dateParams} />,
+    // XODIMLAR — "kim nechta olib keldi va nechtasi qoldi"
+    staff: <LeadStaffConversion dateParams={dateParams} />,
     sources: <LeadSourceChart dateParams={dateParams} />,
     directions: <LeadDirectionChart dateParams={dateParams} />,
     categories: <LeadCategoryChart dateParams={dateParams} />,

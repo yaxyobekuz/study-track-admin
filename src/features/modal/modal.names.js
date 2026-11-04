@@ -249,6 +249,10 @@ export const MODAL_NAMES = [
   // Tanga cheklovi (qarzdor o'quvchiga tanga berilmaydi)
   "blockCoins",
   "unblockCoins",
+
+  // Sotuvlar (lidlar) — kiritish va qabul zinapoyasi
+  "leadForm",
+  "leadStage",
   "createSuspension",
   "cancelSuspension",
   // Payroll v2 — oylik zayavkalarini ko'rib chiqish (paneldan tasdiqlash)

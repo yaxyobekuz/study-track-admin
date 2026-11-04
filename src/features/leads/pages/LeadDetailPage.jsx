@@ -11,10 +11,12 @@ import {
   MapPin,
   User,
   Calendar,
+  Pencil,
+  School,
 } from "lucide-react";
 
-// API
-import { leadsAPI } from "@/features/leads/api/leads.api";
+// Queries
+import { leadsQueries } from "@/features/leads/queries/leads.queries";
 
 // Data
 import {
@@ -28,20 +30,33 @@ import {
 import { formatDateUZ } from "@/shared/utils/date.utils";
 
 // Components
+import Can from "@/shared/components/guards/Can";
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
+import LeadStageTimeline from "@/features/leads/components/LeadStageTimeline";
+import LeadStageBar from "@/features/leads/components/LeadStageBar";
+import { LeadFormModal } from "@/features/leads/components/LeadFormModal";
+import { LeadStageModal } from "@/features/leads/components/LeadStageModal";
+
+// Hooks
+import useModal from "@/shared/hooks/useModal";
+
+// Utils (telefon ko'rinishi butun panelda bir xil)
+import { formatPhoneUz } from "@/shared/utils/phone.utils";
 
 const LeadDetailPage = () => {
   const { leadId } = useParams();
   const navigate = useNavigate();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["leads", "detail", leadId],
-    queryFn: () => leadsAPI.getById(leadId).then((res) => res.data),
-  });
+  const { openModal } = useModal();
 
-  const lead = data?.data?.lead;
-  const activities = data?.data?.activities || [];
+  // ⚠️ Yagona so'rov moduli: bosqich belgilangandan keyin mutatsiya
+  // `leadsKeys.all` ni bekor qiladi va bu sahifa ham yangilanadi.
+  const { data, isLoading } = useQuery(leadsQueries.detail(leadId));
+
+  const lead = data?.lead;
+  const activities = data?.activities || [];
+  const stageTimeline = data?.stageTimeline || [];
 
   if (isLoading) {
     return (
@@ -68,17 +83,30 @@ const LeadDetailPage = () => {
         >
           <ArrowLeft size={20} />
         </Button>
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold text-gray-800">
             {lead.firstName} {lead.lastName}
           </h1>
-          <span
-            className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium mt-1 ${leadStatusColors[lead.status]}`}
-          >
-            {leadStatusLabels[lead.status]}
-          </span>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <span
+              className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${leadStatusColors[lead.status]}`}
+            >
+              {lead.statusLabel || leadStatusLabels[lead.status]}
+            </span>
+            <LeadStageBar stage={lead.stage} isExited={lead.isExited} />
+          </div>
         </div>
+
+        <Can do="leads.update">
+          <Button variant="outline" onClick={() => openModal("leadForm", { lead })}>
+            <Pencil />
+            Tahrirlash
+          </Button>
+        </Can>
       </div>
+
+      {/* QABUL ZINAPOYASI — eng tepada: sahifaning asosiy savoli shu */}
+      <LeadStageTimeline lead={lead} timeline={stageTimeline} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Left: Lead info */}
@@ -90,7 +118,7 @@ const LeadDetailPage = () => {
                 <Phone size={16} className="text-gray-400 mt-0.5" />
                 <div>
                   <p className="text-xs text-gray-400">Telefon</p>
-                  <p className="text-sm text-gray-800">{lead.phone}</p>
+                  <p className="text-sm text-gray-800">{formatPhoneUz(lead.phone)}</p>
                 </div>
               </div>
 
@@ -98,10 +126,20 @@ const LeadDetailPage = () => {
                 <div className="flex items-start gap-2.5">
                   <Phone size={16} className="text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-xs text-gray-400">Qo'shimcha telefon</p>
+                    <p className="text-xs text-gray-400">Qo'shimcha raqam 1</p>
                     <p className="text-sm text-gray-800">
-                      {lead.additionalPhone}
+                      {formatPhoneUz(lead.additionalPhone)}
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {lead.previousSchool && (
+                <div className="flex items-start gap-2.5">
+                  <School size={16} className="mt-0.5 text-gray-400" />
+                  <div>
+                    <p className="text-xs text-gray-400">Kelgan maktabi</p>
+                    <p className="text-sm text-gray-800">{lead.previousSchool}</p>
                   </div>
                 </div>
               )}
@@ -152,10 +190,10 @@ const LeadDetailPage = () => {
                     <Phone size={16} className="text-gray-400 mt-0.5" />
                     <div>
                       <p className="text-xs text-gray-400">
-                        Ota-ona telefoni
+                        Qo'shimcha raqam 2 (ota-ona)
                       </p>
                       <p className="text-sm text-gray-800">
-                        {lead.parentPhone}
+                        {formatPhoneUz(lead.parentPhone)}
                       </p>
                     </div>
                   </div>
@@ -189,14 +227,33 @@ const LeadDetailPage = () => {
                   </p>
                 </div>
               )}
+              {/* ⚠️ UCHTA BOSHQA-BOSHQA ODAM: tizimga kim kiritdi, bolani
+                  kim olib keldi va kim mas'ul. Tahlil oxirgi ikkisi
+                  bo'yicha qilinadi. */}
               {lead.createdBy && (
                 <div>
-                  <p className="text-xs text-gray-400">Yaratgan</p>
+                  <p className="text-xs text-gray-400">Kiritgan</p>
                   <p className="text-sm text-gray-800">
                     {lead.createdBy.firstName} {lead.createdBy.lastName}
                   </p>
                 </div>
               )}
+              <div>
+                <p className="text-xs text-gray-400">Kim olib keldi</p>
+                <p className="text-sm text-gray-800">
+                  {lead.broughtBy
+                    ? `${lead.broughtBy.firstName} ${lead.broughtBy.lastName ?? ""}`.trim()
+                    : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Mas'ul xodim</p>
+                <p className="text-sm text-gray-800">
+                  {lead.assignedTo
+                    ? `${lead.assignedTo.firstName} ${lead.assignedTo.lastName ?? ""}`.trim()
+                    : "Belgilanmagan"}
+                </p>
+              </div>
             </div>
 
             {lead.notes && (
@@ -266,6 +323,9 @@ const LeadDetailPage = () => {
           </Card>
         </div>
       </div>
+
+      <LeadFormModal />
+      <LeadStageModal />
     </div>
   );
 };
