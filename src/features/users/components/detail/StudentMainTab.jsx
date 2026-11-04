@@ -48,7 +48,27 @@ const StudentMainTab = ({ user }) => {
       label: "Holat",
       value: user.isArchived ? "Arxivlangan" : user.isActive ? "Faol" : "Nofaol",
     },
-    { label: "Tangalar", value: user.coinBalance ?? 0 },
+    {
+      label: "Tangalar",
+      // TANGA CHEKLOVI shu yerda OCHIQ aytiladi: "nega bu bolaning tangasi
+      // o'smayapti" degan savol aynan profilda tug'iladi va javobni boshqa
+      // bo'limda qidirishga majbur qilmaslik kerak.
+      value: user.coinBlock ? (
+        <span>
+          {user.coinBalance ?? 0}
+          <span
+            className="ml-1.5 inline-flex items-center rounded-md bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-700"
+            title={`${user.coinBlock.reason} · ${user.coinBlock.sinceLabel} dan beri${
+              user.coinBlock.note ? ` · ${user.coinBlock.note}` : ""
+            }`}
+          >
+            Yangi tanga taqiqlangan
+          </span>
+        </span>
+      ) : (
+        user.coinBalance ?? 0
+      ),
+    },
     { label: "Jarima ballari", value: user.penaltyPoints ?? 0 },
     { label: "Ro'yxatdan o'tgan", value: formatDateUZ(user.createdAt) },
   ];

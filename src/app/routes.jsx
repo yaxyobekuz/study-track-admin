@@ -105,6 +105,8 @@ import PlannerDistributionPage from "@/features/schedule-planner/pages/PlannerDi
 
 // Pages - Coin Distribution
 import CoinDistributionPage from "@/features/coin-distribution/pages/CoinDistributionPage";
+// TANGA CHEKLOVI — qarzdor o'quvchiga tanga berishni to'xtatish
+import CoinBlocksPage from "@/features/coin-blocks/pages/CoinBlocksPage";
 
 // Pages - Market
 import MarketOrdersPage from "@/features/market/pages/MarketOrdersPage";
@@ -550,6 +552,9 @@ const Routes = () => {
 
           {/* Coin Distribution */}
           <Route path="/coin-distribution" element={<CoinDistributionPage />} />
+
+          {/* Coin Blocks (qarzdorga tanga berilmaydi) */}
+          <Route path="/coin-blocks" element={<CoinBlocksPage />} />
 
           {/* Market */}
           <Route path="/market/products" element={<MarketProductsPage />} />

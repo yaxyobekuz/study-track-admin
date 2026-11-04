@@ -386,6 +386,13 @@ export const navItems = [
         url: "/coin-distribution",
       },
       {
+        // TANGA CHEKLOVI — `coins.block` (`permissionForPath` filtrlaydi):
+        // tanga taqsimlash huquqi bolani tangadan mahrum qilish huquqini
+        // bermaydi.
+        title: "Tanga cheklovi",
+        url: "/coin-blocks",
+      },
+      {
         title: "Sozlamalar",
         url: "/coin-settings",
       },

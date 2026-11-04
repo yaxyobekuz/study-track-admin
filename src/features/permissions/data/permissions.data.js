@@ -531,7 +531,16 @@ export const PERMISSION_SECTIONS = [
     key: SECTIONS.COINS,
     label: "Tangalar",
     group: "Tangalar",
-    actions: [A.view, { key: "distribute", label: "Tanga taqsimlash" }, A.settings],
+    actions: [
+      A.view,
+      { key: "distribute", label: "Tanga taqsimlash" },
+      // TANGA CHEKLOVI — `distribute` dan ALOHIDA: tanga berish
+      // rag'batlantirish, cheklov esa moliyaviy qaror (ro'yxat "kim
+      // qarzdor" ma'lumotini ham ochadi). Serverdagi izoh:
+      // `utils/permissions.js`.
+      { key: "block", label: "Tanga cheklovi" },
+      A.settings,
+    ],
   },
   {
     key: SECTIONS.TARIFFS,
@@ -1250,6 +1259,9 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/premium", key: "premium.view" },
   { prefix: "/coin-distribution", key: "coins.view" },
   { prefix: "/coin-settings", key: "coins.view" },
+  // TANGA CHEKLOVI — `coins.view` YETMAYDI: ro'yxat "kim qarzdor" degan
+  // ma'lumotni ham ochib beradi va cheklov moliyaviy qaror.
+  { prefix: "/coin-blocks", key: "coins.block" },
   // Moliya bo'limiga kirish `finance.view` bilan; katalog tablari esa
   // qo'shimcha o'z kalitini talab qiladi (eng UZUN mos prefiks yutadi).
   // Moliya hisobotlari bosh sahifaning "Moliya" tabida

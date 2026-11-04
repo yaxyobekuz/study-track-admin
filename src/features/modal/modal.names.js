@@ -245,6 +245,10 @@ export const MODAL_NAMES = [
   // Oylikdan ushlab qolish
   "createDeduction",
   "cancelDeduction",
+
+  // Tanga cheklovi (qarzdor o'quvchiga tanga berilmaydi)
+  "blockCoins",
+  "unblockCoins",
   "createSuspension",
   "cancelSuspension",
   // Payroll v2 — oylik zayavkalarini ko'rib chiqish (paneldan tasdiqlash)
