@@ -291,6 +291,10 @@ export const navItems = [
         url: "/diagnostics/students",
       },
       {
+        title: "O'qituvchilar kesimi",
+        url: "/diagnostics/teachers",
+      },
+      {
         title: "O'quvchilar natijalari",
         url: "/diagnostics/attempts",
       },

@@ -1231,6 +1231,7 @@ const ROUTE_PERMISSIONS = [
   { prefix: "/diagnostics/subjects", key: "diagnostics.analytics" },
   { prefix: "/diagnostics/topics", key: "diagnostics.analytics" },
   { prefix: "/diagnostics/students", key: "diagnostics.analytics" },
+  { prefix: "/diagnostics/teachers", key: "diagnostics.analytics" },
   { prefix: "/market", key: "market.view" },
   // LAVOZIMLAR MARKAZI — bo'limga kirish butun filialni ko'rish
   // (`tasks.view`) YOKI o'z bo'limi (`tasks.team`) bilan: rahbarda
