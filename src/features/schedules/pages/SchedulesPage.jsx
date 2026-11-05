@@ -2,6 +2,9 @@
 import { days } from "@/shared/data/days.data";
 import { SCHEDULE_SYNC_ACCESS } from "@/features/permissions/data/permissions.data";
 
+// Toast
+import { toast } from "sonner";
+
 // React
 import { useEffect, useMemo, useState } from "react";
 
@@ -18,6 +21,12 @@ import usePermissions from "@/shared/hooks/usePermissions";
 
 // API
 import { schedulesAPI } from "@/features/schedules/api/schedules.api";
+
+// Utils
+import {
+  downloadBlob,
+  readBlobErrorMessage,
+} from "@/shared/utils/download.utils";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -48,6 +57,7 @@ import {
   FileSpreadsheet,
   Pin,
   TriangleAlert,
+  Users,
 } from "lucide-react";
 
 // Modals
@@ -73,6 +83,9 @@ const Schedules = () => {
   const { classId } = useParams();
   const isOwner = user?.role === "owner";
   const canOpenSync = can(SCHEDULE_SYNC_ACCESS);
+  // Butun maktabning yuklamasi — `schedules.export` (serverda ham AYNI
+  // shart; o'qituvchi roli bu faylga huquq bermaydi)
+  const canExportTeacherLoad = can("schedules.export");
 
   const { data: classes = [] } = useClasses();
 
@@ -137,31 +150,42 @@ const Schedules = () => {
     return schedules.find((s) => s.day === day);
   };
 
-  // Excel yuklab olish
-  const handleExport = async () => {
+  // ── EXCEL YUKLAB OLISH ──
+  //
+  // ⚠️ Ikkalasi ham `downloadBlob` orqali: fayl nomi SERVER sarlavhasidan
+  // olinadi (`dates.md` qoidasi — sana ikki joyda ikki xil yig'ilmasin) va
+  // xato JIM QOLMAYDI. Ilgari bu yerda nom qo'lda yig'ilib, xato esa
+  // faqat konsolga chiqardi: ruxsati yo'q odam tugmani bosib, hech narsa
+  // bo'lmaganini ko'rib, buni tizim nosozligi deb o'ylardi.
+  const [exporting, setExporting] = useState(null);
+
+  const runExport = async (key, request, { fallbackName, errorText }) => {
+    setExporting(key);
     try {
-      if (!classId) return;
-
-      const response = await schedulesAPI.exportByClass(classId);
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-
-      const className =
-        classes.find((cls) => cls.id === classId)?.name || "sinf";
-      link.setAttribute(
-        "download",
-        `dars_jadvali_${className}_${new Date().toISOString().split("T")[0]}.xlsx`,
-      );
-
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      downloadBlob(await request(), fallbackName);
     } catch (error) {
-      console.error("Export xatosi:", error);
+      toast.error(await readBlobErrorMessage(error, errorText));
+    } finally {
+      setExporting(null);
     }
   };
+
+  // Bitta sinfning haftalik jadvali
+  const handleExport = () => {
+    if (!classId) return;
+    runExport("class", () => schedulesAPI.exportByClass(classId), {
+      fallbackName: "dars_jadvali.xlsx",
+      errorText: "Jadvalni yuklab bo'lmadi",
+    });
+  };
+
+  // O'qituvchilar yuklamasi — kim qaysi fandan qaysi sinflarga kiradi
+  // (butun maktab, sinf tanlanmaydi)
+  const handleTeacherLoadExport = () =>
+    runExport("teachers", schedulesAPI.exportTeacherLoad, {
+      fallbackName: "oqituvchilar_yuklamasi.xlsx",
+      errorText: "O'qituvchilar yuklamasini yuklab bo'lmadi",
+    });
 
   if (isLoading || !classId) {
     return (
@@ -220,9 +244,27 @@ const Schedules = () => {
             </Button>
           )}
 
-          <Button onClick={handleExport}>
+          {canExportTeacherLoad && (
+            <Button
+              variant="outline"
+              disabled={exporting === "teachers"}
+              title="Kim qaysi fandan qaysi sinflarga kiradi — Excel"
+              onClick={handleTeacherLoadExport}
+            >
+              <Users strokeWidth={1.5} />
+              {exporting === "teachers" ? (
+                "Tayyorlanmoqda..."
+              ) : (
+                <span>
+                  O'qituvchilar<span className="hidden lg:inline"> yuklamasi</span>
+                </span>
+              )}
+            </Button>
+          )}
+
+          <Button disabled={exporting === "class"} onClick={handleExport}>
             <Download strokeWidth={1.5} />
-            Jadvalni yuklash
+            {exporting === "class" ? "Tayyorlanmoqda..." : "Jadvalni yuklash"}
           </Button>
         </div>
       </div>

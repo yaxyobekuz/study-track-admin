@@ -17,6 +17,12 @@ export const schedulesAPI = {
   getAllToday: () => http.get("/schedules/all-today"),
   exportByClass: (classId) =>
     http.get(`/schedules/class/${classId}/export`, { responseType: "blob" }),
+  // O'QITUVCHILAR YUKLAMASI (Excel): kim qaysi fandan qaysi sinflarga
+  // kiradi. Qamrov — butun maktab, shuning uchun `classId` YUBORILMAYDI:
+  // "bu o'qituvchi yana qaysi sinflarga kiradi" degan savolga bitta
+  // sinfning jadvalidan javob chiqmaydi.
+  exportTeacherLoad: () =>
+    http.get("/schedules/teachers/export", { responseType: "blob" }),
   createOrUpdate: (data) => http.post("/schedules", data),
   // payload: { schedules } — sinfning butun haftasi.
   // ⚠️ Sheet rejimida server 409 (`details.reason: "sheet_mode"`) qaytaradi.
