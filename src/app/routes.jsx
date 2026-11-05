@@ -282,6 +282,7 @@ import DiagnosticAttemptsPage from "@/features/diagnostics/pages/AttemptsPage";
 import DiagnosticAttemptDetailPage from "@/features/diagnostics/pages/AttemptDetailPage";
 import DiagnosticClassesPage from "@/features/diagnostics/pages/ClassesPage";
 import DiagnosticStudentsPage from "@/features/diagnostics/pages/StudentsPage";
+import DiagnosticTeachersPage from "@/features/diagnostics/pages/TeachersPage";
 import DiagnosticTopicsPage from "@/features/diagnostics/pages/TopicsPage";
 import DiagnosticSubjectsPage from "@/features/diagnostics/pages/SubjectsPage";
 import DiagnosticClassDetailPage from "@/features/diagnostics/pages/ClassDetailPage";
@@ -904,6 +905,10 @@ const Routes = () => {
             <Route path="/diagnostics/subjects" element={<DiagnosticSubjectsPage />} />
             <Route path="/diagnostics/topics" element={<DiagnosticTopicsPage />} />
             <Route path="/diagnostics/students" element={<DiagnosticStudentsPage />} />
+            <Route
+              path="/diagnostics/teachers"
+              element={<DiagnosticTeachersPage />}
+            />
             <Route
               path="/diagnostics/attempts"
               element={<DiagnosticAttemptsPage />}

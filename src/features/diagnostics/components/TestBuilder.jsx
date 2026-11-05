@@ -1,23 +1,25 @@
 // React
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 // Toast
 import { toast } from "sonner";
 
 // Icons
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Loader2, Plus, ScanSearch } from "lucide-react";
 
 // Components
 import Card from "@/shared/components/ui/Card";
 import Button from "@/shared/components/ui/button/Button";
 import Input from "@/shared/components/ui/input/Input";
-import Table, { Td, Tr } from "@/shared/components/ui/Table";
+import TestBlueprintTable from "./TestBlueprintTable";
+import TestPlanCard from "./TestPlanCard";
 
 // Hooks
 import { useSubjects } from "@/features/subjects/queries/subjects.queries";
+import { usePreviewTest } from "../queries/diagnostics.mutations";
 
 // Data
-import { GRADES, TEST_MODES } from "../data/diagnostics.data";
+import { TEST_MODES } from "../data/diagnostics.data";
 
 // Utils
 import { cn } from "@/shared/utils/cn";
@@ -25,20 +27,50 @@ import { cn } from "@/shared/utils/cn";
 /**
  * YANGI TEST YIG'GICH.
  *
- * ⚠️ UCH QADAM ALOHIDA KARTADA VA TARTIB QAT'IY: avval KIM
- * (sinf) → keyin NIMA (fanlar va savollar taqsimoti) → keyin QACHON
- * (nom, sana, vaqt). Ikkinchi qadam birinchisisiz ma'nosiz: savol
- * qaysi tilda olinishi sinfga bog'liq.
+ * ⚠️ TO'RT QADAM VA TARTIB QAT'IY: KIM (sinf) → NIMA (fanlar, mavzu
+ * qamrovi, qiyinlik va manba) → QACHON (nom, sana, vaqt) → TEKSHIRUV.
+ * Ikkinchi qadam birinchisisiz ma'nosiz: mavzu chegarasi SINFNING
+ * joriy mavzusidan chiqadi.
+ *
+ * ⚠️ TEKSHIRUVSIZ YARATILMAYDI va bu ataylab. Yaratish qaytarib
+ * bo'lmaydigan ikki narsaga tegadi — pullik model chaqiruvlariga va
+ * bankka yoziladigan savollarga. Odam avval sinf qaysi mavzuga
+ * kelganini va nechta savol qayerdan olinishini ko'rishi kerak
+ * (loyihadagi `preview` → `confirm` naqshi).
  *
  * ⚠️ O'QUVCHI SINFI VA SAVOL BAZASI SINFI — IKKI BOSHQA NARSA.
  * 7-sinf o'quvchisiga 6-sinf bazasidan savol berish odatiy hol
- * (takrorlash, bo'shliqni yopish). Shuning uchun har fan qatorida
- * "Sinf (baza)" alohida tanlanadi va u o'quvchi sinfiga bog'liq emas.
+ * (takrorlash, bo'shliqni yopish), shuning uchun har fan qatorida
+ * "Sinf (baza)" alohida tanlanadi.
  */
-const emptyRow = () => ({ subjectId: "", grade: "", easy: 0, medium: 0, hard: 0 });
+const emptyRow = () => ({
+  subjectId: "",
+  grade: "",
+  source: "bank",
+  topicMode: "current",
+  topicFrom: "",
+  topicTo: "",
+  easy: 0,
+  medium: 0,
+  hard: 0,
+});
 
-const TestBuilder = ({ classes = [], onCreate, isPending }) => {
+/** Serverga ketadigan shakl — panel hech qanday chegarani hisoblamaydi. */
+const toPayloadRow = (row) => ({
+  subjectId: row.subjectId,
+  grade: row.grade ? Number(row.grade) : null,
+  source: row.source,
+  topicMode: row.topicMode,
+  topicFrom: row.topicMode === "range" ? Number(row.topicFrom) || null : null,
+  topicTo: row.topicMode === "range" ? Number(row.topicTo) || null : null,
+  easy: Number(row.easy) || 0,
+  medium: Number(row.medium) || 0,
+  hard: Number(row.hard) || 0,
+});
+
+const TestBuilder = ({ classes = [], onBuild, isPending }) => {
   const { data: subjects = [] } = useSubjects();
+  const { mutate: preview, isPending: isChecking } = usePreviewTest();
 
   const [classId, setClassId] = useState("");
   const [rows, setRows] = useState([]);
@@ -50,6 +82,21 @@ const TestBuilder = ({ classes = [], onCreate, isPending }) => {
     description: "",
   });
 
+  const [plan, setPlan] = useState(null);
+  /** Reja AYNAN QAYSI TAQSIMOT uchun olingani — eskirganini bilish uchun. */
+  const [planKey, setPlanKey] = useState(null);
+
+  /**
+   * ⚠️ TAQSIMOT O'ZGARSA REJA ESKIRADI. Usiz admin "Tekshirish" ni
+   * bosib, keyin sonlarni o'zgartirib, eski (yashil) natijaga qarab
+   * test yaratardi — holbuki tekshiruv boshqa taqsimot uchun qilingan.
+   */
+  const currentKey = useMemo(
+    () => JSON.stringify({ classId, rows: rows.map(toPayloadRow) }),
+    [classId, rows],
+  );
+  const stale = Boolean(plan) && planKey !== currentKey;
+
   const total = useMemo(
     () =>
       rows.reduce(
@@ -59,47 +106,90 @@ const TestBuilder = ({ classes = [], onCreate, isPending }) => {
     [rows],
   );
 
-  const setRow = (index, patch) =>
-    setRows((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
+  const setRow = useCallback(
+    (index, patch) =>
+      setRows((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r))),
+    [],
+  );
 
-  const submit = () => {
-    if (!classId) return toast.error("Sinfni tanlang");
-    if (!rows.length) return toast.error("Kamida bitta fan qo'shing");
-    if (rows.some((r) => !r.subjectId)) return toast.error("Har qatorda fanni tanlang");
-    if (total === 0) return toast.error("Savollar sonini kiriting");
+  const planByIndex = useMemo(() => {
+    if (!plan?.rows) return null;
+    return new Map(plan.rows.map((row) => [row.index, row]));
+  }, [plan]);
+
+  /** Serverga bormasdan oldin ushlanadigan xatolar. */
+  const validate = () => {
+    if (!classId) return "Sinfni tanlang";
+    if (!rows.length) return "Kamida bitta fan qo'shing";
+    if (rows.some((r) => !r.subjectId)) return "Har qatorda fanni tanlang";
+    if (total === 0) return "Savollar sonini kiriting";
+
+    const badRange = rows.find(
+      (r) => r.topicMode === "range" && (!Number(r.topicFrom) || !Number(r.topicTo)),
+    );
+    if (badRange) return "Mavzular oralig'ining ikkala chegarasini kiriting";
+
+    return null;
+  };
+
+  const handleCheck = () => {
+    const error = validate();
+    if (error) return toast.error(error);
+
+    preview(
+      { classId, blueprint: rows.map(toPayloadRow) },
+      {
+        onSuccess: (data) => {
+          setPlan(data);
+          setPlanKey(currentKey);
+          if (!data.canBuild) {
+            toast.warning("Taqsimotda tuzatilishi kerak joylar bor");
+          }
+        },
+        onError: (err) =>
+          toast.error(err.response?.data?.message || "Tekshirib bo'lmadi"),
+      },
+    );
+  };
+
+  const handleSubmit = () => {
+    const error = validate();
+    if (error) return toast.error(error);
     if (!form.title.trim()) return toast.error("Test nomini kiriting");
 
-    onCreate({
-      title: form.title.trim(),
-      description: form.description.trim() || undefined,
-      mode: form.mode,
-      durationMin: Number(form.durationMin) || 45,
-      classIds: [classId],
-      // ⚠️ Sana BO'LSA — test o'sha kundan ochiladi; bo'lmasa darhol.
-      availableFrom: form.date || undefined,
-      blueprint: rows.map((r) => ({
-        subjectId: r.subjectId,
-        grade: r.grade ? Number(r.grade) : null,
-        easy: Number(r.easy) || 0,
-        medium: Number(r.medium) || 0,
-        hard: Number(r.hard) || 0,
-      })),
-    });
+    onBuild(
+      {
+        title: form.title.trim(),
+        description: form.description.trim() || undefined,
+        mode: form.mode,
+        durationMin: Number(form.durationMin) || 45,
+        classIds: [classId],
+        // ⚠️ Sana BO'LSA — test o'sha kundan ochiladi; bo'lmasa darhol.
+        availableFrom: form.date || undefined,
+        blueprint: rows.map(toPayloadRow),
+      },
+      { onDone: reset },
+    );
   };
 
   const reset = () => {
     setClassId("");
     setRows([]);
     setForm({ title: "", date: "", durationMin: 45, mode: "timed", description: "" });
+    setPlan(null);
+    setPlanKey(null);
   };
+
+  const needsAi = rows.some((r) => r.source === "ai");
+  const canSubmit = Boolean(plan) && !stale && plan.canBuild && !isPending;
 
   return (
     <div className="space-y-4">
       <div>
         <h2 className="text-lg font-semibold text-gray-900">Yangi test qo'shish</h2>
         <p className="mt-0.5 text-sm text-gray-500">
-          Test ma'lumotlarini kiriting va har bir fan uchun savollar olinadigan
-          sinfni belgilang
+          Sinf uchun fanlarni tanlang, mavzu qamrovini va har bir qiyinlikdan
+          nechta savol kerakligini belgilang
         </p>
       </div>
 
@@ -127,9 +217,9 @@ const TestBuilder = ({ classes = [], onCreate, isPending }) => {
           </label>
 
           <p className="self-center text-sm leading-relaxed text-gray-500">
-            Savollar shu sinf o'quvchilariga biriktiriladi. Quyida har bir fan
-            uchun savollar <b className="text-gray-700">qaysi sinf bazasidan</b>{" "}
-            olinishini alohida tanlaysiz — o'quvchi sinfiga bog'liq emas.
+            Mavzu chegarasi <b className="text-gray-700">shu sinfning</b> joriy
+            mavzusidan olinadi: o'tilmagan mavzudan savol tushmaydi. Shu sababli
+            bitta testga bitta sinf tanlanadi.
           </p>
         </div>
       </Card>
@@ -137,118 +227,20 @@ const TestBuilder = ({ classes = [], onCreate, isPending }) => {
       {/* ── 2. TAQSIMOT ────────────────────── */}
       <Card className="!p-0">
         <div className="p-4 xs:p-5">
-          <StepTitle n={2}>Fanlar va savollar taqsimoti</StepTitle>
+          <StepTitle n={2}>Fanlar, mavzular va savollar taqsimoti</StepTitle>
         </div>
 
-        {rows.length === 0 ? (
-          <p className="border-y border-gray-100 py-10 text-center text-sm text-gray-400">
-            Fan qo'shilmagan — pastdagi tugma orqali qo'shing
-          </p>
-        ) : (
-          <Table
-            columns={[
-              "Fan",
-              "Sinf (baza)",
-              { label: "Yengil", align: "center" },
-              { label: "O'rta", align: "center" },
-              { label: "Og'ir", align: "center" },
-              { label: "Jami", align: "center" },
-              { label: "", align: "right" },
-            ]}
-          >
-            {rows.map((row, i) => {
-              const rowTotal =
-                (+row.easy || 0) + (+row.medium || 0) + (+row.hard || 0);
-              return (
-                <Tr key={i}>
-                  <Td nowrap={false} className="min-w-[200px]">
-                    <select
-                      value={row.subjectId}
-                      onChange={(e) => setRow(i, { subjectId: e.target.value })}
-                      className="h-10 w-full rounded-lg border border-gray-200 bg-white px-2.5 text-sm outline-none focus:border-primary"
-                    >
-                      <option value="">Fanni tanlang</option>
-                      {subjects.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                  </Td>
-
-                  <Td className="min-w-[140px]">
-                    <select
-                      value={row.grade}
-                      onChange={(e) => setRow(i, { grade: e.target.value })}
-                      className="h-10 w-full rounded-lg border border-gray-200 bg-white px-2.5 text-sm outline-none focus:border-primary"
-                    >
-                      <option value="">Barcha sinflar</option>
-                      {GRADES.map((g) => (
-                        <option key={g} value={g}>
-                          {g}-sinf
-                        </option>
-                      ))}
-                    </select>
-                  </Td>
-
-                  {["easy", "medium", "hard"].map((key) => (
-                    <Td key={key} align="center">
-                      <Input
-                        type="number"
-                        min={0}
-                        max={100}
-                        value={row[key]}
-                        onChange={(e) => setRow(i, { [key]: e.target.value })}
-                        className="mx-auto h-10 w-16 text-center"
-                      />
-                    </Td>
-                  ))}
-
-                  <Td align="center" className="font-semibold tabular-nums">
-                    {rowTotal}
-                  </Td>
-
-                  <Td align="right">
-                    <button
-                      type="button"
-                      title="Qatorni o'chirish"
-                      onClick={() =>
-                        setRows((prev) => prev.filter((_, x) => x !== i))
-                      }
-                      className="rounded-lg border border-gray-200 p-1.5 text-rose-600 transition-colors hover:border-rose-200 hover:bg-rose-50"
-                    >
-                      <Trash2 className="size-4" strokeWidth={1.5} />
-                    </button>
-                  </Td>
-                </Tr>
-              );
-            })}
-          </Table>
-        )}
-
-        <div className="flex flex-wrap items-center justify-between gap-3 p-4 xs:p-5">
-          <div>
-            <Button
-              variant="secondary"
-              className="px-3.5"
-              onClick={() => setRows((prev) => [...prev, emptyRow()])}
-            >
-              <Plus className="mr-2 size-4" strokeWidth={2} />
-              Fan qo'shish
-            </Button>
-            <p className="mt-2 text-xs text-gray-400">
-              Bir xil fanni turli sinflar bilan bir necha marta qo'shishingiz
-              mumkin (masalan: Matematika 7-sinf + Matematika 6-sinf).
-            </p>
-          </div>
-
-          {total > 0 && (
-            <p className="text-sm text-gray-500">
-              Jami:{" "}
-              <span className="font-semibold text-gray-900">{total}</span> ta savol
-            </p>
-          )}
-        </div>
+        <TestBlueprintTable
+          rows={rows}
+          subjects={subjects}
+          planByIndex={planByIndex}
+          disabled={isPending}
+          onChange={setRow}
+          onRemove={(index) =>
+            setRows((prev) => prev.filter((_, i) => i !== index))
+          }
+          onAdd={() => setRows((prev) => [...prev, emptyRow()])}
+        />
       </Card>
 
       {/* ── 3. MA'LUMOTLAR ─────────────────── */}
@@ -260,7 +252,7 @@ const TestBuilder = ({ classes = [], onCreate, isPending }) => {
             <Input
               value={form.title}
               onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-              placeholder="Masalan: Yakuniy nazorat"
+              placeholder="Masalan: Daraja testi"
               maxLength={120}
             />
           </Field>
@@ -308,24 +300,59 @@ const TestBuilder = ({ classes = [], onCreate, isPending }) => {
             className="w-full rounded-xl border border-gray-200 bg-white p-3 text-sm outline-none focus:border-primary"
           />
         </Field>
+      </Card>
 
-        <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={reset}
-            className="text-sm font-medium text-gray-500 hover:text-gray-900"
-          >
-            Bekor qilish
-          </button>
-          <Button className="px-5" disabled={isPending} onClick={submit}>
-            {isPending ? (
-              <Loader2 className="mr-2 size-4 animate-spin" />
-            ) : (
-              <Plus className="mr-2 size-4" strokeWidth={2} />
-            )}
-            Testni yaratish
-          </Button>
+      {/* ── 4. TEKSHIRUV ───────────────────── */}
+      {plan && <TestPlanCard plan={plan} stale={stale} />}
+
+      <Card>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="max-w-xl text-xs text-gray-500">
+            {needsAi
+              ? "AI yozgan savollar bankka qo'shiladi va tasdiqlanishi kerak — test qoralama bo'lib yaratiladi."
+              : "Savollar tasdiqlangan bazadan olinadi — test darhol nashrga tayyor bo'ladi."}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={reset}
+              className="text-sm font-medium text-gray-500 hover:text-gray-900"
+            >
+              Bekor qilish
+            </button>
+
+            <Button
+              variant="secondary"
+              className="px-4"
+              disabled={isChecking || isPending}
+              onClick={handleCheck}
+            >
+              {isChecking ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <ScanSearch className="mr-2 size-4" strokeWidth={1.5} />
+              )}
+              Tekshirish
+            </Button>
+
+            <Button className="px-5" disabled={!canSubmit} onClick={handleSubmit}>
+              {isPending ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <Plus className="mr-2 size-4" strokeWidth={2} />
+              )}
+              Testni yaratish
+            </Button>
+          </div>
         </div>
+
+        {!plan && (
+          <p className="mt-3 text-xs text-gray-400">
+            Testni yaratishdan oldin <b>Tekshirish</b> ni bosing: sinf qaysi
+            mavzuga kelgani va savollar qayerdan olinishi shundan ko'rinadi.
+          </p>
+        )}
       </Card>
     </div>
   );

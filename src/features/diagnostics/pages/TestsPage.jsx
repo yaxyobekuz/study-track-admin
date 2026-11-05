@@ -21,6 +21,7 @@ import {
   CalendarClock,
   Archive,
   Undo2,
+  BadgeCheck,
 } from "lucide-react";
 
 // Components
@@ -47,7 +48,8 @@ import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 // Queries
 import { testQueries } from "../queries/diagnostics.queries";
 import {
-  useCreateTest,
+  useBuildTest,
+  useApproveTestQuestions,
   useUpdateTestStatus,
 } from "../queries/diagnostics.mutations";
 
@@ -163,7 +165,9 @@ const TestsPage = () => {
   const { data, isLoading } = useQuery(testQueries.list(params));
   const { data: subjects = [] } = useSubjects();
   const { data: classes = [] } = useQuery(classesQueries.list());
-  const { mutate: createTest, isPending: isCreating } = useCreateTest();
+  const { mutate: buildTest, isPending: isCreating } = useBuildTest();
+  const { mutate: approveQuestions, isPending: isApproving } =
+    useApproveTestQuestions();
   const { mutate: updateStatus } = useUpdateTestStatus();
 
   /**
@@ -186,17 +190,52 @@ const TestsPage = () => {
    * so'ralgancha savol topilmadi. Ularni xato deb ko'rsatish
    * o'qituvchini "test yaratilmadi" deb o'ylashga majbur qilardi.
    */
-  const handleCreate = (payload) =>
-    createTest(payload, {
+  const handleBuild = (payload, { onDone } = {}) =>
+    buildTest(payload, {
       onSuccess: (res) => {
-        const warnings = res?.data?.warnings ?? [];
+        const data = res?.data ?? {};
+        const warnings = data.warnings ?? [];
+
         toast.success(
-          `Test yaratildi — ${res?.data?.questionCount ?? 0} ta savol tanlandi`,
+          `Test yaratildi — ${data.questionCount ?? 0} ta savol tanlandi`,
         );
+
+        /**
+         * ⚠️ AI YOZGAN SAVOL AVTOMAT TASDIQLANMAYDI. Test qoralama
+         * bo'lib qoladi va bu xabar aynan shuni aytadi — aks holda
+         * admin testni nashr qilmoqchi bo'lganda "nega ochilmayapti"
+         * degan savol bilan qolardi.
+         */
+        if (data.pendingApproval) {
+          toast.warning(
+            `${data.pendingApproval} ta savolni ko'rib chiqib tasdiqlang — test shundan keyin nashr qilinadi`,
+            { duration: 10000 },
+          );
+        }
+        if (data.generated?.written) {
+          toast.info(`AI ${data.generated.written} ta savol yozdi (bankka qo'shildi)`);
+        }
+
         warnings.forEach((w) => toast.warning(w, { duration: 8000 }));
+        onDone?.();
       },
       onError: (err) =>
-        toast.error(err.response?.data?.message || "Test yaratilmadi"),
+        toast.error(err.response?.data?.message || "Test yaratilmadi", {
+          duration: 10000,
+        }),
+    });
+
+  /** AI yozgan savollarni ommaviy tasdiqlash (`diagnostics.moderate`). */
+  const handleApprove = (test) =>
+    approveQuestions(test.id, {
+      onSuccess: (res) => {
+        toast.success(res?.message || "Savollar tasdiqlandi");
+        (res?.data?.skipped ?? []).forEach((item) =>
+          toast.warning(`${item.code}: ${item.reason}`, { duration: 8000 }),
+        );
+      },
+      onError: (err) =>
+        toast.error(err.response?.data?.message || "Tasdiqlab bo'lmadi"),
     });
 
   const rows = data?.data ?? [];
@@ -254,7 +293,7 @@ const TestsPage = () => {
         <TestBuilder
           classes={classes}
           isPending={isCreating}
-          onCreate={handleCreate}
+          onBuild={handleBuild}
         />
       </Can>
 
@@ -354,6 +393,17 @@ const TestsPage = () => {
 
                   <Td align="right" className="tabular-nums text-gray-700">
                     {test.questionCount}
+                    {/* ⚠️ TASDIQLANMAGAN SAVOL RO'YXATDA KO'RINADI:
+                        test nega nashr qilinmayotgani shundan ma'lum
+                        bo'ladi, tugmani bosib xato olgandan keyin emas. */}
+                    {test.pendingApproval > 0 && (
+                      <span
+                        className="ml-1.5 inline-flex rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200"
+                        title={`${test.pendingApproval} ta savol tasdiqlanmagan`}
+                      >
+                        {test.pendingApproval} ko'rikda
+                      </span>
+                    )}
                   </Td>
 
                   <Td className="whitespace-nowrap text-gray-500">
@@ -374,6 +424,30 @@ const TestsPage = () => {
 
                   <Td align="center">
                     <span className="inline-flex gap-1.5">
+                      {/* ⚠️ TASDIQLASH ALOHIDA RUXSAT (`moderate`):
+                          savol yozish huquqi uni o'zi tasdiqlash
+                          huquqini bermaydi — bank sifati aynan shu
+                          ikki qadamning ajratilganidan kelib chiqadi. */}
+                      {test.pendingApproval > 0 && (
+                        <Can do="diagnostics.moderate">
+                          <ConfirmPopover
+                            tooltip="Savollarni tasdiqlash"
+                            title={`${test.pendingApproval} ta savolni tasdiqlash`}
+                            description="Savollar ko'rib chiqilgan bo'lsa tasdiqlang — shundan keyin test nashr qilinadi."
+                            confirmLabel="Tasdiqlash"
+                            onConfirm={() => handleApprove(test)}
+                          >
+                            <button
+                              type="button"
+                              disabled={isApproving}
+                              className="rounded-lg border border-gray-200 p-1.5 text-emerald-600 transition-colors hover:border-emerald-200 hover:bg-emerald-50 disabled:opacity-50"
+                            >
+                              <BadgeCheck className="size-4" strokeWidth={1.5} />
+                            </button>
+                          </ConfirmPopover>
+                        </Can>
+                      )}
+
                       <Can do="diagnostics.update">
                         {(TEST_STATUS_TRANSITIONS[test.status] || []).map(
                           (next) => {

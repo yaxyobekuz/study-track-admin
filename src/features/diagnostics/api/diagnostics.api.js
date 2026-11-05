@@ -66,6 +66,23 @@ export const diagnosticTestsAPI = {
   getOne: (id) => http.get(`/diagnostic-tests/${id}`),
   getAvailability: (id) => http.get(`/diagnostic-tests/${id}/availability`),
   create: (data) => http.post("/diagnostic-tests", data),
+
+  /**
+   * OLDINDAN KO'RISH — hech narsa yozmaydi.
+   *
+   * ⚠️ `POST`, `GET` EMAS: taqsimot bir nechta fan qatoridan iborat
+   * obyektlar massivi va uni query stringga solish (`blueprint[0][easy]=5`)
+   * ham o'qilmas, ham `clean()` filtridan o'tmas edi.
+   */
+  preview: (data) => http.post("/diagnostic-tests/preview", data),
+
+  /** Mavzu qamrovi bilan yig'ish (bank + AI). Model chaqiruvi — sekin. */
+  build: (data) => http.post("/diagnostic-tests/build", data),
+
+  /** AI yozgan savollarni ommaviy tasdiqlash (`diagnostics.moderate`). */
+  approveQuestions: (id) =>
+    http.patch(`/diagnostic-tests/${id}/approve-questions`),
+
   update: (id, data) => http.put(`/diagnostic-tests/${id}`, data),
   updateStatus: (id, status) =>
     http.patch(`/diagnostic-tests/${id}/status`, { status }),
@@ -119,6 +136,9 @@ export const diagnosticAnalyticsAPI = {
     http.get("/diagnostics/analytics/classes", { params: clean(params) }),
   students: (params) =>
     http.get("/diagnostics/analytics/students", { params: clean(params) }),
+  /** O'qituvchilar kesimi — sinf + fan → o'qituvchi (dars jadvalidan). */
+  teachers: (params) =>
+    http.get("/diagnostics/analytics/teachers", { params: clean(params) }),
   participation: (params) =>
     http.get("/diagnostics/analytics/participation", { params: clean(params) }),
   /** Bitta sinfning tafsiloti — ko'rsatkichlar, testlar, o'quvchilar. */

@@ -192,6 +192,12 @@ const StudentsPage = () => {
               { label: "To'g'ri", align: "right" },
               { label: "Noto'g'ri", align: "right" },
               { label: "O'rtacha natija", align: "right" },
+              // ⚠️ O'SISH USTUNI — server allaqachon `growth` ni
+              // qaytarardi (o'tgan AYNI UZUNLIKDAGI davr bilan farq),
+              // lekin ekranda ko'rsatilmasdi: "64%" o'z-o'zicha hech
+              // narsa aytmaydi, "64%, −12 punkt" esa qaror qabul
+              // qilishga yaraydi (sinflar ekranidagi AYNI ustun).
+              { label: "O'sish", align: "right" },
               "Daraja",
               "So'nggi faoliyat",
               { label: "Amallar", align: "center" },
@@ -256,6 +262,10 @@ const StudentsPage = () => {
                   ) : (
                     <span className="text-gray-300">—</span>
                   )}
+                </Td>
+
+                <Td align="right">
+                  <Growth value={row.growth} />
                 </Td>
 
                 <Td>
@@ -338,6 +348,32 @@ const RankBadge = ({ rank }) => {
     >
       {Icon && <Icon className="size-3.5" strokeWidth={2} />}
       {rank}-o'rin
+    </span>
+  );
+};
+
+/**
+ * O'TGAN DAVR BILAN FARQ (punktda).
+ *
+ * ⚠️ `null` — "o'tgan davrda natija bo'lmagan", 0 EMAS. 0 "o'zgarmadi"
+ * degani; ikkisini bir xil ko'rsatish yangi o'quvchini "turg'un" deb
+ * belgilardi (sinflar ekranidagi AYNI qoida).
+ */
+const Growth = ({ value }) => {
+  if (value == null) return <span className="text-gray-300">—</span>;
+  const positive = value > 0;
+  const zero = value === 0;
+  return (
+    <span
+      className={cn(
+        "font-medium tabular-nums",
+        positive && "text-emerald-600",
+        !positive && !zero && "text-rose-600",
+        zero && "text-gray-400",
+      )}
+    >
+      {positive ? "+" : ""}
+      {value}
     </span>
   );
 };

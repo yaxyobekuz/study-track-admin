@@ -85,6 +85,53 @@ export const useCreateTest = () => {
   });
 };
 
+/**
+ * REJA — "TESTNI YARATISH" DAN OLDINGI TEKSHIRUV.
+ *
+ * ⚠️ `useMutation`, `useQuery` EMAS: bu `POST` va u ODAM TUGMA BOSGANDA
+ * ishlaydi. `useQuery` bo'lsa taqsimot har tahrirlanganda serverga
+ * so'rov ketardi (har raqam kiritilganda) — holbuki tekshiruv jadval
+ * va kalendarni o'qiydi, ya'ni arzon emas.
+ *
+ * ⚠️ HECH NARSA YOZMAYDI, shuning uchun kesh ham bekor qilinmaydi.
+ */
+export const usePreviewTest = () =>
+  useMutation({
+    mutationFn: (data) => diagnosticTestsAPI.preview(data).then((r) => r.data.data),
+  });
+
+/**
+ * MAVZU QAMROVI BILAN TEST YIG'ISH (bank + AI).
+ *
+ * ⚠️ SAVOLLAR BANKI KESHI HAM BEKOR QILINADI: AI qatori bankka YANGI
+ * savollar yozadi (`review` holatida) va ular moderatsiya ro'yxatida
+ * darhol ko'rinishi kerak — aks holda admin "AI savol yozdi" degan
+ * xabarni olib, bankda hech narsa topmasdi.
+ */
+export const useBuildTest = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => diagnosticTestsAPI.build(data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: testKeys.all });
+      qc.invalidateQueries({ queryKey: questionKeys.all });
+    },
+  });
+};
+
+/** AI yozgan savollarni ommaviy tasdiqlash — testni nashrga tayyorlaydi. */
+export const useApproveTestQuestions = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) =>
+      diagnosticTestsAPI.approveQuestions(id).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: testKeys.all });
+      qc.invalidateQueries({ queryKey: questionKeys.all });
+    },
+  });
+};
+
 export const useUpdateTest = () => {
   const qc = useQueryClient();
   return useMutation({

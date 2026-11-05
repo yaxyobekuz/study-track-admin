@@ -220,6 +220,7 @@ const CUT_FETCHERS = {
   topics: diagnosticAnalyticsAPI.topics,
   classes: diagnosticAnalyticsAPI.classes,
   students: diagnosticAnalyticsAPI.students,
+  teachers: diagnosticAnalyticsAPI.teachers,
 };
 
 export const analyticsQueries = {

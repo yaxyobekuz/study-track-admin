@@ -36,6 +36,62 @@ export const LEVEL_BADGE = {
   expert: "bg-rose-50 text-rose-700 ring-rose-200",
 };
 
+// ── SAVOLLAR MANBASI (test yaratishda) ───────
+
+/**
+ * ⚠️ SERVER BILAN BIR XIL: `helpers/diagnosticBlueprint.helpers.js`
+ * (`BLUEPRINT_SOURCES`, `SOURCE_LABELS`). Qiymatlar qo'lda sinxron —
+ * yangi manba qo'shilsa ikkalasini ham tahrirlang.
+ */
+export const BLUEPRINT_SOURCES = [
+  {
+    value: "bank",
+    label: "Bankdan",
+    hint: "Tasdiqlangan savollar bazasidan olinadi — darhol tayyor",
+  },
+  {
+    value: "ai",
+    label: "AI yozadi",
+    hint: "Model yangi savol yozadi; ular bankka tushadi va tasdiqlanishi kerak",
+  },
+];
+
+export const SOURCE_LABELS = Object.fromEntries(
+  BLUEPRINT_SOURCES.map((item) => [item.value, item.label]),
+);
+
+/**
+ * MAVZU QAMROVI.
+ *
+ * ⚠️ UCHINCHI TANLOV ("hamma mavzudan") YO'Q va qo'shilmaydi: modulning
+ * butun va'dasi o'quvchi O'TGAN materialdan so'ralishi
+ * (`.claude/rules/education.md` §13 va serverdagi
+ * `diagnosticTopicScope.service.js`).
+ */
+export const TOPIC_MODES = [
+  {
+    value: "current",
+    label: "Hozirgi mavzugacha",
+    hint: "1-mavzudan sinf hozir kelgan mavzusigacha",
+  },
+  {
+    value: "range",
+    label: "Mavzular oralig'i",
+    hint: "Aniq oraliq — lekin joriy mavzudan oshmaydi",
+  },
+];
+
+export const TOPIC_MODE_LABELS = Object.fromEntries(
+  TOPIC_MODES.map((item) => [item.value, item.label]),
+);
+
+/** Taqsimotdagi uch daraja — server `LEVEL_KEYS` bilan bir xil tartibda. */
+export const BLUEPRINT_LEVELS = [
+  { key: "easy", label: "Oson" },
+  { key: "medium", label: "O'rta" },
+  { key: "hard", label: "Qiyin" },
+];
+
 // ── SAVOL TURLARI ────────────────────────────
 
 export const QUESTION_TYPES = [
@@ -351,6 +407,16 @@ export const DIAGNOSTIC_TABS = [
     to: "/diagnostics/students",
     label: "O'quvchilar",
     title: "O'quvchilar reytingi",
+    can: "diagnostics.analytics",
+    exact: false,
+  },
+  {
+    // ⚠️ "O'quvchilar" DAN KEYIN: kesim kengdan torga boradi, lekin
+    // o'qituvchi kesimi — BOSHQA O'Q (kim bilan gaplashish kerak),
+    // shuning uchun o'quvchilar reytingidan keyin, natijalardan oldin.
+    to: "/diagnostics/teachers",
+    label: "O'qituvchilar",
+    title: "O'qituvchilar kesimi",
     can: "diagnostics.analytics",
     exact: false,
   },
