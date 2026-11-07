@@ -17,6 +17,19 @@ export const topicsQueries = {
       queryFn: () => topicsAPI.getBySubject(subjectId).then((r) => r.data.data ?? []),
       enabled: Boolean(subjectId),
     }),
+
+  /**
+   * Fanlar bo'yicha mavzu holati → `{ items, totals }`.
+   *
+   * ⚠️ `topicsKeys.all` ostida: yuklash va o'chirish mutatsiyalari shu
+   * kalitni bekor qiladi, ya'ni holat alohida listener'siz yangilanadi.
+   */
+  subjectStatus: () =>
+    queryOptions({
+      queryKey: [...topicsKeys.all, "subject-status"],
+      queryFn: () =>
+        topicsAPI.subjectStatus().then((r) => r.data.data ?? null),
+    }),
 };
 
 /**
@@ -27,3 +40,12 @@ export const topicsQueries = {
  */
 export const useSubjectTopics = (subjectId) =>
   useQuery(topicsQueries.bySubject(subjectId));
+
+/**
+ * Qaysi fanga mavzu yuklangan, qaysiga yo'q.
+ *
+ * @example
+ * const { data } = useTopicSubjectStatus();
+ */
+export const useTopicSubjectStatus = () =>
+  useQuery(topicsQueries.subjectStatus());

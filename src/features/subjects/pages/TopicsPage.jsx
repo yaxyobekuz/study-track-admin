@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import Card from "@/shared/components/ui/Card";
 import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
+import SubjectTopicStatus from "@/features/subjects/components/SubjectTopicStatus";
 
 // Hooks
 import useModal from "@/shared/hooks/useModal";
@@ -85,6 +86,21 @@ const Topics = () => {
     }
   };
 
+  /**
+   * MAVZULAR YUKLASH OYNASI.
+   *
+   * ⚠️ `subjectId` berilsa oyna "Bitta fan" rejimida o'sha fan bilan
+   * ochiladi va bu YUKLANGAN fanga ham amal qiladi: yuklash ro'yxatni
+   * ALMASHTIRADI, ya'ni "ustiga qayta yuklash" oddiy yo'l.
+   *
+   * ⚠️ `data` HAR DOIM obyekt bilan beriladi (`subjectId: null` ham):
+   * `openModal(name)` ma'lumotsiz chaqirilsa oynaning AVVALGI ma'lumoti
+   * saqlanib qoladi (`ModalProvider`) va bitta fanga yuklagandan keyin
+   * umumiy "Mavzular yuklash" tugmasi ham o'sha fan bilan ochilardi.
+   */
+  const handleOpenUpload = (subjectId = null) =>
+    openModal("uploadTopics", { subjectId: subjectId || null });
+
   const handleDeleteAllTopics = () => {
     if (!selectedSubject) return;
 
@@ -148,7 +164,7 @@ const Topics = () => {
             <Button
               className="px-5"
               variant="default"
-              onClick={() => openModal("uploadTopics")}
+              onClick={() => handleOpenUpload()}
             >
               <Upload className="size-4 mr-2" strokeWidth={1.5} />
               Mavzular yuklash
@@ -166,6 +182,13 @@ const Topics = () => {
           </div>
         </div>
       </Card>
+
+      {/* QAYSI FANGA YUKLANGAN, QAYSIGA YO'Q */}
+      <SubjectTopicStatus
+        selectedSubject={selectedSubject}
+        onSelect={setSelectedSubject}
+        onUpload={handleOpenUpload}
+      />
 
       {selectedSubject && (
         <Card className="flex justify-end mb-6">

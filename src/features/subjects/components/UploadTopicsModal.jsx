@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // React
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 // Components
 import Select from "@/shared/components/ui/select/Select";
@@ -46,7 +46,13 @@ const UploadTopicsModal = () => (
   </ResponsiveModal>
 );
 
-const Content = ({ close, isLoading, setIsLoading }) => {
+/**
+ * ⚠️ `subjectId` — oynani ochgan joy bergan fan ("Fanlar bo'yicha
+ * mavzular" qatoridagi yuklash tugmasi). Berilsa oyna darhol "Bitta fan"
+ * rejimida o'sha fan bilan ochiladi; berilmasa avvalgidek "Barcha fanlar".
+ * Fan YUKLANGAN bo'lsa ham to'siq yo'q: yuklash ro'yxatni almashtiradi.
+ */
+const Content = ({ close, isLoading, setIsLoading, subjectId = null }) => {
   const { data: subjects = [] } = useSubjects();
   const { mutate: uploadTopics } = useUploadTopics();
 
@@ -54,10 +60,22 @@ const Content = ({ close, isLoading, setIsLoading }) => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  const { state, setField } = useObjectState({
-    uploadMode: "all",
-    subjectId: "",
+  const { state, setField, setFields } = useObjectState({
+    uploadMode: subjectId ? "single" : "all",
+    subjectId: subjectId || "",
   });
+
+  // ⚠️ Oyna qayta ochilganda rejim OYNANI OCHGAN JOYGA moslanadi: Radix
+  // oyna yopilganda uni unmount qiladi, lekin bunga tayanib qolinmaydi —
+  // aks holda bitta fanga yuklagandan keyin umumiy "Mavzular yuklash"
+  // tugmasi o'sha fan bilan ochilib qolardi.
+  useEffect(() => {
+    setFields({
+      uploadMode: subjectId ? "single" : "all",
+      subjectId: subjectId || "",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjectId]);
 
   // Yuklash natijasi — har varaq bo'yicha. ⚠️ Oyna darhol YOPILMAYDI, agar
   // aytadigan gap bo'lsa (bo'sh ixtiyoriy ustun, yuklanmagan qator yoki

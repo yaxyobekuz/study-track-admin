@@ -15,6 +15,12 @@ export const topicsAPI = {
   getBySubject: (subjectId) => http.get(`/topics/subject/${subjectId}`),
 
   /**
+   * Fanlar bo'yicha mavzu holati: qaysi fanga yuklangan, qaysiga yo'q
+   * (har fanda nechta mavzu va oxirgi marta qachon yuklangani).
+   */
+  subjectStatus: () => http.get("/topics/subjects"),
+
+  /**
    * Mavzular rejasini Excel'ga yuklab olish.
    *
    * ⚠️ Fayl — QAYTA YUKLASH SHABLONI (`upload` bilan AYNI ustunlar va
