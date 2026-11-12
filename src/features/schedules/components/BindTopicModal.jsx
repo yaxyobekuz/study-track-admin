@@ -12,6 +12,10 @@ import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
 import Button from "@/shared/components/ui/button/Button";
 import SelectSearch from "@/shared/components/ui/select/SelectSearch";
 import TopicMeta from "@/features/subjects/components/TopicMeta";
+import LanguageBadge from "@/shared/components/ui/LanguageBadge";
+
+// Data — o'quv tili (server bilan qo'lda sinxron)
+import { languageClassLabel } from "@/shared/data/teachingLanguage.data";
 
 // Queries
 import { useSubjectTopics } from "@/features/subjects/queries/topics.queries";
@@ -37,6 +41,13 @@ const NOTE_MAX = 300;
  *   · `lessonOrder`
  *   · `currentTopicOrder` — hozir shu darsda ko'rinayotgan mavzu
  *   · `binding` — shu darsda FAOL ankor bo'lsa (bekor qilish uchun)
+ *   · `language` — SINFNING o'quv tili (jadval javobidan)
+ *
+ * ⚠️ MAVZULAR RO'YXATI SINFNING TILIDAN (2026-11-12). Bitta fanda uch til
+ * uchun uch mustaqil ro'yxat bor va har biri 1 dan raqamlanadi. Tilsiz
+ * o'qilsa, rus guruhiga o'zbek ro'yxati ko'rsatilib, server o'sha raqamni
+ * O'Z ro'yxatidan izlardi — natijada boshqa kitobning mavzusi
+ * biriktirilib qolardi (yoki "mavzu topilmadi" xatosi chiqardi).
  */
 const BindTopicModal = () => (
   <ResponsiveModal
@@ -63,8 +74,12 @@ const BindForm = ({
   lessonOrder,
   currentTopicOrder = null,
   binding = null,
+  language = null,
 }) => {
-  const { data: topics = [], isLoading: topicsLoading } = useSubjectTopics(subjectId);
+  const { data: topics = [], isLoading: topicsLoading } = useSubjectTopics(
+    subjectId,
+    language,
+  );
   const { mutate: bind } = useBindLessonTopic();
   const { mutate: unbind } = useUnbindLessonTopic();
 
@@ -144,8 +159,13 @@ const BindForm = ({
     <form onSubmit={handleSubmit} className="min-w-0 space-y-4">
       {/* Qaysi dars */}
       <div className="rounded-xl bg-slate-50 p-3">
-        <p className="text-sm font-medium text-gray-900">
-          {className} · {lessonOrder}-dars · {subjectName || "Fan yo'q"}
+        <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-gray-900">
+          <span>
+            {className} · {lessonOrder}-dars · {subjectName || "Fan yo'q"}
+          </span>
+          {/* ⚠️ Mavzular ro'yxati AYNAN shu tildan — odam qaysi rejadan
+              tanlayotganini ko'rib turishi kerak. */}
+          <LanguageBadge language={language} asClass />
         </p>
         <p className="mt-0.5 text-xs text-gray-500">
           {dayLabel}, {dateLabel}

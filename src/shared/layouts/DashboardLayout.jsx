@@ -25,6 +25,8 @@ import RemoveClassStudentsModal from "@/features/classes/components/RemoveClassS
 import EditSubjectModal from "@/features/subjects/components/EditSubjectModal";
 import SendMessageModal from "@/features/messages/components/SendMessageModal";
 import UploadTopicsModal from "@/features/subjects/components/UploadTopicsModal";
+// O'quvchining shaxsiy mavzu o'rni va "bitta darsda nechta mavzu" qadami
+import StudentTopicPlanModal from "@/features/studentTopics/components/StudentTopicPlanModal";
 import CreateSubjectModal from "@/features/subjects/components/CreateSubjectModal";
 import DeleteSubjectModal from "@/features/subjects/components/DeleteSubjectModal";
 import DeleteProductModal from "@/features/market/components/DeleteProductModal";
@@ -117,6 +119,7 @@ const DashboardLayout = () => {
 
       {/* Topic Modals */}
       <UploadTopicsModal />
+      <StudentTopicPlanModal />
 
       {/* Market */}
       <DeleteProductModal />

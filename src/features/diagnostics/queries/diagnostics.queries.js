@@ -75,6 +75,7 @@ export const testKeys = {
   list: (params) => [...testKeys.all, "list", params],
   detail: (id) => [...testKeys.all, "detail", id],
   availability: (id) => [...testKeys.all, "availability", id],
+  review: (id) => [...testKeys.all, "review", id],
   mine: () => [...testKeys.all, "mine"],
 };
 
@@ -99,6 +100,21 @@ export const testQueries = {
       queryFn: () =>
         diagnosticTestsAPI.getAvailability(id).then((r) => r.data.data),
       enabled: Boolean(id),
+    }),
+
+  /**
+   * TASDIQLASH EKRANI — har o'quvchining qamrovi va savollari.
+   *
+   * ⚠️ `staleTime: 0` — savolni almashtirgandan keyin ekran DARHOL
+   * yangilanishi kerak: eskirgan ro'yxatdan almashtirilgan savolni qayta
+   * almashtirish so'rovi ketardi va server "topilmadi" deb qaytarardi.
+   */
+  review: (id) =>
+    queryOptions({
+      queryKey: testKeys.review(id),
+      queryFn: () => diagnosticTestsAPI.review(id).then((r) => r.data.data),
+      enabled: Boolean(id),
+      staleTime: 0,
     }),
 
   mine: () =>

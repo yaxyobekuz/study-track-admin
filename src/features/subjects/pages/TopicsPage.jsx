@@ -11,6 +11,13 @@ import Select from "@/shared/components/ui/select/Select";
 import Button from "@/shared/components/ui/button/Button";
 import SubjectTopicStatus from "@/features/subjects/components/SubjectTopicStatus";
 
+// Data — o'quv tili (server bilan qo'lda sinxron)
+import {
+  DEFAULT_TEACHING_LANGUAGE,
+  teachingLanguageOptions,
+  languageClassLabel,
+} from "@/shared/data/teachingLanguage.data";
+
 // Hooks
 import useModal from "@/shared/hooks/useModal";
 import { useSubjects } from "@/features/subjects/queries/subjects.queries";
@@ -38,10 +45,24 @@ const Topics = () => {
     () => localStorage.getItem("topics_selectedSubject") || "",
   );
 
+  /**
+   * TANLANGAN O'QUV TILI — ekranning butun kesimi.
+   *
+   * ⚠️ TIL TANLOVI SAQLANADI (`localStorage`): rus guruhlari bilan
+   * ishlayotgan odam har sahifa ochilganda uni qaytadan tanlashi kerak
+   * emas (fan tanlovi bilan AYNI naqsh).
+   */
+  const [language, setLanguage] = useState(
+    () =>
+      localStorage.getItem("topics_language") || DEFAULT_TEACHING_LANGUAGE,
+  );
+
   // Topics for the selected subject. The upload mutation invalidates the topics
   // cache, so newly uploaded topics show up here without any manual listener.
-  const { data: topics = [], isLoading: loading } =
-    useSubjectTopics(selectedSubject);
+  const { data: topics = [], isLoading: loading } = useSubjectTopics(
+    selectedSubject,
+    language,
+  );
 
   const { mutate: deleteSubjectTopics } = useDeleteSubjectTopics();
 
@@ -61,6 +82,10 @@ const Topics = () => {
     }
   }, [selectedSubject]);
 
+  useEffect(() => {
+    localStorage.setItem("topics_language", language);
+  }, [language]);
+
   /**
    * MAVZULARNI EXCEL'GA YUKLAB OLISH.
    *
@@ -75,8 +100,10 @@ const Topics = () => {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const response = await topicsAPI.export(selectedSubject || null);
-      downloadBlob(response, "mavzular.xlsx");
+      // ⚠️ TIL FAYL NOMIDA ham: uchta tilning fayli bir papkada
+      // bir-birini almashtirmasin (server ham shunday nomlaydi).
+      const response = await topicsAPI.export(selectedSubject || null, language);
+      downloadBlob(response, `mavzular_${language}.xlsx`);
     } catch (error) {
       toast.error(
         await readBlobErrorMessage(error, "Mavzularni yuklab bo'lmadi"),
@@ -99,7 +126,12 @@ const Topics = () => {
    * umumiy "Mavzular yuklash" tugmasi ham o'sha fan bilan ochilardi.
    */
   const handleOpenUpload = (subjectId = null) =>
-    openModal("uploadTopics", { subjectId: subjectId || null });
+    openModal("uploadTopics", {
+      subjectId: subjectId || null,
+      // Oyna ekranda tanlangan til bilan ochiladi — admin uni qaytadan
+      // tanlamaydi, lekin oynada O'ZGARTIRA oladi (yuklash — ongli qaror).
+      language,
+    });
 
   const handleDeleteAllTopics = () => {
     if (!selectedSubject) return;
@@ -108,12 +140,13 @@ const Topics = () => {
       subjects.find((s) => s.id === selectedSubject)?.name || "Bu fan";
 
     const confirmed = window.confirm(
-      `${selectedSubjectName} uchun barcha mavzular o'chiriladi. Davom etishni xohlaysizmi?`,
+      `${selectedSubjectName} fanining ${languageClassLabel(language)} rejasidagi ` +
+        `barcha mavzular o'chiriladi. Boshqa tillarga tegilmaydi. Davom etasizmi?`,
     );
 
     if (!confirmed) return;
 
-    deleteSubjectTopics(selectedSubject, {
+    deleteSubjectTopics({ subjectId: selectedSubject, language }, {
       onSuccess: (res) => toast.success(res.message),
       onError: (error) =>
         toast.error(
@@ -137,6 +170,19 @@ const Topics = () => {
                 value: subject.id,
               }))}
               placeholder="Fanni tanlang"
+            />
+          </div>
+
+          {/* ⚠️ O'QUV TILI — ekranning butun kesimi: ro'yxat, yuklab olish
+              va o'chirish FAQAT shu tilning rejasiga tegadi. Bitta fanda
+              uch til uchun uch mustaqil ro'yxat bo'ladi va har biri 1 dan
+              raqamlanadi. */}
+          <div className="w-full sm:w-56">
+            <Select
+              label="O'quv tili"
+              value={language}
+              onChange={(value) => setLanguage(value)}
+              options={teachingLanguageOptions}
             />
           </div>
 
@@ -188,6 +234,8 @@ const Topics = () => {
         selectedSubject={selectedSubject}
         onSelect={setSelectedSubject}
         onUpload={handleOpenUpload}
+        language={language}
+        onLanguageChange={setLanguage}
       />
 
       {selectedSubject && (
@@ -224,7 +272,8 @@ const Topics = () => {
               </h3>
 
               <p className="text-gray-600 mb-4">
-                Bu fan uchun hali mavzular yuklanmagan
+                Bu fanning {languageClassLabel(language).toLowerCase()} rejasi
+                hali yuklanmagan
               </p>
             </div>
           )}

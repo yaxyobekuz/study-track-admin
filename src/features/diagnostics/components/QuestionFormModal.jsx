@@ -17,6 +17,12 @@ import Button from "@/shared/components/ui/button/Button";
 import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 import { useSubjectTopics } from "@/features/subjects/queries/topics.queries";
 
+// Data — o'quv tili (server bilan qo'lda sinxron)
+import {
+  DEFAULT_TEACHING_LANGUAGE,
+  teachingLanguageOptions,
+} from "@/shared/data/teachingLanguage.data";
+
 // Queries
 import {
   useCreateQuestion,
@@ -41,6 +47,7 @@ const fromQuestion = (question) => ({
   text: question.text ?? "",
   subjectId: question.subjectId ?? "",
   topicId: question.topicId ?? "",
+  language: question.language || DEFAULT_TEACHING_LANGUAGE,
   type: question.type ?? "single",
   difficulty: question.difficulty ?? "medium",
   grade: question.grade ?? "",
@@ -63,6 +70,7 @@ const blankState = () => ({
   text: "",
   subjectId: "",
   topicId: "",
+  language: DEFAULT_TEACHING_LANGUAGE,
   type: "single",
   difficulty: "medium",
   grade: "",
@@ -100,7 +108,14 @@ const Content = ({ close, isLoading, setIsLoading, question }) => {
     question?.id ? fromQuestion(question) : blankState(),
   );
 
-  const { data: topics = [] } = useSubjectTopics(form.subjectId);
+  /**
+   * ⚠️ MAVZULAR TANLANGAN TILDAN (2026-11-12). Bitta fanda uch til uchun
+   * uch mustaqil ro'yxat bor: savol matni rus tilida bo'lsa, mavzu ham
+   * RUS rejasidan tanlanishi kerak — aks holda mavzu kesimi (tahlil,
+   * zaif mavzular, test qamrovi) boshqa kitobning mavzusiga tegishli
+   * bo'lib qolardi.
+   */
+  const { data: topics = [] } = useSubjectTopics(form.subjectId, form.language);
 
   const { mutate: createQuestion } = useCreateQuestion();
   const { mutate: updateQuestion } = useUpdateQuestion();
@@ -196,6 +211,7 @@ const Content = ({ close, isLoading, setIsLoading, question }) => {
     formData.append("text", form.text.trim());
     formData.append("subjectId", form.subjectId);
     formData.append("topicId", form.topicId || "");
+    formData.append("language", form.language || DEFAULT_TEACHING_LANGUAGE);
     formData.append("type", form.type);
     formData.append("difficulty", form.difficulty);
     formData.append("grade", form.grade === "" ? "" : String(form.grade));
@@ -259,6 +275,19 @@ const Content = ({ close, isLoading, setIsLoading, question }) => {
         />
 
         <SelectField
+          required
+          name="language"
+          label="Savol tili"
+          value={form.language}
+          options={teachingLanguageOptions}
+          // ⚠️ Til o'zgarsa mavzu TOZALANADI: tanlangan mavzu boshqa
+          // tilning ro'yxatidan bo'lib qolardi.
+          onChange={(value) =>
+            setForm((p) => ({ ...p, language: value, topicId: "" }))
+          }
+        />
+
+        <SelectField
           name="topicId"
           label="Mavzu (ixtiyoriy)"
           placeholder={form.subjectId ? "Tanlang" : "Avval fanni tanlang"}
@@ -266,7 +295,7 @@ const Content = ({ close, isLoading, setIsLoading, question }) => {
           disabled={!form.subjectId}
           options={[
             { value: "", label: "Mavzusiz" },
-            ...topics.map((t) => ({ value: t.id, label: t.name })),
+            ...topics.map((t) => ({ value: t.id, label: `${t.order}. ${t.name}` })),
           ]}
           onChange={(value) => setField("topicId", value)}
         />

@@ -438,6 +438,12 @@ export const PERMISSION_SECTIONS = [
       A.delete,
       { key: "questions", label: "Savollar bazasi" },
       { key: "moderate", label: "Savolni tasdiqlash" },
+      // ⚠️ TESTNI CHIQARISH — `create` DAN ALOHIDA (biznes qarori,
+      // 2026-11-12): "filial egasi ko'rib chiqadi, tasdiqlasa keyin
+      // chiqariladi". Test TUZISH huquqi uni CHIQARISH huquqiga
+      // aylanmasligi kerak (`payroll.generate` / `assign` bilan AYNI
+      // mulohaza). Tasdiqsiz test qoralamadan chiqa olmaydi.
+      { key: "publish", label: "Testni tasdiqlash va chiqarish" },
       { key: "attempts", label: "O'quvchilar natijalari" },
       { key: "analytics", label: "Tahlil" },
       { key: "ai", label: "AI tahlilini ishga tushirish" },

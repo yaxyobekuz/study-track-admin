@@ -15,12 +15,13 @@ import {
 // Components
 import Card from "@/shared/components/ui/Card";
 import TopicMeta from "@/features/subjects/components/TopicMeta";
+import LanguageBadge from "@/shared/components/ui/LanguageBadge";
 
 // Hooks
 import usePermissions from "@/shared/hooks/usePermissions";
 
 // Icons
-import { ArrowLeft, Edit2, Check, X } from "lucide-react";
+import { ArrowLeft, Edit2, Check, X, Users, TriangleAlert } from "lucide-react";
 
 const SubjectTopics = () => {
   const { subjectId } = useParams();
@@ -32,7 +33,14 @@ const SubjectTopics = () => {
   // ruxsatsiz odam har bosganda 403 xatosini ko'rardi.
   const canAssign = can("topics.assign");
 
-  // Topics come from the shared subjects-feature cache.
+  /**
+   * ⚠️ MAVZULAR RO'YXATI BU EKRANDA FAQAT DARAJA/KITOB BELGISI UCHUN.
+   *
+   * Sinflar boshqa-boshqa tilda bo'lishi mumkin va har sinfning joriy
+   * mavzusi O'Z tilidagi ro'yxatdan hisoblanadi — nom va maxrajni SERVER
+   * beradi (`currentTopicName`, `totalTopics`). Ro'yxatni bitta tilda
+   * o'qib undan nom izlash rus guruhiga o'zbek mavzusini ko'rsatardi.
+   */
   const { data: topics = [], isLoading: topicsLoading } =
     useSubjectTopics(subjectId);
 
@@ -59,10 +67,11 @@ const SubjectTopics = () => {
   // ⚠️ Mavzu raqami `null` BO'LISHI MUMKIN: mavzular yuklanmagan, yaqin
   // kunlarda bu fandan dars yo'q yoki mavzular tugagan. Server sababni
   // `reason` da aytadi — ekranda "null-mavzu" chiqib qolmasligi kerak.
-  const getTopicName = (topicNumber) => {
-    if (topicNumber == null) return null;
-    const topic = topics.find((t) => t.order === topicNumber);
-    return topic?.name || `${topicNumber}-mavzu`;
+  const getTopicName = (item) => {
+    if (item.currentTopicNumber == null) return null;
+    // ⚠️ SERVER BERGAN NOM BIRINCHI: u sinfning TILIDAGI ro'yxatdan
+    // olingan. Mahalliy ro'yxat faqat zaxira (nom kelmagan holat).
+    return item.currentTopicName || `${item.currentTopicNumber}-mavzu`;
   };
 
   const handleEditClick = (item) => {
@@ -83,8 +92,11 @@ const SubjectTopics = () => {
       return;
     }
 
-    if (newNumber > topics.length) {
-      toast.error(`Mavzu raqami ${topics.length} dan oshmasligi kerak`);
+    // ⚠️ MAXRAJ SINFNING O'ZIDAN (`item.totalTopics`): rus guruhning
+    // chegarasi o'zbek ro'yxatining uzunligi bo'lmasligi kerak.
+    const limit = item.totalTopics ?? topics.length;
+    if (limit && newNumber > limit) {
+      toast.error(`Mavzu raqami ${limit} dan oshmasligi kerak`);
       return;
     }
 
@@ -146,8 +158,13 @@ const SubjectTopics = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {classesData.map((item) => {
             const isEditing = editingClassId === item.class.id;
+            // Maxraj — SINFNING tilidagi ro'yxat uzunligi (serverdan)
+            const limit = item.totalTopics ?? topics.length;
+            // ⚠️ Daraja/kitob belgisi faqat sinfning tili tanlangan
+            // ro'yxat bilan BIR XIL bo'lsa ko'rsatiladi: boshqa tilning
+            // kitobi noto'g'ri ma'lumot bo'lardi.
             const currentTopic =
-              item.currentTopicNumber != null
+              item.currentTopicNumber != null && item.language === "uz"
                 ? topics.find((t) => t.order === item.currentTopicNumber)
                 : null;
 
@@ -156,8 +173,9 @@ const SubjectTopics = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     {/* Class Name */}
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="mb-2 flex flex-wrap items-center gap-2 text-lg font-semibold text-gray-900">
                       {item.class.name}
+                      <LanguageBadge language={item.language} asClass />
                     </h3>
 
                     {/* Current Topic */}
@@ -166,7 +184,7 @@ const SubjectTopics = () => {
                         <input
                           type="number"
                           min="1"
-                          max={topics.length || 999}
+                          max={limit || 999}
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
                           className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -176,9 +194,7 @@ const SubjectTopics = () => {
                             if (e.key === "Escape") handleCancel();
                           }}
                         />
-                        <span className="text-sm text-gray-500">
-                          / {topics.length}
-                        </span>
+                        <span className="text-sm text-gray-500">/ {limit}</span>
                         <button
                           onClick={() => handleSave(item)}
                           disabled={saving}
@@ -200,9 +216,7 @@ const SubjectTopics = () => {
                           <span className="text-2xl font-bold text-blue-600">
                             {item.currentTopicNumber ?? "—"}
                           </span>
-                          <span className="text-gray-400">
-                            / {topics.length}
-                          </span>
+                          <span className="text-gray-400">/ {limit}</span>
                           {canAssign && (
                             <button
                               onClick={() => handleEditClick(item)}
@@ -218,10 +232,25 @@ const SubjectTopics = () => {
                           className="mb-1"
                         />
                         <p className="text-sm text-gray-600">
-                          {getTopicName(item.currentTopicNumber) ||
-                            item.reason ||
-                            "Mavzu aniqlanmadi"}
+                          {getTopicName(item) || item.reason || "Mavzu aniqlanmadi"}
                         </p>
+
+                        {/* ⚠️ ANKOR BOSHQA TILDA YOZILGAN — jim tuzatilmaydi.
+                            Sinfning tili o'zgarsa, eski ankorning raqami
+                            boshqa kitobning mavzusiga tushadi: admin mavzuni
+                            qayta biriktirishi kerak. */}
+                        {item.languageMismatch && (
+                          <p className="mt-1 flex items-start gap-1.5 text-xs text-amber-700">
+                            <TriangleAlert
+                              className="mt-0.5 size-3.5 shrink-0"
+                              strokeWidth={1.5}
+                            />
+                            <span>
+                              Mavzu boshqa tildagi reja bo'yicha biriktirilgan —
+                              qayta biriktiring
+                            </span>
+                          </p>
+                        )}
                         {item.nextLesson && (
                           <p className="mt-0.5 text-xs text-gray-400">
                             Keyingi dars: {item.nextLesson.dateLabel},{" "}
@@ -239,19 +268,34 @@ const SubjectTopics = () => {
                     <div
                       className="bg-blue-600 h-2 rounded-full transition-all"
                       style={{
-                        width: `${topics.length > 0 && item.currentTopicNumber != null ? (item.currentTopicNumber / topics.length) * 100 : 0}%`,
+                        width: `${limit > 0 && item.currentTopicNumber != null ? (item.currentTopicNumber / limit) * 100 : 0}%`,
                       }}
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1 text-right">
-                    {topics.length > 0
-                      ? Math.round(
-                          (item.currentTopicNumber / topics.length) * 100,
-                        )
+                    {limit > 0 && item.currentTopicNumber != null
+                      ? Math.round((item.currentTopicNumber / limit) * 100)
                       : 0}
                     % tugallangan
                   </p>
                 </div>
+
+                {/* ⚠️ GURUH ICHIGA KIRISH — har o'quvchiga alohida mavzu
+                    o'rni va "bitta darsda nechta mavzu" qadami. Diagnostika
+                    testining qamrovi aynan shu raqamdan quriladi. */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      `/subjects/${subjectId}/topics/${item.class.id}` +
+                        `?from=/subjects/${subjectId}/topics`,
+                    )
+                  }
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  <Users className="size-4" strokeWidth={1.5} />
+                  O'quvchilar bo'yicha
+                </button>
               </Card>
             );
           })}

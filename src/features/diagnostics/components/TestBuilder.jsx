@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 // Icons
-import { Loader2, Plus, ScanSearch } from "lucide-react";
+import { Loader2, Plus, ScanSearch, Users } from "lucide-react";
 
 // Components
 import Card from "@/shared/components/ui/Card";
@@ -13,10 +13,14 @@ import Button from "@/shared/components/ui/button/Button";
 import Input from "@/shared/components/ui/input/Input";
 import TestBlueprintTable from "./TestBlueprintTable";
 import TestPlanCard from "./TestPlanCard";
+import StudentPlanCard from "./StudentPlanCard";
 
 // Hooks
 import { useSubjects } from "@/features/subjects/queries/subjects.queries";
-import { usePreviewTest } from "../queries/diagnostics.mutations";
+import {
+  usePreviewTest,
+  usePreviewStudentTest,
+} from "../queries/diagnostics.mutations";
 
 // Data
 import { TEST_MODES } from "../data/diagnostics.data";
@@ -42,6 +46,15 @@ import { cn } from "@/shared/utils/cn";
  * 7-sinf o'quvchisiga 6-sinf bazasidan savol berish odatiy hol
  * (takrorlash, bo'shliqni yopish), shuning uchun har fan qatorida
  * "Sinf (baza)" alohida tanlanadi.
+ *
+ * ⚠️ IKKI REJIM, BITTA FORMA (2026-11-12):
+ *   · "Butun guruhga bitta to'plam" — avvalgi xatti-harakat: chegara
+ *     SINFNING joriy mavzusidan, hammaga ayni savollar;
+ *   · "Har o'quvchiga o'z savollari" — chegara HAR BOLANING o'z
+ *     mavzu o'rnidan (`StudentTopicPlan`), savollar ham alohida.
+ *
+ * Ikki forma yozilsa, biriga qo'shilgan tekshiruv (mavzu oralig'i, AI
+ * ruxsati, eskirgan reja) ikkinchisida tushib qolardi.
  */
 const emptyRow = () => ({
   subjectId: "",
@@ -70,9 +83,28 @@ const toPayloadRow = (row) => ({
 
 const TestBuilder = ({ classes = [], onBuild, isPending }) => {
   const { data: subjects = [] } = useSubjects();
-  const { mutate: preview, isPending: isChecking } = usePreviewTest();
+  const { mutate: preview, isPending: isCheckingClass } = usePreviewTest();
+  const { mutate: previewStudents, isPending: isCheckingStudents } =
+    usePreviewStudentTest();
 
   const [classId, setClassId] = useState("");
+  /**
+   * HAR O'QUVCHIGA O'Z SAVOLLARI.
+   *
+   * ⚠️ SUKUT — O'CHIQ: avvalgi xatti-harakat saqlanadi. Yoqilganda
+   * qamrov har bolaning shaxsiy mavzu o'rnidan olinadi va kimga test
+   * tushmagani ham ro'yxatda ko'rinadi.
+   */
+  const [perStudent, setPerStudent] = useState(false);
+  /**
+   * TESTGA KIRMAYDIGAN O'QUVCHILAR.
+   *
+   * ⚠️ RO'YXAT "CHIQARILGANLAR" bo'yicha yuritiladi, "tanlanganlar"
+   * bo'yicha EMAS: tekshiruvdan oldin guruhning kimligi noma'lum
+   * (ro'yxat serverdan keladi) va bo'sh "tanlanganlar" ro'yxati
+   * "hech kim" degan ma'noni berib qolardi.
+   */
+  const [excluded, setExcluded] = useState([]);
   const [rows, setRows] = useState([]);
   const [form, setForm] = useState({
     title: "",
@@ -92,8 +124,8 @@ const TestBuilder = ({ classes = [], onBuild, isPending }) => {
    * test yaratardi — holbuki tekshiruv boshqa taqsimot uchun qilingan.
    */
   const currentKey = useMemo(
-    () => JSON.stringify({ classId, rows: rows.map(toPayloadRow) }),
-    [classId, rows],
+    () => JSON.stringify({ classId, perStudent, rows: rows.map(toPayloadRow) }),
+    [classId, perStudent, rows],
   );
   const stale = Boolean(plan) && planKey !== currentKey;
 
@@ -136,20 +168,25 @@ const TestBuilder = ({ classes = [], onBuild, isPending }) => {
     const error = validate();
     if (error) return toast.error(error);
 
-    preview(
-      { classId, blueprint: rows.map(toPayloadRow) },
-      {
-        onSuccess: (data) => {
-          setPlan(data);
-          setPlanKey(currentKey);
-          if (!data.canBuild) {
-            toast.warning("Taqsimotda tuzatilishi kerak joylar bor");
-          }
-        },
-        onError: (err) =>
-          toast.error(err.response?.data?.message || "Tekshirib bo'lmadi"),
+    const payload = { classId, blueprint: rows.map(toPayloadRow) };
+    const handlers = {
+      onSuccess: (data) => {
+        setPlan(data);
+        setPlanKey(currentKey);
+        // Tekshiruv yangi ro'yxat beradi — eski "chiqarilganlar" ma'nosiz
+        setExcluded([]);
+        if (!data.canBuild) {
+          toast.warning("Taqsimotda tuzatilishi kerak joylar bor");
+        }
       },
-    );
+      onError: (err) =>
+        toast.error(err.response?.data?.message || "Tekshirib bo'lmadi"),
+    };
+
+    // ⚠️ IKKI YO'L, BITTA TUGMA: rejim bo'yicha boshqa endpoint, lekin
+    // tekshiruv natijasi bilan ishlash qoidasi AYNI.
+    if (perStudent) previewStudents(payload, handlers);
+    else preview(payload, handlers);
   };
 
   const handleSubmit = () => {
@@ -159,6 +196,7 @@ const TestBuilder = ({ classes = [], onBuild, isPending }) => {
 
     onBuild(
       {
+        perStudent,
         title: form.title.trim(),
         description: form.description.trim() || undefined,
         mode: form.mode,
@@ -167,6 +205,18 @@ const TestBuilder = ({ classes = [], onBuild, isPending }) => {
         // ⚠️ Sana BO'LSA — test o'sha kundan ochiladi; bo'lmasa darhol.
         availableFrom: form.date || undefined,
         blueprint: rows.map(toPayloadRow),
+        // ⚠️ RO'YXAT FAQAT KIMDIR CHIQARILGANDA yuboriladi: bo'sh ro'yxat
+        // serverda "guruhning hammasi" degani (`studentIds: null`).
+        ...(perStudent && excluded.length > 0
+          ? {
+              studentIds: (plan?.students ?? [])
+                .filter(
+                  (row) =>
+                    row.status === "ready" && !excluded.includes(row.student.id),
+                )
+                .map((row) => row.student.id),
+            }
+          : {}),
       },
       { onDone: reset },
     );
@@ -178,10 +228,23 @@ const TestBuilder = ({ classes = [], onBuild, isPending }) => {
     setForm({ title: "", date: "", durationMin: 45, mode: "timed", description: "" });
     setPlan(null);
     setPlanKey(null);
+    setPerStudent(false);
+    setExcluded([]);
   };
 
   const needsAi = rows.some((r) => r.source === "ai");
-  const canSubmit = Boolean(plan) && !stale && plan.canBuild && !isPending;
+  const isChecking = isCheckingClass || isCheckingStudents;
+
+  // Moslangan testda kamida bitta o'quvchi qolishi kerak: hammasi
+  // chiqarilsa yaratadigan narsa qolmaydi.
+  const readyStudents = perStudent
+    ? (plan?.students ?? []).filter(
+        (row) => row.status === "ready" && !excluded.includes(row.student.id),
+      ).length
+    : 1;
+
+  const canSubmit =
+    Boolean(plan) && !stale && plan.canBuild && !isPending && readyStudents > 0;
 
   return (
     <div className="space-y-4">
@@ -217,11 +280,57 @@ const TestBuilder = ({ classes = [], onBuild, isPending }) => {
           </label>
 
           <p className="self-center text-sm leading-relaxed text-gray-500">
-            Mavzu chegarasi <b className="text-gray-700">shu sinfning</b> joriy
-            mavzusidan olinadi: o'tilmagan mavzudan savol tushmaydi. Shu sababli
-            bitta testga bitta sinf tanlanadi.
+            {perStudent ? (
+              <>
+                Mavzu chegarasi{" "}
+                <b className="text-gray-700">har bir o'quvchining</b> o'z mavzu
+                o'rnidan olinadi: guruhda kim qayerga kelgan bo'lsa, test o'sha
+                oraliqda tuziladi. Dars kunlari guruhning jadvalidan sanaladi,
+                shuning uchun bitta guruh tanlanadi.
+              </>
+            ) : (
+              <>
+                Mavzu chegarasi <b className="text-gray-700">shu sinfning</b>{" "}
+                joriy mavzusidan olinadi: o'tilmagan mavzudan savol tushmaydi.
+                Shu sababli bitta testga bitta sinf tanlanadi.
+              </>
+            )}
           </p>
         </div>
+
+        {/* ── REJIM ────────────────────────── */}
+        <button
+          type="button"
+          onClick={() => setPerStudent((prev) => !prev)}
+          className={cn(
+            "mt-4 flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-colors",
+            perStudent
+              ? "border-primary bg-primary/5"
+              : "border-gray-200 hover:border-gray-300",
+          )}
+        >
+          <span
+            className={cn(
+              "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
+              perStudent ? "border-primary bg-primary" : "border-gray-300",
+            )}
+          >
+            {perStudent && (
+              <Users className="size-3 text-white" strokeWidth={2.5} />
+            )}
+          </span>
+
+          <span className="min-w-0">
+            <span className="block text-sm font-medium text-gray-900">
+              Har o'quvchiga o'z savollari
+            </span>
+            <span className="mt-0.5 block text-xs text-gray-500">
+              Guruhdagi bolalar boshqa-boshqa mavzuga kelgan bo'ladi. Yoqilsa,
+              har bolaga uning O'Z mavzu oralig'idan savol tushadi; bir xil
+              oraliqdagilar ayni savollarni oladi.
+            </span>
+          </span>
+        </button>
       </Card>
 
       {/* ── 2. TAQSIMOT ────────────────────── */}
@@ -303,14 +412,45 @@ const TestBuilder = ({ classes = [], onBuild, isPending }) => {
       </Card>
 
       {/* ── 4. TEKSHIRUV ───────────────────── */}
-      {plan && <TestPlanCard plan={plan} stale={stale} />}
+      {plan &&
+        (perStudent ? (
+          <StudentPlanCard
+            plan={plan}
+            stale={stale}
+            excluded={excluded}
+            onToggleStudent={(studentId) =>
+              setExcluded((prev) =>
+                prev.includes(studentId)
+                  ? prev.filter((id) => id !== studentId)
+                  : [...prev, studentId],
+              )
+            }
+            onToggleAll={() =>
+              setExcluded((prev) =>
+                prev.length > 0
+                  ? []
+                  : (plan.students ?? [])
+                      .filter((row) => row.status === "ready")
+                      .map((row) => row.student.id),
+              )
+            }
+          />
+        ) : (
+          <TestPlanCard plan={plan} stale={stale} />
+        ))}
 
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="max-w-xl text-xs text-gray-500">
+            {/* ⚠️ TASDIQ DARVOZASI HAMMA TESTGA TEGISHLI (2026-11-12):
+                "filial egasi ko'rib chiqadi, tasdiqlasa keyin chiqariladi".
+                Ilgari faqat AI savollari tasdiq talab qilardi. */}
+            Test <b>qoralama</b> bo'lib yaratiladi.{" "}
             {needsAi
-              ? "AI yozgan savollar bankka qo'shiladi va tasdiqlanishi kerak — test qoralama bo'lib yaratiladi."
-              : "Savollar tasdiqlangan bazadan olinadi — test darhol nashrga tayyor bo'ladi."}
+              ? "AI yozgan savollar bankka qo'shiladi; "
+              : "Savollar tasdiqlangan bazadan olinadi; "}
+            chiqarishdan oldin "Ko'rib chiqish" ekranida savollarni tekshirib
+            tasdiqlash kerak.
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -349,8 +489,17 @@ const TestBuilder = ({ classes = [], onBuild, isPending }) => {
 
         {!plan && (
           <p className="mt-3 text-xs text-gray-400">
-            Testni yaratishdan oldin <b>Tekshirish</b> ni bosing: sinf qaysi
-            mavzuga kelgani va savollar qayerdan olinishi shundan ko'rinadi.
+            Testni yaratishdan oldin <b>Tekshirish</b> ni bosing:{" "}
+            {perStudent
+              ? "kim qaysi oraliqda test olishi va kimga tushmasligi shundan ko'rinadi."
+              : "sinf qaysi mavzuga kelgani va savollar qayerdan olinishi shundan ko'rinadi."}
+          </p>
+        )}
+
+        {/* Hammasi belgidan chiqarilgan holat — tugma nega o'chiq */}
+        {plan && perStudent && readyStudents === 0 && (
+          <p className="mt-3 text-xs text-red-600">
+            Birorta o'quvchi belgilanmagan — kamida bittasini belgilang.
           </p>
         )}
       </Card>

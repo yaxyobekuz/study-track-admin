@@ -19,6 +19,13 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 
+// Data — o'quv tili (server bilan qo'lda sinxron)
+import {
+  DEFAULT_TEACHING_LANGUAGE,
+  teachingLanguageOptions,
+  languageClassLabel,
+} from "@/shared/data/teachingLanguage.data";
+
 // Hooks
 import useObjectState from "@/shared/hooks/useObjectState";
 import { useSubjects } from "@/features/subjects/queries/subjects.queries";
@@ -51,8 +58,20 @@ const UploadTopicsModal = () => (
  * mavzular" qatoridagi yuklash tugmasi). Berilsa oyna darhol "Bitta fan"
  * rejimida o'sha fan bilan ochiladi; berilmasa avvalgidek "Barcha fanlar".
  * Fan YUKLANGAN bo'lsa ham to'siq yo'q: yuklash ro'yxatni almashtiradi.
+ *
+ * ⚠️ `language` — ekranda tanlangan til bilan ochiladi, lekin OYNADA
+ * O'ZGARTIRILADI: yuklash FAQAT o'sha tilning ro'yxatini almashtiradi
+ * (rus rejasini yuklash o'zbek rejasiga TEGMAYDI) va bu ongli qaror
+ * bo'lishi kerak — jim tanlangan til boshqa guruhlarning rejasini
+ * o'chirib yuborardi.
  */
-const Content = ({ close, isLoading, setIsLoading, subjectId = null }) => {
+const Content = ({
+  close,
+  isLoading,
+  setIsLoading,
+  subjectId = null,
+  language = DEFAULT_TEACHING_LANGUAGE,
+}) => {
   const { data: subjects = [] } = useSubjects();
   const { mutate: uploadTopics } = useUploadTopics();
 
@@ -63,6 +82,7 @@ const Content = ({ close, isLoading, setIsLoading, subjectId = null }) => {
   const { state, setField, setFields } = useObjectState({
     uploadMode: subjectId ? "single" : "all",
     subjectId: subjectId || "",
+    language: language || DEFAULT_TEACHING_LANGUAGE,
   });
 
   // ⚠️ Oyna qayta ochilganda rejim OYNANI OCHGAN JOYGA moslanadi: Radix
@@ -73,9 +93,10 @@ const Content = ({ close, isLoading, setIsLoading, subjectId = null }) => {
     setFields({
       uploadMode: subjectId ? "single" : "all",
       subjectId: subjectId || "",
+      language: language || DEFAULT_TEACHING_LANGUAGE,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subjectId]);
+  }, [subjectId, language]);
 
   // Yuklash natijasi — har varaq bo'yicha. ⚠️ Oyna darhol YOPILMAYDI, agar
   // aytadigan gap bo'lsa (bo'sh ixtiyoriy ustun, yuklanmagan qator yoki
@@ -171,7 +192,7 @@ const Content = ({ close, isLoading, setIsLoading, subjectId = null }) => {
     const subjectId = state.uploadMode === "single" ? state.subjectId : null;
 
     uploadTopics(
-      { file: selectedFile, subjectId },
+      { file: selectedFile, subjectId, language: state.language },
       {
         onSuccess: (data) => {
           toast.success(data.message);
@@ -244,6 +265,28 @@ const Content = ({ close, isLoading, setIsLoading, subjectId = null }) => {
           required
         />
       )}
+
+      {/* ⚠️ O'QUV TILI — BITTA FAYL, BITTA TIL. Yuklash faqat shu tilning
+          ro'yxatini almashtiradi; boshqa tillarga tegilmaydi. */}
+      <Select
+        label="Qaysi tildagi guruhlar uchun"
+        value={state.language}
+        onChange={(value) => setField("language", value)}
+        options={teachingLanguageOptions}
+        required
+      />
+
+      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+        <TriangleAlert
+          className="mt-0.5 size-4 shrink-0 text-amber-600"
+          strokeWidth={1.5}
+        />
+        <p className="text-xs text-amber-900">
+          Bu fayl <b>{languageClassLabel(state.language).toLowerCase()}</b>{" "}
+          guruhlarining mavzular rejasini almashtiradi. Boshqa tillardagi
+          rejalarga tegilmaydi — ular alohida yuklanadi.
+        </p>
+      </div>
 
       {/* File Upload Area */}
       <div>
@@ -348,7 +391,9 @@ const Content = ({ close, isLoading, setIsLoading, subjectId = null }) => {
             tartibida
           </li>
           <li>
-            • Yuklash shu fanning mavjud mavzular ro'yxatini almashtiradi
+            • Yuklash shu fanning <b>tanlangan tildagi</b> mavzular
+            ro'yxatini almashtiradi. Har til mustaqil: mavzu raqamlari har
+            tilda 1 dan boshlanadi
           </li>
           {/* Mavzuni platformada tahrirlash yo'li yo'q: tuzatish yo'li
               aynan shu — yuklab olish → Excel'da tahrirlash → qayta
@@ -447,7 +492,10 @@ const SheetReport = ({ sheet }) => {
             Varaq: {sheet.sheet}
           </p>
           {sheet.subject && (
-            <p className="text-xs text-gray-500">Fan: {sheet.subject.name}</p>
+            <p className="text-xs text-gray-500">
+              Fan: {sheet.subject.name}
+              {sheet.languageLabel && ` · ${sheet.languageLabel} tili`}
+            </p>
           )}
         </div>
 

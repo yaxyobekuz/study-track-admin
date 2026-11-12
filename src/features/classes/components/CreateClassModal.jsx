@@ -7,8 +7,15 @@ import { useCreateClass } from "@/features/classes/queries/classes.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
+import Select from "@/shared/components/ui/select/Select";
 import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
+
+// Data — o'quv tili (server bilan qo'lda sinxron)
+import {
+  DEFAULT_TEACHING_LANGUAGE,
+  teachingLanguageOptions,
+} from "@/shared/data/teachingLanguage.data";
 
 const CreateClassModal = () => (
   <ResponsiveModal name="createClass" title="Yangi sinf">
@@ -19,9 +26,10 @@ const CreateClassModal = () => (
 const Content = ({ close, isLoading, setIsLoading }) => {
   const { mutate: createClass } = useCreateClass();
 
-  const { name, capacity, setField } = useObjectState({
+  const { name, capacity, language, setField } = useObjectState({
     name: "",
     capacity: "",
+    language: DEFAULT_TEACHING_LANGUAGE,
   });
 
   const handleCreateClass = (e) => {
@@ -29,7 +37,7 @@ const Content = ({ close, isLoading, setIsLoading }) => {
     setIsLoading(true);
 
     createClass(
-      { name, capacity },
+      { name, capacity, language },
       {
         onSuccess: () => {
           close();
@@ -63,6 +71,17 @@ const Content = ({ close, isLoading, setIsLoading }) => {
         label="Sig'im (ixtiyoriy)"
         placeholder="Masalan: 30"
         onChange={(e) => setField("capacity", e.target.value)}
+      />
+
+      {/* ⚠️ O'QUV TILI — guruhning mavzular rejasi SHU tildan sanaladi.
+          5-sinfda ham o'zbek, ham rus, ham ingliz guruh bo'lishi mumkin va
+          ularning kitobi (demak mavzular ro'yxati) boshqa. */}
+      <Select
+        label="O'quv tili"
+        value={language}
+        onChange={(value) => setField("language", value)}
+        options={teachingLanguageOptions}
+        required
       />
 
       <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">

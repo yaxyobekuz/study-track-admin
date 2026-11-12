@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 
 // Router
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 
 // TanStack Query
@@ -22,6 +22,7 @@ import {
   Archive,
   Undo2,
   BadgeCheck,
+  ScanSearch,
 } from "lucide-react";
 
 // Components
@@ -49,6 +50,7 @@ import { useSubjects } from "@/features/subjects/queries/subjects.queries";
 import { testQueries } from "../queries/diagnostics.queries";
 import {
   useBuildTest,
+  useBuildStudentTest,
   useApproveTestQuestions,
   useUpdateTestStatus,
 } from "../queries/diagnostics.mutations";
@@ -165,7 +167,11 @@ const TestsPage = () => {
   const { data, isLoading } = useQuery(testQueries.list(params));
   const { data: subjects = [] } = useSubjects();
   const { data: classes = [] } = useQuery(classesQueries.list());
-  const { mutate: buildTest, isPending: isCreating } = useBuildTest();
+  const navigate = useNavigate();
+  const { mutate: buildTest, isPending: isCreatingClass } = useBuildTest();
+  const { mutate: buildStudentTest, isPending: isCreatingStudents } =
+    useBuildStudentTest();
+  const isCreating = isCreatingClass || isCreatingStudents;
   const { mutate: approveQuestions, isPending: isApproving } =
     useApproveTestQuestions();
   const { mutate: updateStatus } = useUpdateTestStatus();
@@ -190,15 +196,40 @@ const TestsPage = () => {
    * so'ralgancha savol topilmadi. Ularni xato deb ko'rsatish
    * o'qituvchini "test yaratilmadi" deb o'ylashga majbur qilardi.
    */
-  const handleBuild = (payload, { onDone } = {}) =>
-    buildTest(payload, {
+  const handleBuild = ({ perStudent, ...payload }, { onDone } = {}) => {
+    /**
+     * ⚠️ IKKI YO'L, BITTA ISHLOVCHI (2026-11-12): rejim bo'yicha boshqa
+     * endpoint, lekin natija bilan ishlash qoidasi AYNI (ogohlantirishlar
+     * xato emas, tasdiq kerakligi aytiladi). Ikki nusxa bo'lsa, biriga
+     * qo'shilgan xabar ikkinchisida tushib qolardi.
+     */
+    const mutate = perStudent ? buildStudentTest : buildTest;
+
+    return mutate(payload, {
       onSuccess: (res) => {
         const data = res?.data ?? {};
         const warnings = data.warnings ?? [];
 
-        toast.success(
-          `Test yaratildi — ${data.questionCount ?? 0} ta savol tanlandi`,
-        );
+        if (perStudent) {
+          const totals = data.totals ?? {};
+          toast.success(
+            `Test yaratildi — ${totals.ready ?? 0} o'quvchiga, ` +
+              `${totals.uniqueQuestions ?? 0} noyob savol`,
+          );
+          // ⚠️ KIMGA TEST TUSHMAGANI JIM QOLMAYDI: "25 tadan 24 tasi"
+          // degan holat normal, lekin aytilishi shart.
+          if (totals.failed) {
+            toast.warning(
+              `${totals.failed} o'quvchiga test tushmadi — "Ko'rib chiqish" ` +
+                `ekranida sababi ko'rinadi`,
+              { duration: 10000 },
+            );
+          }
+        } else {
+          toast.success(
+            `Test yaratildi — ${data.questionCount ?? 0} ta savol tanlandi`,
+          );
+        }
 
         /**
          * ⚠️ AI YOZGAN SAVOL AVTOMAT TASDIQLANMAYDI. Test qoralama
@@ -218,12 +249,19 @@ const TestsPage = () => {
 
         warnings.forEach((w) => toast.warning(w, { duration: 8000 }));
         onDone?.();
+
+        // ⚠️ KO'RIB CHIQISH EKRANIGA O'TILADI: tasdiqsiz test chiqmaydi,
+        // ya'ni yaratishdan keyingi KEYINGI qadam aynan shu. Usiz admin
+        // "test yaratildi" degan xabarni olib, uni qayerdan chiqarishini
+        // qidirib yurardi.
+        if (data.id) navigate(`/diagnostics/tests/${data.id}/review`);
       },
       onError: (err) =>
         toast.error(err.response?.data?.message || "Test yaratilmadi", {
           duration: 10000,
         }),
     });
+  };
 
   /** AI yozgan savollarni ommaviy tasdiqlash (`diagnostics.moderate`). */
   const handleApprove = (test) =>
@@ -424,6 +462,31 @@ const TestsPage = () => {
 
                   <Td align="center">
                     <span className="inline-flex gap-1.5">
+                      {/* KO'RIB CHIQISH VA TASDIQLASH — har doim ochiq.
+                          ⚠️ Tasdiqsiz test chiqarilmaydi (2026-11-12),
+                          ya'ni bu yo'l testning KEYINGI qadami: ekranda
+                          har o'quvchining savollari, to'g'ri javoblari
+                          va almashtirish tugmasi turadi. */}
+                      <button
+                        type="button"
+                        title={
+                          test.approvedAt
+                            ? "Testni ko'rib chiqish"
+                            : "Ko'rib chiqish va tasdiqlash"
+                        }
+                        onClick={() =>
+                          navigate(`/diagnostics/tests/${test.id}/review`)
+                        }
+                        className={cn(
+                          "rounded-lg border p-1.5 transition-colors",
+                          test.approvedAt
+                            ? "border-gray-200 text-gray-500 hover:bg-gray-50"
+                            : "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100",
+                        )}
+                      >
+                        <ScanSearch className="size-4" strokeWidth={1.5} />
+                      </button>
+
                       {/* ⚠️ TASDIQLASH ALOHIDA RUXSAT (`moderate`):
                           savol yozish huquqi uni o'zi tasdiqlash
                           huquqini bermaydi — bank sifati aynan shu

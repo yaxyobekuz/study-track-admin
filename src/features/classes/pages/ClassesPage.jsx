@@ -1,6 +1,7 @@
 // Components
 import Can from "@/shared/components/guards/Can";
 import Card from "@/shared/components/ui/Card";
+import LanguageBadge from "@/shared/components/ui/LanguageBadge";
 import Button from "@/shared/components/ui/button/Button";
 
 // API
@@ -141,14 +142,23 @@ const Classes = () => {
           <Card key={classItem.id}>
             {/* Top */}
             <div className="flex justify-between items-start mb-4">
-              <h3>
+              <h3 className="min-w-0">
                 <Link
                   to={`/classes/${classItem.id}`}
                   className="flex items-center gap-1.5 text-lg font-semibold text-gray-900 transition-colors duration-200 hover:text-blue-600"
                 >
-                  {classItem.name}
-                  <ChevronRight className="size-5" strokeWidth={1.5} />
+                  <span className="truncate">{classItem.name}</span>
+                  <ChevronRight className="size-5 shrink-0" strokeWidth={1.5} />
                 </Link>
+
+                {/* ⚠️ O'QUV TILI — guruhning mavzular rejasi SHU tildan
+                    sanaladi. 5-sinfda uch tilda guruh bo'lishi mumkin va
+                    ularni ro'yxatda ajratib turish kerak. */}
+                <LanguageBadge
+                  language={classItem.language}
+                  asClass
+                  className="mt-1"
+                />
               </h3>
 
               {/* Action buttons */}

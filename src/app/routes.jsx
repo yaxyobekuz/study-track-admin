@@ -64,6 +64,8 @@ import TutorGroupPage from "@/features/tutorGroups/pages/TutorGroupPage";
 import SubjectsPage from "@/features/subjects/pages/SubjectsPage";
 import TopicsPage from "@/features/subjects/pages/TopicsPage";
 import SubjectTopicsPage from "@/features/subjects/pages/SubjectTopicsPage";
+// GURUH ICHIDA — har o'quvchining mavzu o'rni va qadami
+import ClassStudentTopicsPage from "@/features/studentTopics/pages/ClassStudentTopicsPage";
 
 // Pages - Grades
 import GradesPage from "@/features/grades/pages/GradesPage";
@@ -275,6 +277,8 @@ import ResultAnswersPage from "@/features/test-seasons/pages/ResultAnswersPage";
 
 // Pages - Diagnostika
 import DiagnosticsLayout from "@/features/diagnostics/layouts/DiagnosticsLayout";
+// TESTNI KO'RIB CHIQISH VA TASDIQLASH — tasdiqsiz test chiqmaydi
+import DiagnosticTestReviewPage from "@/features/diagnostics/pages/TestReviewPage";
 import DiagnosticsOverviewPage from "@/features/diagnostics/pages/OverviewPage";
 import DiagnosticQuestionsPage from "@/features/diagnostics/pages/QuestionsPage";
 import DiagnosticTestsPage from "@/features/diagnostics/pages/TestsPage";
@@ -519,6 +523,14 @@ const Routes = () => {
           <Route
             path="/subjects/:subjectId/topics"
             element={<SubjectTopicsPage />}
+          />
+          {/* GURUH ICHIGA KIRISH — har o'quvchiga alohida mavzu o'rni va
+              "bitta darsda nechta mavzu" qadami (`topics.view` /
+              `topics.assign`). Diagnostika testining qamrovi aynan shu
+              raqamdan quriladi. */}
+          <Route
+            path="/subjects/:subjectId/topics/:classId"
+            element={<ClassStudentTopicsPage />}
           />
 
           {/* Grades */}
@@ -918,6 +930,14 @@ const Routes = () => {
           {/* Natija va o'quvchi profili — LAYOUTDAN TASHQARIDA: ular
               bo'lim tablari ostidagi ro'yxat emas, alohida ekran va
               o'z "orqaga" havolasiga ega. */}
+          {/* ⚠️ KO'RIB CHIQISH EKRANI HAM LAYOUTDAN TASHQARIDA va ataylab:
+              u ro'yxat emas, bitta testning TO'LIQ tarkibi (har o'quvchining
+              savollari, to'g'ri javoblari bilan). Ruxsat — `diagnostics.view`
+              (ko'rish), tasdiqlash tugmasi esa `diagnostics.publish` ortida. */}
+          <Route
+            path="/diagnostics/tests/:id/review"
+            element={<DiagnosticTestReviewPage />}
+          />
           <Route
             path="/diagnostics/attempts/:attemptId"
             element={<DiagnosticAttemptDetailPage />}

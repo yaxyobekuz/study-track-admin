@@ -119,6 +119,76 @@ export const useBuildTest = () => {
   });
 };
 
+/** HAR O'QUVCHIGA MOSLANGAN TEST — oldindan ko'rish (hech narsa yozmaydi). */
+export const usePreviewStudentTest = () =>
+  useMutation({
+    mutationFn: (data) =>
+      diagnosticTestsAPI.previewStudents(data).then((r) => r.data.data),
+  });
+
+/**
+ * HAR O'QUVCHIGA MOSLANGAN TESTNI YIG'ISH.
+ *
+ * ⚠️ Savollar banki keshi ham bekor qilinadi (`useBuildTest` bilan AYNI
+ * mulohaza): AI qatori bankka YANGI savollar yozadi.
+ */
+export const useBuildStudentTest = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) =>
+      diagnosticTestsAPI.buildStudents(data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: testKeys.all });
+      qc.invalidateQueries({ queryKey: questionKeys.all });
+    },
+  });
+};
+
+/**
+ * SAVOLLARNI ALMASHTIRISH — bitta, bir nechta yoki hammasi.
+ *
+ * ⚠️ Ko'rib chiqish ekrani DARHOL qayta o'qiladi: eskirgan ro'yxatdan
+ * almashtirilgan savolni qayta almashtirish so'rovi ketardi.
+ */
+export const useRegenerateTestQuestions = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...payload }) =>
+      diagnosticTestsAPI.regenerateQuestions(id, payload).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: testKeys.all });
+      qc.invalidateQueries({ queryKey: questionKeys.all });
+    },
+  });
+};
+
+/**
+ * TESTNI TASDIQLASH (`diagnostics.publish`).
+ *
+ * ⚠️ Tasdiq savollarni ham tasdiqlaydi — bank keshi bekor qilinadi.
+ */
+export const useApproveTest = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, note }) =>
+      diagnosticTestsAPI.approveTest(id, note).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: testKeys.all });
+      qc.invalidateQueries({ queryKey: questionKeys.all });
+    },
+  });
+};
+
+/** TASDIQNI BEKOR QILISH — sabab majburiy (`diagnostics.publish`). */
+export const useRejectTest = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, note }) =>
+      diagnosticTestsAPI.rejectTest(id, note).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: testKeys.all }),
+  });
+};
+
 /** AI yozgan savollarni ommaviy tasdiqlash — testni nashrga tayyorlaydi. */
 export const useApproveTestQuestions = () => {
   const qc = useQueryClient();

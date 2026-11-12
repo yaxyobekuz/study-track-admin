@@ -446,6 +446,10 @@ const Schedules = () => {
                                 dateLabel: topicDay.dateLabel,
                                 dayLabel: topicDay.dayLabel,
                                 lessonOrder: displayOrder,
+                                // ⚠️ SINFNING O'QUV TILI: mavzular ro'yxati
+                                // aynan shu tildan o'qiladi (server ham
+                                // biriktirishda shu tilni ishlatadi).
+                                language: topicsWeek?.language ?? null,
                                 currentTopicOrder: topicInfo?.topic?.order ?? null,
                                 binding: topicInfo?.bindingId
                                   ? {

@@ -7,8 +7,18 @@ import { useUpdateClass } from "@/features/classes/queries/classes.mutations";
 
 // Components
 import Button from "@/shared/components/ui/button/Button";
+import Select from "@/shared/components/ui/select/Select";
 import InputField from "@/shared/components/ui/input/InputField";
 import ResponsiveModal from "@/shared/components/ui/ResponsiveModal";
+
+// Data — o'quv tili (server bilan qo'lda sinxron)
+import {
+  DEFAULT_TEACHING_LANGUAGE,
+  teachingLanguageOptions,
+} from "@/shared/data/teachingLanguage.data";
+
+// Icons
+import { TriangleAlert } from "lucide-react";
 
 const EditClassModal = () => (
   <ResponsiveModal name="editClass" title="Sinfni tahrirlash">
@@ -19,9 +29,10 @@ const EditClassModal = () => (
 const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
   const { mutate: updateClass } = useUpdateClass();
 
-  const { name, capacity, setField } = useObjectState({
+  const { name, capacity, language, setField } = useObjectState({
     name: classData.name || "",
     capacity: classData.capacity != null ? String(classData.capacity) : "",
+    language: classData.language || DEFAULT_TEACHING_LANGUAGE,
   });
 
   const handleEditClass = (e) => {
@@ -29,7 +40,7 @@ const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
     setIsLoading(true);
 
     updateClass(
-      { id: classData.id, data: { name, capacity } },
+      { id: classData.id, data: { name, capacity, language } },
       {
         onSuccess: () => {
           close();
@@ -64,6 +75,33 @@ const Content = ({ close, isLoading, setIsLoading, ...classData }) => {
         placeholder="Masalan: 30"
         onChange={(e) => setField("capacity", e.target.value)}
       />
+
+      <Select
+        label="O'quv tili"
+        value={language}
+        onChange={(value) => setField("language", value)}
+        options={teachingLanguageOptions}
+        required
+      />
+
+      {/* ⚠️ TILNI O'ZGARTIRISH — ONGLI QAROR. Mavzu ankorlari O'SHA tildagi
+          ro'yxatning raqamiga tegishli: til almashsa, raqam boshqa
+          kitobning mavzusiga tushadi. Tizim ankorlarni JIM QAYTA
+          YOZMAYDI — fan ekranida ogohlantirish chiqadi va admin mavzuni
+          qayta biriktiradi. */}
+      {language !== (classData.language || DEFAULT_TEACHING_LANGUAGE) && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+          <TriangleAlert
+            className="mt-0.5 size-4 shrink-0 text-amber-600"
+            strokeWidth={1.5}
+          />
+          <p className="text-xs text-amber-900">
+            Til o'zgaradi: guruhning mavzulari endi boshqa ro'yxatdan
+            sanaladi. Biriktirilgan mavzular avtomatik ko'chmaydi — "Dars
+            mavzulari → Fan" ekranida ularni qayta biriktirish kerak.
+          </p>
+        </div>
+      )}
 
       <div className="flex flex-col-reverse gap-3.5 w-full mt-5 xs:m-0 xs:flex-row xs:justify-end">
         <Button

@@ -79,6 +79,41 @@ export const diagnosticTestsAPI = {
   /** Mavzu qamrovi bilan yig'ish (bank + AI). Model chaqiruvi — sekin. */
   build: (data) => http.post("/diagnostic-tests/build", data),
 
+  /**
+   * HAR O'QUVCHIGA MOSLANGAN TEST — OLDINDAN KO'RISH.
+   *
+   * Guruh tanlanadi, qamrov esa HAR BOLAGA alohida hal qilinadi: kim
+   * qaysi oraliqda test oladi, kimga tushmaydi va nega.
+   */
+  previewStudents: (data) =>
+    http.post("/diagnostic-tests/preview-students", data),
+
+  /** Har o'quvchiga moslangan testni yig'ish. Model chaqiruvi — sekin. */
+  buildStudents: (data) => http.post("/diagnostic-tests/build-students", data),
+
+  /**
+   * TASDIQLASH EKRANI — har o'quvchining qamrovi va savollari (TO'G'RI
+   * JAVOBI bilan). Ruxsat — `diagnostics.view`.
+   */
+  review: (id) => http.get(`/diagnostic-tests/${id}/review`),
+
+  /**
+   * SAVOLLARNI ALMASHTIRISH — bitta, bir nechta yoki hammasi.
+   *
+   * ⚠️ UCHALA REJIM BITTA YO'LDAN: `items` bitta element bo'lsa "bitta
+   * savol", bir nechta bo'lsa "tanlanganlar", `all: true` bo'lsa hammasi.
+   */
+  regenerateQuestions: (id, payload) =>
+    http.post(`/diagnostic-tests/${id}/questions/regenerate`, payload),
+
+  /** TESTNI TASDIQLASH (`diagnostics.publish`). */
+  approveTest: (id, note) =>
+    http.post(`/diagnostic-tests/${id}/approve`, { note }),
+
+  /** TASDIQNI BEKOR QILISH — sabab majburiy (`diagnostics.publish`). */
+  rejectTest: (id, note) =>
+    http.post(`/diagnostic-tests/${id}/reject`, { note }),
+
   /** AI yozgan savollarni ommaviy tasdiqlash (`diagnostics.moderate`). */
   approveQuestions: (id) =>
     http.patch(`/diagnostic-tests/${id}/approve-questions`),
