@@ -13,6 +13,15 @@ export const activityAPI = {
   getOverview: (params) => http.get("/activity/overview", { params }),
 
   /**
+   * TIZIMDAN FOYDALANAYOTGAN O'QUVCHILAR — bosh sahifadagi karta.
+   *
+   * ⚠️ PARAMETRSIZ: davrlar (bugun / 7 kun / 30 kun) serverda
+   * qotirilgan. Parametr qo'shilsa, u faqat keshni bo'laklab, bitta
+   * raqamni ikki xil qilib ko'rsatish yo'li bo'lardi.
+   */
+  getStudents: () => http.get("/activity/students"),
+
+  /**
    * BOT FOYDALANUVCHILARI — hujjat ko'rinishidagi hisobot va uning Word
    * nusxasi. Params: `{ days }` (7 | 14 | 30 | 90 — serverda tekshiriladi).
    *

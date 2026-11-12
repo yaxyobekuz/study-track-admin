@@ -29,6 +29,21 @@ export const activityQueries = {
     }),
 
   /**
+   * TIZIMDAN FOYDALANAYOTGAN O'QUVCHILAR — bosh sahifadagi karta.
+   *
+   * ⚠️ `staleTime` SHU BO'LIMNIKI (60 soniya), bosh sahifadagi boshqa
+   * sanoqchilarning 5 daqiqasi EMAS: karta "bugun nechta bola tizimga
+   * kirdi" degan JONLI raqamni ko'rsatadi va sahifa yangilanganda u ham
+   * yangilanishi kerak (`overview` bilan AYNI mulohaza).
+   */
+  students: () =>
+    queryOptions({
+      queryKey: [...activityKeys.all, "students"],
+      queryFn: () => activityAPI.getStudents().then((r) => r.data.data),
+      staleTime: STALE,
+    }),
+
+  /**
    * BOT FOYDALANUVCHILARI HUJJATI — ekrandagi nusxa ham, Word fayli ham
    * AYNI shu obyektdan quriladi (server tomonda ham bitta hisob).
    */

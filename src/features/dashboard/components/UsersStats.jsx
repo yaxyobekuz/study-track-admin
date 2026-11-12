@@ -20,6 +20,7 @@ import Counter from "@/shared/components/ui/Counter";
 import BranchSplit from "@/shared/components/ui/BranchSplit";
 import { Skeleton } from "@/shared/components/shadcn/skeleton";
 import StaffTasksCard from "./StaffTasksCard";
+import StudentUsageCard from "./StudentUsageCard";
 
 // Queries & data
 import { activityQueries } from "@/features/activityDashboard/queries/activity.queries";
@@ -179,6 +180,19 @@ const UsersStats = () => {
   const showStaffTasks = isAggregate && can("tasks.view");
 
   /**
+   * ⚠️ "PREMIUM FOYDALANUVCHILAR" O'RNIGA "TIZIMGA KIRGAN O'QUVCHILAR"
+   * (biznes qarori, 2026-11-12). Premium soni rahbarga hech qanday qaror
+   * bermasdi ("12" nima degani?), "nechta bola tizimga kiryapti" esa bot
+   * va o'quvchi panelining butun mohiyati. Premium yo'qolmaydi — u o'z
+   * bo'limida (`/premium`) qoladi.
+   *
+   * ⚠️ RUXSATI BO'LMAGANDA O'RNIDA AVVALGIDEK PREMIUM TURADI: ma'lumot
+   * Faollik bo'limidan keladi (`activity.view`) va u yopiq bo'lsa,
+   * to'rt ustunli maketda bo'sh joy qolib ketardi.
+   */
+  const canSeeUsage = can("activity.view");
+
+  /**
    * ⚠️ BOT RAQAMLARI FAQAT UMUMIY KO'RINISHDA BIRLASHADI (biznes qarori,
    * 2026-10-28). Filial tanlangan bo'lsa "Bugun botda faol" va "Qamrab
    * olingan o'quvchilar" avvalgidek PASTDAGI QATORDA alohida karta bo'lib
@@ -259,24 +273,54 @@ const UsersStats = () => {
       report: canSeeBot ? BOT_REPORT_PATH : null,
       reportTitle: "Bot foydalanuvchilari hisobotini ochish",
     },
+    // ⚠️ TO'RTINCHI KARTA UCH HOLATLI:
+    //   umumiy ko'rinish + `tasks.view`  → "Xodimlar topshiriqlari"
+    //   `activity.view`                  → "Tizimga kirgan o'quvchilar"
+    //   aks holda                        → avvalgidek "Premium"
+    // Har holatda O'RIN BAND bo'ladi: bo'sh katak qolsa, maket buzilardi.
     showStaffTasks
       ? { key: "staffTasks", custom: true }
-      : {
-          label: "Premium foydalanuvchilar",
-          value: stats?.premiumUsers || 0,
-          icon: Sparkle,
-          path: "premiumUsers",
-          to: "/premium",
-        },
+      : canSeeUsage
+        ? { key: "studentUsage", custom: true }
+        : {
+            label: "Premium foydalanuvchilar",
+            value: stats?.premiumUsers || 0,
+            icon: Sparkle,
+            path: "premiumUsers",
+            to: "/premium",
+          },
   ];
 
+  /**
+   * ⚠️ BESHINCHI KARTA FAQAT UMUMIY KO'RINISHDA qo'shiladi: u yerda
+   * to'rtinchi o'rinni "Xodimlar topshiriqlari" egallaydi, lekin
+   * "nechta bola tizimga kiryapti" degan savol tarmoq darajasida ham
+   * (hatto ayniqsa) beriladi. Birini ikkinchisining o'rniga qo'yish
+   * raqamni ekrandan tushirib qoldirardi.
+   *
+   * ⚠️ Maket shundagina besh ustunga o'tadi — qolgan hamma holatda
+   * to'rt ustunli sukut o'zgarmaydi.
+   */
+  if (showStaffTasks && canSeeUsage) {
+    statItems.push({ key: "studentUsage", custom: true });
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-4 mb-4",
+        statItems.length > 4 ? "sm:grid-cols-2 xl:grid-cols-5" : "sm:grid-cols-4",
+      )}
+    >
       {statItems.map((item, idx) =>
         // O'Z so'rovi va o'z davri bor karta — bu yerda faqat O'RNI
         // band qiladi (`DailyStats` bilan AYNI naqsh).
         item.custom ? (
-          <StaffTasksCard key={item.key} />
+          item.key === "studentUsage" ? (
+            <StudentUsageCard key={item.key} />
+          ) : (
+            <StaffTasksCard key={item.key} />
+          )
         ) : (
           <Card key={idx} title={item.label} className="space-y-3">
             <div className="flex items-center justify-between">

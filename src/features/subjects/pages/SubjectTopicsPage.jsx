@@ -20,8 +20,93 @@ import LanguageBadge from "@/shared/components/ui/LanguageBadge";
 // Hooks
 import usePermissions from "@/shared/hooks/usePermissions";
 
+// Utils
+import { cn } from "@/shared/utils/cn";
+
 // Icons
-import { ArrowLeft, Edit2, Check, X, Users, TriangleAlert } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowUp,
+  Check,
+  Edit2,
+  Equal,
+  TriangleAlert,
+  Users,
+  X,
+} from "lucide-react";
+
+/**
+ * TARQOQLIKNING BITTA QATORI — "eng orqada" yoki "eng oldinda".
+ *
+ * ⚠️ MODUL DARAJASIDA e'lon qilinadi: komponent render ichida yasalsa,
+ * React uni har safar YANGI tur deb qabul qilib, holatini tashlab
+ * yuborardi (`react-hooks/static-components`).
+ */
+const SpreadRow = ({ icon: Icon, label, item, tone }) => (
+  <div className="flex items-center gap-1.5">
+    <Icon className={cn("size-3.5 shrink-0", tone)} strokeWidth={2.2} />
+    <span className="shrink-0 text-gray-500">{label}</span>
+    <span className="shrink-0 font-semibold tabular-nums text-gray-700">
+      {item.order}-mavzu
+    </span>
+    {item.name && (
+      <span className="min-w-0 truncate text-gray-400">· {item.name}</span>
+    )}
+  </div>
+);
+
+/**
+ * GURUHDAGI TARQOQLIK — eng orqada va eng oldinda ketayotgan o'quvchi.
+ *
+ * Kartaning katta raqami — GURUHNING o'rni; shaxsiy rejasi bor bolalar
+ * (`education.md` §13) undan oldinda yoki orqada bo'ladi. Bu blok aynan
+ * shu ikki chetni ko'rsatadi: "bu guruhda kimdir 12-mavzuda, kimdir
+ * 47-mavzuda" degan savol kartaning o'zida javob topadi.
+ *
+ * ⚠️ IKKALASI TENG BO'LSA BITTA QATOR: ikkita bir xil qator "nega ikki
+ * marta yozilgan" degan savol tug'dirardi. Qaror SERVERDA (`uniform`) —
+ * panel raqamlarni o'zi taqqoslamaydi.
+ */
+const StudentSpread = ({ spread }) => {
+  if (!spread) return null;
+
+  const hint =
+    spread.students != null
+      ? `${spread.students} o'quvchidan ${spread.withPlan} tasida shaxsiy mavzu rejasi bor`
+      : "Hamma o'quvchi guruh bilan birga ketyapti";
+
+  return (
+    <div
+      title={hint}
+      className="mt-3 space-y-1 border-t border-gray-100 pt-2 text-xs"
+    >
+      {spread.uniform ? (
+        <SpreadRow
+          icon={Equal}
+          label="Hamma o'quvchi"
+          item={spread.ahead}
+          tone="text-gray-400"
+        />
+      ) : (
+        <>
+          <SpreadRow
+            icon={ArrowDown}
+            label="Eng orqada"
+            item={spread.behind}
+            tone="text-amber-500"
+          />
+          <SpreadRow
+            icon={ArrowUp}
+            label="Eng oldinda"
+            item={spread.ahead}
+            tone="text-emerald-500"
+          />
+        </>
+      )}
+    </div>
+  );
+};
 
 const SubjectTopics = () => {
   const { subjectId } = useParams();
@@ -279,6 +364,9 @@ const SubjectTopics = () => {
                     % tugallangan
                   </p>
                 </div>
+
+                {/* ENG ORQADA / ENG OLDINDA — guruh ichidagi tarqoqlik */}
+                <StudentSpread spread={item.studentSpread} />
 
                 {/* ⚠️ GURUH ICHIGA KIRISH — har o'quvchiga alohida mavzu
                     o'rni va "bitta darsda nechta mavzu" qadami. Diagnostika
