@@ -32,6 +32,9 @@ import {
   Sparkles,
 } from "lucide-react";
 
+// Data
+import { SELF_PAYROLL_VISIBLE } from "./selfPayroll.data";
+
 export const navItems = [
   {
     title: "Asosiy",
@@ -151,10 +154,13 @@ export const navItems = [
         title: "Topshiriqlarim",
         url: "/my-tasks",
       },
-      {
-        title: "Mening oyligim",
-        url: "/my-salary",
-      },
+      // ⚠️ "Mening oyligim" XODIMGA YOPIQ (`selfPayroll.data.js`,
+      // biznes qarori 2026-11-23): manba yo'llari serverda 403 qaytaradi,
+      // shuning uchun menyuda ham turmaydi va `/my-salary` bosh sahifaga
+      // qaytaradi (`routes.jsx`).
+      ...(SELF_PAYROLL_VISIBLE
+        ? [{ title: "Mening oyligim", url: "/my-salary" }]
+        : []),
     ],
   },
   {

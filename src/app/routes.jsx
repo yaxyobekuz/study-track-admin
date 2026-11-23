@@ -295,6 +295,9 @@ import DiagnosticStudentProfilePage from "@/features/diagnostics/pages/StudentPr
 // Router
 import { Routes as RoutesWrapper, Route, Navigate } from "react-router-dom";
 
+// Data
+import { SELF_PAYROLL_VISIBLE } from "@/shared/data/selfPayroll.data";
+
 const Routes = () => {
   return (
     <RoutesWrapper>
@@ -682,7 +685,14 @@ const Routes = () => {
               muddatni surish, to'xtatish, o'chirish. */}
           <Route path="/my-tasks/self/:taskId" element={<SelfTaskDetailPage />} />
           <Route path="/my-tasks/:taskId" element={<TaskDetailPage />} />
-          <Route path="/my-salary" element={<MySalaryPage />} />
+          {/* ⚠️ Oylik xodimga YOPIQ (`selfPayroll.data.js`): eski havola va
+              saqlangan zakladka bosh sahifaga qaytaradi — "sahifa topilmadi"
+              emas (o'quvchi panelidagi `/finance` bilan AYNI naqsh). */}
+          {SELF_PAYROLL_VISIBLE ? (
+            <Route path="/my-salary" element={<MySalaryPage />} />
+          ) : (
+            <Route path="/my-salary" element={<Navigate to="/" replace />} />
+          )}
 
           {/* Davomat - yagona layout + route-darajali sahifalar */}
           <Route path="/attendance" element={<AttendanceLayout />}>
